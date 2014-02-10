@@ -1,0 +1,17 @@
+from distutils.core import setup
+
+setup(name='emanesh',
+      version='@VERSION@',
+      description='EMANE Shell',
+      long_description='EMANE Shell',
+      author='Adjacent Link',
+      author_email='emane at adjacent link dot com',
+      url="http://adjacentlink.com",
+      packages=['emanesh','emanesh.events'],
+      scripts=['scripts/emanesh',
+               'scripts/emaneevent-dump',
+               'scripts/emaneevent-pathloss'],
+      package_data={'emanesh' :['schema/*.xsd']},
+      license = 'BSD'
+      )
+

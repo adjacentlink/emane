@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE profiles SYSTEM "../../../dtd/antennaprofile.dtd">
+
+<profiles>
+  <profile id="1" antennapatternuri="antennaomni.xml">
+    <placement north="0" east="0" up="0"/>
+  </profile>
+  <profile id="2" antennapatternuri="antennaomni.xml">
+    <placement north="0" east="0" up="10"/>
+  </profile>
+  <profile id="3" antennapatternuri="antenna30dsector.xml" blockagepatternuri="blockageaft.xml">
+    <placement north="0" east="0" up="0"/>
+  </profile>
+  <profile id="4" antennapatternuri="antenna30dsector.xml">
+    <placement north="0" east="0" up="0"/>
+  </profile>
+ <profile id="5" antennapatternuri="antennahole.xml" blockagepatternuri="blockagehole.xml">
+    <placement north="0" east="0" up="0"/>
+  </profile>
+</profiles>

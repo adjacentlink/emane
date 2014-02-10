@@ -1,0 +1,151 @@
+<noisescenario start="3000000">
+  <action>
+    <initialize binduration='20' bandwidth="1200000" mode="all" sensitivity="0"
+                maxsegmentoffset='300000' maxsegmentduration='500000' maxmessagepropagation='200000'
+                clamp='yes' timesyncthreshold='1000'>
+      <frequency value="3000000000"/>
+    </initialize>
+  </action>
+  
+  <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="210" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="1"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now="3008" txtime="2005" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="0" duration="217" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="2"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now="3025" txtime="2750" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="0" duration="500" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="3"/>
+      </transmitters>
+    </update>
+  </action>
+  
+  <action>
+    <update now="3055" txtime="3045" transmitterbandwidth="1200000" inband="yes" propagation="610">
+      <segment frequency="3000000000" offset="300" duration="1005" rxpower="5"/>
+      <transmitters>
+        <transmitter nem="4"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now="3200" txtime="3055" transmitterbandwidth="1200000" inband="yes" propagation="200">
+      <segment frequency="3000000000" offset="200" duration="600" rxpower="5"/>
+      <transmitters>
+        <transmitter nem="5"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now="3400" time="2300" duration="1000" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <request now="3450" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <update now="3700" txtime="4000" transmitterbandwidth="1200000" inband="yes" propagation="407001">
+      <segment frequency="3000000000" offset="300075" duration="400030" rxpower="7"/>
+      <transmitters>
+        <transmitter nem="6"/>
+      </transmitters>
+    </update>
+  </action>
+  
+  <action>
+    <update now="4030" txtime="4020" transmitterbandwidth="1200000" inband="yes" propagation="199980">
+      <segment frequency="3000000000" offset="299700" duration="500210" rxpower="8"/>
+      <transmitters>
+        <transmitter nem="7"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now="600000" time="500010" duration="12030" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <request now="1400000" frequency="3000000000"/>
+  </action>
+
+
+  <action>
+    <update now="1400200" txtime="1400005" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="65000" duration="40000" rxpower="4"/>
+      <transmitters>
+        <transmitter nem="8"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now="1510015" time="1210015" duration="300000" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <request now="1510015" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <update now="1840000" txtime="1840000" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="0" duration="200000" rxpower="3"/>
+      <transmitters>
+        <transmitter nem="9"/>
+      </transmitters>
+    </update>
+  </action>
+
+
+  <action>
+    <request now="2100000" time="1700000" duration="400000" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <update now="2100010" txtime="2100005" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="0" duration="320000" rxpower="2"/>
+      <transmitters>
+        <transmitter nem="10"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now="4500015" txtime="4500010" transmitterbandwidth="1200000" inband="yes" propagation="0">
+      <segment frequency="3000000000" offset="0" duration="1990" rxpower="3"/>
+      <transmitters>
+        <transmitter nem="11"/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now="4900000" time="4400000" duration="500000" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <request now="6700000" time="6300000" duration="20000" frequency="3000000000"/>
+  </action>
+
+  <action>
+    <request now="7000000" frequency="3000000000"/>
+  </action>
+
+</noisescenario>

@@ -1,0 +1,117 @@
+[1] initialize 
+[1]    rx sensitivity mW: 0
+[1]    bandwidth: 1200000
+[1]    bin usec: 20
+[1]    max offset usec: 300000
+[1]    max propagation usec: 200000
+[1]    max duration usec: 500000
+[1]    time sync threshold: 1000
+[1]    max clamp: yes
+[1]    mode: all
+
+[2] update abs time: 3003005 relative time: 3005
+[2] propagation: 0
+[2] bandwidth: 1200000
+[2] in-band: yes
+[2] frequency: 3000000000
+[2] offset: 0
+[2] duration: 210
+[2] power mW: 1
+[2] transmitter: 1
+[2] reportable bin 0 time: 3003005
+[2] reportable propagation: 0
+[2] reportable span: 210
+[2] reportable in-band: yes
+[2] reportable frequency: 3000000000
+[2] reportable offset: 0
+[2] reportable duration: 210
+[2] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:1
+  161:0
+
+[3] update abs time: 3003005 relative time: 3005
+[3] propagation: 0
+[3] bandwidth: 1200000
+[3] in-band: yes
+[3] frequency: 3000000000
+[3] offset: 0
+[3] duration: 210
+[3] power mW: 1
+[3] transmitter: 2
+[3] reportable bin 0 time: 3003005
+[3] reportable propagation: 0
+[3] reportable span: 210
+[3] reportable in-band: yes
+[3] reportable frequency: 3000000000
+[3] reportable offset: 0
+[3] reportable duration: 210
+[3] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:2
+  161:0
+
+[4] update abs time: 3003005 relative time: 3005
+[4] propagation: 0
+[4] bandwidth: 1200000
+[4] in-band: yes
+[4] frequency: 3000000000
+[4] offset: 0
+[4] duration: 210
+[4] power mW: 1
+[4] transmitter: 3
+[4] reportable bin 0 time: 3003005
+[4] reportable propagation: 0
+[4] reportable span: 210
+[4] reportable in-band: yes
+[4] reportable frequency: 3000000000
+[4] reportable offset: 0
+[4] reportable duration: 210
+[4] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:3
+  161:0
+
+[5] update abs time: 3003005 relative time: 3005
+[5] propagation: 0
+[5] bandwidth: 1200000
+[5] in-band: yes
+[5] frequency: 3000000000
+[5] offset: 0
+[5] duration: 105
+[5] power mW: 1
+[5] transmitter: 1
+[5] reportable bin 0 time: 3003005
+[5] reportable propagation: 0
+[5] reportable span: 105
+[5] reportable in-band: yes
+[5] reportable frequency: 3000000000
+[5] reportable offset: 0
+[5] reportable duration: 105
+[5] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:3
+  161:0
+
+[6] update abs time: 3003005 relative time: 3005
+[6] propagation: 0
+[6] bandwidth: 1200000
+[6] in-band: yes
+[6] frequency: 3000000000
+[6] offset: 0
+[6] duration: 400
+[6] power mW: 1
+[6] transmitter: 2
+[6] reportable bin 0 time: 3003005
+[6] reportable propagation: 0
+[6] reportable span: 400
+[6] reportable in-band: yes
+[6] reportable frequency: 3000000000
+[6] reportable offset: 0
+[6] reportable duration: 400
+[6] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:3
+  161:1
+  171:0
+

@@ -1,0 +1,61 @@
+.TH emaneloglevel 1 "@RELDATE@" "emaneloglevel @VERSION@"
+.SH NAME
+emaneloglevel - EMANE platform NEM server log level controller
+.SH SYNOPSIS
+emaneloglevel [OPTIONS]... EMANEADDR LEVEL
+.SH DESCRIPTON
+.P
+Application sets the logging level of a given platform or NEM remotely.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B \ EMANEADDR
+The IP address of a running platform or NEM
+.TP
+.B \ LEVEL
+The level to be effective after the application finishes.
+Possible levels are:
+.RS
+.B
+0 - No Logging
+.br
+.B
+1 - Abort message - unrecoverable application failure
+.br
+.B
+2 - Error message - recoverable application error
+.br
+.B
+3 - Stats message - show layer statistics
+.br
+.B
+4 - Debug message - general application debugging
+.br
+.RE
+.TP
+.B \--help
+Print usage information and exit.
+.TP
+.B \--nem NEMID
+NEM Id of the tagert NEM hosted on the platform NEM server.  Only the log level of the specified NEM will be changed.
+.SH Example
+Example application command line:
+.RS
+emaneloglevel 172.30.1.1 4
+.RE
+.SH USAGE CAVEAT
+The current log service implementation categories level changes into two groups, everything in a platform or only a specific NEM.  If you wish to turn off all logging for all NEMs except for a subset you must set the entire platform's loglevel to the maximum log level you wish to see and then set those NEMs that you are not interested in to lower log levels.  It is not enough for a specific NEM to be set to a certain log level.  The entire platform must be at the same level or higher in order for log messages to be emitted.
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at cengen dot com>
+.SH SEE ALSO
+emane(1)
+.SH AUTHORS
+DRS CenGen, LLC Columbia, MD
+.br 
+http://cengen.com
+.SH NOTES
+.P
+EMANE is released under the BSD License.

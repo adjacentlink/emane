@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nem SYSTEM "file://@datadir@/dtd/nem.dtd">
+<nem name="BYPASS NEM">
+  <mac definition="bypassmac.xml"/>
+  <phy definition="bypassphy.xml"/>
+  <transport definition="transvirtual.xml">
+    <param name="mask" value="255.255.255.0" />
+    <param name="device" value="emane0" />
+    <param name="devicepath" value="/dev/net/tun" />
+    <param name="bitrate" value="1024" />
+  </transport>
+</nem>

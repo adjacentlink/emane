@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' >
+  <xs:element name='profilescenario'>
+    <xs:complexType>     
+      <xs:sequence>
+        <xs:element name='action' maxOccurs='unbounded'>
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name='gain'>
+                <xs:complexType>
+                  <xs:attribute name='id' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='bearing' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='elevation' type='xs:short' use='required'/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='blockage'>
+                <xs:complexType>
+                  <xs:attribute name='id' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='bearing' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='elevation' type='xs:short' use='required'/>
+                </xs:complexType>
+              </xs:element>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

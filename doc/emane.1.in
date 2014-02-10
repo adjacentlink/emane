@@ -1,0 +1,100 @@
+.TH emane 1 "@RELDATE@" "emane @VERSION@"
+.SH NAME
+emane - EMANE Platform NEM Server
+.SH SYNOPSIS
+emane [OPTIONS]... CONFIG_URI
+.SH DESCRIPTON
+.P
+emane is the Platform NEM server application that creates and manages one or more NEMs. Each NEM is connected to a transport that facilitates the opaque packet entry/exit point for the NEM network stack. Communication between NEMs contained in the same emane platform is done internal to the platform. Communication between multiple emane platforms is done using the Over-The-Air (OTA) multicast channel.
+.P
+CONFIG_URI is the XML containing the Platform NEM Server configuration.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B \--version
+Display version and exit
+.TP
+.B \--loglevel [0,4]
+Set the current application log level.
+.br
+.B 0 - No Logging
+.br
+.B 1 - Abort Level
+.br
+.B 2 - Error Level
+.br
+.B 3 - Stat Level
+.br
+.B 4 - Debug Level
+.TP
+.B \--logserver DESTINATION:PORT
+Enable remote logging and direct all logging messages to the given endpoint.
+.TP
+.B \--realtime
+Run with realtime priority and SCHED_RR.  Must have superuser privledge.
+.TP
+.B \--logfile FILE
+Log to a file
+.TP
+.B \--daemonize 
+Run EMANE in the background
+.TP
+.B \--syslog
+Log to syslogd
+.SH Example
+Example three NEM platform XML. Using an IEEE802.11abg NEMs and virtual transports.
+.br
+.nf
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE platform SYSTEM "file://@datadir@/dtd/platform.dtd">
+
+<platform name="Workstation 1" id="1">
+
+  <param name="otamanagergroup"   value="224.1.2.8:45702"/>
+  <param name="eventservicegroup" value="224.1.2.8:45703"/>
+  <param name="otamanagerdevice"   value="eth1" />
+  <param name="eventservicedevice" value="eth1" />
+
+  <nem name="JTR-001" id="1" definition="ieee80211abgnem.xml">
+    <param name="platformendpoint" value="mane-1:8181"/>
+    <param name="transportendpoint" value="tn-1:8100"/>
+
+    <transport definition="transvirtual.xml">
+      <param name="address" value="172.30.1.1" />
+    </transport>
+  </nem>
+
+  <nem name="JTR-002" id="2" definition="ieee80211abgnem.xml">
+    <param name="platformendpoint" value="mane-1:8281"/>
+    <param name="transportendpoint" value="tn-2:8100"/>
+
+    <transport definition="transvirtual.xml">
+      <param name="address"  value="172.30.2.1" />
+    </transport>
+  </nem>
+
+  <nem name="JTR-003" id="3" definition="ieee80211abgnem.xml">
+    <param name="platformendpoint"  value="mane-1:8381"/>
+    <param name="transportendpoint" value="tn-3:8100"/>
+
+    <transport definition="transvirtual.xml">
+      <param name="address" value="172.30.3.1" />
+    </transport>
+  </nem>
+</platform>
+.fi
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at cengen dot com>
+.SH SEE ALSO
+emanetransport(1) 
+.SH AUTHORS
+DRS CenGen, LLC Columbia, MD
+.br 
+http://cengen.com
+.SH NOTES
+.P
+EMANE is released under the BSD License.

@@ -1,0 +1,23 @@
+<profilescenario>
+  <!-- action 1 -->
+  <action>
+    <gain  id="1" bearing="0" elevation="0"/>
+  </action>
+  
+  <!-- action 2 -->
+  <action>
+    <blockage  id="1" bearing="0" elevation="0"/>
+  </action>
+  
+  <!-- action 3 -->
+  <action>
+    <blockage  id="3" bearing="0" elevation="0"/>
+  </action>
+
+                          
+ <!-- action 3 -->
+  <action>
+    <blockage  id="10" bearing="0" elevation="0"/>
+  </action>
+  
+</profilescenario>

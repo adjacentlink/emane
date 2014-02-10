@@ -1,0 +1,3 @@
+SUBDIRS= mac \
+         phy \
+         shim

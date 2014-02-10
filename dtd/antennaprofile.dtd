@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT antennaprofile (antennapattern?, blockagepattern?)>
+
+<!ELEMENT antennapattern (elevation+)>
+
+<!ELEMENT blockagepattern (elevation+)>
+
+<!ELEMENT elevation (bearing+)>
+<!ATTLIST elevation
+          min CDATA #REQUIRED
+          max CDATA #REQUIRED>
+
+
+<!ELEMENT bearing (gain+)>
+<!ATTLIST bearing
+          min CDATA #REQUIRED
+          max CDATA #REQUIRED>
+
+<!ELEMENT gain EMPTY>
+
+<!ATTLIST gain
+          value CDATA #REQUIRED>
+
+
+
+
+<!ELEMENT profiles (profile+)>
+
+<!ELEMENT profile (placement?)>
+<!ATTLIST profile
+          id CDATA #REQUIRED
+          antennapatternuri CDATA #REQUIRED
+          blockagepatternuri CDATA #IMPLIED>
+
+<!ELEMENT placement EMPTY>
+<!ATTLIST placement
+          north CDATA #REQUIRED
+          east CDATA #REQUIRED
+          up CDATA #REQUIRED>
+
+

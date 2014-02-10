@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nem SYSTEM "file://@datadir@/dtd/nem.dtd">
+<nem name="IEEE 802.11 NEM">
+  <mac definition="ieee80211abgmac.xml"/>
+  <phy>
+    <param name="fixedantennagain"         value="0.0"/>
+    <param name="fixedantennagainenable"   value="on"/>
+    <param name="bandwidth"                value="20M"/>
+    <param name="noisemode"                value="none"/>
+    <param name="propagationmodel"         value="precomputed"/>
+    <param name="systemnoisefigure"        value="4.0"/>
+    <param name="subid"                    value="2"/>
+    <param name="txpower"                  value="0.0"/>
+    <param name="subid"                    value="1"/>
+  </phy>
+  <transport definition="transvirtual.xml"/>
+</nem>

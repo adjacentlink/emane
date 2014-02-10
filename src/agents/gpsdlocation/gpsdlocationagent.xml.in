@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE eventagent SYSTEM "file://@datadir@/dtd/eventagent.dtd">
+<eventagent name="gpsdlocationagent" library="gpsdlocationagent">
+  <param name="gpsdconnectionenabled" value="off"/>
+  <param name="pseudoterminalfile" value="/tmp/gpsdlocation.pty"/>
+  <param name="gpsdcontrolsocket" value="/tmp/gpsd.control"/>
+</eventagent>

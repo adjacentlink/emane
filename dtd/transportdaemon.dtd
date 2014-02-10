@@ -1,0 +1,14 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT transportdaemon ((param|paramlist)*, instance+)>
+
+<!ENTITY % param SYSTEM "param.dtd">
+%param;
+
+<!ELEMENT instance ((param|paramlist)*, transport)>
+<!ATTLIST instance
+          nemid CDATA #REQUIRED>
+
+<!ELEMENT transport (param|paramlist)*>
+<!ATTLIST transport
+          definition CDATA #REQUIRED>

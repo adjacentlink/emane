@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE eventdaemon SYSTEM "file://@datadir@/dtd/eventdaemon.dtd">
+<eventdaemon name="EMANE Event Daemon" nemid="1">
+  <param name="eventservicegroup" value="224.1.2.8:45703"/>
+  <agent definition="gpsdlocationagent.xml"/>
+</eventdaemon>

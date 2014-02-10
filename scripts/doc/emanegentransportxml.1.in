@@ -1,0 +1,74 @@
+.TH emanegentransportxml 1 "@RELDATE@" "emanegentransportxml @VERSION@"
+.SH NAME
+emanegentransportxml - EMANE transport daemon XML generator
+.SH SYNOPSIS
+emanegentransportxml [OPTIONS]... URI
+.SH DESCRIPTON
+.P
+Application generates XML configuration file(s) for virtual interface network entry point(s). Each EMANE platform contains one or more Network Emulation Modules (NEMs). In order to gain access to each of the NEMs, a virtual interface is configured to be brought up (either within the platform configuration file or the nem configuration file). This application scans through the platform and nem configuration files and extracts interface-specific information into separate files. The files can then be used as configuration input into the emanetund application to create an NEM-to-emanetund pair, establishing a 'tunnel' for network traffic.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B URI
+URI of the XML containing the NEM configuration for the platform.
+.TP
+.B \--outpath LOCATION
+Specifies output location for generated xml files
+.br
+Default: current working directory
+.TP
+.B \--dtdpath LOCATION
+Specifies the location of the directory containing DTDs
+.br
+Default: directory in the SYSTEM declaration in platform URI
+.TP
+.B \--dtd DTD
+Specifies the DTD file to validate against
+.br
+Default: transport.dtd
+.TP
+.B \--debug
+Enable debug output
+.TP
+.B \--help
+Print usage information and exit.
+.SH Example
+Example application command line:
+.RS
+emanegentransportxml --platform /var/www/html/xml/platform.xml
+.RE
+.P
+Example transport XML output:
+.RS
+.nf
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE transportdaemon SYSTEM "file://@datadir@/dtd/transportdaemon.dtd">
+<transportdaemon>
+  <instance nemid="1">
+    <param name="platformendpoint" value="localhost:50001"/>
+    <param name="transportendpoint" value="localhost:40001"/>
+    <transport definition="transvirtual.xml">
+      <param name="bitrate" value="0"/>
+      <param name="address" value="172.30.1.1"/>
+      <param name="device" value="emane0"/>
+    </transport>
+  </instance>
+</transportdaemon>
+
+.fi
+.RE
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at cengen dot com>
+.SH SEE ALSO
+emane(1) emanetund(1) 
+.SH AUTHORS
+DRS CenGen, LLC Columbia, MD
+.br 
+http://cengen.com
+.SH NOTES
+.P
+EMANE is released under the BSD License.

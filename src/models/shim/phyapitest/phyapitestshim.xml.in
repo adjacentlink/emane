@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE shim SYSTEM "file://@datadir@/dtd/shim.dtd">
+<shim name="PHYAPITest SHIM" library="phyapitestshim">
+  <param name="packetsize"         value="1000" />
+  <param name="packetrate"         value="1" />
+  <param name="bandwidth"          value="1M" />
+  <param name="destination"        value="0xFFFF" />
+  <param name="antennaprofileid"   value="1" />
+  <param name="antennaazimuth"     value="0" />
+  <param name="antennaelevation"   value="0" />
+  <param name="txpower"            value="0" />
+  <paramlist name="transmitter">
+    <item value="21:3"/>
+    <item value="22:6"/>
+    <item value="23:9"/>    
+  </paramlist>
+  <paramlist name="frequency">
+    <item value="123M:1000:0"/>
+    <item value="124M:1000:1000"/>
+    <item value="125M:1000:2000"/>
+  </paramlist>
+</shim>

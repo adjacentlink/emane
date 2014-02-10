@@ -1,0 +1,9 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT phy (param|paramlist)*>
+<!ATTLIST phy
+          name CDATA #IMPLIED
+          library NMTOKEN #IMPLIED>
+
+<!ENTITY % param SYSTEM "param.dtd">
+%param;

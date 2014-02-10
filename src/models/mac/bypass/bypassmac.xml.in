@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mac SYSTEM "file://@datadir@/dtd/mac.dtd">
+<mac name="bypassmac" library="bypassmaclayer"/>

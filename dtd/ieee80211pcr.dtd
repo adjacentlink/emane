@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT pcr (table+)>
+
+<!ELEMENT table (datarate+)>
+
+<!ELEMENT datarate (row+)>
+
+<!ATTLIST table
+          pktsize  CDATA #REQUIRED>
+
+<!ATTLIST datarate
+          index  CDATA #REQUIRED>
+
+<!ELEMENT row EMPTY>
+
+<!ATTLIST row
+          sinr CDATA #REQUIRED
+          por  CDATA #REQUIRED>

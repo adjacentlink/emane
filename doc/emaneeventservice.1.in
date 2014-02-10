@@ -1,0 +1,73 @@
+.TH emaneeventservice 1 "@RELDATE@" "emaneeventservice @VERSION@"
+.SH NAME
+emaneeventservice - EMANE Event Service
+.SH SYNOPSIS
+emaneeventservice [OPTIONS]... CONFIG_URI
+.SH DESCRIPTION
+.P
+emaneeventservice creates and manages event generators. These generators create events that are transmitted to targeted NEM components.
+.P
+CONFIG_URI is the XML containing the Event Service configuration.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B \--version
+Display version and exit
+.TP
+.B \--loglevel [0,4]
+Set the current application log level.
+.br
+.B 0 - No Logging
+.br
+.B 1 - Abort Level
+.br
+.B 2 - Error Level
+.br
+.B 3 - Stat Level
+.br
+.B 4 - Debug Level
+.TP
+.B \--realtime
+Run with realtime priority and SCHED_RR.  Must have superuser privledge.
+.TP
+.B \--starttime
+Set the start time HH:MM:SS (ex. 09:30:00)
+.TP
+.B \--nextday
+Set the start time to start the test on the next day, after midnight
+.TP
+.B \--logserver DESTINATION:PORT
+Enable remote logging and direct all logging messages to the given endpoint.
+.TP
+.B \--logfile FILE
+Log to a file
+.TP
+.B \--daemonize 
+Run EMANE in the background
+.TP
+.B \--syslog
+Log to syslogd
+.SH Example
+Example event service XML using the mitremobility generator
+.br
+.nf
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE eventservice SYSTEM "http://configserver/dtd/eventservice.dtd">
+<eventservice name="Sample Event Service" deployment="deployment.xml">
+  <param name="eventservicegroup" value="224.1.2.8:45703"/>
+  <generator name="Mobility Model Generator" definition="mitremobilitygenerator.xml"/>
+</eventservice>
+.fi
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at cengen dot com>
+.SH AUTHORS
+DRS CenGen, LLC Columbia, MD
+.br
+http://cengen.com
+.SH NOTES
+.P
+EMANE is released under the BSD License.

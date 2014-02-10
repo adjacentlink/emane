@@ -1,0 +1,43 @@
+<propagationscenario nem='1' algorithm='2ray'>
+  <action>
+    <pathloss>
+      <entry nem='2' pathloss='90'/>
+    </pathloss>
+  </action>
+
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+      </pov>
+
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+
+      <pov nem="3">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+
+      <pov nem="4">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+
+  <action>
+    <request nem='2'>
+      <segment frequency="3000000000"/>
+      <segment frequency="3001000000"/>
+    </request>
+  </action>
+
+
+  <action>
+    <request nem='3'>
+      <segment frequency="3000000000"/>
+      <segment frequency="3001000000"/>
+    </request>
+  </action>
+</propagationscenario>

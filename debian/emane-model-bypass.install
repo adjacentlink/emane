@@ -1,0 +1,4 @@
+/usr/lib/libbypassmaclayer.so
+/usr/lib/libbypassphylayer.so
+/usr/share/emane/xml/models/mac/bypass/*
+/usr/share/emane/xml/models/phy/bypass/*

@@ -1,0 +1,114 @@
+<phyupstreamscenario nem="1">
+
+  <!-- action 1 -->
+  <action>
+    <configure>
+      <paramlist name='propagationmodel'>
+        <item value='freespace'/>
+      </paramlist>
+      <paramlist name='fixedantennagainenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='fixedantennagain'>
+        <item value='5'/>
+      </paramlist>
+      <paramlist name='systemnoisefigure'>
+        <item value='4'/>
+      </paramlist>
+      <paramlist name='noisemode'>
+        <item value='none'/>
+      </paramlist>
+      <paramlist name='bandwidth'>
+        <item value='1.2M'/>
+      </paramlist>
+      <paramlist name='frequency'>
+        <item value='250M'/>
+      </paramlist>
+      <paramlist name='frequencyofinterest'>
+        <item value='250M'/>
+        <item value='2G'/>
+        <item value='3G'/>
+      </paramlist>
+      <paramlist name='subid'>
+        <item value='1'/>
+      </paramlist>
+    </configure>
+  </action>
+
+  <!-- action 2 -->
+  <action>
+    <pathloss>
+      <entry nem='2' pathloss='90'/>
+      <entry nem='3' pathloss='100'/>
+      <entry nem='4' pathloss='100'/>
+    </pathloss>
+  </action>
+
+
+  <!-- action 3 -->
+  <action>                        
+    <packet now='30000005' txtime='30000000' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="2500000000" offset="0" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+
+  <!-- action 4 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.512888" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 5 -->
+  <action>                        
+    <packet now='30000025' txtime='30000020' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="3000000000" offset="0" duration="100"/>
+        <segment frequency="250000000" offset="200" duration="100"/>
+        <segment frequency="2000000000" offset="400" duration="100"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='5'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+
+  <!-- action 6 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.372888" altitude="3.0"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 7 -->
+  <action>                        
+    <packet now='30000045' txtime='30000040' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="3000000000" offset="0" duration="100"/>
+        <segment frequency="250000000" offset="200" duration="100"/>
+        <segment frequency="2000000000" offset="400" duration="100"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='5'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+</phyupstreamscenario>

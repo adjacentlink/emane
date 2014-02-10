@@ -1,0 +1,12 @@
+[1] gain  profileId: 1 bearing: 0 elevation: 0
+  gain: 5
+
+[2] blockage  profileId: 1 bearing: 0 elevation: 0
+  blockage: N/A
+
+[3] blockage  profileId: 3 bearing: 0 elevation: 0
+  blockage: 0
+
+[4] blockage  profileId: 10 bearing: 0 elevation: 0
+  blockage: Bad profile id
+

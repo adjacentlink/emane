@@ -1,0 +1,73 @@
+.TH emaneevntd 1 "@RELDATE@" "emaneevntd @VERSION@"
+.SH NAME
+emaneeventd - EMANE event daemon
+.SH SYNOPSIS
+emaneevntd [OPTIONS]... CONFIG_URI
+.SH DESCRIPTON
+.P
+emaneeventd application is a container application that creates and manages event agents. These agents register to receive events and act upon these events to allow external applications to use the event data. One example is the gpsdlocationagent. This agent receives location events and translates those events to NMEA stings which it communicates to gpsd by creating a pseudo terminal and acting like a GPS receiver.
+.P
+CONFIG_URI is the XML containing the event daemon configuration.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B \--version
+Display version and exit
+.TP
+.B \--loglevel [0,4]
+Set the current application log level.
+.br
+.B 0 - No Logging
+.br
+.B 1 - Abort Level
+.br
+.B 2 - Error Level
+.br
+.B 3 - Stat Level
+.br
+.B 4 - Debug Level
+.TP
+.B \--logserver DESTINATION:PORT
+Enable remote logging and direct all logging messages to the given endpoint.
+.TP
+.B \--realtime
+Run with realtime priority and SCHED_RR.  Must have superuser privledge.
+.TP
+.B \--logfile FILE
+Log to a file
+.TP
+.B \--daemonize
+Run EMANE in the background
+.TP
+.B \--syslog
+Log to syslogd
+.SH Example
+Example event daemon XML loading a single agent, gpsdlocationagent.
+.br
+.nf
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE eventdaemon SYSTEM "file://@datadir@/dtd/eventdaemon.dtd">
+
+<eventdaemon name="EMANE Event Daemon" nemid="1">
+  <param name="eventservicegroup" value="224.1.2.8:45703"/>
+
+  <agent definition="gpsdlocationagent.xml"/>
+
+</eventdaemon>
+
+.fi
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at cengen dot com>
+.SH SEE ALSO
+emane(1) 
+.SH AUTHORS
+DRS CenGen, LLC Columbia, MD
+.br 
+http://cengen.com
+.SH NOTES
+.P
+EMANE is released under the BSD License.

@@ -1,0 +1,352 @@
+[1] initialize 
+[1]    rx sensitivity mW: 0
+[1]    bandwidth: 1200000
+[1]    bin usec: 20
+[1]    max offset usec: 300000
+[1]    max propagation usec: 200000
+[1]    max duration usec: 500000
+[1]    time sync threshold: 1000
+[1]    max clamp: yes
+[1]    mode: all
+
+[2] update abs time: 3003005 relative time: 3005
+[2] propagation: 0
+[2] bandwidth: 1200000
+[2] in-band: yes
+[2] frequency: 3000000000
+[2] offset: 0
+[2] duration: 210
+[2] power mW: 1
+[2] transmitter: 1
+[2] reportable bin 0 time: 3003005
+[2] reportable propagation: 0
+[2] reportable span: 210
+[2] reportable in-band: yes
+[2] reportable frequency: 3000000000
+[2] reportable offset: 0
+[2] reportable duration: 210
+[2] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:1
+  161:0
+
+[3] update abs time: 3003008 relative time: 3008
+[3] propagation: 0
+[3] bandwidth: 1200000
+[3] in-band: yes
+[3] frequency: 3000000000
+[3] offset: 0
+[3] duration: 217
+[3] power mW: 1
+[3] transmitter: 2
+[3] reportable bin 0 time: 3003008
+[3] reportable propagation: 0
+[3] reportable span: 217
+[3] reportable in-band: yes
+[3] reportable frequency: 3000000000
+[3] reportable offset: 0
+[3] reportable duration: 217
+[3] reportable rx power dBm: 0
+ Frequency: 3000000000
+  150:2
+  161:1
+  162:0
+
+[4] update abs time: 3003025 relative time: 3025
+[4] propagation: 0
+[4] bandwidth: 1200000
+[4] in-band: yes
+[4] frequency: 3000000000
+[4] offset: 0
+[4] duration: 500
+[4] power mW: 1
+[4] transmitter: 3
+[4] reportable bin 0 time: 3002750
+[4] reportable propagation: 0
+[4] reportable span: 500
+[4] reportable in-band: yes
+[4] reportable frequency: 3000000000
+[4] reportable offset: 0
+[4] reportable duration: 500
+[4] reportable rx power dBm: 0
+ Frequency: 3000000000
+  137:1
+  150:3
+  161:2
+  162:1
+  163:0
+
+[5] update abs time: 3003055 relative time: 3055
+[5] propagation: 610
+[5] bandwidth: 1200000
+[5] in-band: yes
+[5] frequency: 3000000000
+[5] offset: 300
+[5] duration: 1005
+[5] power mW: 5
+[5] transmitter: 4
+[5] reportable bin 0 time: 3003045
+[5] reportable propagation: 610
+[5] reportable span: 1005
+[5] reportable in-band: yes
+[5] reportable frequency: 3000000000
+[5] reportable offset: 300
+[5] reportable duration: 1005
+[5] reportable rx power dBm: 6.9897
+ Frequency: 3000000000
+  137:1
+  150:3
+  161:2
+  162:1
+  163:0
+  197:5
+  248:0
+
+[6] update abs time: 3003200 relative time: 3200
+[6] propagation: 200
+[6] bandwidth: 1200000
+[6] in-band: yes
+[6] frequency: 3000000000
+[6] offset: 200
+[6] duration: 600
+[6] power mW: 5
+[6] transmitter: 5
+[6] reportable bin 0 time: 3003055
+[6] reportable propagation: 200
+[6] reportable span: 600
+[6] reportable in-band: yes
+[6] reportable frequency: 3000000000
+[6] reportable offset: 200
+[6] reportable duration: 600
+[6] reportable rx power dBm: 6.9897
+ Frequency: 3000000000
+  137:1
+  150:3
+  161:2
+  162:1
+  163:0
+  172:5
+  197:10
+  203:5
+  248:0
+
+[7] request abs time: 3003400 relative time: 3400 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 3002300 response timepoint: 3002300
+  22:1
+  35:3
+  46:2
+  47:1
+  48:0
+
+[8] request abs time: 3003450 relative time: 3450 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint:  (now - duration) response timepoint: 2503460
+  24964:1
+  24977:3
+  24988:2
+  24989:1
+  24990:0
+  24999:5
+
+[9] update abs time: 3003700 relative time: 3700
+[9] propagation: 407001
+[9] bandwidth: 1200000
+[9] in-band: yes
+[9] frequency: 3000000000
+[9] offset: 300075
+[9] duration: 400030
+[9] power mW: 7
+[9] transmitter: 6
+[9] reportable bin 0 time: 3003700
+[9] reportable propagation: 200000
+[9] reportable span: 400030
+[9] reportable in-band: yes
+[9] reportable frequency: 3000000000
+[9] reportable offset: 300000
+[9] reportable duration: 400030
+[9] reportable rx power dBm: 8.45098
+ Frequency: 3000000000
+  137:1
+  150:3
+  161:2
+  162:1
+  163:0
+  172:5
+  197:10
+  203:5
+  248:0
+  25185:7
+  45187:0
+
+[10] update abs time: 3004030 relative time: 4030
+[10] propagation: 199980
+[10] bandwidth: 1200000
+[10] in-band: yes
+[10] frequency: 3000000000
+[10] offset: 299700
+[10] duration: 500210
+[10] power mW: 8
+[10] transmitter: 7
+[10] reportable bin 0 time: 3004020
+[10] reportable propagation: 199980
+[10] reportable span: 500000
+[10] reportable in-band: yes
+[10] reportable frequency: 3000000000
+[10] reportable offset: 299700
+[10] reportable duration: 500000
+[10] reportable rx power dBm: 9.0309
+ Frequency: 3000000000
+  137:1
+  150:3
+  161:2
+  162:1
+  163:0
+  172:5
+  197:10
+  203:5
+  248:0
+  25185:15
+  45187:8
+  50185:0
+
+[11] request abs time: 3600000 relative time: 600000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 3500010 response timepoint: 3500000
+  185:15
+
+[12] request abs time: 4400000 relative time: 1400000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint:  (now - duration) response timepoint: 3900000
+  0:15
+  187:8
+  5185:0
+
+[13] update abs time: 4400200 relative time: 1400200
+[13] propagation: 0
+[13] bandwidth: 1200000
+[13] in-band: yes
+[13] frequency: 3000000000
+[13] offset: 65000
+[13] duration: 40000
+[13] power mW: 4
+[13] transmitter: 8
+[13] reportable bin 0 time: 4400005
+[13] reportable propagation: 0
+[13] reportable span: 40000
+[13] reportable in-band: yes
+[13] reportable frequency: 3000000000
+[13] reportable offset: 65000
+[13] reportable duration: 40000
+[13] reportable rx power dBm: 6.0206
+ Frequency: 3000000000
+  0:4
+  251:0
+  25185:15
+  45187:8
+  50185:0
+  73250:4
+
+[14] request abs time: 4510015 relative time: 1510015 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 4210015 response timepoint: 4210000
+  12750:4
+  14751:0
+
+[15] request abs time: 4510015 relative time: 1510015 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint:  (now - duration) response timepoint: 4010020
+  22749:4
+  24750:0
+
+[16] update abs time: 4840000 relative time: 1840000
+[16] propagation: 0
+[16] bandwidth: 1200000
+[16] in-band: yes
+[16] frequency: 3000000000
+[16] offset: 0
+[16] duration: 200000
+[16] power mW: 3
+[16] transmitter: 9
+[16] reportable bin 0 time: 4840000
+[16] reportable propagation: 0
+[16] reportable span: 200000
+[16] reportable in-band: yes
+[16] reportable frequency: 3000000000
+[16] reportable offset: 0
+[16] reportable duration: 200000
+[16] reportable rx power dBm: 4.77121
+ Frequency: 3000000000
+  0:4
+  251:0
+  17000:3
+  27000:15
+  45187:8
+  50185:0
+  73250:4
+
+[17] request abs time: 5100000 relative time: 2100000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 4700000 response timepoint: 4700000
+  7000:3
+  17000:0
+
+[18] update abs time: 5100010 relative time: 2100010
+[18] propagation: 0
+[18] bandwidth: 1200000
+[18] in-band: yes
+[18] frequency: 3000000000
+[18] offset: 0
+[18] duration: 320000
+[18] power mW: 2
+[18] transmitter: 10
+[18] reportable bin 0 time: 5100005
+[18] reportable propagation: 0
+[18] reportable span: 320000
+[18] reportable in-band: yes
+[18] reportable frequency: 3000000000
+[18] reportable offset: 0
+[18] reportable duration: 320000
+[18] reportable rx power dBm: 3.0103
+ Frequency: 3000000000
+  0:4
+  251:0
+  17000:3
+  27000:0
+  30000:2
+  46001:8
+  50185:0
+  73250:4
+
+[19] update abs time: 7500015 relative time: 4500015
+[19] propagation: 0
+[19] bandwidth: 1200000
+[19] in-band: yes
+[19] frequency: 3000000000
+[19] offset: 0
+[19] duration: 1990
+[19] power mW: 3
+[19] transmitter: 11
+[19] reportable bin 0 time: 7500010
+[19] reportable propagation: 0
+[19] reportable span: 1990
+[19] reportable in-band: yes
+[19] reportable frequency: 3000000000
+[19] reportable offset: 0
+[19] reportable duration: 1990
+[19] reportable rx power dBm: 4.77121
+ Frequency: 3000000000
+  0:3
+  100:4
+  251:0
+  17000:3
+  27000:0
+  30000:2
+  46001:8
+  50185:0
+  73250:4
+
+[20] request abs time: 7900000 relative time: 4900000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 7400000 response timepoint: 7400000
+  5000:3
+  5100:0
+
+[21] request abs time: 9700000 relative time: 6700000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint: 9300000 response timepoint: 9300000
+
+[22] request abs time: 10000000 relative time: 7000000 bin size: 20 rx sensativity (mW): 0 signal in noise: yes
+ Frequency: 3000000000 request timepoint:  (now - duration) response timepoint: 9500000
+

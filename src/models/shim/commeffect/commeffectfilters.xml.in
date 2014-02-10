@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE commeffect SYSTEM "file://@datadir@/dtd/commeffectfilters.dtd"> 
+
+<commeffect>
+  <filter> <!-- any ipv4 udp olsr (port 698) packet -->
+    <description></description>
+    <target>
+      <!-- optional ethernet protocol field, types supported "ipv4" where no entry implies don't care -->
+      <ipv4 src="0.0.0.0" dst="0.0.0.0" len="0" ttl="0" tos="0">
+        <!-- optional attribute src "0.0.0.0" to "255.255.255.255" where "0.0.0.0" implies don't care -->
+        <!-- optional attribute dst "0.0.0.0" to "255.255.255.255" where "0.0.0.0" implies don't care -->
+        <!-- optional attribute len "0" to "65535" where "0" implies don't care -->
+        <!-- optional attribute ttl "0" to "255" where "0" implies don't care -->
+        <!-- optional attribute tos "0" to "255" where "0" implies don't care -->
+
+        <!-- optional ip protocol name field, types supported "udp" where no entry implies don't care -->
+        <udp sport="0" dport="698"/>
+          <!-- optional attribute sport "0" to "65535" where "0" implies don't care -->
+          <!-- optional attribute dport "0" to "65535" where "0" implies don't care -->
+
+        <!-- optional ip protocol type field, range supported "0" to "255" where no entry implies don't care -->
+        <protocol type="1"/>
+      </ipv4>
+    </target>
+
+    <!-- mandatory effect, one per target set -->
+    <effect>
+      <!-- probabiliy of loss range "0" to "100" -->
+      <loss>0</loss>
+
+      <!-- probabiliy of duplicates range "0" to "65535", anything over 100% will force dups -->
+      <duplicate>0</duplicate>
+
+      <!-- latency in seconds and micro seconds "0" to "max unsigned int" -->
+      <latency sec="0" usec="0"/>
+
+      <!-- jitter in seconds and micro seconds "0" to "max unsigned int" -->
+      <jitter  sec="0" usec="0"/>
+    </effect>
+  </filter>
+  
+  <filter> <!-- any ipv4 udp packet -->
+    <description></description>
+    <target>
+      <ipv4>
+        <udp/>
+      </ipv4>
+    </target>
+    <effect>
+      <loss>0</loss>
+      <duplicate>0</duplicate>
+      <latency sec="0" usec="0"/>
+      <jitter  sec="0" usec="0"/>
+    </effect>
+  </filter>
+ 
+  <filter> <!-- any ipv4 icmp (ping) packet -->
+    <description></description>
+    <target>
+      <ipv4>
+        <protocol type="1"/>
+      </ipv4>
+    </target>
+    <effect>
+      <loss>0</loss>
+      <duplicate>50</duplicate>
+      <latency sec="0" usec="1000"/>
+      <jitter  sec="0" usec="1000"/>
+    </effect>
+  </filter>
+ 
+  <filter> <!-- any ipv4 packet -->
+    <description></description>
+    <target>
+      <ipv4/>
+    </target>
+    <effect>
+      <loss>0</loss>
+      <duplicate>0</duplicate>
+      <latency sec="0" usec="0"/>
+      <jitter  sec="0" usec="0"/>
+      <unicastbitrate>10000</unicastbitrate>
+      <broadcastbitrate>1000</broadcastbitrate>
+    </effect>
+  </filter>
+  
+  
+  <filter> <!-- any pkt, ipv4, ipv6, arp ... -->
+    <description></description>
+    <target/>
+    <effect>
+      <loss>0</loss>
+      <duplicate>0</duplicate>
+      <latency sec="0" usec="0"/>
+      <jitter  sec="0" usec="0"/>
+    </effect>
+  </filter>
+</commeffect>
+
+
+
