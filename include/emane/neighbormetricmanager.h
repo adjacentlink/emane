@@ -55,9 +55,9 @@ namespace EMANE
      /**
       * Creates a NeighborMetricManager instance
       *
-      * @param id nem id
+      * @param nemId NEM id
       */
-      NeighborMetricManager(NEMId id);
+      NeighborMetricManager(NEMId nemId);
     
      /**
       * Destroys an instance

@@ -53,6 +53,7 @@ namespace EMANE
      * about a registered statistic table.
      *
      * @param sName Statistic name
+     * @param properties Table properties
      * @param sDescription Statistic description
      */
     StatisticTableInfo(const std::string & sName,

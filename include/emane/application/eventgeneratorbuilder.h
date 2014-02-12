@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -52,27 +52,27 @@ namespace EMANE
      *
      * @brief Provides methods for constructing event generators and a
      * manager to contain and control them as a group.
-     *
-     * Reference:
-     * Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
-     * Design Patterns: Elements of Reusable Object-Oriented Software.
-     * Addison-Wesley, Reading MA, 1995
-     * Builder, p 97
      */
     class EventGeneratorBuilder
     {
     public:
+      /**
+       * Creates an EventGeneratorBuilder instance
+       */
       EventGeneratorBuilder();
     
+      /**
+       * Destroys an instance
+       */
       ~EventGeneratorBuilder();
     
       /**
-       * Build an EventGeneratorManager
+       * Builds an EventGeneratorManager
        *
        * @param generators the generators to manage
        * @param request configuration update
        *
-       * @return Smart pointer to an initialized and configured 
+       * @return Unique pointer to an initialized and configured 
        *         EventGeneratorManager
        *
        * @throw InitializeException when an error occurs during
@@ -87,12 +87,14 @@ namespace EMANE
                                  const ConfigurationUpdateRequest & request);
 
       /**
-       * Build an EventGenerator
+       * Builds an EventGenerator
        *
        * @param sLibraryFile Name of the dll containing the generator
-       * @param pItems pointer to ConfigurationItems list
+       * @param request configuration update
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
        *
-       * @return Smart pointer an initialized and configure
+       * @return Unique pointer an initialized and configure
        * EventGenerator
        *
        * @throw Utils::FactoryException when a DLL load error occurs.

@@ -55,9 +55,9 @@ namespace EMANE
     /**
      * Process upstream control message
      *
-     * @param ControlMessage Upstream control message
+     * @param msgs ControlMessage Upstream control message
      */
-    virtual void processUpstreamControl(const ControlMessages &)  = 0;
+    virtual void processUpstreamControl(const ControlMessages & msgs) = 0;
 
   protected:
     UpstreamControlTransport(){}

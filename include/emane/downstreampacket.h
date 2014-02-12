@@ -59,7 +59,7 @@ namespace EMANE
      *
      * @param info The PacketInfo to use
      * @param buf Pointer to the buffer
-     * @param len Length of the buffer
+     * @param size Length of the buffer
      */
     DownstreamPacket(const PacketInfo & info, const void * buf, size_t size);
 
@@ -134,7 +134,7 @@ namespace EMANE
     /**
      * Attach an event to the packet.
      *
-     * @param nemdId NEM id of the event target. Use 0 for all NEMs
+     * @param nemId NEM id of the event target. Use 0 for all NEMs
      * @param event Event to be attached
      */
     void attachEvent(NEMId nemId, const Event & event);

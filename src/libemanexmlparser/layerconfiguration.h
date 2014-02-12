@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -60,7 +60,7 @@ namespace EMANE
     /**
      * Constructor
      *
-     * @param pParser Pointer to the Configuration Parser
+     * @param sType Layer type
      */
     LayerConfiguration(std::string sType);
 
@@ -135,7 +135,8 @@ namespace EMANE
     /**
      * Process the children of the specifie node
      * 
-     * @param pNode Pointer to the node
+     * @param pParent Pointer to the parent
+     * @param paramMap Parameter map
      *
      * @exception ParseException ValidateException
      */
@@ -154,7 +155,7 @@ namespace EMANE
     /**
      * Parse the param node
      * 
-     * @param ParamMap to store parsed value
+     * @param paramMap to store parsed value
      * @param pParamNode Pointer to the param node
      *
      */
@@ -163,8 +164,8 @@ namespace EMANE
     /**
      * Parse the param node
      * 
-     * @param ParamMap to store parsed values
-     * @param pParamNode Pointer to the param node
+     * @param paramMap to store parsed values
+     * @param pParamlistNode Pointer to the param list node
      *
      */
     void doProcessParamlist(ParamMap & paramMap, 

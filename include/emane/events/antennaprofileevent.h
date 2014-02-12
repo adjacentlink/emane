@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,28 +43,76 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class AntennaProfileEvent
+     *
+     * @brief An antenna profile event is used to set the antenna profile selection
+     * and pointing information for one or more NEMs.
+     */
     class AntennaProfileEvent : public Event
     {
     public:
       /**
-       * @throw SerializationException
+       * Creates an AntennaProfileEvent instance from a serialization
+       *
+       * @param serialization Message serialization
+       *
+       * @throw SerializationException when a valid message cannot be de-serialized
        */
-      AntennaProfileEvent(const std::string & sSerialization);
+      AntennaProfileEvent(const Serialization & serialization);
       
-      AntennaProfileEvent(const AntennaProfiles & antennaprofilees);
-      
+      /**
+       * Creates an AntennaProfileEvent instance
+       *
+       * @param  antennaProfiles One or more AntennaProfile instances
+       */
+      AntennaProfileEvent(const AntennaProfiles & antennaProfiles);
+
+      /**
+       * Creates an AntennaProfileEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       AntennaProfileEvent(const AntennaProfileEvent & rhs);
-      
+
+      /**
+       * Sets an AntennaProfileEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       AntennaProfileEvent & operator=(const AntennaProfileEvent & rhs);
-      
+
+      /**
+       * Creates an AntennaProfileEvent by moving
+       *
+       * @param rval Instance to move
+       */     
       AntennaProfileEvent(AntennaProfileEvent && rval);
-      
+
+      /**
+       * Sets an AntennaProfileEvent by moving
+       *
+       * @param rval Instance to move
+       */ 
       AntennaProfileEvent & operator=(AntennaProfileEvent && rval);
-      
+
+      /**
+       * Destroys an instance
+       */
       ~AntennaProfileEvent();
 
+      /**
+       * Serializes the instance
+       *
+       * @throw SerializationException if the instance cannot be serialized
+       */
       Serialization serialize() const override;
-      
+
+      /**
+       * Gets the antenna profile entries
+       *
+       * @return antenna profile entries
+       */
       const AntennaProfiles & getAntennaProfiles() const;
       
       enum {IDENTIFIER = EMANE_EVENT_ANTENNA_PROFILE};

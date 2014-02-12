@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -201,8 +201,6 @@ EMANE::Models::IEEE80211ABG::DownstreamQueue::getMaxCapacity(std::uint8_t u8Cate
 /**
  *
  * @brief get the max number of entries for all queues
- *
- * @param u8Category queue index
  *
  * @retval max number of entries
  * 

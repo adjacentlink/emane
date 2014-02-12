@@ -117,7 +117,6 @@ namespace EMANE
      * @param level Log level of the message
      * @param fn Callable returning Strings
      * @param fmt format string (see printf)
-     * @param ap Variable argument list data (see vprintf)
      */
     template <typename Function>
     void logfn(LogLevel level, Function fn,const char *fmt, ...)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -44,23 +44,49 @@ namespace EMANE
   {
     namespace EEL
     {
+      /**
+       * @class EventInfo
+       *
+       * @brief Contains event information to be published
+       */
       class EventInfo
       {
       public:
+        /**
+         * Creates an EventInfo instance
+         *
+         * @param nemId NEM Id of the event target
+         * @param eventId Event Id of the event to publish
+         * @param serialization Serialized event data
+         */
         EventInfo(const NEMId & nemId,
                   const EventId & eventId,
                   const Serialization & serialization);
         
+        /**
+         * Destroys an instance
+         */
         ~EventInfo();
         
-        PlatformId getPlatformId() const;
-        
+        /**
+         * Gets the NEM Id of the event target
+         *
+         * @return NEM Id
+         */
         NEMId getNEMId() const;
         
-        ComponentType getComponentType() const;
-        
+        /**
+         * Gets the event Id
+         *
+         * @return event Id
+         */
         EventId getEventId() const;
         
+        /**
+         * Gets the serialized event data
+         *
+         * @return serialized data
+         */
         const Serialization & getSerialization() const;
         
       private:

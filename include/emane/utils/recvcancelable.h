@@ -39,6 +39,17 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * Utility function for turning a blocking read call into a cancellation point in OSX
+     *
+     * @param ref ACE socket reference
+     * @param buf Output buffer
+     * @param n Output buffer size
+     * @param addr Reference to hold sender's address
+     * @param flags socket read flags
+     *
+     * @return number bytes read
+     */
     template <typename T>
     ssize_t recvCancelable(T & ref, void * buf, size_t n, ACE_Addr &addr, int flags = 0)
     {

@@ -69,7 +69,7 @@ namespace EMANE
      * @param u32QueueSize The queue size
      * @param u32QueueDepth The queue depth
      * @param u32NumDiscards The queue discards
-     * @param delayTime The queue delay time
+     * @param queueDelay The queue delay time
      *
      */
     void updateQueueMetric(std::uint16_t u16QueueId,

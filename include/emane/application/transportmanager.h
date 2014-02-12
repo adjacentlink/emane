@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -55,9 +55,11 @@ namespace EMANE
      */
     class TransportManager : public Component,
                              public Buildable
-
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~TransportManager(){}
       
       /**

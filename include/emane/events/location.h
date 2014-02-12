@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,19 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class Location
+     *
+     * @brief A location entry holds an NEM Id, that NEM's position 
+     * information and optional orientation and velocity.
+
+     *
+     * @see Position
+     * @see Orientation
+     * @see Velocity
+     *
+     * @note Instances are immutable
+     */
     class Location
     {
     public:
@@ -52,13 +65,35 @@ namespace EMANE
                const Position & position,
                std::pair<const Orientation &, bool> orientation,
                std::pair<const Velocity &, bool> velocity);
-      
+     
+      /**
+       * Gets the NEM Id
+       *
+       * @return NEM Id
+       */
       NEMId getNEMId() const;
       
+      /**
+       * Gets the NEM position
+       *
+       * @return position
+       */
       const Position & getPosition() const;
       
+      /**
+       * Gets the optional NEM orientation
+       *
+       * @return std::pair, where @c first is the orientation and
+       * @c second is a flag indicating whether it is valid (present)
+       */
       std::pair<const Orientation &, bool> getOrientation() const;
       
+      /**
+       * Gets the optional NEM velocity
+       *
+       * @return std::pair, where @c first is the velocity and
+       * @c second is a flag indicating whether it is valid (present)
+       */
       std::pair<const Velocity &, bool> getVelocity() const;
       
     private:
@@ -70,7 +105,7 @@ namespace EMANE
       bool bHasVelocity_;
     };
     
-    typedef std::list<Location> Locations;
+    using Locations = std::list<Location>;
   }
 }
 

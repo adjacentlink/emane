@@ -98,7 +98,7 @@ namespace EMANE
     /**
      * Send downstream control message
      *
-     * @param msg reference to the ControlMessage
+     * @param msgs reference to the ControlMessages
      * 
      */
     void sendDownstreamControl(const ControlMessages & msgs);

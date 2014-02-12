@@ -132,8 +132,8 @@ namespace EMANE
     /**
      * Registers a numeric configuration item using an Any.
      *
-     * @param buildId Build id of the registering component
      * @param sName Name of the configuration item to be registered
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description
@@ -160,8 +160,8 @@ namespace EMANE
     /**
      * Registers a non-numeric configuration item using an Any.
      *
-     * @param buildId Build id of the registering component
      * @param sName Name of the configuration item to be registered
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description

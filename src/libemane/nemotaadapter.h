@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -64,7 +64,7 @@ namespace EMANE
      * process OTA packet
      *
      * @param pkt Downstream packet
-     * @param msg Control Message
+     * @param msgs Control Messages
      */
 
     void processOTAPacket(UpstreamPacket & pkt, const ControlMessages & msgs);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,22 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * @class RandomNumberDistribution
+     *
+     * @brief A utility wrapper around a generator and a distribution
+     */
     template<class Generator, class Distribution>
     class RandomNumberDistribution
     {
     public:
+      /**
+       * Creates a RandomNumberDistribution instance
+       *
+       * @param min Minimum value in distribution
+       * @param max Maximum value in distribution
+       * @param seed Generator seed
+       */
       RandomNumberDistribution(typename Distribution::result_type min, 
                                typename Distribution::result_type max, 
                                unsigned seed = std::chrono::system_clock::now().time_since_epoch().count()) :
@@ -51,6 +63,11 @@ namespace EMANE
         distribution_{min, max}
       {}
       
+      /**
+       * Generates a random number
+       *
+       * @return random number
+       */
       typename Distribution::result_type operator()()
       {
         return distribution_(generator_);

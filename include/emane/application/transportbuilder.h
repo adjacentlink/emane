@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -55,27 +55,27 @@ namespace EMANE
      *
      * @brief Provides methods for contructing transports and a manager
      * to contain and control them as a a group.
-     *
-     * Reference:
-     * Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
-     * Design Patterns: Elements of Reusable Object-Oriented Software.
-     * Addison-Wesley, Reading MA, 1995
-     * Builder, p 97
      */
     class TransportBuilder
     {
     public:
+      /**
+       * Creates a TransportBuilder instance
+       */
       TransportBuilder();
     
+      /**
+       * Destorys an instance
+       */
       ~TransportBuilder();
     
       /**
-       * Build a TransportManager
+       * Builds a TransportManager
        *
        * @param adapters transport pairs to manage
        * @param request configuration update
        *
-       * @return Smart pointer to an initialized and configured TransportManager
+       * @return Unique pointer to an initialized and configured TransportManager
        *
        * @throw InitializeException when an error occurs during
        * initialization.
@@ -90,12 +90,12 @@ namespace EMANE
 
 
       /**
-       * Build a TransportAdapter
+       * Builds a TransportAdapter
        *
        * @param pTransport the transport connected to the adapter
-       * @param pItems pointer to the ConfigurationItems list
+       * @param request configuration update
        *
-       * @return Smart pointer to an initialized and configured
+       * @return Unqiue pointer to an initialized and configured
        * TransportAdapter
        *
        * @throw InitializeException when an error occurs during
@@ -109,16 +109,16 @@ namespace EMANE
       buildTransportAdapter(std::unique_ptr<Transport> & pTransport,
                             const ConfigurationUpdateRequest & request);
         
-      //throw(BuildException,ConfigureException,InitializeException);
-
       /**
-       * Build a Transport 
+       * Builds a Transport 
        *
        * @param id NEMId of the NEM associated with this transport
        * @param sLibraryFile Name of the dll containing the generator
        * @param request configuration update
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
        *
-       * @return Smart pointer to an initialized and configured Transport
+       * @return Unique pointer to an initialized and configured Transport
        *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during
@@ -134,13 +134,15 @@ namespace EMANE
 
     
       /**
-       * Build a Transport 
+       * Builds a Transport 
        *
        * @brief Build an instance of the transport named by the template 
        * parameter. T must be a subclass of EMANE::Transport and provide 
        * a constructor with signature:
        * T(EMANE::NEMId id, EMANE::PlatformServiceProvider * p)
        * T will be instantiated via this constructor.
+       *
+       * @tparam T Transport derived implementation
        *
        * @param id NEMId of the NEM associated with this transport
        * @param request configuration update

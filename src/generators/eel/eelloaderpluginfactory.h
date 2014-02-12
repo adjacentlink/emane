@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -84,10 +84,10 @@ namespace EMANE
         /**
          * Destory a plugin
          *
-         * @param layer Plugin to destory
+         * @param pLoader Plugin to destory
          *
          */
-        void destoryPlugin(LoaderPlugin * loader) const;
+        void destoryPlugin(LoaderPlugin * pLoader) const;
     
       private:
         using createPluginFunc = LoaderPlugin * (*)(); 

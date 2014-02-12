@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ namespace EMANE
      *
      * @param buildId Build id of the registering component
      * @param sName Name of the configuration item to be registered
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description
@@ -89,6 +90,7 @@ namespace EMANE
      *
      * @param buildId Build id of the registering component
      * @param sName Name of the configuration item to be registered
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description

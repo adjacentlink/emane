@@ -588,12 +588,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                                                       span,
                                                                       startOfReception);
                   
-                  
-              // since we only have a single segment the span will approximately equal the duration.
-              // Any difference is due to the binning which is internal to the spectrum monitor.
+              // since we only have a single segment the span will equal the segment duration.
               // For simple noise processing we will just pull out the max noise segment, we can
               // use the maxBinNoiseFloor utility function for this. More elaborate noise window analysis
-              // will require a more complex algorithm.
+              // will require a more complex algorithm, although you should get a lot of mileage out of 
+              // this utility function.
               bool bSignalInNoise{};
 
               std::tie(dNoiseFloordB,bSignalInNoise) =

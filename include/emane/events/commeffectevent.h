@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,28 +43,78 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class CommEffectEvent
+     *
+     * @brief Comm Effect events are used to set asynchronous link
+     * characteristics from one or more transmitting NEMs to the
+     * receiving NEM.
+     */
     class CommEffectEvent : public Event
     {
     public:
       /**
-       * @throw SerializationException
+       * Creates a CommEffectEvent instance from a serialization
+       *
+       * @param serialization Message serialization
+       *
+       * @throw SerializationException when a valid message cannot be de-serialized
        */
-      CommEffectEvent(const std::string & sSerialization);
+      CommEffectEvent(const Serialization & serialization);
       
+
+      /**
+       * Creates a CommEffectEvent instance
+       *
+       * @param commEffects Comm Effect link characteristics
+       */
       CommEffectEvent(const CommEffects & commEffects);
       
+      /**
+       * Creates a CommEffectEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       CommEffectEvent(const CommEffectEvent & rhs);
       
+      /**
+       * Sets a CommEffectEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       CommEffectEvent & operator=(const CommEffectEvent & rhs);
       
+      /**
+       * Creates a CommEffectEvent by moving
+       *
+       * @param rval Instance to move
+       */
       CommEffectEvent(CommEffectEvent && rval);
       
+      /**
+       * Sets a CommEffectEvent by moving
+       *
+       * @param rval Instance to moving
+       */
       CommEffectEvent & operator=(CommEffectEvent && rval);
       
+      /**
+       * Destroys an instance
+       */
       ~CommEffectEvent();
       
+      /**
+       * Serializes the instance
+       *
+       * @throw SerializationException if the instance cannot be serialized
+       */
       Serialization serialize() const override;
      
+      /**
+       * Gets the Comm Effect link characteristics
+       *
+       * @return comm effects
+       */
       const CommEffects & getCommEffects() const;
       
       enum {IDENTIFIER = EMANE_EVENT_COMMEFFECT};

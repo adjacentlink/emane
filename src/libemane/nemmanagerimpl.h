@@ -62,8 +62,6 @@ namespace EMANE
        * Constructor
        *
        * @param id Platform id as configured in XML
-       * @param statsManager reference to the StatisticsManager
-       *
        */
       NEMManagerImpl(PlatformId id);
 

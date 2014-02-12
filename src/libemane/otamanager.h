@@ -62,13 +62,6 @@ namespace EMANE
     
     ~OTAManager();
    
-    /**
-     * Send OTA packet
-     *
-     * @param id NEM identifier
-     * @param pkt Downstream packet
-     * @param msg Control Message
-     */
     void sendOTAPacket(NEMId id,
                        DownstreamPacket & pkt,
                        const ControlMessages & msgs) const override;
@@ -82,6 +75,9 @@ namespace EMANE
      *
      * @param otaGroupAddress Multicast group address of event service OTA channel
      * @param otaManagerDevice Name of the OTA device
+     * @param bLoopback Flag indicating whether to set LOOPBACK socket option
+     * @param iTTL Mutlicast TTL
+     * @param uuid Emulator instance UUID
      */
     void open(const ACE_INET_Addr & otaGroupAddress,
               const ACE_TCHAR* otaManagerDevice,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -56,10 +56,13 @@ namespace EMANE
                                   public Buildable
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~EventGeneratorManager() {}
       
       /**
-       * Add and event generator
+       * Add an event generator
        * 
        * @param pEventGenerator EventGenerator to add
        */

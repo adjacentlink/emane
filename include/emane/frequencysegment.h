@@ -66,7 +66,7 @@ namespace EMANE
      * Create a FrequencySegment from another instance
      *
      * @param rhs Instance to copy
-     * @param dRxPowerdB Receive power of the segment in dBm (upstream only)
+     * @param dRxPowerdBm Receive power of the segment in dBm (upstream only)
      */
     FrequencySegment(const FrequencySegment & rhs,
                      double dRxPowerdBm);

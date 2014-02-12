@@ -82,7 +82,7 @@ namespace EMANE
     * Removes a flow control token, blocking until a token is available
     * when flow control is enabled
     *
-    * @return @true on success
+    * @return @a true on success
     */
     bool removeToken();
 

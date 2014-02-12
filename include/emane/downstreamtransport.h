@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -57,7 +57,7 @@ namespace EMANE
      * Process downstream packet
      *
      * @param pkt Reference to the DownstreamPacket to process
-     * @param msgs optional reference to the the ControlMessage
+     * @param msgs optional reference to the ControlMessages
      */
     virtual void processDownstreamPacket(DownstreamPacket & pkt,
                                          const ControlMessages & msgs = empty) = 0;
@@ -65,7 +65,7 @@ namespace EMANE
     /**
      * Process downstream control message
      *
-     * @param msg Reference to the ControlMessage
+     * @param msgs Reference to the ControlMessages
      * 
      */
     virtual void processDownstreamControl(const ControlMessages & msgs) = 0;
@@ -85,7 +85,7 @@ namespace EMANE
      * Send upstream packet
      *
      * @param pkt Reference to the UpstreamPacket to process
-     * @param msg optional reference to the the ControlMessage
+     * @param msgs optional reference to the ControlMessages
      */
     void sendUpstreamPacket(UpstreamPacket & pkt, 
                             const ControlMessages & msgs = empty);
@@ -93,7 +93,7 @@ namespace EMANE
     /**
      * Send upstream control message
      *
-     * @param msg Reference to the ControlMessage
+     * @param msgs Reference to the ControlMessages
      * 
      */
     void sendUpstreamControl(const ControlMessages & msgs);

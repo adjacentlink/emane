@@ -67,9 +67,9 @@ namespace EMANE
     /**
      * Schedules a timed event
      *
-     * @param timePoint  Schedule absolute time for timer to go off
-     * @param arg        Opaque data pointer
-     * @param tvInterval Timer reschedule interval. Default is one shot.
+     * @param timePoint Schedule absolute time for timer to go off
+     * @param arg Opaque data pointer
+     * @param interval Timer reschedule interval. Default is one shot.
      *
      * @return timer id
      *

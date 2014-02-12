@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -43,19 +43,42 @@ namespace EMANE
   {
     namespace EEL
     {
+      /**
+       * @class LoaderPlugin
+       *
+       * @brief Interface used to create an EEL loader plugin implementation.
+       */
       class LoaderPlugin
       {
       public:
+        /**
+         * Destroys an instance
+         */
         virtual ~LoaderPlugin(){};
 
         /**
-         * @throw FormatException
+         * Loads an EEL expression
+         *
+         * @param moduleType Module type
+         * @param moduleId Module id
+         * @param eventType The event type
+         * @param args The event arguments
+         *
+         * @throw FormatException when a module load fails
          */
         virtual void load(const ModuleType & moduleType, 
                           const ModuleId   & moduleId, 
                           const EventType  & eventType,
                           const InputArguments & args) = 0;
-        
+
+        /**
+         * Gets the events to publish
+         *
+         * @param mode Publish either the complete current known
+         * list of events or just those items that have changed
+         *
+         * @returns event information to publish
+         */
         virtual EventInfoList getEvents(EventPublishMode mode) = 0;
         
       protected:

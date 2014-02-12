@@ -50,7 +50,7 @@ namespace EMANE
      *
      * @note Instances are immutable
      *
-     * @detail Encapulated control messages must be restored before use:
+     * @details Encapulated control messages must be restored before use:
      * @snippet models/mac/rfpipe/maclayer.cc serializedcontrolmessage-flowcontrol-snibbet
      *
      */

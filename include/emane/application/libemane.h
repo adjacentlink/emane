@@ -37,8 +37,18 @@ namespace EMANE
 {
   namespace Application
   {
+    /**
+     * Initialize libemane
+     *
+     * @note Must be called once prior to using any library APIs
+     */
     void initialize();
     
+    /**
+     * Shutdown libemane
+     *
+     * @note Must be called last after library usage is complete
+     */
     void shutdown();
   }
 }

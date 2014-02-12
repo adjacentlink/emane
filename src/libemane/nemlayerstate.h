@@ -57,6 +57,7 @@ namespace EMANE
      *
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
+     * @param registrar Registrar reference 
      * 
      * @exception InitializeException
      *
@@ -71,7 +72,7 @@ namespace EMANE
      *
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
-     * @param items Reference to theConfiguration item list
+     * @param update Configuration update
      * 
      * @exception ConfigureException
      *
@@ -209,7 +210,7 @@ namespace EMANE
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
      * @param id Event Id
-     * @param state Opaque event state
+     * @param serialization Event object serialization
      *
      * @note Default implementation generates a log error
      */
@@ -224,10 +225,11 @@ namespace EMANE
      *
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
-     * @param eventType  event type id
-     * @param eventId    event id
-     * @param tv         Reference to the scheduled run time
-     * @param arg        event opaque data
+     * @param eventId Identifier corresponding to the timer being processed
+     * @param expireTime The time the timer was scheduled to expire
+     * @param scheduleTime The Time the timer was scheduled
+     * @param fireTime Time time The time the timer actually fired
+     * @param arg Opaque timed event data
      *
      * @note Default implementation generates a log error
      */

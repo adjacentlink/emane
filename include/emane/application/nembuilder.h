@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -54,13 +54,8 @@ namespace EMANE
     /**
      * @class NEMBuilder
      *
-     * @brief Provides methods for contructing an EMANE Platform from
+     * @brief Provides methods for constructing an emulator instance from
      * its constituent parts. 
-     *
-     * @note Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
-     * Design Patterns: Elements of Reusable Object-Oriented Software.
-     * Addison-Wesley, Reading MA, 1995
-     * Bridge, p 152
      */
     class NEMBuilder
     {
@@ -70,13 +65,16 @@ namespace EMANE
       ~NEMBuilder();
     
       /**
-       * Build a PHY layer
+       * Builds a PHY layer
        *
        * @param id id of the NEM that will contain the phy
        * @param sLibraryFile Name of the dll containing the layer
-
-       * @return Smart pointer to an initialized PHY
-
+       * @param request Configuration update request
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
+       *
+       * @return Unique pointer to an initialized PHY
+       *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during
        * initialization.
@@ -90,12 +88,15 @@ namespace EMANE
                     bool bSkipConfigure = false);
       
       /**
-       * Build a MAC layer
+       * Builds a MAC layer
        *
        * @param id id of the NEM that will contain the mac
        * @param sLibraryFile Name of the dll containing the layer
+       * @param request Configuration update request
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
        *
-       * @return Smart pointer to an initialized MAC
+       * @return Unique pointer to an initialized MAC
        *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during
@@ -110,12 +111,15 @@ namespace EMANE
                     bool bSkipConfigure = false);
       
       /**
-       * Build a Shim layer
+       * Builds a Shim layer
        *
        * @param id id of the NEM that will contain the shim
        * @param sLibraryFile Name of the dll containing the layer
+       * @param request Configuration update request
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
        *
-       * @return Smart pointer to an initialized and configured Shim
+       * @return Unique pointer to an initialized and configured Shim
        *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during
@@ -130,12 +134,13 @@ namespace EMANE
                      bool bSkipConfigure = false);
 
       /**
-       * Build a NEM
+       * Builds an NEM
        *
        * @param id NEM id
        * @param layers The NEMLayers comprising the NEM
+       * @param request Configuration update request
        *
-       * @return Smart pointer to an initialized NEM
+       * @return Unique pointer to an initialized NEM
        *
        * @throw InitializeException when an error occurs during
        * initialization.
@@ -149,12 +154,13 @@ namespace EMANE
                                     const ConfigurationUpdateRequest & request);
 
       /**
-       * Build an NEM Manager
+       * Builds an NEM Manager
        *
        * @param id Platform id
        * @param nems The NEMs comprising the Platform
+       * @param request Configuration update request
        *
-       * @return Smart pointer to an initialized Platform
+       * @return Unique pointer to an initialized Platform
        *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during

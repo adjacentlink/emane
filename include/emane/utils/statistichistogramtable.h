@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,15 +42,41 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * @class StatisticHistogramTable
+     *
+     * @brief Utility class to make a two column statistic table
+     * where the first column is the table key and the second column
+     * is a count of key instances.
+     */
     template<typename Key,typename Counter = std::size_t>
     class StatisticHistogramTable
     {
     public:
+      /**
+       * Creates a StatisticHistogramTable table
+       *
+       * @param registrar StatisticRegistrar reference
+       * @param sTableName Table name
+       * @param labels Table column names
+       * @param sDescription Table description
+       *
+       * @throw RegistrarException when a error occurs during
+       * registration.
+       */
       StatisticHistogramTable(StatisticRegistrar & registrar,
                               const std::string & sTableName,
                               const StatisticTableLabels & labels,
                               const std::string & sDescription = "");
 
+      /**
+       * Increments a table key count
+       *
+       * @param key Table key (row) to increment
+       * @param amount Amount to increment by
+       *
+       * @throw StatisticTableException when the row key is invalid
+       */
       void increment(const Key & key, Counter amount = 1);
 
     private:

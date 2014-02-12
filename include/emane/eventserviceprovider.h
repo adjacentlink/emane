@@ -67,7 +67,7 @@ namespace EMANE
      *
      * @param nemId Id of destination NEM @c 0 for all NEMs in a platform
      * @param eventId The event id
-     * @param state Serialized event object state
+     * @param serialization Serialized event object state
      */
     virtual void sendEvent(NEMId         nemId, 
                            EventId       eventId,

@@ -66,6 +66,8 @@ namespace EMANE
      *  or -1 on failure
      *
      * @note See ACE Thread_Manager documentation
+     *
+     * @deprecated This fucntion will disappear soon. Use std::thread.
      */
     template <class T>
     int spawn(T & ref,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -71,12 +71,20 @@ namespace EMANE
         ~ConversionException() throw(){}
       };
 
+      /**
+       * Creates a ParameterConvert instance
+       *
+       * @param sParameter Value as a string
+       */
       ParameterConvert(const std::string & sParameter);
     
+      /**
+       * Destroys an instance
+       */
       ~ParameterConvert();
     
       /**
-       * Convert paraemter string to an std::int64_t
+       * Convert parameter string to an std::int64_t
        *
        * @param i64Min Minimum value in range
        * @param i64Max Maximum value in range
@@ -84,13 +92,13 @@ namespace EMANE
        * @return std::int64_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::int64_t toINT64(std::int64_t i64Min = std::numeric_limits<std::int64_t>::min(),
                            std::int64_t i64Max = std::numeric_limits<std::int64_t>::max()) const;
 
       /**
-       * Convert paraemter string to an std::uint64_t
+       * Convert parameter string to an std::uint64_t
        *
        * @param u64Min Minimum value in range
        * @param u64Max Maximum value in range
@@ -98,14 +106,14 @@ namespace EMANE
        * @return std::uint64_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::uint64_t toUINT64(std::uint64_t u64Min = std::numeric_limits<std::uint64_t>::min(),
                              std::uint64_t u64Max = std::numeric_limits<std::uint64_t>::max()) const;
 
     
       /**
-       * Convert paraemter string to an std::int32_t
+       * Convert parameter string to an std::int32_t
        *
        * @param i32Min Minimum value in range
        * @param i32Max Maximum value in range
@@ -113,13 +121,13 @@ namespace EMANE
        * @return std::int32_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::int32_t toINT32(std::int32_t i32Min = std::numeric_limits<std::int32_t>::min(),
                            std::int32_t i32Max = std::numeric_limits<std::int32_t>::max()) const;
 
       /**
-       * Convert paraemter string to an std::uint32_t
+       * Convert parameter string to an std::uint32_t
        *
        * @param u32Min Minimum value in range
        * @param u32Max Maximum value in range
@@ -127,13 +135,13 @@ namespace EMANE
        * @return std::uint32_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::uint32_t toUINT32(std::uint32_t u32Min = std::numeric_limits<std::uint32_t>::min(),
                              std::uint32_t u32Max = std::numeric_limits<std::uint32_t>::max()) const;
 
       /**
-       * Convert paraemter string to an std::int16_t
+       * Convert parameter string to an std::int16_t
        *
        * @param i16Min Minimum value in range
        * @param i16Max Maximum value in range
@@ -141,13 +149,13 @@ namespace EMANE
        * @return std::int16_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::int16_t toINT16(std::int16_t i16Min = std::numeric_limits<std::int16_t>::min(),
                            std::int16_t i16Max = std::numeric_limits<std::int16_t>::max()) const;
     
       /**
-       * Convert paraemter string to an std::uint16_t
+       * Convert parameter string to an std::uint16_t
        *
        * @param u16Min Minimum value in range
        * @param u16Max Maximum value in range
@@ -155,13 +163,13 @@ namespace EMANE
        * @return std::uint16_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::uint16_t toUINT16(std::uint16_t u16Min = std::numeric_limits<std::uint16_t>::min(),
                              std::uint16_t u16Max = std::numeric_limits<std::uint16_t>::max()) const;
 
       /**
-       * Convert paraemter string to an std::int8_t
+       * Convert parameter string to an std::int8_t
        *
        * @param i8Min Minimum value in range
        * @param i8Max Maximum value in range
@@ -169,13 +177,13 @@ namespace EMANE
        * @return std::int8_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::int8_t toINT8(std::int8_t i8Min = std::numeric_limits<std::int8_t>::min(),
                          std::int8_t i8Max = std::numeric_limits<std::int8_t>::max()) const;
 
       /**
-       * Convert paraemter string to an  std::uint8_t
+       * Convert parameter string to an  std::uint8_t
        *
        * @param u8Min Minimum value in range
        * @param u8Max Maximum value in range
@@ -183,13 +191,13 @@ namespace EMANE
        * @return  std::uint8_t value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       std::uint8_t toUINT8(std::uint8_t u8Min = std::numeric_limits<std::uint8_t>::min(),
                            std::uint8_t u8Max = std::numeric_limits<std::uint8_t>::max()) const;
 
       /**
-       * Convert paraemter string to a float
+       * Convert parameter string to a float
        *
        * @param fMin Minimum value in range
        * @param fMax Maximum value in range
@@ -197,13 +205,13 @@ namespace EMANE
        * @return float value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       float toFloat(float fMin = std::numeric_limits<float>::lowest(),
                     float fMax = std::numeric_limits<float>::max()) const;
 
       /**
-       * Convert paraemter string to a double
+       * Convert parameter string to a double
        *
        * @param dMin Minimum value in range
        * @param dMax Maximum value in range
@@ -211,28 +219,28 @@ namespace EMANE
        * @return double value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       double toDouble(double dMin = std::numeric_limits<double>::lowest(),
                       double dMax = std::numeric_limits<double>::max()) const;
 
       /**
-       * Convert paraemter string to an ACE_INET_Addr
+       * Convert parameter string to an ACE_INET_Addr
        *
        * @return ACE_INET_Addr value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       ACE_INET_Addr toINETAddr() const;
 
       /**
-       * Convert paraemter string to an bool
+       * Convert parameter string to an bool
        *
        * @return bool value
        *
        * @exception ConversionException Thrown when an error is encountered during
-       * convertion either to to input format or out of range value.
+       * conversion either to input format or out of range value.
        */
       bool toBool() const;
 

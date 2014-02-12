@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,28 +43,76 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class PathlossEvent
+     *
+     * @brief A pathloss event is used to set the pathloss from one or more
+     * transmitting NEMs to a receiving NEM.
+     */
     class PathlossEvent : public Event
     {
     public:
       /**
-       * @throw SerializationException
+       * Creates a PathlossEvent instance from a serialization
+       *
+       * @param serialization Message serialization
+       *
+       * @throw SerializationException when a valid message cannot be de-serialized
        */
-      PathlossEvent(const std::string & sSerialization);
+      PathlossEvent(const Serialization & serialization);
       
+      /**
+       * Creates a PathlossEvent instance
+       *
+       * @param pathlosses One or more PathlossEntry instances
+       */
       PathlossEvent(const Pathlosses & pathlosses);
       
+      /**
+       * Creates a PathlossEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       PathlossEvent(const PathlossEvent & rhs);
       
+      /**
+       * Sets a PathlossEvent by copy
+       *
+       * @param rhs Instance to copy
+       */
       PathlossEvent & operator=(const PathlossEvent & rhs);
-      
+
+      /**
+       * Creates a PathlossEvent by moving
+       *
+       * @param rval Instance to move
+       */      
       PathlossEvent(PathlossEvent && rval);
-      
+
+      /**
+       * Sets a PathlossEvent by moving
+       *
+       * @param rval Instance to move
+       */ 
       PathlossEvent & operator=(PathlossEvent && rval);
       
+      /**
+       * Destroys an instance
+       */
       ~PathlossEvent();
-      
+
+      /**
+       * Serializes the instance
+       *
+       * @throw SerializationException if the instance cannot be serialized
+       */
       Serialization serialize() const override;
       
+      /**
+       * Gets the transmitter NEM pathloss entries
+       *
+       * @return pathloss entries
+       */
       const Pathlosses & getPathlosses() const;
       
       enum {IDENTIFIER = EMANE_EVENT_PATHLOSS};

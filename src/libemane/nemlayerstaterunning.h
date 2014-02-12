@@ -151,7 +151,7 @@ namespace EMANE
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
      * @param id Event Id
-     * @param state Opaque event state
+     * @param serialization Event object serialization
      *
      * Layer processing of event
      */
@@ -165,10 +165,11 @@ namespace EMANE
      *
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
-     * @param eventType  event type id
-     * @param eventId    event id
-     * @param tv         scheduled run time
-     * @param arg        event data
+     * @param eventId Identifier corresponding to the timer being processed
+     * @param expireTime The time the timer was scheduled to expire
+     * @param scheduleTime The Time the timer was scheduled
+     * @param fireTime Time time The time the timer actually fired
+     * @param arg Opaque timed event data
      *
      * Layer processing of timed event
      */

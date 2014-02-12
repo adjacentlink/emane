@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -47,14 +47,22 @@ namespace EMANE
     /**
      * @class EventAgentManager
      *
-     * @brief manage all event agents
+     * @brief Manage all event agents
      */
     class EventAgentManager : public Component,
                               public Buildable
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~EventAgentManager(){}
       
+      /**
+       * Add an event agent
+       * 
+       * @param pAgent EventAgent to add
+       */
       virtual void add(std::unique_ptr<EventAgent> & pAgent) = 0;
       
     protected:

@@ -207,7 +207,7 @@ namespace EMANE
          * send a downstream message
          * 
          * @param entry downstream queue entry
-         * @param macHeader specific mac header for the message
+         * @param macHeaderParams specific mac header parameters for the message
          * 
          */
         void sendDownstreamMessage(DownstreamQueueEntry & entry,

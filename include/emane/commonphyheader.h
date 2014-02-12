@@ -152,16 +152,16 @@ namespace EMANE
     std::uint64_t getBandwidthHz() const;
 
     /**
-     * Get the sequence number
+     * Gets the sequence number
      *
-     * @param sequence number
+     * @return sequence number
      */
     std::uint16_t getSequenceNumber() const;
 
     /**
      * Gets a reference to the frequency segment list
      *
-     * @param frequency segment list 
+     * @return frequency segments
      */
     const FrequencySegments & getFrequencySegments() const;
 

@@ -61,7 +61,7 @@ namespace EMANE
       /**
        *  Creates an AntennaProfileControlMessage instance on the heap
        *
-       * @param AntennaProfileId Antenna profile Id
+       * @param id Antenna profile Id
        * @param dAntennaAzimuthDegrees Antenna point azimuth in degrees
        * @param dAntennaElevationDegrees Antenna pointing elevation in degrees
        *

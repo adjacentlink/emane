@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -45,15 +45,6 @@ namespace
 }
 
 
-/**
-  *
-  * @class BitPool
-  *
-  * @brief Implementation of a rate limiting bit pool
-  *
-  * @param pPlatformService reference to log service
-  *
-  */
 inline
 EMANE::Utils::BitPool::BitPool(PlatformServiceProvider * pPlatformService, NEMId id) :
  pPlatformService_{pPlatformService},
@@ -71,12 +62,6 @@ EMANE::Utils::BitPool::~BitPool()
 
 
 
-/**
- * Set pool size
- *
- * @param u64NewSize pool size request in bits
- *
- */
 inline
  void 
 EMANE::Utils::BitPool::setMaxSize(std::uint64_t u64NewSize)
@@ -109,15 +94,6 @@ EMANE::Utils::BitPool::setMaxSize(std::uint64_t u64NewSize)
 
 
 
-/**
- * Get from pool
- *
- * @param u64Request      request size
- * @param bFullFill       continue until entire request is fulfilled
- *
- * @return  number outstanding or 0 if disabled
- *
- */
 inline
 std::uint64_t 
 EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
@@ -191,12 +167,6 @@ EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
 }
 
 
-/**
- * Check current pool size
- *
- * @return the current pool size
- *
- */
 inline
 std::uint64_t 
 EMANE::Utils::BitPool::getCurrentSize()
@@ -208,16 +178,6 @@ EMANE::Utils::BitPool::getCurrentSize()
 }
 
 
-/**
- * drain the pool
- *
- * @param u64Request            request size
- * @param requestTime           request time (abs time)
- * @param intervalMicroseconds  time to wait until request would be fulfilled
- *
- * @return  number available in the pool
- *
- */
 inline
 std::uint64_t 
 EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request, 
@@ -273,12 +233,6 @@ EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request,
 }
 
 
-/**
- * add to pool
- *
- * @param requestTime   request time
- *
- */
 inline
 void 
 EMANE::Utils::BitPool::doFillPool(const TimePoint & requestTime)

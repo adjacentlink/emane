@@ -150,7 +150,7 @@ namespace EMANE
      *
      * @param sName Name of the statistic table
      * @param labels Table column labels
-     * @param clearfunc Function called when table clear is requested
+     * @param clearFunc Function called when table clear is requested
      * @param sDescription Statistic table description
      *
      * @return A borrowed reference to the statistic table that may
@@ -191,15 +191,17 @@ namespace EMANE
                                    Any::Type type,
                                    const StatisticProperties & properties,
                                    const std::string & sDescription,
-                                   Statistic * pStatitic) = 0;
+                                   Statistic * pStatistic) = 0;
 
     /**
      * Register a statistic table publisher and take ownership
      *
      * @param sName Name of the statistic table
+     * @param properties Table properties
      * @param sDescription Statistic table description
      * @param pStatiticTablePublisher Pointer to the statistic table
      *  publisher
+     * @param clearFunc Function called when table clear is requested
      *
      * @throw RegistrarException when a error occurs during
      * registration.
