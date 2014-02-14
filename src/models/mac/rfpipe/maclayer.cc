@@ -125,6 +125,8 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                                  "Datarate in bps.",
                                                  1);
 
+  /** [configurationregistrar-registernumeric-snippet] */
+
   configRegistrar.registerNumeric<float>("jitter",
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
@@ -148,11 +150,14 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                                  ConfigurationProperties::DEFAULT,
                                                  {10},
                                                  "Number of flow control tokens.");
+  /** [configurationregistrar-registernumeric-snippet] */
 
+  /** [configurationregistrar-registernonnumeric-snippet] */
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
                                                   "Absolute URI of the PCR curve file.");
+  /** [configurationregistrar-registernonnumeric-snippet] */
 
   configRegistrar.registerNumeric<bool>("radiometricenable",
                                         ConfigurationProperties::DEFAULT,

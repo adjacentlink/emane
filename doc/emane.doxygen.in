@@ -813,7 +813,11 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = ../src/models/mac/rfpipe/maclayer.cc ../src/libemane
+EXAMPLE_PATH           = ../include/emane               \
+                         ../src/models/mac/rfpipe       \
+                         ../src/models/mac/ieee80211abg \
+                         ../src/libemane                
+                         
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

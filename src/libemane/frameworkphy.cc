@@ -422,6 +422,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   dSystemNoiseFiguredB);
         }
+      /** [configurationregistrar-processmultiplicity-snippet] */
       else if(item.first == "frequencyofinterest")
         {
           for(const auto & any : item.second)
@@ -447,6 +448,8 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                 }
             }
         }
+      /** [configurationregistrar-processmultiplicity-snippet] */
+      /** [configurationregistrar-processsingle-snippet] */
       else if(item.first == "txpower")
         {
           dTxPowerdBm_ = item.second[0].asDouble();
@@ -459,6 +462,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   dTxPowerdBm_);
         }
+      /** [configurationregistrar-processsingle-snippet] */
       else if(item.first == "frequency")
         {
           u64TxFrequencyHz_ = item.second[0].asUINT64();

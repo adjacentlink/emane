@@ -147,12 +147,15 @@ EMANE::Models::IEEE80211ABG::MACLayer::initialize(Registrar & registrar)
                           "MACI %03hu %s::%s", 
                           id_, pzLayerName, __func__);
 
+  /** [configurationregistrar-registervalidator-snippet] */
+
   auto & configRegistrar = registrar.configurationRegistrar();
 
   macConfig_.registerConfiguration(configRegistrar);
 
   configRegistrar.registerValidator(&configurationValidator);
 
+  /** [configurationregistrar-registervalidator-snippet] */
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
