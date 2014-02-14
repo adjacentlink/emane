@@ -123,6 +123,7 @@ public:
   void registerStatistics(StatisticRegistrar & statisticRegistrar)
   {
     // upstream tx all
+    /** [statisticservice-registernumeric-snippet] */
     pNumUpstreamPacketsTx_ =
       statisticRegistrar.registerNumeric<Counter>("numUpstreamPacketsTx" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
@@ -137,7 +138,7 @@ public:
       statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeTx" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Average upstream packet size"));
-
+    /** [statisticservice-registernumeric-snippet] */
     // upstream processing delay
     pNumUpstreamProcessingDelay_ =
       statisticRegistrar.registerNumeric<Counter>("numUpstreamProcessingDelay" + sInstance_,
@@ -422,6 +423,7 @@ public:
 
     if(bHaveDropTables_)
       {
+        /** [statisticservice-registertableclear-snippet] */
         pStatisticUnicastDropTable_ =
           statisticRegistrar.registerTable<NEMId>("UnicastPacketDropTable" + sInstance_, 
                                                   unicastDropTableLabels_,
@@ -432,7 +434,7 @@ public:
                                                     pTable->clear();
                                                   },
                                                   "Unicast packets dropped by reason code");
-
+        /** [statisticservice-registertableclear-snippet] */
         pStatisticBroadcastDropTable_ =
           statisticRegistrar.registerTable<NEMId>("BroadcastPacketDropTable" + sInstance_, 
                                                   broadcastDropTableLabels_,

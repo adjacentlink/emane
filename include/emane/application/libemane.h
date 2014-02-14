@@ -58,7 +58,10 @@ namespace EMANE
 /**
  * @mainpage EMANE
  *
- * @section Radio Services
+ * @section GeneralServices General Services
+ * - @ref StatisticService "Statistic Service"
+ *
+ * @section RadioServices Radio Services
  * - @ref SpectrumService "Spectrum Service"
  */
 
