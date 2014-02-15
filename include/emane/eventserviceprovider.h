@@ -80,3 +80,37 @@ namespace EMANE
 }
 
 #endif //EMANEEVENTSERVICEPROVIDER_HEADER_
+
+/**
+ * @page EventService Event Service
+ *
+ * The @ref EMANE::EventRegistrar "EventRegistrar" provides components with the ability to
+ * register to receive events. Events target specific NEM Ids or the NEM Id 0 to indicate all NEMs.
+ * In order for a component to receive an event it must register for the event and the inbound event
+ * must match the component's NEM Id or be addressed to all NEMs.
+ *
+ * The @ref EMANE::EventRegistrar "EventRegistrar" can only be accessed during
+ * @ref EMANE::Component::initialize "Component::initialize" which means a component can only register
+ * for events when it is being initialized. The @ref EMANE::EventRegistrar "EventRegistrar" is accessed
+ * via the @ref EMANE::Registrar "Registrar" parameter passed to @ref EMANE::Component::initialize
+ * "initialize."
+ *
+ * Components register to receive an event using @ref EMANE::EventRegistrar::registerEvent
+ * "EventRegistrar::registerEvent".
+ *
+ * @snippet src/libemane/frameworkphy.cc eventservice-registerevent-snippet
+ *
+ * When a registered event is received for a targeted NEM it is pushed onto the NEM's functor queue
+ * as a @ref EMANE::EventServiceUser::processEvent "EventServiceUser::processEvent" method. The event data is
+ *  serialized and an event object must be restored (de-serialized) in order to access the event data.
+ *
+ * @snippet src/libemane/frameworkphy.cc eventservice-processevent-snippet
+ *
+ * All components have the ability to send events using @ref EMANE::EventServiceProvider::sendEvent
+ * "EventServiceProvider::sendEvent". The @ref EMANE::EventServiceProvider "EventServiceProvider" is accessed
+ * via the @ref EMANE::PlatformServiceProvider "PlatformServiceProvider". All components are given a reference
+ * to the @ref EMANE::PlatformServiceProvider "PlatformServiceProvider" when they are constructed.
+ *
+ * @snippet src/libemane/frameworkphy.cc eventservice-sendevent-snippet
+ *
+ */

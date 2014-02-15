@@ -63,6 +63,7 @@ namespace EMANE
  * The emulator provides a set of services that are generally available to 
  * all component plugins.
  * - @ref ConfigurationService "Configuration Service"
+ * - @ref EventService "Event Service"
  * - @ref StatisticService "Statistic Service"
  *
  *

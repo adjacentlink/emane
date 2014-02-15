@@ -221,7 +221,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                          EMANE::ConfigurationProperties::MODIFIABLE,
                                          {0.0},
                                           "Defines the transmit power in dBm.");
-
+  /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
   
   eventRegistrar.registerEvent(Events::PathlossEvent::IDENTIFIER);
@@ -229,6 +229,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
   
   eventRegistrar.registerEvent(Events::AntennaProfileEvent::IDENTIFIER);
+  /** [eventservice-registerevent-snippet] */
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
@@ -558,7 +559,8 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
         {
           const auto pAntennaProfileControlMessage =
             reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
-          
+
+          /** [eventservice-sendevent-snippet] */ 
           AntennaProfiles profiles{{id_,
                 pAntennaProfileControlMessage->getAntennaProfileId(),
                 pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
@@ -567,6 +569,7 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
           gainManager_.update(profiles);
           
           pPlatformService_->eventService().sendEvent(0,Events::AntennaProfileEvent{profiles});
+          /** [eventservice-sendevent-snippet] */ 
         }
       else
         {
@@ -1081,6 +1084,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
     }
 }
 
+/** [eventservice-processevent-snippet] */
 void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
                                        const Serialization & serialization)
 {
@@ -1118,3 +1122,4 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
       break;
     }
 }
+/** [eventservice-processevent-snippet] */
