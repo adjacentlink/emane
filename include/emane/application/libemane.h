@@ -65,6 +65,7 @@ namespace EMANE
  * - @ref ConfigurationService "Configuration Service"
  * - @ref EventService "Event Service"
  * - @ref StatisticService "Statistic Service"
+ * - @ref TimerService "Timer Service"
  *
  *
  * MAC and Shim component plugins that are contained in NEMs using the emualtor

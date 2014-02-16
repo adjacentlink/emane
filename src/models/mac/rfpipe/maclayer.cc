@@ -407,6 +407,7 @@ EMANE::Models::RFPipe::MACLayer::postStart()
   if(bRadioMetricEnable_)
     {
       // set the timer timeout (absolute time), arg, interval
+      /** [timerservice-scheduletimedevent-snippet] */
       radioMetricTimedEventId_ = 
         pPlatformService_->timerService().
         scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
@@ -424,6 +425,7 @@ EMANE::Models::RFPipe::MACLayer::postStart()
                                  return false;
                                }},
                            radioMetricReportIntervalMicroseconds_);
+      /** [timerservice-scheduletimedevent-snippet] */
 
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
@@ -549,8 +551,10 @@ EMANE::Models::RFPipe::MACLayer::stop()
                           pzLayerName,
                           __func__);
 
+  /** [timerservice-canceltimedevent-snippet] */ 
   pPlatformService_->timerService().cancelTimedEvent(downstreamQueueTimedEventId_);
-  
+  /** [timerservice-canceltimedevent-snippet] */ 
+
   downstreamQueueTimedEventId_ = 0;
 
   // check flow control enabled
@@ -1182,7 +1186,7 @@ EMANE::Models::RFPipe::MACLayer::checkPOR(float fSINR, size_t packetSize)
   return bResult;       
 }
 
- 
+/** [timerservice-processtimedevent-snippet] */ 
 void 
 EMANE::Models::RFPipe::MACLayer::processTimedEvent(TimerEventId,
                                                    const TimePoint &,
@@ -1197,6 +1201,6 @@ EMANE::Models::RFPipe::MACLayer::processTimedEvent(TimerEventId,
       delete pCallBack;
     }
 }
-
+/** [timerservice-processtimedevent-snippet] */ 
 
 DECLARE_MAC_LAYER(EMANE::Models::RFPipe::MACLayer);
