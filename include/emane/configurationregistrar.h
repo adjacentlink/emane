@@ -191,15 +191,16 @@ namespace EMANE
 /**
  * @page ConfigurationService Configuration Service
  *
- * The @ref EMANE::ConfigurationRegistrar "ConfigurationRegistrar" provides components with the ability to
- * register configuration items. Configuration registration provides the emulator with all the knowledge it
+ * The @ref EMANE::ConfigurationRegistrar "ConfigurationRegistrar" is used by components to register
+ * configuration items. Configuration registration provides the emulator with all the knowledge it
  * needs to enforce the correctness of input parameters.
  *
- * The @ref EMANE::ConfigurationRegistrar "ConfigurationRegistrar" can only be accessed during
- * @ref EMANE::Component::initialize "Component::initialize" which means a component can only register
- * configuration when it is being initialized. The @ref EMANE::ConfigurationRegistrar "ConfigurationRegistrar"
- * is accessed via the @ref EMANE::Registrar "Registrar" parameter passed to @ref EMANE::Component::initialize
- * "initialize."
+ * @section RegisteringConfiguration Registering Configuration Items
+ *
+ * Configuration items can only be registered during @ref EMANE::Component::initialize "Component::initialize".
+ * The @ref  EMANE::ConfigurationRegistrar "ConfigurationRegistrar" is accessible via the
+ *  @ref EMANE::Component::initialize "initialize" method's @ref EMANE::Registrar "Registrar" argument.
+ *
  *
  * The @ref EMANE::ConfigurationRegistrar "ConfigurationRegistrar" has two registration template methods which
  * allow components to register
@@ -237,12 +238,14 @@ namespace EMANE
 
  * Configuration Item properties:
  * - @ref EMANE::ConfigurationProperties::NONE "NONE"- No properties.
- * - @ref EMANE::ConfigurationProperties::REQUIRED "REQUIRED"- The parameter is required. Makes no nense when
+ * - @ref EMANE::ConfigurationProperties::REQUIRED "REQUIRED"- The parameter is required. Makes no sense when
  * combined with @ref EMANE::ConfigurationProperties::DEFAULT "DEFAULT".
  * - @ref EMANE::ConfigurationProperties::DEFAULT "DEFAULT"- One or more default values is specified.
  * - @ref EMANE::ConfigurationProperties::MODIFIABLE "MODIFIABLE" - Values may be modified while the emulator is
  * in the running state via @ref EMANE::RunningStateMutable::processConfiguration
  * "RunningStateMutable::processConfiguration".
+ *
+ * @section ValidatingConfigurationRelationships Validating Configuration Item Relationships
  *
  * An optional validator callable is used by the emulator framework to validate configuration item
  * relationships prior to calling @ref EMANE::Component::configure "Component::configure" or
@@ -285,6 +288,8 @@ namespace EMANE
  *
  * @snippet include/emane/configurationupdate.h configurationregistrar-configurationnameanyvalues-snippet 
  *
+ * @section HandlingConfigurationItems Handling Configuration Items
+ *
  * For a configuration item with a min/max instance of [0:1], you can safely process the configuration value by accessing
  * element 0. You will only have a configuration item in @ref EMANE::ConfigurationUpdate "ConfigurationUpdate" if it
  * has 1 or more values.
@@ -295,4 +300,9 @@ namespace EMANE
  *
  * @snippet src/libemane/frameworkphy.cc configurationregistrar-processmultiplicity-snippet
  *
+ * @section RunningStateConfigurationUpdates Running-State Configuration Updates
+ *
+ * When a running-state configuration update is received it is pushed onto the NEM's functor queue as an @ref
+ * EMANE::RunningStateMutable::processConfiguration "RunningStateMutable::processConfiguration" method. In order for an
+ * update to be passed to an NEM it must pass configuration item property checks and any registered validator.
  */

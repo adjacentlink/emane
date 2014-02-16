@@ -221,25 +221,27 @@ namespace EMANE
 /**
  * @page StatisticService Statistic Service
  *
- * The @ref EMANE::StatisticRegistrar "Statistic Registrar" provides components with the ability to
- * create statistics and statistic tables. Statistics and statistic tables are owned by the emulator
- * framework so EMANE::StatisticRegistrar::registerNumeric,
- * EMANE::StatisticRegistrar::registerNonNumeric and EMANE::StatisticRegistrar::registerTable all
- * return borrowed references. The framework takes care of cleaning these up after all component
- * plugins have been destroyed.
+ * The @ref EMANE::StatisticRegistrar "StatisticRegistrar" is used by components to create
+ * statistics and statistic tables. Statistics and statistic tables are owned by the emulator
+ * framework so @ref EMANE::StatisticRegistrar::registerNumeric "StatisticRegistrar::registerNumeric",
+ * @ref EMANE::StatisticRegistrar::registerNonNumeric "StatisticRegistrar::registerNonNumeric" and 
+ * @ref EMANE::StatisticRegistrar::registerTable "StatisticRegistrar::registerTable" all return
+ * borrowed references. The framework takes care of cleaning these up after all component plugins
+ * have been destroyed.
  *
- * The EMANE::StatisticRegistrar can only be accessed during EMANE::Component::initialize which means
- * a component can only register statistics and statistic tables when it is being initialized. The
- * EMANE::StatisticRegistrar is accessed via the @ref EMANE::Registrar "Registrar" parameter passed to
- * EMANE::Component::initialize.
+ * @section RegisteringStatistics Registering Statistics
+ *
+ * Statistics and statistic tables can only be registered during @ref EMANE::Component::initialize
+ * "Component::initialize". The @ref  EMANE::StatisticRegistrar "StatisticRegistrar" is accessible via the
+ *  @ref EMANE::Component::initialize "initialize" method's @ref EMANE::Registrar "Registrar" argument.
  *
  * There are two types of statistics:
  *
- * - EMANE::StatisticNumeric
- * - EMANE::StatisticNonNumeric
+ * - @ref EMANE::StatisticNumeric "StatisticNumeric"
+ * - @ref EMANE::StatisticNonNumeric "StatisticNonNumeric"
  *
- * Both statistic types are templates and are thread safe. EMANE::StatisticNumeric instances can be
- * instantiated with the following types:
+ * Both statistic types are templates and are thread safe. @ref EMANE::StatisticNumeric "StatisticNumeric"
+ * instances can be instantiated with the following types:
  * - std::int64_t
  * - std::int32_t
  * - std::int16_t
@@ -252,36 +254,38 @@ namespace EMANE
  * - float
  * - double
  *
- * EMANE::StatisticNonNumeric template instances can be instantiated with the following types:
+ * @ref EMANE::StatisticNonNumeric "StatisticNonNumeric" template instances can be instantiated with the
+ * following types:
  * - std::string
  * - ACE_INET_Addr
  *
- * Statistics can be given the EMANE::StatisticProperties::CLEARABLE property during registration.
- * This property lets client applications clear the statistic using the @ref ControlPortInterface
- * "Remote Control Port API".
+ * Statistics can be given the @ref EMANE::StatisticProperties::CLEARABLE "StatisticProperties::CLEARABLE"
+ * property during registration. This property lets client applications clear the statistic using the
+ * @ref ControlPortInterface "Remote Control Port API".
  *
- * The following snippet was taken from EMANE::Utils::CommonLayerStatistics. It shows an example of
- * registering @a clearable statistics.
+ * The following snippet shows an example of registering @a clearable statistics.
  *
  * @snippet src/libemane/commonlayerstatistics.cc statisticservice-registernumeric-snippet
  *
- * A @ref EMANE::StatisticTable "Statistic Table" is a two dimensional table of EMANE::Any instances.
- * An EMANE::Any instance is sort of a @a smart union. It can hold any of the types allowed when
- * creating instances of EMANE::StatisticNumeric and EMANE::StatisticNonNumeric.
+ * @section RegisteringStatisticTables Registering Statistic Tables
+ *
+ * A @ref EMANE::StatisticTable "StatisticTable" is a two dimensional table of @ref EMANE::Any "Any"
+ * instances. An @ref EMANE::Any "Any" instance is sort of a @a smart union. It can hold any of the types
+ * allowed when creating instances of @ref EMANE::StatisticNumeric "StatisticNumeric" and
+ * @ref EMANE::StatisticNonNumeric "StatisticNonNumeric".
  *
  * Statistic Table rules:
  * - Every row in a statistic table must contain the same number of columns.
- * - Each entry in a column may have a different EMANE::Any type although doing so may make your table
- *   hard to interpret.
- * - You may change the EMANE::Any type of an entry on every update since you are using EMANE::Any
- *  instances. The same interpretation warning applies.
+ * - Each entry in a column may have a different @ref EMANE::Any "Any" type although doing so may make
+ *   your table hard to interpret.
+ * - You may change the @ref EMANE::Any "Any" type of an entry on every update since you are using
+ * @ref EMANE::Any "Any" instances - this would be even harder to interpret.
  *
- * The following snippet comes from EMANE::EventTablePublisher. You specify the number of columns in a
- * table by setting the table column names. The number of column names will equal the number of columns
- * in the table. The template parameters to EMANE::StatisticTable allow you to set the table key type,
- * the column index that will be used to sort the table and a binary predicate that takes two element
- * keys as arguments and returns a bool which is used to sort the table. The template parameter defaults
- * are usually what you want.
+ * You specify the number of columns in a table by setting the table column names. The number of column
+ * names will equal the number of columns in the table. The template parameters to @ref
+ * EMANE::StatisticTable "StatisticTable" allow you to set the table key type, the column index that will
+ * be used to sort the table and a binary predicate that takes two element keys as arguments and returns a
+ * bool which is used to sort the table. The template parameter defaults are usually what you want.
  *
  * @snippet src/libemane/eventtablepublisher.cc statisticservice-registertable-snippet
  * 
@@ -290,17 +294,17 @@ namespace EMANE
  * to keep track of which items are in the table and what their current values are. An external clear
  * request may be like pulling the rug out from under your table management logic.
  *
- * To address this you need to pass a callable object that takes a single EMANE::StatisticTable * as
- * an argument and returns void.  When a table clear request is made the emulator will call the callable
- * to allow it to clear the table. This is one of the few instances where the framework will call a
- * component method from an internal thread. So even though an EMANE::StatisticTable is thread safe,
- * execution of this callable is not. If you are accessing shared data in the callable you must use a
- * synchronization object.
+ * To address this you need to pass a callable object that takes a single @ref EMANE::StatisticTable
+ * "StatisticTable" * as an argument and returns void.  When a table clear request is made the emulator
+ * will call the callable to allow it to clear the table. This is one of the few instances where the
+ * framework will call a component method from an internal thread. So even though a @ref
+ * EMANE::StatisticTable "StatisticTable" is thread safe, execution of this callable is not. If you are
+ * accessing shared data in the callable you must use a synchronization object.
  *
  * When you register a table with a callable it automatically applies the
- * EMANE::StatisticProperties::CLEARABLE property to the table. If you wish to register a clearable table
- * without a callable use the other form of the method and manually set the
- * EMANE::StatisticProperties::CLEARABLE property.
+ * @ref EMANE::StatisticProperties::CLEARABLE "CLEARABLE" property to the table. If you wish to register
+ * a clearable table without a callable use the other form of the method and manually set the
+ * @ref EMANE::StatisticProperties::CLEARABLE "CLEARABLE" property.
  *
  * @snippet src/libemane/commonlayerstatistics.cc statisticservice-registertableclear-snippet
  */
