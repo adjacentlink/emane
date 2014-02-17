@@ -416,7 +416,7 @@ class EMANEShell(cmd.Cmd):
           Get all statistic tables from all NEM mac layers
           ## get table * mac
 
-          Get two statsitic items from the mac layers of NEM 1 and 2
+          Get two statistic items from the mac layers of NEM 1 and 2
           ## get stat 1 2 mac processedEvents processedDownstreamControl
         """
         return self._process('get',args)
@@ -433,12 +433,12 @@ class EMANEShell(cmd.Cmd):
         The clear command is used to clear statistic elements that have
         been designated as clearable.
 
-        Optional target-specfic statistic element names can be specified.
+        Optional target-specific statistic element names can be specified.
         When no names are specified all clearable statistic elements will
         be cleared.
 
         usage: clear stat <targets> <layer> [<target-specific>]
-               <type>            ::=  'config' | 'stat' | 'table'
+               <type>            ::=  'stat' | 'table'
                <targets>         ::=  <nem> | <nem> <target> | '*'
                <layer>           ::=  'all' | 'mac' | 'phy' | <shim>
                <nem>             ::=  [1-9] | [1-9][0-9]+
@@ -648,7 +648,7 @@ class EMANEShell(cmd.Cmd):
         The set command is used to set configuration elements that have
         been designated as modifiable.
         
-        One or more cofiguration parameter value expressions can be
+        One or more configuration parameter value expressions can be
         specified.
         
         usage: set config <targets> <layer> <expressions>
@@ -667,7 +667,7 @@ class EMANEShell(cmd.Cmd):
           Set the txpower parameter for all NEM phy layers
           ## set config * phy txpower=20
 
-          Set the cwmin0 and cwmax0 paramaters for NEM 1, 2 and 3 mac layers 
+          Set the cwmin0 and cwmax0 parameters for NEM 1, 2 and 3 mac layers 
           ## set config 1 2 3 mac cwmin0=100 cwmax0=200
         """
         args = args.split()
