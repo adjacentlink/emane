@@ -64,6 +64,7 @@ namespace EMANE
  * all component plugins.
  * - @ref ConfigurationService "Configuration Service"
  * - @ref EventService "Event Service"
+ * - @ref LogService "Log Service"
  * - @ref StatisticService "Statistic Service"
  * - @ref TimerService "Timer Service"
  *

@@ -207,11 +207,12 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
                           id_, 
                           pzLayerName, 
                           __func__);
-  
+
   for(const auto & item : update)
     {
       if(item.first == "enablepromiscuousmode")
         {
+          /** [logservice-infolog-snippet] */  
           bPromiscuousMode_ = item.second[0].asBool();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
@@ -222,7 +223,7 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
                                   __func__, 
                                   item.first.c_str(), 
                                   bPromiscuousMode_ ? "on" : "off");
-          
+          /** [logservice-infolog-snippet] */  
         }
       else if(item.first == "datarate")
         {
@@ -682,6 +683,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
             {
             case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
               {
+                /** [logservice-loggerfnvargs-snippet] */  
                 pReceivePropertiesControlMessage =
                   static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage); 
 
@@ -691,6 +693,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                 "MACI %03hu RFPipe::%s Receiver Properties Control Message",
                                                 id_,
                                                 __func__);
+                /** [logservice-loggerfnvargs-snippet] */  
               }
               break;
               
