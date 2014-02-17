@@ -4,7 +4,7 @@ Version: @VERSION@
 Release: 1%{?dist}
 License: BSD
 Group: Applications/System
-URL: http://cs.itd.nrl.navy.mil/work/emane
+URL: https://github.com/adjacentlink/emane
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: libxml2 ace protobuf pcre emane-libs >= %{version} emane-dtds >= %{version}
