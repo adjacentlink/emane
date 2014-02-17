@@ -17,14 +17,25 @@ autom4te.cache
 **/.deps
 **/.libs
 
+# rpm
+emane.spec
+.rpmbuild
+
+# dist
+emane-*.tar.gz
+
 # documentation output
 doc/emane.doxygen
 doc/html
 
 # emane shell
 src/emanesh/build
+src/emanesh/dist
 src/emanesh/emanesh/schema
 src/emanesh/setup.py
+src/emanesh/MANIFEST
+
+# man pages
 *.1
 
 # applications
