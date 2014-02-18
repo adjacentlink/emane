@@ -21,6 +21,9 @@ autom4te.cache
 emane.spec
 .rpmbuild
 
+# deb
+.debbuild
+
 # dist
 emane-*.tar.gz
 
