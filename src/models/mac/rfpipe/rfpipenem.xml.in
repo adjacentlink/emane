@@ -6,7 +6,7 @@
     <param name="fixedantennagain"         value="0.0"/>
     <param name="fixedantennagainenable"   value="on"/>
     <param name="bandwidth"                value="1M"/>
-    <param name="noisemode"                value="none"/>
+    <param name="noisemode"                value="outofband"/>
     <param name="propagationmodel"         value="precomputed"/>
     <param name="systemnoisefigure"        value="4.0"/>
     <param name="subid"                    value="2"/>
