@@ -104,7 +104,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Defines the antenna gain in dBi.");
+                                         "Defines the antenna gain in dBi and is valid only when"
+                                          " fixedantennagainenable is enabled.");
   
   configRegistrar.registerNumeric<bool>("fixedantennagainenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
@@ -115,22 +116,24 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("bandwidth",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {1000000},
-                                                 "Defines the center frequency bandwidth in Hz",
+                                                 "Defines receiver bandwidth in Hz and also serves as the"
+                                                 " default bandwidth for OTA transmissions when not provided"
+                                                 " by the MAC.",
                                                  1);  
 
   configRegistrar.registerNumeric<std::uint64_t>("frequency",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {2347000000},
-                                                 "Defines the transmit center frequency in Hz. This"
-                                                 " value is included in the Common PHY Header of all"
-                                                 " transmitted OTA packets.",
+                                                 "Defines the default transmit center frequency in Hz when not"
+                                                 " provided by the MAC. This value is included in the Common PHY"
+                                                 " Header of all transmitted OTA packets.",
                                                  1);
   
   configRegistrar.registerNumeric<std::uint64_t>("frequencyofinterest",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {2347000000},
-                                                 "Defines a set of frequencies in Hz that the"
-                                                 " will be monitor.",
+                                                 "Defines a set of center frequencies in Hz that are monitored"
+                                                 " for reception as either in-band or out-of-band.",
                                                  std::numeric_limits<std::uint64_t>::min(),
                                                  std::numeric_limits<std::uint64_t>::max(),
                                                  1,
@@ -149,23 +152,27 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("noisebinsize",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {20},
-                                                 "Noise bin size in microseconds.",
+                                                 "Defines the noise bin size in microseconds and translates"
+                                                 " into timing accuracy associated with aligning the start and"
+                                                 " end of reception times of multiple packets for modeling of"
+                                                 " interference effects.",
                                                  1);
 
   configRegistrar.registerNumeric<bool>("noisemaxclampenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Clamp any above max segment offset, segment duration or message"
-                                        " propagation to the maximums defined by noisemaxsegmentoffset,"
+                                        "Defines whether segment offset, segment duration and message"
+                                        " propagation associated with a received packet will be clamped"
+                                        " to their respective maximums defined by noisemaxsegmentoffset,"
                                         " noisemaxsegmentduration and noisemaxmessagepropagation. When"
-                                        " disabled any packet with an above max value will be dropped.",
+                                        " disabled, any packet with an above max value will be dropped.",
                                         1);
 
 
   configRegistrar.registerNumeric<std::uint64_t>("noisemaxsegmentoffset",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {300000},
-                                                 "Noise maximum segment offset microseconds.",
+                                                 "Noise maximum segment offset in microseconds.",
                                                  1);
 
   configRegistrar.registerNumeric<std::uint64_t>("noisemaxmessagepropagation",
@@ -183,11 +190,12 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("timesyncthreshold",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {10000},
-                                                 "Time sync detection threshold in microseconds. If a received"
-                                                 " OTA message is more than this threshold, the message reception"
-                                                 " time will be used as the source transmission time instead of"
-                                                 " the time contained in the Common PHY Header. This allows the"
-                                                 " emulator to be used across distributed nodes without time sync.",
+                                                 "Defines the time sync detection threshold in microseconds."
+                                                 " If a received OTA message is more than this threshold, the"
+                                                 " message reception time will be used as the source transmission"
+                                                 " time instead of the time contained in the Common PHY Header."
+                                                 " This allows the emulator to be used across distributed nodes"
+                                                 " without time sync.",
                                                  1);
  
   configRegistrar.registerNonNumeric<std::string>("propagationmodel",
@@ -202,17 +210,18 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<double>("systemnoisefigure",
                                           EMANE::ConfigurationProperties::DEFAULT,
                                           {4.0},
-                                          "Defines the system noise figure in dB.");
+                                          "Defines the system noise figure in dB and is used to determine the"
+                                          " receiver sensitivity.");
 
   configRegistrar.registerNumeric<std::uint16_t>("subid",
                                                  EMANE::ConfigurationProperties::REQUIRED,
                                                  {},
-                                                 "Defines the Framework PHY subid used by multiple NEM"
+                                                 "Defines the emulator PHY subid used by multiple NEM"
                                                  " definitions. Once instantiated, these NEMs may be using the"
-                                                 " same frequency. In order to differentiate between Framework"
+                                                 " same frequency. In order to differentiate between emulator"
                                                  " PHY instances for different waveforms, the subid is used as"
                                                  " part of the unique waveform identifying tuple: PHY Layer"
-                                                 " Registration Id, Framework PHY subid and packet center"
+                                                 " Registration Id, emulator PHY subid and packet center"
                                                  " frequency.",
                                                  1);
  
