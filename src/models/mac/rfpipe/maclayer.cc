@@ -1051,6 +1051,8 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
        
        commonLayerStatistics_.processOutbound(pkt, 
                                               std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_));
+
+       /** [pysicallayer-frequencycontrolmessage-snippet] */
        
        sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u16SequenceNumber_), 
                             pkt,
@@ -1058,7 +1060,7 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
                                                                        {{0, pendingDownstreamQueueEntry_.durationMicroseconds_}}), // freq (0 means use phy default)
                                 Controls::TimeStampControlMessage::create(sot)});
        
-       
+       /** [pysicallayer-frequencycontrolmessage-snippet] */
       // queue delay
       Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - sot)}; 
       

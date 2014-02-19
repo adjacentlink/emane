@@ -796,7 +796,9 @@ EXCLUDE_SYMLINKS       = NO
 # exclude all test directories for example use the pattern */test/*
 
 EXCLUDE_PATTERNS       = */test/* \
-                         */.svn*
+                         */.svn*  \
+                         *.pb.cc  \
+                         *.pb.h
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -816,6 +818,7 @@ EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           = ../include/emane               \
                          ../src/models/mac/rfpipe       \
                          ../src/models/mac/ieee80211abg \
+                         ../src/models/shim/phyapitest  \
                          ../src/libemane                
                          
 

@@ -58,20 +58,17 @@ namespace EMANE
 /**
  * @mainpage EMANE
  *
-
+ * - General Plugin Services
+ *   - @ref ConfigurationService "Configuration Service"
+ *   - @ref EventService "Event Service"
+ *   - @ref LogService "Log Service"
+ *   - @ref StatisticService "Statistic Service"
+ *   - @ref TimerService "Timer Service"
  *
- * The emulator provides a set of services that are generally available to 
- * all component plugins.
- * - @ref ConfigurationService "Configuration Service"
- * - @ref EventService "Event Service"
- * - @ref LogService "Log Service"
- * - @ref StatisticService "Statistic Service"
- * - @ref TimerService "Timer Service"
+ * - Radio Model Services
+ *   - @ref SpectrumService "Spectrum Service"
  *
- *
- * MAC and Shim component plugins that are contained in NEMs using the emualtor
- * physical layer have access to radio specific services.
- * - @ref SpectrumService "Spectrum Service"
+ * - @ref EmulatorPhysicalLayer "Emulator Physical Layer"
  */
 
 

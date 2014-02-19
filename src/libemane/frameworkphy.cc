@@ -706,7 +706,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                    pAntennaProfileControlMessage->getAntennaProfileId(),
                                    pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
                                    pAntennaProfileControlMessage->getAntennaElevationDegrees());
-         
+
+            /** [physicallayer-attachevent-snippet] */
             AntennaProfiles profiles{{id_,
                   pAntennaProfileControlMessage->getAntennaProfileId(),
                   pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
@@ -715,6 +716,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
             gainManager_.update(profiles);
             
             pkt.attachEvent(0,Events::AntennaProfileEvent{profiles});
+            /** [physicallayer-attachevent-snippet] */
           }
           
           break;
@@ -995,6 +997,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                               pktInfo.getSource(),
                                               pktInfo.getDestination());
                       
+                      /** [physicallayer-sendupstreampacket-snippet] */
                       // send to mac with associated control messages
                       sendUpstreamPacket(pkt,
                                          {Controls::FrequencyControlMessage::create(commonPHYHeader.getBandwidthHz(),
@@ -1003,6 +1006,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                                                                propagationDelay,
                                                                                                span,
                                                                                                dReceiverSensitivitydBm_)});
+                      /** [physicallayer-sendupstreampacket-snippet] */
                     }
                   else
                     {

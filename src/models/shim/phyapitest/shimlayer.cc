@@ -562,6 +562,8 @@ void EMANE::Models::PHYAPITest::ShimLayer::processTimedEvent(TimerEventId,
                                                              const TimePoint &,
                                                              const void *)
 {
+  /** [physicallayer-transmittercontrolmessage-snippet] */
+  
   // the pkt
   DownstreamPacket pkt{PacketInfo{id_, dst_, 0, Clock::now()}, PAYLOAD_BUFFER, u16PacketSize_};
 
@@ -579,6 +581,8 @@ void EMANE::Models::PHYAPITest::ShimLayer::processTimedEvent(TimerEventId,
 
   // send pkt to phy 
   sendDownstreamPacket(pkt, msgs);
+  
+  /** [physicallayer-transmittercontrolmessage-snippet] */
 }
 
 
