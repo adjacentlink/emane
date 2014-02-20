@@ -79,7 +79,7 @@ void EMANE::Application::EventAgentManagerImpl::configure(const ConfigurationUpd
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "ConcreteEventGeneratorManager::configure %s: %s/%hu",
+                                  "EventAgentManagerImpl::configure %s: %s/%hu",
                                   item.first.c_str(),
                                   eventServiceGroupAddr_.get_host_addr(),
                                   eventServiceGroupAddr_.get_port_number());
@@ -91,7 +91,7 @@ void EMANE::Application::EventAgentManagerImpl::configure(const ConfigurationUpd
           
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "ConcreteEventGeneratorManager::configure %s: %s",
+                                  "EventAgentManagerImpl::configure %s: %s",
                                   item.first.c_str(),
                                   sEventServiceDevice_.c_str());
           
@@ -102,13 +102,13 @@ void EMANE::Application::EventAgentManagerImpl::configure(const ConfigurationUpd
           
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "ConcreteEventGeneratorManager::configure %s: %hhu",
+                                  "EventAgentManagerImpl::configure %s: %hhu",
                                   item.first.c_str(),
                                   u8EventServiceTTL_);
         }
       else
         {
-          throw makeException<ConfigureException>("ConcreteEventGeneratorManager: "
+          throw makeException<ConfigureException>("EventAgentManagerImpl: "
                                                   "Unexpected configuration item %s",
                                                   item.first.c_str());
         }

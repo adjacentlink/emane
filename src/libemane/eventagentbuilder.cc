@@ -103,6 +103,13 @@ EMANE::Application::EventAgentBuilder::buildEventAgent(EMANE::NEMId nemId,
   // pass agent to platform service
   pPlatformService->setPlatformServiceUser(buildId,pAgent.get());
 
+  // register event service user with event service
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pAgent.get(),
+                                                              nemId);
+
+
+
   RegistrarProxy registrarProxy{buildId};
 
   // initialize 
