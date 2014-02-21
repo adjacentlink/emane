@@ -45,8 +45,7 @@
 
 #include <ace/Reactor.h>
 
-EMANE::Application::NEMManagerImpl::NEMManagerImpl(EMANE::PlatformId id):
-  platformId_{id},
+EMANE::Application::NEMManagerImpl::NEMManagerImpl():
   thread_{}{}
 
 EMANE::Application::NEMManagerImpl::~NEMManagerImpl(){}
@@ -55,9 +54,8 @@ void EMANE::Application::NEMManagerImpl::add(std::unique_ptr<Application::NEM> &
 {
   if(!platformNEMMap_.insert(std::make_pair(pNEM->getNEMId(),std::move(pNEM))).second)
     {
-      throw makeException<PlatformException>("NEMManagerImpl %hu:  Multiple NEMs with id"
+      throw makeException<PlatformException>("NEMManagerImpl:  Multiple NEMs with id"
                                              " %hu detected",
-                                             platformId_,
                                              pNEM->getNEMId());
     }
 }

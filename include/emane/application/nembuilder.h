@@ -156,7 +156,6 @@ namespace EMANE
       /**
        * Builds an NEM Manager
        *
-       * @param id Platform id
        * @param nems The NEMs comprising the Platform
        * @param request Configuration update request
        *
@@ -171,8 +170,7 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<NEMManager> 
-      buildNEMManager(PlatformId id,
-                      NEMs & nems,
+      buildNEMManager(NEMs & nems,
                       const ConfigurationUpdateRequest & request);
 
     private:

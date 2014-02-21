@@ -59,8 +59,7 @@ EMANE::Application::NEMDirector::construct()
 
   /* Construct a platform first (initialized) */
   std::unique_ptr<NEMManager> 
-    pPlatform{rNEMBuilder_.buildNEMManager(configPlatform_.getPlatformId(),
-                                           nems,
+    pPlatform{rNEMBuilder_.buildNEMManager(nems,
                                            configPlatform_.getConfigurationUpdateRequest())};
 
 
