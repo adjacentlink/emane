@@ -2,16 +2,16 @@
 .SH NAME
 emanegentransportxml - EMANE transport daemon XML generator
 .SH SYNOPSIS
-emanegentransportxml [OPTIONS]... URI
-.SH DESCRIPTON
+emanegentransportxml [OPTIONS]... URI [URI]...
+.SH DESCRIPTION
 .P
-Application generates XML configuration file(s) for virtual interface network entry point(s). Each EMANE platform contains one or more Network Emulation Modules (NEMs). In order to gain access to each of the NEMs, a virtual interface is configured to be brought up (either within the platform configuration file or the nem configuration file). This application scans through the platform and nem configuration files and extracts interface-specific information into separate files. The files can then be used as configuration input into the emanetund application to create an NEM-to-emanetund pair, establishing a 'tunnel' for network traffic.
+emanegentransportxml generates XML configuration file(s) for emanetransportd from emane emulator platform XML.
 .SH OPTIONS
 .P
 The following options are supported:
 .TP
 .B URI
-URI of the XML containing the NEM configuration for the platform.
+\fBURI\fP of the emane emulator platform XML.
 .TP
 .B \--outpath LOCATION
 Specifies output location for generated xml files
@@ -36,10 +36,10 @@ Print usage information and exit.
 .SH Example
 Example application command line:
 .RS
-emanegentransportxml --platform /var/www/html/xml/platform.xml
+emanegentransportxml platform*.xml
 .RE
 .P
-Example transport XML output:
+Example XML output:
 .RS
 .nf
 
@@ -62,13 +62,13 @@ Example transport XML output:
 .SH VERSION
 @VERSION@
 .SH BUGS
-To report a bug, please send and email to <labs at cengen dot com>
+To report a bug, please send and email to <labs at adjacentlink dot com>
 .SH SEE ALSO
-emane(1) emanetund(1) 
+emanetransport(1) emaneeventservice(1) emaneeventd(1) emanesh
 .SH AUTHORS
-DRS CenGen, LLC Columbia, MD
+Adjacent Link LLC
 .br 
-http://cengen.com
+https://github.com/adjacentlink/emane
 .SH NOTES
 .P
 EMANE is released under the BSD License.

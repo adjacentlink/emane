@@ -209,8 +209,6 @@ rm -rf $RPM_BUILD_ROOT
 %doc PROBLEM-REPORT-FORM
 %doc SPONSOR
 %doc %{_mandir}/man1/emanegentransportxml.1.gz
-%doc %{_mandir}/man1/emaneloglevel.1.gz
-
 
 %files dtds
 %defattr(-, root, root)
