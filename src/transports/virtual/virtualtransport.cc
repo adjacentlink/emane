@@ -160,7 +160,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           u64BitRate_ = item.second[0].asUINT64();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %ju",
                                   id_, 
                                   __func__, 
@@ -172,7 +172,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           sDevicePath_ = item.second[0].asString();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s",
                                   id_, 
                                   __func__, 
@@ -184,7 +184,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           sDeviceName_ = item.second[0].asString();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -196,7 +196,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           mask_ =  item.second[0].asINETAddr();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -208,7 +208,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           address_ = item.second[0].asINETAddr();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -220,7 +220,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bARPMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d",
                                   id_, 
                                   __func__, 
@@ -232,7 +232,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bBroadcastMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -244,7 +244,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bArpCacheMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -256,7 +256,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bFlowControlEnable_ = item.second[0].asBool();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
