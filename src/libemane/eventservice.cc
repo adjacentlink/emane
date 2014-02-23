@@ -442,7 +442,7 @@ ACE_THR_FUNC_RETURN  EMANE::EventService::processEventMessage()
                               
                               std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
                               
-                              if(!nemId || registeredNEMId == nemId)
+                              if(!nemId || !registeredNEMId || registeredNEMId == nemId)
                                 {
                                   pEventServiceUser->processEvent(static_cast<EventId>(repeatedSerialization.eventid()),
                                                                   repeatedSerialization.data());

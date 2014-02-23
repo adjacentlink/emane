@@ -103,6 +103,13 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
   // pass generator to platform service
   pPlatformService->setPlatformServiceUser(buildId,pGenerator.get());
 
+  // register event service user with event service
+  // event generators will get any event they register for
+  // regardless of target nem
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pGenerator.get(),
+                                                              0);
+
   RegistrarProxy registrarProxy{buildId};
 
   // initialize 
