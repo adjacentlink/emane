@@ -116,13 +116,20 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                         ConfigurationProperties::DEFAULT |
                                         ConfigurationProperties::MODIFIABLE,
                                         {false},
-                                        "Enable promiscuous mode.");
+                                        "Defines whether promiscuous mode is enabled or not."
+                                        " If promiscuous mode is enabled, all received packets"
+                                        " (intended for the given node or not) that pass the"
+                                        " probability of reception check are sent upstream to"
+                                        " the transport.");
 
   configRegistrar.registerNumeric<std::uint64_t>("datarate",
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {1000000},
-                                                 "Datarate in bps.",
+                                                 "Defines the transmit datarate in bps."
+                                                 " The datarate is used by the transmitter"
+                                                 " to compute the transmit delay (packet size/datarate)"
+                                                 " between successive transmissions.",
                                                  1);
 
   /** [configurationregistrar-registernumeric-snippet] */
@@ -131,44 +138,58 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Jitter in seconds.",
+                                         "Defines delay jitter in seconds applied to each transmitted packet."
+                                         " The jitter is added to the configured delay based on a uniform"
+                                         " random distribution between +/- the configured jitter value.",
                                          0.0f);
 
   configRegistrar.registerNumeric<float>("delay",
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Delay in seconds.",
+                                         "Defines an additional fixed delay in seconds applied to each"
+                                         " transmitted packet.",
                                          0.0f);
 
   configRegistrar.registerNumeric<bool>("flowcontrolenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Enable flow control with transport.");
+                                        "Defines whether flow control is enabled. Flow control only works"
+                                        " with the virtual transport and the setting must match the setting"
+                                        " within the virtual transport configuration.");
 
   configRegistrar.registerNumeric<std::uint16_t>("flowcontroltokens",
                                                  ConfigurationProperties::DEFAULT,
                                                  {10},
-                                                 "Number of flow control tokens.");
+                                                 "Defines the maximum number of flow control tokens"
+                                                 " (packet transmission units) that can be processed from the"
+                                                 " virtual transport without being refreshed. The number of"
+                                                 " available tokens at any given time is coordinated with the"
+                                                 " virtual transport and when the token count reaches zero, no"
+                                                 " further packets are transmitted causing application socket"
+                                                 " queues to backup.");
   /** [configurationregistrar-registernumeric-snippet] */
 
   /** [configurationregistrar-registernonnumeric-snippet] */
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
-                                                  "Absolute URI of the PCR curve file.");
+                                                  "Defines the absolute URI of the Packet Completion Rate (PCR) curve"
+                                                  " file. The PCR curve file contains probability of reception curves"
+                                                  " as a function of Signal to Interference plus Noise Ratio (SINR).");
   /** [configurationregistrar-registernonnumeric-snippet] */
 
   configRegistrar.registerNumeric<bool>("radiometricenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Radio metric enable/disable.");
+                                        "Defines if radio metrics will be reported up via the Radio to Router Interface"
+                                        " (R2RI).");
 
            
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
                                          ConfigurationProperties::DEFAULT,
                                          {1.0f},
-                                         "Radio metric report interval in sec.",
+                                         "Defines the metric report interval in seconds in support of the R2RI feature.",
                                          0.1f,
                                          60.0f);
 
@@ -176,7 +197,8 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {60.0f},
-                                         "Neighbor metric delete time in sec.",
+                                         "Defines the time in seconds of no RF receptions from a given neighbor"
+                                         " before it is removed from the neighbor table.",
                                          1.0f,
                                          3660.0f);
 
