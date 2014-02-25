@@ -69,6 +69,7 @@ namespace EMANE
       /**
        * Builds an EventAgentManager
        *
+       * @param uuid Instance UUID
        * @param agents the list of agents to manage
        * @param request configuration update
        *
@@ -82,7 +83,8 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<EventAgentManager>
-      buildEventAgentManager(EventAgents & agents,
+      buildEventAgentManager(const uuid_t & uuid,
+                             EventAgents & agents,
                              const ConfigurationUpdateRequest& request);
 
       /**

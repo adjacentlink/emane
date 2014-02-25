@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 #include <sstream>
 #include <iostream>
 #include <tuple>
+#include <uuid.h>
 
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
@@ -60,13 +61,14 @@
 #include <ace/OS_NS_fcntl.h>
 #include <ace/OS_NS_stdio.h>
 
-
 void usage();
 
 template<typename T>
 T * createManager()
 {
-  T *  pManager{new T{}};
+  uuid_t uuid{};
+  uuid_generate(uuid);
+  T *  pManager{new T{uuid}};
   auto buildId = EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pManager);
   EMANE::RegistrarProxy registrarProxy{buildId};
   pManager->initialize(registrarProxy);

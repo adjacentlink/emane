@@ -201,7 +201,7 @@ namespace EMANE
  * is used in upstream packet processing and only valid when received as an argument to @ref
  * EMANE::UpstreamTransport::processUpstreamPacket "UpstreamTransport::processUpstreamPacket".
  *
- * The @ref physical layer will send a @ref EMANE::Controls::ReceivePropertiesControlMessage
+ * The physical layer will send a @ref EMANE::Controls::ReceivePropertiesControlMessage
  * "ReceivePropertiesControlMessage" with every @ref EMANE::UpstreamPacket "UpstreamPacket" packet.
  * This control message contains the message transmission time, propagation delay, span and receiver
  * sensitivity. See @ref SpectrumWindow for more information.

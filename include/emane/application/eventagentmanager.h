@@ -39,6 +39,7 @@
 #include "emane/buildable.h"
 
 #include <memory>
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -64,9 +65,29 @@ namespace EMANE
        * @param pAgent EventAgent to add
        */
       virtual void add(std::unique_ptr<EventAgent> & pAgent) = 0;
+
+      /**
+       * Gets the UUID
+       *
+       * @return UUID
+       */
+      const uuid_t & getUUID() const
+      {
+        return uuid_;
+      }
       
     protected:
-      EventAgentManager(){}
+      /**
+       * Creates an EventGeneratorManager instance
+       *
+       * @param uuid Instance UUID
+       */
+      EventAgentManager(const uuid_t & uuid)
+      {
+        uuid_copy(uuid_,uuid);
+      }
+
+      uuid_t uuid_;
     };
   }
 }

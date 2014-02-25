@@ -48,7 +48,8 @@ EMANE::Application::TransportBuilder::TransportBuilder(){}
 EMANE::Application::TransportBuilder::~TransportBuilder(){}
 
 std::unique_ptr<EMANE::Application::TransportManager>
-EMANE::Application::TransportBuilder::buildTransportManager(TransportAdapters & adapters,
+EMANE::Application::TransportBuilder::buildTransportManager(const uuid_t & uuid,
+                                                            TransportAdapters & adapters,
                                                             const ConfigurationUpdateRequest& request)
 {
   if(adapters.empty())
@@ -56,7 +57,7 @@ EMANE::Application::TransportBuilder::buildTransportManager(TransportAdapters & 
       throw BuildException("Trying to build a TransportManager without any TransportAdapters");
     }
 
-  std::unique_ptr<TransportManager> pManager{new TransportManagerImpl};
+  std::unique_ptr<TransportManager> pManager{new TransportManagerImpl{uuid}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pManager.get())};
 

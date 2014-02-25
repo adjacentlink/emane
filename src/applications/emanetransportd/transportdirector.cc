@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -57,7 +57,7 @@ EMANE::Application::TransportDirector::~TransportDirector()
  *
  */
 std::unique_ptr<EMANE::Application::TransportManager>
-EMANE::Application::TransportDirector::construct()
+EMANE::Application::TransportDirector::construct(const uuid_t & uuid)
 {
   /* Now go through configuration of each instance and build appropriately */
   EMANE::TransportInstanceConfigurations::const_iterator instanceIter = 
@@ -75,9 +75,9 @@ EMANE::Application::TransportDirector::construct()
     }
 
   /* Build TransportManager */
-  return rTransportBuilder_.buildTransportManager(
-                                 adapters,
-                                 transportConfig_.getConfigurationUpdateRequest());
+  return rTransportBuilder_.buildTransportManager(uuid,
+                                                  adapters,
+                                                  transportConfig_.getConfigurationUpdateRequest());
 }
 
 /*

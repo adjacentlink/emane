@@ -72,6 +72,7 @@ namespace EMANE
       /**
        * Builds a TransportManager
        *
+       * @param uuid Instance uuid
        * @param adapters transport pairs to manage
        * @param request configuration update
        *
@@ -85,7 +86,8 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<TransportManager>
-      buildTransportManager(TransportAdapters & adapters,
+      buildTransportManager(const uuid_t & uuid,
+                            TransportAdapters & adapters,
                             const ConfigurationUpdateRequest& request);
 
 

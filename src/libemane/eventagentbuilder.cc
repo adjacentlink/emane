@@ -47,7 +47,8 @@ EMANE::Application::EventAgentBuilder::EventAgentBuilder(){}
 EMANE::Application::EventAgentBuilder::~EventAgentBuilder(){}
 
 std::unique_ptr<EMANE::Application::EventAgentManager>
-EMANE::Application::EventAgentBuilder::buildEventAgentManager(EventAgents & agents,
+EMANE::Application::EventAgentBuilder::buildEventAgentManager(const uuid_t & uuid,
+                                                              EventAgents & agents,
                                                               const ConfigurationUpdateRequest& request)
 {
   if(agents.empty())
@@ -55,7 +56,7 @@ EMANE::Application::EventAgentBuilder::buildEventAgentManager(EventAgents & agen
       throw BuildException("Trying to build an EventAgentManager without any EventAgents");
     }
 
-  std::unique_ptr<EventAgentManager> pManager{new EventAgentManagerImpl};
+  std::unique_ptr<EventAgentManager> pManager{new EventAgentManagerImpl{uuid}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pManager.get())};
   

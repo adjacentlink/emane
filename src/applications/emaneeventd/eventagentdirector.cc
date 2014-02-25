@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -56,9 +56,10 @@ EMANE::Application::EventAgentDirector::~EventAgentDirector()
 /*
  * Constructs the event agent and generators
  *
+ * @param uuid Instance UUID
  */
 std::unique_ptr<EMANE::Application::EventAgentManager>
-EMANE::Application::EventAgentDirector::construct()
+EMANE::Application::EventAgentDirector::construct(const uuid_t & uuid)
 {
   /* Get NEM Id */
   NEMId nemId = eventDaemonConfig_.getNEMId();
@@ -74,7 +75,8 @@ EMANE::Application::EventAgentDirector::construct()
     }
   
   /* Build Event Agent Manager */
-  return builder_.buildEventAgentManager(agents,
+  return builder_.buildEventAgentManager(uuid,
+                                         agents,
                                          eventDaemonConfig_.getConfigurationUpdateRequest());
 }
 

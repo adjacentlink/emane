@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -44,7 +44,7 @@ EMANE::Application::EventDirector::~EventDirector()
 {}
 
 std::unique_ptr<EMANE::Application::EventGeneratorManager>
-EMANE::Application::EventDirector::construct()
+EMANE::Application::EventDirector::construct(const uuid_t & uuid)
 {
   /* Build generators. */
   EventGenerators generators;
@@ -56,6 +56,7 @@ EMANE::Application::EventDirector::construct()
     }
 
   /* Build Event Generator Manager */
-  return builder_.buildEventGeneratorManager(generators,
+  return builder_.buildEventGeneratorManager(uuid,
+                                             generators,
                                              eventServiceConfig_.getConfigurationUpdateRequest());
 }

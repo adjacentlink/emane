@@ -69,6 +69,7 @@ namespace EMANE
       /**
        * Builds an EventGeneratorManager
        *
+       * @param uuid Instance UUID
        * @param generators the generators to manage
        * @param request configuration update
        *
@@ -83,7 +84,8 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<EventGeneratorManager> 
-      buildEventGeneratorManager(EventGenerators & generators,
+      buildEventGeneratorManager(const uuid_t & uuid,
+                                 EventGenerators & generators,
                                  const ConfigurationUpdateRequest & request);
 
       /**

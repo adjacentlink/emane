@@ -58,7 +58,7 @@ namespace EMANE
     class NEMManagerImpl : public NEMManager
     {
     public:
-      NEMManagerImpl();
+      NEMManagerImpl(const uuid_t & uuid);
 
       ~NEMManagerImpl();
 

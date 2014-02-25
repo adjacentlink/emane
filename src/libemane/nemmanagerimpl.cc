@@ -45,7 +45,8 @@
 
 #include <ace/Reactor.h>
 
-EMANE::Application::NEMManagerImpl::NEMManagerImpl():
+EMANE::Application::NEMManagerImpl::NEMManagerImpl(const uuid_t & uuid):
+  NEMManager{uuid},
   thread_{}{}
 
 EMANE::Application::NEMManagerImpl::~NEMManagerImpl(){}
@@ -255,10 +256,6 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
 
 void EMANE::Application::NEMManagerImpl::start()
 {
-  uuid_t uuid;
-
-  uuid_generate(uuid);
-  
   if(bOTAManagerChannelEnable_)
     {
       const char * pzDevice{nullptr};
@@ -274,7 +271,7 @@ void EMANE::Application::NEMManagerImpl::start()
                                                 pzDevice,
                                                 bOTAManagerChannelLoopback_,
                                                 u8OTAManagerTTL_,
-                                                uuid);
+                                                uuid_);
         }
       catch(OTAException & exp)
         {
@@ -288,7 +285,7 @@ void EMANE::Application::NEMManagerImpl::start()
                                                      sEventServiceDevice_,
                                                      u8EventServiceTTL_,
                                                      true,
-                                                     uuid);
+                                                     uuid_);
     }
   catch(EventServiceException & e)
     {

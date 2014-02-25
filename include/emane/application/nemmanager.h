@@ -40,6 +40,7 @@
 #include "emane/application/nem.h"
 
 #include <memory>
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -68,9 +69,29 @@ namespace EMANE
        * while adding and NEM to a platform
        */
       virtual void add(std::unique_ptr<NEM> & pNEM) = 0;
+
+      /**
+       * Gets the UUID
+       *
+       * @return UUID
+       */
+      const uuid_t & getUUID() const
+      {
+        return uuid_;
+      }
       
     protected:
-      NEMManager(){}
+      /**
+       * Creates an NEMManager instance
+       *
+       * @param uuid Instance UUID
+       */
+      NEMManager(const uuid_t & uuid)
+        {
+          uuid_copy(uuid_,uuid);
+        }
+
+      uuid_t uuid_;
     };
   }
 }
