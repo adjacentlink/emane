@@ -37,7 +37,7 @@ doc/html
 # emane shell
 src/emanesh/build
 src/emanesh/dist
-src/emanesh/emanesh/schema
+src/emanesh/emanesh/schema/manifest.xsd
 src/emanesh/setup.py
 src/emanesh/MANIFEST
 
