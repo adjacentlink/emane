@@ -31,7 +31,7 @@
 #
 
 import event_pb2
-import otaheader_pb2
+from ..ota import otaheader_pb2
 from . import EventServiceException
 import os
 import socket

@@ -7,10 +7,11 @@ setup(name='emanesh',
       author='Adjacent Link',
       author_email='emane at adjacent link dot com',
       url="https://github.com/adjacentlink/emane",
-      packages=['emanesh','emanesh.events'],
+      packages=['emanesh','emanesh.events','emanesh.ota'],
       scripts=['scripts/emanesh',
                'scripts/emaneevent-dump',
-               'scripts/emaneevent-pathloss'],
+               'scripts/emaneevent-pathloss',
+               'scripts/emaneota-publisher'],
       package_data={'emanesh' :['schema/*.xsd']},
       license = 'BSD'
       )

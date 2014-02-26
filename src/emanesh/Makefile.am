@@ -15,14 +15,19 @@ EXTRA_DIST=                      \
  emanesh/events/pathlossevent.py \
  emanesh/controlportclient.py    \
  emanesh/controlportexception.py \
+ emanesh/ota/__init__.py         \
+ emanesh/ota/otamessage.py       \
+ emanesh/ota/otapublisherexception.py \
+ emanesh/ota/otapublisher.py     \
  emanesh/__init__.py             \
  emanesh/emaneshell.py           \
  emanesh/manifest.py             \
  emanesh/manifestexception.py    \
- emanesh/schema                  \
+ emanesh/schema/otapublisherscenario.xsd \
  scripts/emanesh                 \
  scripts/emaneevent-dump         \
  scripts/emaneevent-pathloss     \
+ scripts/emaneota-publisher      \
  setup.py.in                     \
  stdeb.cfg.in
 
@@ -34,7 +39,8 @@ BUILT_SOURCES =                  \
  emanesh/events/pathlossevent_pb2.py    \
  emanesh/remotecontrolportapi_pb2.py \
  emanesh/events/onehopneighborsevent_pb2.py \
- emanesh/events/otaheader_pb2.py \
+ emanesh/ota/otaheader_pb2.py \
+ emanesh/ota/commonphyheader_pb2.py \
  emanesh/schema/manifest.xsd \
  setup.py
 
@@ -52,12 +58,12 @@ clean-local: setup.py
 	-rm -f emanesh/events/pathlossevent_pb2.py
 	-rm -f emanesh/remotecontrolportapi_pb2.py
 	-rm -f emanesh/events/onehopneighborsevent_pb2.py
-	-rm -f emanesh/events/otaheader_pb2.py
+	-rm -f emanesh/ota/otaheader_pb2.py
+	-rm -f emanesh/ota/commonphyheader_pb2.py
 	-rm -f emanesh/schema/manifest.xsd
 	-rm -rf dist
 	-rm -rf deb_dist
 	-rm -f stdeb.cfg
-	-rm -r emanesh/schema
 	-find . -name "*.pyc" -delete
 
 DISTCLEANFILES=setup.py
@@ -79,8 +85,11 @@ emanesh/events/event_pb2.py: ../libemane/event.proto
 emanesh/events/locationevent_pb2.py: ../libemane/locationevent.proto
 	protoc -I../libemane --python_out=emanesh/events  $<
 
-emanesh/events/otaheader_pb2.py: ../libemane/otaheader.proto
-	protoc -I../libemane --python_out=emanesh/events  $<
+emanesh/ota/otaheader_pb2.py: ../libemane/otaheader.proto
+	protoc -I../libemane --python_out=emanesh/ota  $<
+
+emanesh/ota/commonphyheader_pb2.py: ../libemane/commonphyheader.proto
+	protoc -I../libemane --python_out=emanesh/ota  $<
 
 emanesh/events/pathlossevent_pb2.py: ../libemane/pathlossevent.proto
 	protoc -I../libemane --python_out=emanesh/events  $<
@@ -96,9 +105,6 @@ emanesh/events/onehopneighborsevent_pb2.py: ../models/mac/ieee80211abg/onehopnei
 
 emanesh/schema/manifest.xsd: @top_srcdir@/schema/manifest.xsd	emanesh/schema
 	cp $< $@
-
-emanesh/schema:
-	mkdir -p emanesh/schema
 
 setup.py:	setup.py.in
 	if test -f $@; then chmod u+w $@; fi
