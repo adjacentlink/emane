@@ -17,6 +17,9 @@ autom4te.cache
 **/.deps
 **/.libs
 
+# python byte code
+*.pyc
+
 # rpm
 emane.spec
 .rpmbuild
