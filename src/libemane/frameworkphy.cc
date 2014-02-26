@@ -1079,21 +1079,21 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                       exp.what());
             }
         }
-      else
-        {
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
-                                                 DROP_CODE_OUT_OF_BAND);
-          
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
-                                  " drop out of band",
-                                  id_,
-                                  __func__,
-                                  pktInfo.getSource(),
-                                  pktInfo.getDestination());
-        }
+    }
+  else
+    {
+      commonLayerStatistics_.processOutbound(pkt, 
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                                             DROP_CODE_OUT_OF_BAND);
+      
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
+                              " drop out of band",
+                              id_,
+                              __func__,
+                              pktInfo.getSource(),
+                              pktInfo.getDestination());
     }
 }
 
