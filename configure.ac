@@ -85,6 +85,10 @@ PKG_CHECK_MODULES([protobuf], protobuf)
 PKG_CHECK_MODULES([libpcre], libpcre)
 PKG_CHECK_MODULES([libuuid], uuid)
 
+AC_CHECK_HEADER(sys/timerfd.h,
+ [],
+ [AC_MSG_ERROR("Missing sys/timerfd.h header")])
+
 _cppflags=${CPPFLAGS}
 _ldflags=${LDFLAGS}
 

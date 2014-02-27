@@ -16371,6 +16371,16 @@ $as_echo "yes" >&6; }
 
 fi
 
+
+ac_fn_cxx_check_header_mongrel "$LINENO" "sys/timerfd.h" "ac_cv_header_sys_timerfd_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_timerfd_h" = xyes; then :
+
+else
+  as_fn_error $? "\"Missing sys/timerfd.h header\"" "$LINENO" 5
+fi
+
+
+
 _cppflags=${CPPFLAGS}
 _ldflags=${LDFLAGS}
 
@@ -16382,7 +16392,6 @@ fi
 if test "${ACE_LIBS}" != ""; then
    LDFLAGS="${ACE_LIBS} ${LDFLAGS}"
 fi
-
 
 ac_fn_cxx_check_header_mongrel "$LINENO" "ace/OS_main.h" "ac_cv_header_ace_OS_main_h" "$ac_includes_default"
 if test "x$ac_cv_header_ace_OS_main_h" = xyes; then :
