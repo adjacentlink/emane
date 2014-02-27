@@ -43,10 +43,10 @@ message LoggerMessage
 
   enum LogLevel
   {
-    ABORT = 0;
-    ERROR = 1;
-    INFO =  2;
-    DEBUG = 3;
+    ABORT_LEVEL = 0;
+    ERROR_LEVEL = 1;
+    INFO_LEVEL  = 2;
+    DEBUG_LEVEL = 3;
   }
 
   message RecordMessage
