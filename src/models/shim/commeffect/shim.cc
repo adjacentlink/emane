@@ -125,25 +125,35 @@ void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar)
   configRegistrar.registerNonNumeric<std::string>("filterfile",
                                                   ConfigurationProperties::NONE,
                                                   {},
-                                                  "Comm Effect filter XML file.");
+                                                  "Defines the absolute URI of the effects filter XML"
+                                                  " file which contains static filters to control"
+                                                  " network impairments.");
 
 
   configRegistrar.registerNumeric<std::uint32_t>("groupid",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {0},
                                                  "Defines the Comm Effect Group Id.  Only NEMs in the"
-                                                 " same Comm Effect Group can communticate.");
+                                                 " same Comm Effect Group can communicate.");
 
   configRegistrar.registerNumeric<bool>("enablepromiscuousmode",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Enable promiscuous mode.");
+                                        "Defines whether promiscuous mode is enabled or not. If promiscuous"
+                                        " mode is enabled, all received packets (intended for the given node"
+                                        " or not) that pass the receive test are sent upstream to the transport.");
 
 
   configRegistrar.registerNumeric<double>("receivebufferperiod",
                                           EMANE::ConfigurationProperties::DEFAULT,
                                          {1.0},
-                                         "Receive buffer period in seconds.");
+                                         "Defines the max buffering time in seconds for packets received from an NEM."
+                                          " The buffering interval for a given packet is determined by the bitrate"
+                                          " for the source NEM and the packet size. Packets are then placed in a"
+                                          " timed queue based on this interval and all packets that would cause the"
+                                          " receive buffer period to be exceeded are discarded. A value of 0.0"
+                                          " disables the limit and allows all received packets to stack up in the"
+                                          " queue.");
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 

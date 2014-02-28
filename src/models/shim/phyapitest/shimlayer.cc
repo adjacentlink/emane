@@ -96,18 +96,18 @@ void EMANE::Models::PHYAPITest::ShimLayer::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<float>("packetrate",
                                          ConfigurationProperties::DEFAULT,
                                          {1},
-                                        "Packet rate in packets per second.");
+                                        "Defines the transmit rate in packets per second.");
 
   configRegistrar.registerNumeric<std::uint16_t>("destination",
                                                  ConfigurationProperties::DEFAULT,
                                                  {NEM_BROADCAST_MAC_ADDRESS},
-                                                 "Destination NEM.",
+                                                 "Defines the destination NEM Id.",
                                                  1);
 
   configRegistrar.registerNumeric<std::uint64_t>("bandwidth",
                                                  ConfigurationProperties::REQUIRED,
                                                  {},
-                                                 "Defines the center frequency bandwidth in Hz",
+                                                 "Defines the transmitter bandwidth in Hz.",
                                                  1);  
 
   configRegistrar.registerNumeric<std::uint16_t>("antennaprofileid",
@@ -121,14 +121,14 @@ void EMANE::Models::PHYAPITest::ShimLayer::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<double>("antennaazimuth",
                                          ConfigurationProperties::NONE,
                                          {},
-                                         "Defines the antenna azimuth in degrees.",
+                                         "Defines the antenna azimuth pointing angle in degrees.",
                                          0,
                                          360);
   
   configRegistrar.registerNumeric<double>("antennaelevation",
                                          ConfigurationProperties::NONE,
                                          {},
-                                         "Defines the antenna elevation in degrees.",
+                                         "Defines the antenna elevation pointing angle in degrees.",
                                          -90,
                                          90);
 
@@ -136,7 +136,10 @@ void EMANE::Models::PHYAPITest::ShimLayer::initialize(Registrar & registrar)
   configRegistrar.registerNonNumeric<std::string>("frequency",
                                                   ConfigurationProperties::NONE,
                                                   {},
-                                                  "Defines frequency diversity segments."
+                                                  "Defines a list of transmit frquency segments with each item"
+                                                  " containing the following 3 elements:  1) frequency (center"
+                                                  " frequency Hz), 2) duration (semgent duraton in usec), and 3)"
+                                                  " offset (transmit offset from TxTime in usec)."
                                                   " <Frequency>:<Duration>:<Offset>",
                                                   0,
                                                   255,
@@ -150,7 +153,9 @@ void EMANE::Models::PHYAPITest::ShimLayer::initialize(Registrar & registrar)
   configRegistrar.registerNonNumeric<std::string>("transmitter",
                                                   ConfigurationProperties::NONE,
                                                   {},
-                                                  "Defines additional transmitters. <NEM Id>:<Tx Power>.",
+                                                  "Defines a list of additional collaborative transmitters to be"
+                                                  " included.  Each item in the list will include NEM ID and"
+                                                  " transmit power in dBm. <NEM Id>:<Tx Power>.",
                                                   0,
                                                   255,
                                                   "^\\d+:\\d+(\\.\\d+)?$");
