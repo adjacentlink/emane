@@ -67,6 +67,8 @@ namespace EMANE
     void stop() override;
     
     void destroy() throw() override;
+
+    void processConfiguration(const ConfigurationUpdate & update) override;
     
     void processUpstreamPacket(const CommonPHYHeader & hdr,
                                UpstreamPacket & pkt,

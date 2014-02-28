@@ -554,6 +554,38 @@ void EMANE::FrameworkPHY::destroy() throw()
 
 }
 
+void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & update)
+{
+  for(const auto & item : update)
+    {
+      if(item.first == "fixedantennagain")
+        {
+          optionalFixedAntennaGaindBi_.first = item.second[0].asDouble();
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBi",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  optionalFixedAntennaGaindBi_.first);
+          
+        }
+      else if(item.first == "txpower")
+        {
+          dTxPowerdBm_ = item.second[0].asDouble();
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBm",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  dTxPowerdBm_);
+        }
+    }
+}
+
 void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
