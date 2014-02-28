@@ -11,7 +11,8 @@ setup(name='emanesh',
       scripts=['scripts/emanesh',
                'scripts/emaneevent-dump',
                'scripts/emaneevent-pathloss',
-               'scripts/emaneota-publisher'],
+               'scripts/emaneota-publisher',
+               'scripts/emanecommand-eel'],
       package_data={'emanesh' :['schema/*.xsd']},
       license = 'BSD'
       )

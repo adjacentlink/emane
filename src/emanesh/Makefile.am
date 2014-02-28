@@ -28,6 +28,7 @@ EXTRA_DIST=                      \
  scripts/emaneevent-dump         \
  scripts/emaneevent-pathloss     \
  scripts/emaneota-publisher      \
+ scripts/emanecommand-eel        \
  setup.py.in                     \
  stdeb.cfg.in
 
