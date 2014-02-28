@@ -796,7 +796,7 @@ class EMANEShell(cmd.Cmd):
 
             try:
                 self._client.updateConfiguration(buildId,updates)
-                print "nem %-3d %s "%(target,component),"configuration udpated"
+                print "nem %-3d %s "%(target,component),"configuration updated"
                 
             except ControlPortException, exp:
                 if exp.fatal():
