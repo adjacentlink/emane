@@ -138,10 +138,13 @@ class EMANE::NeighborMetricManager::Implementation
           {
             // get the age
             const Microseconds ageMicroseconds{
-              std::chrono::duration_cast<Microseconds>(currentTime - iter->second.lastRxTime_)};  
-     
+              std::chrono::duration_cast<Microseconds>(currentTime - iter->second->lastRxTime_)};  
+
+            // only the entries for the r2ri reporting are checked for age     
             if(ageMicroseconds > neighborDeleteAgeMicroseconds_)
               {
+                delete (iter->second);
+                
                 // erase and bump
                 neighborDataReportMap_.erase(iter++);
               }
@@ -150,31 +153,31 @@ class EMANE::NeighborMetricManager::Implementation
                 float fSINRAvg{}, fSINRStd{}, fNoiseFloorAvg{}, fNoiseFloorStdv{};
 
                 // get sinr avg and standard deviation 
-                getAvgAndStd(iter->second.fSINRSum_, 
-                             iter->second.fSINRSum2_, 
-                             iter->second.u32NumRxFrames_, 
+                getAvgAndStd(iter->second->fSINRSum_, 
+                             iter->second->fSINRSum2_, 
+                             iter->second->u32NumRxFrames_, 
                              fSINRAvg,
                              fSINRStd);
 
                 // get noise floor avg and standard deviation 
-                getAvgAndStd(iter->second.fNoiseFloorSum_, 
-                             iter->second.fNoiseFloorSum2_, 
-                             iter->second.u32NumRxFrames_, 
+                getAvgAndStd(iter->second->fNoiseFloorSum_, 
+                             iter->second->fNoiseFloorSum2_, 
+                             iter->second->u32NumRxFrames_, 
                              fNoiseFloorAvg,
                              fNoiseFloorStdv);
 
                 EMANE::Controls::R2RINeighborMetric 
-                  neighborMetric{iter->first,                             // nbr id
-                                 iter->second.u32NumRxFrames_,            // num rx frames (samples)
-                                 iter->second.u32NumTxFrames_,            // num tx frames (samples)
-                                 iter->second.u32NumRxMissedFrames_,      // num rx missed frames
-                                 iter->second.rxUtilizationMicroseconds_, // bandwidth consumption
-                                 fSINRAvg,                                // sinr avg 
-                                 fSINRStd,                                // sinr std deviation
-                                 fNoiseFloorAvg,                          // noisefloor avg
-                                 fNoiseFloorStdv,                         // noise floor std deviation
-                                 iter->second.u64RxDataRateAvg_,          // avg rx datarate
-                                 iter->second.u64TxDataRateAvg_};         // avg tx datarate
+                  neighborMetric{iter->first,                              // nbr id
+                                 iter->second->u32NumRxFrames_,            // num rx frames (samples)
+                                 iter->second->u32NumTxFrames_,            // num tx frames (samples)
+                                 iter->second->u32NumRxMissedFrames_,      // num rx missed frames
+                                 iter->second->rxUtilizationMicroseconds_, // bandwidth consumption
+                                 fSINRAvg,                                 // sinr avg 
+                                 fSINRStd,                                 // sinr std deviation
+                                 fNoiseFloorAvg,                           // noisefloor avg
+                                 fNoiseFloorStdv,                          // noise floor std deviation
+                                 iter->second->u64RxDataRateAvg_,          // avg rx datarate
+                                 iter->second->u64TxDataRateAvg_};         // avg tx datarate
 
                 neighborMetrics.push_back(neighborMetric);
 
@@ -274,7 +277,7 @@ class EMANE::NeighborMetricManager::Implementation
       };
 
 
-    using NeighborDataMap = std::map<EMANE::NEMId, NeighborData>;
+    using NeighborDataMap = std::map<EMANE::NEMId, NeighborData *>;
   
     using Counter = std::uint64_t;
 
@@ -295,32 +298,32 @@ class EMANE::NeighborMetricManager::Implementation
     StatisticTable<NEMId> * pStatisticNeighborMetricTable_;
 
 
-    NeighborData & lookupReportMetric_i(NEMId nemId)
+    NeighborData * lookupReportMetric_i(NEMId nemId)
       {
         auto iter = neighborDataReportMap_.find(nemId);
 
         if(iter == neighborDataReportMap_.end())
          {
             // add the report data for this nem
-            iter = neighborDataReportMap_.insert(std::make_pair(nemId, NeighborData(nemId))).first;
+            iter = neighborDataReportMap_.insert(std::make_pair(nemId, new NeighborData{nemId})).first;
          }
 
-        iter->second.bCleared_ = false;
+        iter->second->bCleared_ = false;
 
         return iter->second;
       }
 
 
-    NeighborData & lookupStatisticMetric_i(NEMId nemId)
+    NeighborData * lookupStatisticMetric_i(NEMId nemId)
       {
         auto iter = neighborDataStatisticMap_.find(nemId);
 
-        if(iter == neighborDataStatisticMap_.end() || iter->second.bCleared_)
+        if(iter == neighborDataStatisticMap_.end() || iter->second->bCleared_)
           {
             if(iter == neighborDataStatisticMap_.end())
               {
                 // add the statistic data for this nem
-                iter = neighborDataStatisticMap_.insert(std::make_pair(nemId, NeighborData(nemId))).first;
+                iter = neighborDataStatisticMap_.insert(std::make_pair(nemId, new NeighborData{nemId})).first;
               }
 
             // first column is nemid
@@ -336,7 +339,7 @@ class EMANE::NeighborMetricManager::Implementation
             pStatisticNeighborMetricTable_->addRow(nemId, v);
           }
 
-        iter->second.bCleared_ = false;
+        iter->second->bCleared_ = false;
 
         return iter->second;
       }
@@ -346,9 +349,9 @@ class EMANE::NeighborMetricManager::Implementation
       {
         std::lock_guard<std::mutex> m(reportDataMutex_);
 
-        NeighborData & rNeighborMetric = lookupReportMetric_i(dst);
+        NeighborData * pNeighborMetric = lookupReportMetric_i(dst);
 
-        updateReportTxActivity_i(rNeighborMetric, u64DataRatebps, txTime);
+        updateReportTxActivity_i(pNeighborMetric, u64DataRatebps, txTime);
       }
 
 
@@ -356,9 +359,9 @@ class EMANE::NeighborMetricManager::Implementation
       {
         std::lock_guard<std::mutex> m(statisticTableMutex_);
 
-        NeighborData & rNeighborMetric = lookupStatisticMetric_i(dst);
+        NeighborData * pNeighborMetric = lookupStatisticMetric_i(dst);
 
-        updateStatisticTxActivity_i(rNeighborMetric, u64DataRatebps, txTime);
+        updateStatisticTxActivity_i(pNeighborMetric, u64DataRatebps, txTime);
       }
 
 
@@ -368,9 +371,9 @@ class EMANE::NeighborMetricManager::Implementation
       {
          std::lock_guard<std::mutex> m(reportDataMutex_);
 
-         NeighborData & rNeighborMetric = lookupReportMetric_i(src);
+         NeighborData * pNeighborMetric = lookupReportMetric_i(src);
 
-         updateReportRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+         updateReportRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
       }
 
 
@@ -380,9 +383,9 @@ class EMANE::NeighborMetricManager::Implementation
       {
          std::lock_guard<std::mutex> m(statisticTableMutex_);
 
-         NeighborData & rNeighborMetric = lookupStatisticMetric_i(src);
+         NeighborData * pNeighborMetric = lookupStatisticMetric_i(src);
 
-         updateStatisticRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+         updateStatisticRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
       }
 
 
@@ -396,11 +399,11 @@ class EMANE::NeighborMetricManager::Implementation
       {
         std::lock_guard<std::mutex> m(reportDataMutex_);
 
-        NeighborData & rNeighborMetric = lookupReportMetric_i(src);
+        NeighborData * pNeighborMetric = lookupReportMetric_i(src);
 
-        updateReportRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+        updateReportRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
 
-        updateReportChannelRxActivity_i(rNeighborMetric, 
+        updateReportChannelRxActivity_i(pNeighborMetric, 
                                         fSINR, 
                                         fNoiseFloor, 
                                         durationMicroseconds, 
@@ -418,11 +421,11 @@ class EMANE::NeighborMetricManager::Implementation
       {
         std::lock_guard<std::mutex> m(statisticTableMutex_);
 
-        NeighborData & rNeighborMetric = lookupStatisticMetric_i(src);
+        NeighborData * pNeighborMetric = lookupStatisticMetric_i(src);
 
-        updateStatisticRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+        updateStatisticRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
 
-        updateStatisticChannelRxActivity_i(rNeighborMetric, 
+        updateStatisticChannelRxActivity_i(pNeighborMetric, 
                                            fSINR, 
                                            fNoiseFloor, 
                                            durationMicroseconds, 
@@ -432,51 +435,51 @@ class EMANE::NeighborMetricManager::Implementation
 
 
 
-    void updateTxActivity_i(NeighborData & rNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
+    void updateTxActivity_i(NeighborData * pNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
       {
-        rNeighborMetric.u32NumTxFrames_ += 1;
+        pNeighborMetric->u32NumTxFrames_ += 1;
 
-        rNeighborMetric.lastTxTime_ = txTime;
+        pNeighborMetric->lastTxTime_ = txTime;
 
-        updateRunningAverage(rNeighborMetric.u64TxDataRateAvg_, 
-                             rNeighborMetric.u32NumTxFrames_, 
+        updateRunningAverage(pNeighborMetric->u64TxDataRateAvg_, 
+                             pNeighborMetric->u32NumTxFrames_, 
                              u64DataRatebps);
 
-        updateMinMax(rNeighborMetric.u64TxDataRateMin_, rNeighborMetric.u64TxDataRateMax_, u64DataRatebps);
+        updateMinMax(pNeighborMetric->u64TxDataRateMin_, pNeighborMetric->u64TxDataRateMax_, u64DataRatebps);
       }
 
 
-    void updateReportTxActivity_i(NeighborData & rNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
+    void updateReportTxActivity_i(NeighborData * pNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
       {
-        updateTxActivity_i(rNeighborMetric, u64DataRatebps, txTime);
+        updateTxActivity_i(pNeighborMetric, u64DataRatebps, txTime);
       }
 
 
-    void updateStatisticTxActivity_i(NeighborData & rNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
+    void updateStatisticTxActivity_i(NeighborData * pNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
       {
-        updateTxActivity_i(rNeighborMetric, u64DataRatebps, txTime);
+        updateTxActivity_i(pNeighborMetric, u64DataRatebps, txTime);
 
         // set statistic(s)
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 TX_FRAMES, 
-                                                Any{rNeighborMetric.u32NumTxFrames_});
+                                                Any{pNeighborMetric->u32NumTxFrames_});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 TX_DATARATE_AVG, 
-                                                Any{rNeighborMetric.u64TxDataRateAvg_});
+                                                Any{pNeighborMetric->u64TxDataRateAvg_});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 LAST_TX_TIME, 
                                                 Any{std::chrono::duration_cast<DoubleSeconds>(
-                                                  rNeighborMetric.lastTxTime_.time_since_epoch()).count()});
+                                                  pNeighborMetric->lastTxTime_.time_since_epoch()).count()});
       }
 
 
-     void updateRxActivity_i(NeighborData & rNeighborMetric, 
+     void updateRxActivity_i(NeighborData * pNeighborMetric, 
                              std::uint16_t u16SeqNum, 
                              const EMANE::TimePoint & rxTime)
       {
-         std::int32_t iSeqDelta{u16SeqNum - rNeighborMetric.u16LastRxSeqNum_};
+         std::int32_t iSeqDelta{u16SeqNum - pNeighborMetric->u16LastRxSeqNum_};
 
          // check for roll over
          if(iSeqDelta < 0)
@@ -487,162 +490,162 @@ class EMANE::NeighborMetricManager::Implementation
          // check for missed frames
          if(iSeqDelta > 1)
            {
-             rNeighborMetric.u32NumRxMissedFrames_ += (iSeqDelta - 1);
+             pNeighborMetric->u32NumRxMissedFrames_ += (iSeqDelta - 1);
            }
 
-         rNeighborMetric.u32NumRxFrames_ += 1;
+         pNeighborMetric->u32NumRxFrames_ += 1;
  
-         rNeighborMetric.u16LastRxSeqNum_ = u16SeqNum;
+         pNeighborMetric->u16LastRxSeqNum_ = u16SeqNum;
 
-         rNeighborMetric.lastRxTime_ = rxTime;
+         pNeighborMetric->lastRxTime_ = rxTime;
       }
 
 
    
-    void updateReportRxActivity_i(NeighborData & rNeighborMetric, 
+    void updateReportRxActivity_i(NeighborData * pNeighborMetric, 
                                   std::uint16_t u16SeqNum, 
                                   const EMANE::TimePoint & rxTime)
       {
-        updateRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+        updateRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
       }
 
 
-    void updateStatisticRxActivity_i(NeighborData & rNeighborMetric, 
+    void updateStatisticRxActivity_i(NeighborData * pNeighborMetric, 
                                     std::uint16_t u16SeqNum, 
                                     const EMANE::TimePoint & rxTime)
       {
-        updateRxActivity_i(rNeighborMetric, u16SeqNum, rxTime);
+        updateRxActivity_i(pNeighborMetric, u16SeqNum, rxTime);
 
         // update statistic(s)
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 RX_FRAMES, 
-                                                Any{rNeighborMetric.u32NumRxFrames_});
+                                                Any{pNeighborMetric->u32NumRxFrames_});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 MISSED_FRAMES, 
-                                                Any{rNeighborMetric.u32NumRxMissedFrames_});
+                                                Any{pNeighborMetric->u32NumRxMissedFrames_});
       }
 
 
-    void updateChannelRxActivity_i(NeighborData & rNeighborMetric,
+    void updateChannelRxActivity_i(NeighborData * pNeighborMetric,
                                    float fSINR,
                                    float fNoiseFloor,
                                    const Microseconds & durationMicroseconds,
                                    std::uint64_t u64DataRatebps)
       {
-        rNeighborMetric.rxUtilizationMicroseconds_ += durationMicroseconds;
+        pNeighborMetric->rxUtilizationMicroseconds_ += durationMicroseconds;
 
-        rNeighborMetric.fSINRSum_  += fSINR;
-        rNeighborMetric.fSINRSum2_ += (fSINR * fSINR);
+        pNeighborMetric->fSINRSum_  += fSINR;
+        pNeighborMetric->fSINRSum2_ += (fSINR * fSINR);
 
-        rNeighborMetric.fNoiseFloorSum_  += fNoiseFloor;
-        rNeighborMetric.fNoiseFloorSum2_ += (fNoiseFloor * fNoiseFloor);
+        pNeighborMetric->fNoiseFloorSum_  += fNoiseFloor;
+        pNeighborMetric->fNoiseFloorSum2_ += (fNoiseFloor * fNoiseFloor);
 
-        updateMinMax(rNeighborMetric.u64RxDataRateMin_, rNeighborMetric.u64RxDataRateMax_, u64DataRatebps);
+        updateMinMax(pNeighborMetric->u64RxDataRateMin_, pNeighborMetric->u64RxDataRateMax_, u64DataRatebps);
 
-        updateRunningAverage(rNeighborMetric.u64RxDataRateAvg_, rNeighborMetric.u32NumRxFrames_, u64DataRatebps);
+        updateRunningAverage(pNeighborMetric->u64RxDataRateAvg_, pNeighborMetric->u32NumRxFrames_, u64DataRatebps);
       }
 
 
-    void updateReportChannelRxActivity_i(NeighborData & rNeighborMetric,
+    void updateReportChannelRxActivity_i(NeighborData * pNeighborMetric,
                                          float fSINR,
                                          float fNoiseFloor,
                                          const Microseconds & durationMicroseconds,
                                          std::uint64_t u64DataRatebps)
       {
-        updateChannelRxActivity_i(rNeighborMetric, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
+        updateChannelRxActivity_i(pNeighborMetric, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
       }
 
 
-    void updateStatisticChannelRxActivity_i(NeighborData & rNeighborMetric,
+    void updateStatisticChannelRxActivity_i(NeighborData * pNeighborMetric,
                                             float fSINR,
                                             float fNoiseFloor,
                                             const Microseconds & durationMicroseconds,
                                             std::uint64_t u64DataRatebps)
       {
-        updateChannelRxActivity_i(rNeighborMetric, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
+        updateChannelRxActivity_i(pNeighborMetric, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
 
         float fSINRAvg{}, fSINRStdv{}, fNoiseFloorAvg{}, fNoiseFloorStdv{};
 
         // get sinr avg and standard deviation 
-        getAvgAndStd(rNeighborMetric.fSINRSum_, 
-                     rNeighborMetric.fSINRSum2_, 
-                     rNeighborMetric.u32NumRxFrames_, 
+        getAvgAndStd(pNeighborMetric->fSINRSum_, 
+                     pNeighborMetric->fSINRSum2_, 
+                     pNeighborMetric->u32NumRxFrames_, 
                      fSINRAvg,
                      fSINRStdv);
 
         // get noise floor avg and standard deviation 
-        getAvgAndStd(rNeighborMetric.fNoiseFloorSum_, 
-                     rNeighborMetric.fNoiseFloorSum2_, 
-                     rNeighborMetric.u32NumRxFrames_, 
+        getAvgAndStd(pNeighborMetric->fNoiseFloorSum_, 
+                     pNeighborMetric->fNoiseFloorSum2_, 
+                     pNeighborMetric->u32NumRxFrames_, 
                      fNoiseFloorAvg,
                      fNoiseFloorStdv);
 
 
         // update statistic(s)
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 BW_CONSUMPTION, 
-                                                Any{rNeighborMetric.rxUtilizationMicroseconds_.count()});
+                                                Any{pNeighborMetric->rxUtilizationMicroseconds_.count()});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 LAST_RX_TIME, 
                                                 Any{std::chrono::duration_cast<DoubleSeconds>(
-                                                  rNeighborMetric.lastRxTime_.time_since_epoch()).count()});
+                                                  pNeighborMetric->lastRxTime_.time_since_epoch()).count()});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 SINR_AVG, 
                                                 Any{fSINRAvg});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 SINR_STDV, 
                                                 Any{fSINRStdv});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 NOISE_FLOOR_AVG, 
                                                 Any{fNoiseFloorAvg});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 NOISE_FLOOR_STDV, 
                                                 Any{fNoiseFloorStdv});
 
-        pStatisticNeighborMetricTable_->setCell(rNeighborMetric.nemId_, 
+        pStatisticNeighborMetricTable_->setCell(pNeighborMetric->nemId_, 
                                                 RX_DATARATE_AVG, 
-                                                Any{rNeighborMetric.u64RxDataRateAvg_});
+                                                Any{pNeighborMetric->u64RxDataRateAvg_});
       }
 
 
-    void clearData_i(NeighborData & rNeighborMetric)
+    void clearData_i(NeighborData * pNeighborMetric)
       {
          // clear just about everything but the lastRx seq and time
         
          // reset missed frames
-         rNeighborMetric.u32NumRxMissedFrames_ = 0;
+         pNeighborMetric->u32NumRxMissedFrames_ = 0;
   
          // reset rx/tx frames
-         rNeighborMetric.u32NumRxFrames_ = 0;
-         rNeighborMetric.u32NumTxFrames_ = 0;
+         pNeighborMetric->u32NumRxFrames_ = 0;
+         pNeighborMetric->u32NumTxFrames_ = 0;
 
          // reset bw consumption
-         rNeighborMetric.rxUtilizationMicroseconds_ = EMANE::Microseconds::zero();
+         pNeighborMetric->rxUtilizationMicroseconds_ = EMANE::Microseconds::zero();
 
          // reset the SINR
-         rNeighborMetric.fSINRSum_  = 0.0f;
-         rNeighborMetric.fSINRSum2_ = 0.0f;
+         pNeighborMetric->fSINRSum_  = 0.0f;
+         pNeighborMetric->fSINRSum2_ = 0.0f;
 
          // reset the noise floor
-         rNeighborMetric.fNoiseFloorSum_  = 0.0f;
-         rNeighborMetric.fNoiseFloorSum2_ = 0.0f;
+         pNeighborMetric->fNoiseFloorSum_  = 0.0f;
+         pNeighborMetric->fNoiseFloorSum2_ = 0.0f;
 
          // reset data rate 
-         rNeighborMetric.u64RxDataRateMin_ = 0;
-         rNeighborMetric.u64RxDataRateMax_ = 0;
-         rNeighborMetric.u64RxDataRateAvg_ = 0;
+         pNeighborMetric->u64RxDataRateMin_ = 0;
+         pNeighborMetric->u64RxDataRateMax_ = 0;
+         pNeighborMetric->u64RxDataRateAvg_ = 0;
 
-         rNeighborMetric.u64TxDataRateMin_ = 0;
-         rNeighborMetric.u64TxDataRateMax_ = 0;
-         rNeighborMetric.u64TxDataRateAvg_ = 0;
+         pNeighborMetric->u64TxDataRateMin_ = 0;
+         pNeighborMetric->u64TxDataRateMax_ = 0;
+         pNeighborMetric->u64TxDataRateAvg_ = 0;
 
-         rNeighborMetric.bCleared_ = true;
+         pNeighborMetric->bCleared_ = true;
       }
 
 

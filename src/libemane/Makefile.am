@@ -114,8 +114,11 @@ libemane_la_SOURCES =                         \
  platformservice.cc                           \
  queuemetricmanager.cc                        \
  r2rineighbormetriccontrolmessage.cc          \
+ r2rineighbormetriccontrolmessageformatter.cc \
  r2riqueuemetriccontrolmessage.cc             \
+ r2riqueuemetriccontrolmessageformatter.cc    \
  r2riselfmetriccontrolmessage.cc              \
+ r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \

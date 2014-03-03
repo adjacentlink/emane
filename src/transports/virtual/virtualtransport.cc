@@ -44,6 +44,15 @@
 #include "emane/controls/serializedcontrolmessage.h"
 #include "emane/controls/flowcontrolcontrolmessage.h"
 
+#include "emane/controls/r2rineighbormetriccontrolmessage.h"
+#include "emane/controls/r2rineighbormetriccontrolmessageformatter.h"
+
+#include "emane/controls/r2riqueuemetriccontrolmessage.h"
+#include "emane/controls/r2riqueuemetriccontrolmessageformatter.h"
+
+#include "emane/controls/r2riselfmetriccontrolmessage.h"
+#include "emane/controls/r2riselfmetriccontrolmessageformatter.h"
+
 #include <sstream>
 
 namespace {
@@ -480,6 +489,57 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
                                                                 pSerializedControlMessage->getSerialization())};
             
                       flowControlClient_.processFlowControlMessage(pFlowControlControlMessage.get());
+                    }
+                  break;
+
+                  case Controls::R2RINeighborMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RINeighborMetricControlMessage> 
+                        pR2RINeighborMetricControlMessage{
+                        Controls::R2RINeighborMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RINeighborMetricControlMessageFormatter(
+                                                       pR2RINeighborMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
+                    }
+                  break;
+
+                  case Controls::R2RIQueueMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RIQueueMetricControlMessage> 
+                        pR2RIQueueMetricControlMessage{
+                        Controls::R2RIQueueMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RIQueueMetricControlMessageFormatter(
+                                                       pR2RIQueueMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
+                    }
+                  break;
+
+                  case Controls::R2RISelfMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RISelfMetricControlMessage> 
+                        pR2RISelfMetricControlMessage{
+                        Controls::R2RISelfMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RISelfMetricControlMessageFormatter(
+                                                       pR2RISelfMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
                     }
                   break;
 

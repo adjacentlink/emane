@@ -246,7 +246,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::start()
 void
 EMANE::Models::IEEE80211ABG::MACLayer::postStart()
 {
-  auto beginTime = Clock::now();
+  auto timeNow = Clock::now();
 
   if(macConfig_.getFlowControlEnable())
     {
@@ -269,7 +269,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::postStart()
     
   channelUsageTimedEventId_ =
     pPlatformService_->timerService().
-    scheduleTimedEvent(beginTime + 
+    scheduleTimedEvent(timeNow + 
                        macConfig_.getChannelActivityIntervalMicroseconds(),
                        pChannelUsageCallback_.get(), 
                        macConfig_.getChannelActivityIntervalMicroseconds());
@@ -301,7 +301,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::postStart()
         
       radioMetricTimedEventId_ = 
         pPlatformService_->timerService().
-        scheduleTimedEvent(beginTime + macConfig_.getRadioMetricReportIntervalMicroseconds(),
+        scheduleTimedEvent(timeNow + macConfig_.getRadioMetricReportIntervalMicroseconds(),
                            pRadioMetricCallback_.get(), 
                            macConfig_.getRadioMetricReportIntervalMicroseconds());
     
@@ -441,7 +441,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                                              const ControlMessages & msgs)
 {
   // get current time
-  TimePoint beginTime{Clock::now()};
+  TimePoint timeNow{Clock::now()};
 
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
@@ -475,7 +475,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
 
       commonLayerStatistics_[u8Category]->processOutbound(
                                                           pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                           DROP_CODE_REGISTRATION_ID);
 
       // drop
@@ -537,7 +537,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                               pktInfo.getSource());
 
       commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                           DROP_CODE_BAD_CONTROL_INFO);
      
       //drop
@@ -558,7 +558,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                              startOfReception,
                                              frequencySegments,
                                              span,
-                                             beginTime](UpstreamPacket & pkt,
+                                             timeNow](UpstreamPacket & pkt,
                                                         std::uint16_t u16SequenceNumber,
                                                         std::uint8_t u8Category)
         {
@@ -611,7 +611,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                          pzLayerName);
                   
                   commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                      std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                                      std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                                       DROP_CODE_BAD_CONTROL_INFO);
                   
                   return true;
@@ -628,7 +628,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                      pzLayerName,
                                      exp.what());
               commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                                   DROP_CODE_BAD_SPECTRUM_QUERY);
               // drop
               return true;
@@ -638,7 +638,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                frequencySegment.getRxPowerdBm(),
                                dNoiseFloordB,
                                u16SequenceNumber,
-                               beginTime,
+                               timeNow,
                                u8Category);
 
           return true;
@@ -648,7 +648,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
  
       auto eor = startOfReception + frequencySegments.begin()->getDuration();
 
-      if(eor > beginTime)
+      if(eor > timeNow)
         {
           // wait for end of reception to complete processing
           pPlatformService_->timerService().scheduleTimedEvent(eor,pCallback);
@@ -669,7 +669,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                                             double dRxPowerdBm, 
                                                             double dNoiseFloordBm,
                                                             std::uint16_t u16SequenceNumber,
-                                                            const TimePoint & beginTime,
+                                                            const TimePoint & timeNow,
                                                             std::uint8_t u8Category)
 { 
   size_t len{pkt.stripLengthPrefixFraming()};
@@ -703,7 +703,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                                      macHeaderParams.getDstNEM(),                // dst (origin)
                                                      macHeaderParams.getMessageType(),           // msg type
                                                      dRxPowermW,                                 // rx power
-                                                     beginTime,                                 // time
+                                                     timeNow,                                    // time
                                                      macHeaderParams.getDurationMicroseconds(),  // duration
                                                      u8Category);                                // category
 
@@ -712,7 +712,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
             {
               neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),  // nbr (src)
                                                             u16SequenceNumber,    // seq
-                                                            beginTime);          // rx time
+                                                            timeNow);             // rx time
             }
 
           // bump counter
@@ -733,7 +733,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
               DownstreamPacket ctsPkt{ctsinfo, nullptr, 0};
 
               DownstreamQueueEntry entry{ctsPkt, 
-                  beginTime, 
+                  timeNow, 
                   macConfig_.getTxOpMicroseconds(0), 
                   0, 
                   0};
@@ -756,7 +756,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
       neighborManager_.updateDataChannelActivity(macHeaderParams.getSrcNEM(),                  // src
                                                  macHeaderParams.getMessageType(),             // msg type
                                                  dRxPowermW,                                   // rx power
-                                                 beginTime,                                   // time
+                                                 timeNow,                                      // time
                                                  macHeaderParams.getDurationMicroseconds() +   // duration 
                                                  overheadMicroseconds,
                                                  u8Category);                                  // categroy
@@ -766,7 +766,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         {
           // check reception for collision and sinr
           if(!checkUpstremReception(pkt,
-                                    beginTime,
+                                    timeNow,
                                     dRxPowerdBm, 
                                     dNoiseFloordBm,
                                     macHeaderParams, 
@@ -784,7 +784,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
               commonLayerStatistics_[u8Category]->processOutbound(
                                                                   pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                                   DROP_CODE_SINR);
 
               // drop
@@ -793,6 +793,26 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         }
       else
         {
+          // check for duplicate packet based on previous sender
+          if(isDuplicate(macHeaderParams.getSrcNEM(), macHeaderParams.getSequenceNumber()))
+            {
+              LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                     DEBUG_LEVEL,
+                                     "MACI %03hu %s::%s: duplicate pkt from %hu, seq %hu, drop",
+                                     id_,
+                                     pzLayerName,
+                                     __func__, 
+                                     macHeaderParams.getSrcNEM(),
+                                     macHeaderParams.getSequenceNumber());
+
+              commonLayerStatistics_[u8Category]->processOutbound(pkt, 
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+                                                                  DROP_CODE_DUPLICATE);
+
+              // drop
+              return;
+            }
+
           // assume failed
           bool bPass{};
 
@@ -803,7 +823,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
             {
               // did the pkt pass
               if(checkUpstremReception(pkt, 
-                                       beginTime,
+                                       timeNow,
                                        dRxPowerdBm, 
                                        dNoiseFloordBm,
                                        macHeaderParams, 
@@ -837,7 +857,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
               commonLayerStatistics_[u8Category]->processOutbound(
                                                                   pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                                   DROP_CODE_SINR);
 
               // drop
@@ -846,26 +866,6 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         }
    
 
-      // check for duplicate packet based on previous sender
-      if(isDuplicate(macHeaderParams.getSrcNEM(), macHeaderParams.getSequenceNumber()))
-        {
-          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                 DEBUG_LEVEL,
-                                 "MACI %03hu %s::%s: duplicate pkt from %hu, seq %hu, drop",
-                                 id_,
-                                 pzLayerName,
-                                 __func__, 
-                                 macHeaderParams.getSrcNEM(),
-                                 macHeaderParams.getSequenceNumber());
-
-          commonLayerStatistics_[u8Category]->processOutbound(
-                                                              pkt, 
-                                                              std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
-                                                              DROP_CODE_DUPLICATE);
-
-          // drop
-          return;
-        }
 
       // check dst
       if(macHeaderParams.getDstNEM() != id_ && !isBroadcast(macHeaderParams.getDstNEM()))
@@ -882,7 +882,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
               commonLayerStatistics_[u8Category]->processOutbound(
                                                                   pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                                   DROP_CODE_DST_MAC);
 
               // drop
@@ -891,7 +891,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         }
 
       commonLayerStatistics_[dscpToCategory(pkt.getPacketInfo().getPriority())]->
-        processOutbound(pkt,std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
+        processOutbound(pkt,std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow));
       
       sendUpstreamPacket(pkt);
       
@@ -922,7 +922,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
 bool 
 EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pkt,
-                                                             const TimePoint & beginTime,
+                                                             const TimePoint & timeNow,
                                                              double dRxPowerdBm,
                                                              double dNoiseFloordBm,
                                                              const MACHeaderParams & rMACHeaderParams,
@@ -1076,7 +1076,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
                                                         rMACHeaderParams.getSequenceNumber(),                          // seq
                                                         dSINR,                                                         // sinr in dBm
                                                         dNoiseFloorAdjustmentMilliWatts,                               // noise floor in dBm
-                                                        beginTime,                                                     // rx time
+                                                        timeNow,                                                       // rx time
                                                         rMACHeaderParams.getDurationMicroseconds(),                    // duration
                                                         rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
                                                         macConfig_.getBroadcastDataRateKbps(rMACHeaderParams.getDataRateIndex()) * 1000ULL :
@@ -1094,7 +1094,7 @@ void
 EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
                                                                const ControlMessages &)
 {
-  TimePoint beginTime{Clock::now()};
+  TimePoint timeNow{Clock::now()};
 
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
@@ -1106,7 +1106,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
     {
       commonLayerStatistics_[u8Category]->processOutbound(
                                                           pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
                                                           DROP_CODE_FLOW_CONTROL_ERROR);
 
       // drop
@@ -1117,7 +1117,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
       std::uint8_t{} : macConfig_.getRetryLimit(u8Category)};
 
   DownstreamQueueEntry entry{pkt, 
-      beginTime, 
+      timeNow, 
       macConfig_.getTxOpMicroseconds(u8Category), 
       u8Category, 
       u8Retries};
@@ -1233,7 +1233,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamUnicastData(DownstreamQueue
 
   MACHeaderParams macHeaderParams{entry.bRtsCtsEnable_ ? 
       MSG_TYPE_UNICAST_RTS_CTS_DATA : 
-      MSG_TYPE_UNICAST_DATA,                     // msg type
+      MSG_TYPE_UNICAST_DATA,                       // msg type
       numRetries,                                  // num retries
       macConfig_.getUnicastDataRateIndex(),        // data rate index
       entry.u16Seq_,                               // sequence number
@@ -1257,13 +1257,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamUnicastCts(DownstreamQueueE
   // check retry logic enable
   std::uint8_t numRetries{ENABLE_TX_RETRY ? entry.numRetries_ : entry.maxRetries_};
 
-  MACHeaderParams macHeaderParams{MSG_TYPE_UNICAST_CTS_CTRL,                // msg type
-      numRetries,                               // num retries
-      macConfig_.getUnicastDataRateIndex(),     // data rate index
-      entry.u16Seq_,                            // sequence number
-      id_,                                      // src
-      origin,                                   // dst is the origin
-      entry.durationMicroseconds_};             // duration
+  MACHeaderParams macHeaderParams{MSG_TYPE_UNICAST_CTS_CTRL,  // msg type
+      numRetries,                                             // num retries
+      macConfig_.getUnicastDataRateIndex(),                   // data rate index
+      entry.u16Seq_,                                          // sequence number
+      id_,                                                    // src
+      origin,                                                 // dst is the origin
+      entry.durationMicroseconds_};                           // duration
 
   // reset duration for cts message
   entry.durationMicroseconds_ = Microseconds::zero();
@@ -1323,13 +1323,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
     }
 
 
-  MACHeaderMessage ieeeMACHeader{rMACHeaderParams.getMessageType(),             // msg type
-      rMACHeaderParams.getNumRetries(),              // num retries
-      rMACHeaderParams.getDataRateIndex(),           // data rate
-      rMACHeaderParams.getSequenceNumber(),          // sequence number
-      rMACHeaderParams.getSrcNEM(),                  // src
-      rMACHeaderParams.getDstNEM(),                  // dst
-      rMACHeaderParams.getDurationMicroseconds()};   // duration 
+  MACHeaderMessage ieeeMACHeader{rMACHeaderParams.getMessageType(),  // msg type
+      rMACHeaderParams.getNumRetries(),                              // num retries
+      rMACHeaderParams.getDataRateIndex(),                           // data rate
+      rMACHeaderParams.getSequenceNumber(),                          // sequence number
+      rMACHeaderParams.getSrcNEM(),                                  // src
+      rMACHeaderParams.getDstNEM(),                                  // dst
+      rMACHeaderParams.getDurationMicroseconds()};                   // duration 
 
   Serialization serialization{ieeeMACHeader.serialize()};
 
@@ -1347,9 +1347,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
   // send the packet
   sendDownstreamPacket(CommonMACHeader{registrationId_, u16SequenceNumber_++},           
                        entry.pkt_,                                       
-                       {Controls::FrequencyControlMessage::create(0, // bandwidth (0 uses phy default)
-                                                                  {{0,rMACHeaderParams.getDurationMicroseconds()}}),// freq (0 uses phy default)
-                           Controls::TimeStampControlMessage::create(entry.txTime_)}); 
+                       {Controls::FrequencyControlMessage::create(
+                         0,                                                 // bandwidth (0 uses phy default)
+                         {{0,rMACHeaderParams.getDurationMicroseconds()}}), // freq (0 uses phy default)
+                       Controls::TimeStampControlMessage::create(entry.txTime_)}); 
 }
 
 
@@ -1394,7 +1395,7 @@ void
 EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry)
 {
   // get current time
-  TimePoint beginTime{Clock::now()};
+  TimePoint timeNow{Clock::now()};
 
   // estimated number of one hop nbrs
   float fNumEstimatedOneHopNeighbors{neighborManager_.getNumberOfEstimatedOneHopNeighbors()};
@@ -1408,10 +1409,6 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
   // total one and two hop utilization
   Microseconds totalOneAndTwoHopUtilizationMicroseconds {neighborManager_.getTotalOneHopUtilizationMicroseconds() +
       neighborManager_.getTotalTwoHopUtilizationMicroseconds()};
-
-  // get estimated num nbrs to this dst
-  float fNumEstimatedCommonNeighbors{neighborManager_.
-      getNumberOfEstimatedCommonNeighbors(entry.pkt_.getPacketInfo().getDestination())};
 
   // get hidden channel activity
   float fHiddenChannelActivity{neighborManager_.getHiddenChannelActivity(entry.pkt_.getPacketInfo().getDestination())};
@@ -1439,8 +1436,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
     {
       // calcuating excess overhead per neighbor in excess of 2 for the estimated average message duration
       Microseconds messageDurationOverheadExtraMicroseconds{ 
-        std::chrono::duration_cast<Microseconds>(DoubleSeconds{(((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) * 
-                                                                 ((iCW * modeTiming_.getSlotSizeMicroseconds().count()) / 2.0f)) / USEC_PER_SEC_F)})};
+        std::chrono::duration_cast<Microseconds>(
+           DoubleSeconds{(((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) * 
+              ((iCW * modeTiming_.getSlotSizeMicroseconds().count()) / 2.0f)) / USEC_PER_SEC_F)})};
 
       // probability of additional deley required
       float X1{RNDZeroToOne_()};
@@ -1451,7 +1449,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
         {
           // get pre delay
           Microseconds nodeDelayMicroseconds{std::chrono::duration_cast<Microseconds>(DoubleSeconds{(
-                                                                                                     floorf(X2 * fNumEstimatedOneAndTwoHopNeighbors) / USEC_PER_SEC_F)})};
+            floorf(X2 * fNumEstimatedOneAndTwoHopNeighbors) / USEC_PER_SEC_F)})};
 
           // add to the pre dealy
           preDealyMicroseconds += Microseconds{
@@ -1467,7 +1465,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
           // set post delay
           postDelayMicroseconds = 
             std::chrono::duration_cast<Microseconds>(DoubleSeconds{((powf(fDelayTimeFactor, 2.0f) * 
-                                                                     ((fNumEstimatedOneAndTwoHopNeighbors - 1.0f) * averageMessageDurationMicroseconds.count())) / USEC_PER_SEC_F)});
+              ((fNumEstimatedOneAndTwoHopNeighbors - 1.0f) * averageMessageDurationMicroseconds.count())) / USEC_PER_SEC_F)});
         }
     }
 
@@ -1483,8 +1481,32 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
       // probability of tx collision
       float X3{RNDZeroToOne_()};
 
+      float A{neighborManager_.getLocalNodeTx()};
+
+      Microseconds totalOneHopUtilizationMicroseconds{neighborManager_.getTotalOneHopUtilizationMicroseconds()};
+
+      Microseconds localUtilizationMicroseconds{neighborManager_.getAllUtilizationMicroseconds(id_)};
+
+      Microseconds remoteUtilizationMicroseconds{neighborManager_.getAllUtilizationMicroseconds(
+                                                 entry.pkt_.getPacketInfo().getDestination())};
+
+      Microseconds deltaT{macConfig_.getChannelActivityIntervalMicroseconds()};
+
+      float fUtilizationFactorAdjusted{getRatio((totalOneHopUtilizationMicroseconds - 
+                                             localUtilizationMicroseconds - 
+                                             remoteUtilizationMicroseconds), deltaT)};
+
+      // bump adjusted utilization
+      if(fUtilizationFactorAdjusted > 1.0f)
+        {
+          fUtilizationFactorAdjusted = 1.0f;
+        }
+
+      float fPreTran = (fUtilizationFactorAdjusted * fUtilizationFactorAdjusted) *
+                         (1.0 - A) * (fNumEstimatedOneHopNeighbors / iCW);
+
       // check probability
-      if(X3 <(fNumEstimatedCommonNeighbors / iCW))
+      if(X3 < fPreTran)
         {
           // set flag that collision will occur
           entry.bCollisionOccured_ = true;
@@ -1520,7 +1542,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
     }
  
   // set pre delay time 
-  entry.preTxDelayTime_ = beginTime + preDealyMicroseconds;
+  entry.preTxDelayTime_ = timeNow + preDealyMicroseconds;
 
   // set post delay duration
   entry.postTxDelayMicroseconds_ = postDelayMicroseconds;
@@ -1799,7 +1821,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processTimedEvent(TimerEventId,
 bool 
 EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
 {
-  TimePoint beginTime {Clock::now()};
+  TimePoint timeNow {Clock::now()};
 
   size_t historySize{16};
 
@@ -1814,7 +1836,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
 
       v.reserve(historySize);
 
-      v.push_back(SequenceEntry(seq, beginTime));
+      v.push_back(SequenceEntry(seq, timeNow));
 
       duplicateMap_.insert(std::make_pair(src, v));
 
@@ -1827,14 +1849,14 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
       size_t oldestIndex{};
 
       // oldest time starts as current time
-      TimePoint oldestTime{beginTime};
+      TimePoint oldestTime{timeNow};
 
       for(size_t idx = 0; idx < dupIter->second.size(); ++idx)
         {
           if(dupIter->second.at(idx).seq_ == seq)
             {
               // within the time window
-              if((dupIter->second.at(idx).tp_ + vaildIntervalMicroseconds) >= beginTime)
+              if((dupIter->second.at(idx).tp_ + vaildIntervalMicroseconds) >= timeNow)
                 {
                   // is duplicate
                   return true;
@@ -1842,7 +1864,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
               else
                 {
                   // update entry
-                  dupIter->second.at(idx) = SequenceEntry(seq, beginTime);
+                  dupIter->second.at(idx) = SequenceEntry(seq, timeNow);
 
                   // not a duplicate
                   return false;
@@ -1866,12 +1888,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
       if(dupIter->second.size() < historySize)
         {
           // add entry
-          dupIter->second.push_back(SequenceEntry(seq, beginTime));
+          dupIter->second.push_back(SequenceEntry(seq, timeNow));
         }
       else
         {
           // replace entry
-          dupIter->second.at(oldestIndex) = SequenceEntry(seq, beginTime);
+          dupIter->second.at(oldestIndex) = SequenceEntry(seq, timeNow);
         }
 
       // not a duplicate
