@@ -65,11 +65,18 @@ namespace EMANE
    * @details The component interface is used to transition all components
    * through the component state machine.
    *
-   * -# initialize
-   * -# configure
-   * -# start
-   * -# stop
-   * -# destroy
+   * @dot
+   * digraph G {
+   *  node [style="rounded,filled", fillcolor="yellow",shape="box"] 
+   *  ComponentUninitialized -> ComponentInitialized [label=" initialize "]
+   *  ComponentInitialized -> ComponentConfigured [label=" configure "]
+   *  ComponentConfigured -> ComponentRunning [label=" start "]
+   *  ComponentRunning -> ComponentStopped [label=" stop "]
+   *  ComponentStopped -> ComponentRunning [label=" start "]
+   *  ComponentRunning -> ComponentRunning [label=" postStart "]
+   *  ComponentStopped -> ComponentDestroyed [label=" destroy "]
+   * }
+   * @enddot
    */
   class Component
   {

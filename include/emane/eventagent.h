@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -75,3 +76,35 @@ namespace EMANE
   {delete p;}
 
 #endif //EMANEEVENTAGENT_HEADER_
+
+/**
+ * @page EventAgentPlugin Event Agent Plugin
+ *
+ * Below are a list of steps necessary to create a loadable %Event Agent plugin. Order is not
+ * important and each step is not as simple as it sounds. This is merely a plugin API checklist.
+ * -# Derive your  %Event Agent from @ref EMANE::EventAgent "EventAgent"
+ * -# Override all of the Component state transition methods:
+ *   - @ref EMANE::Component::initialize "initialize"
+ *     - Register plugin configuration items and an optional configuration validator
+ *     - Register plugin statistics and statistic tables
+ *     - Register plugin events of interest
+ *   - @ref EMANE::Component::configure "configure"
+ *     - Process all loaded configuration
+ *   - @ref EMANE::Component::start "start"
+ *     - Emulation starts at the conclusion of this method. Do any startup logic.
+ *   - @ref EMANE::Component::postStart "postStart"
+ *     - All components in the NEM layer stack are now in the @a start state. Do any cross layer startup handshaking.
+ *   - @ref EMANE::Component::stop "stop"
+ *     - Opposite of start. Do any tear down logic.
+ *   - @ref EMANE::Component::destroy "destroy"
+ *     - Opposite of initialize. Do any cleanup logic.
+ *
+ * -# If your plugin will be processing events you will need to override:
+ *   - @ref EMANE::EventServiceUser::processEvent "processEvent"
+ *
+ * -# If your plugin will be scheduling timed events you will need to override:
+ *   - @ref EMANE::TimerServiceUser::processTimedEvent "processTimedEvent"
+ *
+ * -# Add the appropriate functionality to translate events
+ * -# Declare your plugin using #DECLARE_EVENT_AGENT
+ */

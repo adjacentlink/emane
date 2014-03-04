@@ -112,3 +112,42 @@ namespace EMANE
 #include "emane/maclayerimpl.inl"
 
 #endif //EMANEMACLAYERIMPL_HEADER_
+
+/**
+ * @page RadioModelPlugin Radio Model Plugin
+ *
+ * Below are a list of steps necessary to create a loadable Radio Model plugin. Order is not
+ * important and each step is not as simple as it sounds. This is merely a plugin API checklist.
+ * -# Derive your plugin from @ref EMANE::MACLayerImplementor "MACLayerImplementor"
+ * -# Override all of the Component state transition methods:
+ *   - @ref EMANE::Component::initialize "initialize"
+ *     - Register plugin configuration items and an optional configuration validator
+ *     - Register plugin statistics and statistic tables
+ *     - Register plugin events of interest
+ *   - @ref EMANE::Component::configure "configure"
+ *     - Process all loaded configuration
+ *   - @ref EMANE::Component::start "start"
+ *     - Emulation starts at the conclusion of this method. Do any startup logic.
+ *   - @ref EMANE::Component::postStart "postStart"
+ *     - All components in the NEM layer stack are now in the @a start state. Do any cross layer startup handshaking.
+ *   - @ref EMANE::Component::stop "stop"
+ *     - Opposite of start. Do any tear down logic.
+ *   - @ref EMANE::Component::destroy "destroy"
+ *     - Opposite of initialize. Do any cleanup logic.
+ *
+ * -# Override all the methods for handling packet and control messages:
+ *   - @ref EMANE::DownstreamTransport::processDownstreamPacket "processDownstreamPacket"
+ *   - @ref EMANE::DownstreamTransport::processDownstreamControl "processDownstreamControl"
+ *   - @ref EMANE::MACLayerImplementor::processUpstreamPacket "processUpstreamPacket"
+ *   - @ref EMANE::UpstreamTransport::processUpstreamControl "processUpstreamControl"
+ *
+ * -# If your plugin will be processing events you will need to override:
+ *   - @ref EMANE::EventServiceUser::processEvent "processEvent"
+ *
+ * -# If your plugin will be scheduling timed events you will need to override:
+ *   - @ref EMANE::TimerServiceUser::processTimedEvent "processTimedEvent"
+ *
+ * -# If your plugin will allow @a running-state configuration modifications you will need to override:
+ *   - @ref EMANE::RunningStateMutable::processConfiguration "processConfiguration"
+ * -# Declare your plugin using #DECLARE_MAC_LAYER
+ */
