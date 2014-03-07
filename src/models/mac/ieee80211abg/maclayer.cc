@@ -1762,11 +1762,7 @@ bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry()
       std::tie(pendingDownstreamQueueEntry_,bHasPendingDownstreamQueueEntry_) =
         downstreamQueue_.dequeue();
       
-      // if we dequeued another packet add a token
-      if(bHasPendingDownstreamQueueEntry_)
-        {
-          addToken();
-        }
+      addToken();
     }
   
   // if something is pending we need to shedule it - this could be the
