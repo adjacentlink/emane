@@ -127,6 +127,13 @@ namespace EMANE
       */
      Controls::R2RINeighborMetrics getNeighborMetrics();
 
+     /**
+      * Updates the Neighbor Status Table
+      *
+      */
+     void updateNeighborStatus();
+
+
      void registerStatistics(StatisticRegistrar & statisticRegistrar);
 
    private:

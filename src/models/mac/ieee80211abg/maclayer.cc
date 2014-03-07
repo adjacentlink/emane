@@ -222,10 +222,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::start()
 
       downstreamQueue_.setMaxEntrySize(maxEntrySize, u8Category);
 
-      if(macConfig_.getRadioMetricEnable())
-        {
-          queueMetricManager_.addQueueMetric(u8Category, maxCapacity);
-        }
+      queueMetricManager_.addQueueMetric(u8Category, maxCapacity);
     }
 
   // set neighbor timeout and num categories
@@ -233,12 +230,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::start()
 
   neighborManager_.setCategories(u8NumCategories);
 
-  if(macConfig_.getRadioMetricEnable())
-    {
-      // the the neighbor delete time (age)
-      neighborMetricManager_.setNeighborDeleteTimeMicroseconds(
-                                                               macConfig_.getNeighborMetricDeleteTimeMicroseconds());
-    }
+  // the the neighbor delete time (age)
+  neighborMetricManager_.setNeighborDeleteTimeMicroseconds(
+    macConfig_.getNeighborMetricDeleteTimeMicroseconds());
 }
 
 
@@ -283,36 +277,42 @@ EMANE::Models::IEEE80211ABG::MACLayer::postStart()
                           __func__,
                           channelUsageTimedEventId_);
 
-  if(macConfig_.getRadioMetricEnable())
-    {
-      pRadioMetricCallback_.reset(new std::function<bool()>{
-          [this]()
+  pRadioMetricCallback_.reset(new std::function<bool()>{
+      [this]()
+        {
+          if(! macConfig_.getRadioMetricEnable())
             {
-              sendUpstreamControl({Controls::R2RISelfMetricControlMessage::create(macConfig_.getBroadcastDataRateKbps() * 1000ULL,
-                                                                                  macConfig_.getMaxDataRateKbps() * 1000ULL,
-                                                                                  macConfig_.getRadioMetricReportIntervalMicroseconds()),
-                    Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
-                    Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())});
-                
-              // do not delete after executing
-              return false;
+              neighborMetricManager_.updateNeighborStatus();
             }
-        });
+          else
+            {
+              sendUpstreamControl({
+                Controls::R2RISelfMetricControlMessage::create(
+                  macConfig_.getBroadcastDataRateKbps() * 1000ULL,
+                  macConfig_.getMaxDataRateKbps() * 1000ULL,
+                  macConfig_.getRadioMetricReportIntervalMicroseconds()),
+                Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
+                Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())});
+            }
+                
+            // do not delete after executing
+            return false;
+          }
+    });
         
-      radioMetricTimedEventId_ = 
-        pPlatformService_->timerService().
-        scheduleTimedEvent(timeNow + macConfig_.getRadioMetricReportIntervalMicroseconds(),
-                           pRadioMetricCallback_.get(), 
-                           macConfig_.getRadioMetricReportIntervalMicroseconds());
+  radioMetricTimedEventId_ = 
+    pPlatformService_->timerService().
+    scheduleTimedEvent(timeNow + macConfig_.getRadioMetricReportIntervalMicroseconds(),
+                       pRadioMetricCallback_.get(), 
+                       macConfig_.getRadioMetricReportIntervalMicroseconds());
     
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              DEBUG_LEVEL,
-                              "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
-                              id_, 
-                              pzLayerName,
-                              __func__,
-                              radioMetricTimedEventId_);
-    }
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                          DEBUG_LEVEL,
+                          "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
+                          id_, 
+                          pzLayerName,
+                          __func__,
+                          radioMetricTimedEventId_);
 }
 
 
@@ -708,12 +708,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                                      u8Category);                                // category
 
 
-          if(macConfig_.getRadioMetricEnable())
-            {
-              neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),  // nbr (src)
-                                                            u16SequenceNumber,    // seq
-                                                            timeNow);             // rx time
-            }
+          neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),  // nbr (src)
+                                                        u16SequenceNumber,    // seq
+                                                        timeNow);             // rx time
 
           // bump counter
           macStatistics_.incrementUpstreamUnicastCtsRxFromPhy();
@@ -1069,19 +1066,16 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
                              dSINR,
                              rMACHeaderParams.getDataRateIndex());
 
-      if(macConfig_.getRadioMetricEnable())
-        {
-          neighborMetricManager_.updateNeighborRxMetric(
-                                                        pktInfo.getSource(),                                           // nbr (src)
-                                                        rMACHeaderParams.getSequenceNumber(),                          // seq
-                                                        dSINR,                                                         // sinr in dBm
-                                                        dNoiseFloorAdjustmentMilliWatts,                               // noise floor in dBm
-                                                        timeNow,                                                       // rx time
-                                                        rMACHeaderParams.getDurationMicroseconds(),                    // duration
-                                                        rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
-                                                        macConfig_.getBroadcastDataRateKbps(rMACHeaderParams.getDataRateIndex()) * 1000ULL :
-                                                        macConfig_.getUnicastDataRateKbps(rMACHeaderParams.getDataRateIndex())   * 1000ULL);
-        }
+      neighborMetricManager_.updateNeighborRxMetric(
+        pktInfo.getSource(),                                           // nbr (src)
+        rMACHeaderParams.getSequenceNumber(),                          // seq
+        dSINR,                                                         // sinr in dBm
+        dNoiseFloorAdjustmentMilliWatts,                               // noise floor in dBm
+        timeNow,                                                       // rx time
+        rMACHeaderParams.getDurationMicroseconds(),                    // duration
+        rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
+        macConfig_.getBroadcastDataRateKbps(rMACHeaderParams.getDataRateIndex()) * 1000ULL :
+        macConfig_.getUnicastDataRateKbps(rMACHeaderParams.getDataRateIndex())   * 1000ULL);
 
       // pass
       return true;
@@ -1306,21 +1300,18 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
                                   
 
 
-  if(macConfig_.getRadioMetricEnable())
-    {
-      // update queue metrics
-      queueMetricManager_.updateQueueMetric(entry.u8Category_,                                        // queue id
-                                            downstreamQueue_.getMaxCapacity(entry.u8Category_),       // max queue size
-                                            downstreamQueue_.getDepth(entry.u8Category_),             // current queue depth
-                                            downstreamQueue_.getNumOverFlow(entry.u8Category_, true), // queue discards (clear counter)
-                                            std::chrono::duration_cast<Microseconds>
-                                            (currentTime - entry.acquireTime_));                    // time in queue
+  // update queue metrics
+  queueMetricManager_.updateQueueMetric(entry.u8Category_,                                        // queue id
+                                        downstreamQueue_.getMaxCapacity(entry.u8Category_),       // max queue size
+                                        downstreamQueue_.getDepth(entry.u8Category_),             // current queue depth
+                                        downstreamQueue_.getNumOverFlow(entry.u8Category_, true), // queue discards (clear counter)
+                                        std::chrono::duration_cast<Microseconds>
+                                        (currentTime - entry.acquireTime_));                    // time in queue
 
-      // update nbr tx metrics
-      neighborMetricManager_.updateNeighborTxMetric(entry.pkt_.getPacketInfo().getDestination(),  // dst 
-                                                    entry.u64DataRatebps_,                        // data rate bps
-                                                    currentTime);                                 // current time
-    }
+  // update nbr tx metrics
+  neighborMetricManager_.updateNeighborTxMetric(entry.pkt_.getPacketInfo().getDestination(),  // dst 
+                                                entry.u64DataRatebps_,                        // data rate bps
+                                                currentTime);                                 // current time
 
 
   MACHeaderMessage ieeeMACHeader{rMACHeaderParams.getMessageType(),  // msg type

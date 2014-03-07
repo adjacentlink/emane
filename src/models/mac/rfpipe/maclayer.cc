@@ -399,14 +399,11 @@ EMANE::Models::RFPipe::MACLayer::start()
   // load pcr curve
   pcrManager_.load(sPCRCurveURI_);
   
-  if(bRadioMetricEnable_)
-    {
-      // set the neighbor delete time
-      neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
+  // set the neighbor delete time
+  neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
 
-      // add downstream queue to be tracked
-      queueMetricManager_.addQueueMetric(0, downstreamQueue_.getMaxCapacity());
-    }
+  // add downstream queue to be tracked
+  queueMetricManager_.addQueueMetric(0, downstreamQueue_.getMaxCapacity());
 }
 
 
@@ -427,37 +424,41 @@ EMANE::Models::RFPipe::MACLayer::postStart()
       flowControlManager_.start(u16FlowControlTokens_);
     }
 
-  if(bRadioMetricEnable_)
-    {
-      // set the timer timeout (absolute time), arg, interval
-      /** [timerservice-scheduletimedevent-snippet] */
-      radioMetricTimedEventId_ = 
-        pPlatformService_->timerService().
-        scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
-                           new std::function<bool()>{[this]()
-                               {
-                                 ControlMessages msgs{
-                                   Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
-                                                                                  u64DataRatebps_,
-                                                                                  radioMetricReportIntervalMicroseconds_),
-                                     Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
-                                     Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
-                                 
-                                 sendUpstreamControl(msgs);
+  // set the timer timeout (absolute time), arg, interval
+  /** [timerservice-scheduletimedevent-snippet] */
+  radioMetricTimedEventId_ = 
+    pPlatformService_->timerService().
+      scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
+                         new std::function<bool()>{[this]()
+                             {
+                               if(!bRadioMetricEnable_)
+                                 {
+                                   neighborMetricManager_.updateNeighborStatus();
+                                 }
+                               else
+                                 {
+                                   ControlMessages msgs{
+                                       Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
+                                                                                      u64DataRatebps_,
+                                                                                      radioMetricReportIntervalMicroseconds_),
+                                       Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
+                                       Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
 
-                                 return false;
-                               }},
-                           radioMetricReportIntervalMicroseconds_);
-      /** [timerservice-scheduletimedevent-snippet] */
+                                    sendUpstreamControl(msgs);
+                                 }
 
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              DEBUG_LEVEL,
-                              "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
-                              id_, 
-                              pzLayerName,
-                              __func__,
-                              radioMetricTimedEventId_);
-    }
+                                return false;
+                             }},
+                         radioMetricReportIntervalMicroseconds_);
+  /** [timerservice-scheduletimedevent-snippet] */
+
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                          DEBUG_LEVEL,
+                          "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
+                          id_, 
+                          pzLayerName,
+                          __func__,
+                          radioMetricTimedEventId_);
 }
 
 
@@ -880,18 +881,15 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                   return true;
                 }
               
-              if(bRadioMetricEnable_)
-                {
-                  // update neighbor metrics 
-                  neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
-                                                                u16SequenceNumber,      // sequence number 
-                                                                dSINR,                  // sinr in dBm
-                                                                dNoiseFloordB,          // noise floor in dB
-                                                                startOfReception,       // rx time
-                                                                durationMicroseconds,   // duration
-                                                                u64DataRate);           // data rate bps
-                }
-              
+              // update neighbor metrics 
+              neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
+                                                            u16SequenceNumber,      // sequence number 
+                                                            dSINR,                  // sinr in dBm
+                                                            dNoiseFloordB,          // noise floor in dB
+                                                            startOfReception,       // rx time
+                                                            durationMicroseconds,   // duration
+                                                            u64DataRate);           // data rate bps
+             
               // check promiscuous mode, destination is this nem or to all nem's
               if(bPromiscuousMode_ ||
                  (pktInfo.getDestination() == id_) ||
@@ -1090,18 +1088,15 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
       
       avgDownstreamQueueDelay_.update(queueDelayMicroseconds.count());
       
-      if(bRadioMetricEnable_)
-        {
-          queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
-                                                downstreamQueue_.getMaxCapacity(),      // queue size
-                                                downstreamQueue_.getCurrentDepth(),     // queue depth
-                                                downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
-                                                queueDelayMicroseconds);                // queue delay 
+      queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
+                                            downstreamQueue_.getMaxCapacity(),      // queue size
+                                            downstreamQueue_.getCurrentDepth(),     // queue depth
+                                            downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
+                                            queueDelayMicroseconds);                // queue delay 
           
-          neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
-                                                        pendingDownstreamQueueEntry_.u64DataRatebps_, 
-                                                        now);
-        }
+      neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
+                                                    pendingDownstreamQueueEntry_.u64DataRatebps_, 
+                                                    now);
       
 
       auto eor = sot + pendingDownstreamQueueEntry_.durationMicroseconds_;
