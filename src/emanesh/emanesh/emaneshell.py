@@ -592,10 +592,24 @@ class EMANEShell(cmd.Cmd):
                                 statisticTables = self._client.getStatisticTable(componentInfo[0],names)
                                 
                                 for name in sorted(statisticTables.iterkeys()):
+                                    widths = []
                                     (labels,rows) = statisticTables[name]
-                                    print "nem %-3d %s %s"%(target,componentInfo[1],name)
+                                    
                                     for label in labels:
-                                        print '|',str(label).ljust(len(label)),
+                                      widths.append(len(label)) 
+
+                                    for row in rows:
+                                        i = 0
+                                        for item in row:
+                                            widths[i] = max(len(str(item[0])),widths[i])
+                                            i += 1
+
+                                    print "nem %-3d %s %s"%(target,componentInfo[1],name)
+
+                                    i = 0
+                                    for label in labels:
+                                        print '|',str(label).ljust(widths[i]),
+                                        i += 1
                                     print "|"
                                     if not len(rows):
                                         print
@@ -603,7 +617,7 @@ class EMANEShell(cmd.Cmd):
                                         for row in rows:
                                             i = 0
                                             for item in row:
-                                                print '|',str(item[0]).ljust(len(labels[i])),
+                                                print '|',str(item[0]).ljust(widths[i]),
                                                 i += 1
                                             print "|"
                                         print
