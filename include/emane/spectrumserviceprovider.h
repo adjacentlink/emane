@@ -50,11 +50,11 @@ namespace EMANE
    * @param TimePoint Time corresponding to the first bin
    * @param Microseconds The bin duration
    * @param double The receiver sensitivity in mW
-   * @param bool Flag indicating indicating whether the in-band signal
+   * @param bool Flag indicating whether the in-band signal
    * is contained in the binned power values
    *
    * @note If you remove the in-band signal from a bin and the remaining bin
-   * energy in 0 mW you need to use the receiver sensitivity for the bin value.
+   * energy is 0 mW you need to use the receiver sensitivity for the bin value.
    * You cannot have less than receiver sensitivity in any bin.
    *
    * @see Utils::maxBinNoiseFloor
@@ -151,10 +151,10 @@ namespace EMANE
  * - out-of-band
  * - all
  *
- * Noise recording mode @a none does not record any signal energy and will always return the receiver
- * sensitivity whenever queried.
+ * Noise recording mode @a none does not record any signal energy and will always return 0 mW bins
+ * whenever queried.
  *
- * Noise recording mode @a out-of-band will only record signal energy for out of band messages. An
+ * Noise recording mode @a out-of-band will only record signal energy for out-of-band messages. An
  * out-of-band message is one that does not match the physical layer subid or a message that matches the
  * subid but contains one or more frequency segments with a frequency that is not in the configured
  * frequency of interest set.
@@ -166,8 +166,8 @@ namespace EMANE
  *
  * Spectrum energy is recorded on a @ref EMANE::Wheel "wheel of bins". Bin width in microseconds can be
  * configured as part of the @ref EMANE::FrameworkPHY "emulator's physical layer" configuration. When an
- * over-the-air message is received the receive power is calculated based on the configured propagation
- * model and antenna gain profiles. If the receive power is above the receiver sensitivity it is applied
+ * over-the-air message is received, the receive power is calculated based on the configured propagation
+ * model and antenna gain profiles. If the receive power is above the receiver sensitivity, it is applied
  * to one or more wheel bins based on the signal duration.
  *
  * Signal energy is applied at the start-of-reception time which is the: start-of-transmission +
@@ -179,7 +179,7 @@ namespace EMANE
  *
  * An NEM component layer can query for a spectrum window by specifying a frequency, start time and duration.
  * The frequency must be in the configured frequency of interest set and the start time cannot be earlier
- * than @a now + max duration or later than @a now.
+ * than @a now - max duration or later than @a now.
  *
  * The EMANE::SpectrumServiceProvider::request method is used to request a spectrum window. The following
  * example is taken from the @ref  models/mac/rfpipe/maclayer.cc "RF Pipe MAC layer" implementation and
