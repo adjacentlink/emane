@@ -112,7 +112,8 @@ if __name__ == "__main__":
                             default="224.1.2.8",
                             help="Event channel multicast group [default: %default]")
 
-    optionParser.add_option("--device",
+    optionParser.add_option("-i",
+                            "--device",
                             action="store",
                             type="string",
                             dest="device",
