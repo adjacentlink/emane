@@ -39,8 +39,11 @@
 #include "emane/utils/conversionutils.h"
 
 #include "emane/events/antennaprofileevent.h"
+#include "emane/events/antennaprofileeventformatter.h"
 #include "emane/events/locationevent.h"
+#include "emane/events/locationeventformatter.h"
 #include "emane/events/pathlossevent.h"
+#include "emane/events/pathlosseventformatter.h"
 
 #include "emane/controls/frequencycontrolmessage.h"
 #include "emane/controls/otatransmittercontrolmessage.h"
@@ -1147,6 +1150,14 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::AntennaProfileEvent antennaProfile{serialization};
         gainManager_.update(antennaProfile.getAntennaProfiles());
         eventTablePublisher_.update(antennaProfile.getAntennaProfiles());
+        
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::AntennaProfileEventFormatter(antennaProfile),
+                                         "PHYI %03hu FrameworkPHY::%s antenna profile event: ",
+                                         id_,
+                                         __func__);
+                                
       }
       break;
 
@@ -1155,6 +1166,13 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::LocationEvent locationEvent{serialization};
         locationManager_.update(locationEvent.getLocations());
         eventTablePublisher_.update(locationEvent.getLocations());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::LocationEventFormatter(locationEvent),
+                                         "PHYI %03hu FrameworkPHY::%s location event: ",
+                                         id_,
+                                         __func__);
       }
       break;
 
@@ -1163,6 +1181,13 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::PathlossEvent pathlossEvent{serialization};
         pPropagationModelAlgorithm_->update(pathlossEvent.getPathlosses());
         eventTablePublisher_.update(pathlossEvent.getPathlosses());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::PathlossEventFormatter(pathlossEvent),
+                                         "PHYI %03hu FrameworkPHY::%s pathloss event: ",
+                                         id_,
+                                         __func__);
       }
       break;
     }

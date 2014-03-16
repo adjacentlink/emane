@@ -41,11 +41,13 @@ libemane_la_SOURCES =                         \
  antennapattern.cc                            \
  antennaprofilecontrolmessage.cc              \
  antennaprofileevent.cc                       \
+ antennaprofileeventformatter.cc              \
  antennaprofilemanifest.cc                    \
  any.cc                                       \
  boundarymessagemanager.cc                    \
  buildidservice.cc                            \
  commeffectevent.cc                           \
+ commeffecteventformatter.cc                  \
  commonlayerstatistics.cc                     \
  commonmacheader.cc                           \
  commonphyheader.cc                           \
@@ -81,6 +83,7 @@ libemane_la_SOURCES =                         \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
  locationevent.cc                             \
+ locationeventformatter.cc                    \
  locationinfoformatter.cc                     \
  locationmanager.cc                           \
  logger.cc                                    \
@@ -111,6 +114,7 @@ libemane_la_SOURCES =                         \
  otamanager.cc                                \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
+ pathlosseventformatter.cc                    \
  phylayer.cc                                  \
  phylayerfactory.cc                           \
  platformservice.cc                           \
