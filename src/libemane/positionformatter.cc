@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,60 +30,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "emane/utils/conversionutils.h"
+#include "emane/positionformatter.h"
 
-inline
-EMANE::Velocity::Velocity():
-  dAzimuthDegrees_{},
-  dElevationDegrees_{},
-  dMagnitudeMetersPerSecond_{},
-  dAzimuthRadians_{},
-  dElevationRadians_{}{}
-
-inline
-EMANE::Velocity::Velocity(double dAzimuthDegrees,
-                                  double dElevationDegrees,
-                                  double dMagnitudeMetersPerSecond):
-  dAzimuthDegrees_{dAzimuthDegrees},
-  dElevationDegrees_{dElevationDegrees},
-  dMagnitudeMetersPerSecond_{dMagnitudeMetersPerSecond},
-  dAzimuthRadians_{Utils::DEGREES_TO_RADIANS(dAzimuthDegrees)},
-  dElevationRadians_{Utils::DEGREES_TO_RADIANS(dElevationDegrees)}{}
-
-inline
-double EMANE::Velocity::getAzimuthDegrees() const
+EMANE::PositionFormatter::PositionFormatter(const Position & position):
+  position_(position)
+{}
+      
+EMANE::Strings EMANE::PositionFormatter::operator()() const
 {
-  return dAzimuthDegrees_;
-}
+  Strings strings{{"position:"}};
 
-inline
-double EMANE::Velocity::getElevationDegrees() const
-{
-  return dElevationDegrees_;
-}
+  strings.push_back("lat: " + std::to_string(position_.getLatitudeDegrees()));
+  strings.push_back("lon: " + std::to_string(position_.getLongitudeDegrees()));
+  strings.push_back("alt: " + std::to_string(position_.getAltitudeMeters()));
 
-inline
-double EMANE::Velocity::getMagnitudeMetersPerSecond() const
-{
-  return dMagnitudeMetersPerSecond_;
-}
-
-inline
-double EMANE::Velocity::getAzimuthRadians() const
-{
-  return dAzimuthRadians_;
-}
-
-inline
-double EMANE::Velocity::getElevationRadians() const
-{
-  return dElevationRadians_;
-}
-
-inline
-bool  EMANE::Velocity::operator==(const Velocity & rhs) const
-{
-  return dAzimuthDegrees_ == rhs.dAzimuthDegrees_ &&
-    dElevationDegrees_ == rhs.dElevationDegrees_ &&
-    dMagnitudeMetersPerSecond_ == rhs.dMagnitudeMetersPerSecond_;
+  return strings;
 }

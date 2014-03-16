@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,58 +30,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
-#define EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
+#ifndef EMANEPOSITIONNEUFORMATTER_HEADER_
+#define EMANEPOSITIONNEUFORMATTER_HEADER_
 
-#include "positionecef.h"
 #include "positionneu.h"
-#include "emane/position.h"
-#include "emane/orientation.h"
-#include "emane/velocity.h"
-
-#include <utility>
+#include "emane/types.h"
 
 namespace EMANE
 {
-  class PositionOrientationVelocity
+  /**
+   * @class PositionNEUFormatter
+   *
+   * @brief Callable formatter object for PositioNEU instances.
+   */
+  class PositionNEUFormatter
   {
   public:
-    PositionOrientationVelocity();
+    /**
+     * Creates a PositionNEUFormatter instance
+     *
+     * @param positionNEU PositionNEU reference
+     */
+    PositionNEUFormatter(const PositionNEU & positionNEU);
+    
+    /**
+     * Gets the formatted output
+     *
+     * @return list of output strings
+     */
+    Strings operator()() const;
       
-    PositionOrientationVelocity(const Position & position,
-                                const std::pair<const Orientation &, bool> & orientation,
-                                const std::pair<const Velocity &, bool> & velocity);
-
-    bool update(const Position & position,
-                const std::pair<const Orientation &, bool> & orientation,
-                const std::pair<const Velocity &, bool> & velocity);
-    
-    const Position & getPosition() const;
-    
-    std::pair<const Orientation &, bool> getOrientation() const;
-    
-    std::pair<const Orientation &, bool> getAdjustedOrientation() const;
-    
-    std::pair<const Velocity &, bool> getVelocity() const;
-    
-    const PositionECEF & getPositionECEF() const;
-    
-    PositionNEU getPositionNEU(const PositionOrientationVelocity & other) const;
-    
-    bool operator!() const;
-    
   private:
-    Position position_;
-    Orientation orientation_;
-    Velocity velocity_;
-    bool bValid_;
-    bool bHasOrientation_;
-    bool bHasVelocity_;
-    PositionECEF positionECEF_;
-    Orientation adjustedOrientation_;
+    const PositionNEU & positionNEU_;
   };
 }
 
-#include "positionorientationvelocity.inl"
-
-#endif // EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
+#endif // EMANEPOSITIONNEUFORMATTER_HEADER_

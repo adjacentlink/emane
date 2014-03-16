@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,58 +30,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
-#define EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
+#ifndef EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
+#define EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
 
-#include "positionecef.h"
-#include "positionneu.h"
-#include "emane/position.h"
-#include "emane/orientation.h"
-#include "emane/velocity.h"
-
-#include <utility>
+#include "positionorientationvelocity.h"
+#include "emane/types.h"
 
 namespace EMANE
 {
-  class PositionOrientationVelocity
+  class PositionOrientationVelocityFormatter
   {
   public:
-    PositionOrientationVelocity();
+    PositionOrientationVelocityFormatter(const PositionOrientationVelocity & pov);
       
-    PositionOrientationVelocity(const Position & position,
-                                const std::pair<const Orientation &, bool> & orientation,
-                                const std::pair<const Velocity &, bool> & velocity);
-
-    bool update(const Position & position,
-                const std::pair<const Orientation &, bool> & orientation,
-                const std::pair<const Velocity &, bool> & velocity);
-    
-    const Position & getPosition() const;
-    
-    std::pair<const Orientation &, bool> getOrientation() const;
-    
-    std::pair<const Orientation &, bool> getAdjustedOrientation() const;
-    
-    std::pair<const Velocity &, bool> getVelocity() const;
-    
-    const PositionECEF & getPositionECEF() const;
-    
-    PositionNEU getPositionNEU(const PositionOrientationVelocity & other) const;
-    
-    bool operator!() const;
+    Strings operator()() const;
     
   private:
-    Position position_;
-    Orientation orientation_;
-    Velocity velocity_;
-    bool bValid_;
-    bool bHasOrientation_;
-    bool bHasVelocity_;
-    PositionECEF positionECEF_;
-    Orientation adjustedOrientation_;
+    const PositionOrientationVelocity & pov_;
   };
 }
 
-#include "positionorientationvelocity.inl"
-
-#endif // EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
+#endif // EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_

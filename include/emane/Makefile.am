@@ -56,6 +56,7 @@ emaneinc_HEADERS =                       \
  net.h                                   \
  orientation.h                           \
  orientation.inl                         \
+ orientationformatter.h                  \
  packetinfo.h                            \
  packetinfo.inl                          \
  phylayerimpl.h                          \
@@ -66,6 +67,7 @@ emaneinc_HEADERS =                       \
  platformserviceuser.h                   \
  position.h                              \
  position.inl                            \
+ positionformatter.h                     \
  queuemetricmanager.h                    \
  radioserviceprovider.h                  \
  radioserviceuser.h                      \
@@ -106,7 +108,8 @@ emaneinc_HEADERS =                       \
  upstreamtransport.h                     \
  upstreamtransport.inl                   \
  velocity.h                              \
- velocity.inl                            
+ velocity.inl                            \
+ velocityformatter.h                     
 
 
 install-exec-hook:

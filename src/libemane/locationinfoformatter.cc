@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,60 +30,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "emane/utils/conversionutils.h"
+#include "locationinfoformatter.h"
+#include "positionorientationvelocityformatter.h"
 
-inline
-EMANE::Velocity::Velocity():
-  dAzimuthDegrees_{},
-  dElevationDegrees_{},
-  dMagnitudeMetersPerSecond_{},
-  dAzimuthRadians_{},
-  dElevationRadians_{}{}
-
-inline
-EMANE::Velocity::Velocity(double dAzimuthDegrees,
-                                  double dElevationDegrees,
-                                  double dMagnitudeMetersPerSecond):
-  dAzimuthDegrees_{dAzimuthDegrees},
-  dElevationDegrees_{dElevationDegrees},
-  dMagnitudeMetersPerSecond_{dMagnitudeMetersPerSecond},
-  dAzimuthRadians_{Utils::DEGREES_TO_RADIANS(dAzimuthDegrees)},
-  dElevationRadians_{Utils::DEGREES_TO_RADIANS(dElevationDegrees)}{}
-
-inline
-double EMANE::Velocity::getAzimuthDegrees() const
+EMANE::LocationInfoFormatter::LocationInfoFormatter(const LocationInfo & info):
+  info_(info)
+{}
+      
+EMANE::Strings EMANE::LocationInfoFormatter::operator()() const
 {
-  return dAzimuthDegrees_;
-}
+  Strings strings{{"location info:"}};
 
-inline
-double EMANE::Velocity::getElevationDegrees() const
-{
-  return dElevationDegrees_;
-}
+  strings.push_back("local");
 
-inline
-double EMANE::Velocity::getMagnitudeMetersPerSecond() const
-{
-  return dMagnitudeMetersPerSecond_;
-}
+  strings.splice(strings.end(),PositionOrientationVelocityFormatter(info_.getLocalPOV())());
 
-inline
-double EMANE::Velocity::getAzimuthRadians() const
-{
-  return dAzimuthRadians_;
-}
+  strings.push_back("remote");
 
-inline
-double EMANE::Velocity::getElevationRadians() const
-{
-  return dElevationRadians_;
-}
+  strings.splice(strings.end(),PositionOrientationVelocityFormatter(info_.getRemotePOV())());
 
-inline
-bool  EMANE::Velocity::operator==(const Velocity & rhs) const
-{
-  return dAzimuthDegrees_ == rhs.dAzimuthDegrees_ &&
-    dElevationDegrees_ == rhs.dElevationDegrees_ &&
-    dMagnitudeMetersPerSecond_ == rhs.dMagnitudeMetersPerSecond_;
+  strings.push_back("distance: " + std::to_string(info_.getDistanceMeters()));
+
+  return strings;
 }
