@@ -423,6 +423,12 @@ EMANE::SpectrumMonitor::getFrequencies() const
   return frequencySet;
 }
 
+double EMANE::SpectrumMonitor::getReceiverSensitivitydBm() const
+{
+  std::lock_guard<std::mutex> m(mutex_);
+
+  return Utils::MILLIWATT_TO_DB(dReceiverSensitivityMilliWatt_);
+}
 
 EMANE::SpectrumWindow
 EMANE::SpectrumMonitor::request_i(const TimePoint & now,

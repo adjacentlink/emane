@@ -86,6 +86,12 @@ namespace EMANE
      */
     virtual FrequencySet getFrequencies() const = 0;
 
+    /**
+     * Gets the receiver sensitivity in dBm
+     *
+     * @return receiver sensitivity
+     */
+    virtual double getReceiverSensitivitydBm() const = 0;
 
     /**
      * Gets a spectrum window
