@@ -1071,8 +1071,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
         pktInfo.getSource(),                                           // nbr (src)
         u64SequenceNumber,                                             // seq
         pktInfo.getUUID(),                                             // uuid
-        dSINR,                                                         // sinr in dBm
-        dNoiseFloorAdjustmentMilliWatts,                               // noise floor in dBm
+        dSINR,                                                         // sinr
+        dNoiseFloorAdjusteddBm,                                        // noise floor in dBm
         timeNow,                                                       // rx time
         rMACHeaderParams.getDurationMicroseconds(),                    // duration
         rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
