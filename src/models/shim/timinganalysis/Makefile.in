@@ -346,7 +346,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libtiminganalysisshim.la
 libtiminganalysisshim_la_CPPFLAGS = \
- -I@top_srcdir@/include
+ -I@top_srcdir@/include            \
+ $(libuuid_CFLAGS)                 \
+ $(AM_CFLAGS)
 
 libtiminganalysisshim_la_SOURCES = \
  shimlayer.cc                     \
@@ -717,7 +719,6 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-local
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am uninstall-libLTLIBRARIES uninstall-local
 
- $(AM_CFLAGS)
 
 timinganalysisshim.xml: timinganalysisshim.xml.in
 	$(edit) $< > $@

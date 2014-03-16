@@ -38,6 +38,7 @@
 #include "emane/controls/r2rineighbormetriccontrolmessage.h"
 #include "emane/statisticregistrar.h"
 
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -74,8 +75,7 @@ namespace EMANE
       *
       */
       void updateNeighborTxMetric(NEMId dst,
-                                  std::uint64_t
-                                  u64DataRatebps,
+                                  std::uint64_t u64DataRatebps,
                                   const TimePoint & txTime);
 
 
@@ -83,12 +83,14 @@ namespace EMANE
       * Updates neighbor recv metric
       *
       * @param src          src NEM (nbr)
-      * @param u16SeqNum    pkt sequence number
+      * @param u64SeqNum    pkt sequence number
+      * @param uuid         application uuid
       * @param rxTime       pkt rx time
       *
       */
       void updateNeighborRxMetric(NEMId src,
-                                  std::uint16_t u16SeqNum,
+                                  std::uint64_t u64SeqNum,
+                                  const uuid_t & uuid,
                                   const TimePoint & rxTime);
 
 
@@ -96,7 +98,8 @@ namespace EMANE
       * Updates neighbor receive metric
       *
       * @param src                  src NEM (nbr)
-      * @param u16SeqNum            pkt sequence number
+      * @param u64SeqNum            pkt sequence number
+      * @param uuid                 application uuid
       * @param fSINR                sinr in dbm
       * @param fNoiseFloor          noise floor in dBm
       * @param rxTime               pkt rx time
@@ -105,7 +108,8 @@ namespace EMANE
       *
       */
       void updateNeighborRxMetric(const NEMId src, 
-                                  std::uint16_t u16SeqNum,
+                                  std::uint64_t u64SeqNum,
+                                  const uuid_t & uuid,
                                   float fSINR,
                                   float fNoiseFloor,
                                   const TimePoint & rxTime,

@@ -30,6 +30,7 @@ libcommeffectshim_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
  $(ACE_CFLAGS)                 \
  $(AM_CFLAGS)                  \
+ $(libuuid_CFLAGS)             \
  $(libxml2_CFLAGS)
 
 libcommeffectshim_la_SOURCES=  \

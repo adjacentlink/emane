@@ -3,6 +3,7 @@ lib_LTLIBRARIES = librfpipemaclayer.la
 librfpipemaclayer_la_CPPFLAGS=   \
  -I@top_srcdir@/include          \
  $(AM_CFLAGS)                    \
+ $(libuuid_CFLAGS)               \
  $(libxml2_CFLAGS)
 
 librfpipemaclayer_la_SOURCES =   \

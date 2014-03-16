@@ -1,7 +1,8 @@
 lib_LTLIBRARIES = libtiminganalysisshim.la
 
 libtiminganalysisshim_la_CPPFLAGS= \
- -I@top_srcdir@/include
+ -I@top_srcdir@/include            \
+ $(libuuid_CFLAGS)                 \
  $(AM_CFLAGS)
 
 libtiminganalysisshim_la_SOURCES= \

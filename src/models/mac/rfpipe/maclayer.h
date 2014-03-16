@@ -133,7 +133,7 @@ namespace EMANE
 
         DownstreamQueue downstreamQueue_;
   
-        std::uint16_t u16TxSequenceNumber_;
+        std::uint64_t u64TxSequenceNumber_;
 
         FlowControlManager flowControlManager_;
 

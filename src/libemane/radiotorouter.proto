@@ -39,9 +39,9 @@ message RadioToRouterNeighborMetrics
   message NeighborMetric
   {
     required uint32 neighborId = 1;           // neighbor id
-    required uint32 numRxFrames = 2;          // number of received frames
-    required uint32 numTxFrames = 3;          // number of received frames
-    required uint32 numMissedFrames =4 ;      // number of missed frames
+    required uint64 numRxFrames = 2;          // number of received frames
+    required uint64 numTxFrames = 3;          // number of received frames
+    required uint64 numMissedFrames =4 ;      // number of missed frames
     required double bandwidthConsumption = 5; // bandwidth consumption sec
     required float  sinrAverage = 6;          // avg sinr 
     required float  sinrStddev = 7;           // std dev sinr

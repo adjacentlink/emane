@@ -146,7 +146,15 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
            * each NEM needs is own copy of the packet,
            * you can not share between NEM(s), so create and send an Upstream pkt for each NEM
            */
-          UpstreamPacket upstreamPacket(pktInfo, pkt.getVectorIO());
+          auto now = Clock::now();
+
+          UpstreamPacket upstreamPacket({pktInfo.getSource(),
+                pktInfo.getDestination(),
+                pktInfo.getPriority(),
+                now,
+                uuid_},
+            pkt.getVectorIO());
+
           iter->second->processOTAPacket(upstreamPacket,ControlMessages());
         }
     }
@@ -447,7 +455,8 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                           PacketInfo pktInfo(otaHeader.source(),
                                              otaHeader.destination(),
                                              0,
-                                             now);
+                                             now,
+                                             uuid_);
 
                           UpstreamPacket pkt(pktInfo,&buf[u16PacketIndex],otaHeader.datalength());
 

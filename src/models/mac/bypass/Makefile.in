@@ -344,6 +344,7 @@ lib_LTLIBRARIES = libbypassmaclayer.la
 libbypassmaclayer_la_CPPFLAGS = \
  -I@top_srcdir@/include        \
  $(ACE_CFLAGS)                 \
+ $(libuuid_CFLAGS)             \
  $(AM_CFLAGS)
 
 libbypassmaclayer_la_SOURCES = \

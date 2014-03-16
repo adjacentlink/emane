@@ -39,7 +39,23 @@ EMANE::PacketInfo::PacketInfo(NEMId source,
   destination_{destination},
   priority_{priority},
   creationTime_{creationTime}
-{}
+{
+  uuid_clear(uuid_); 
+}
+
+inline
+EMANE::PacketInfo::PacketInfo(NEMId source,
+                              NEMId destination,
+                              Priority priority,
+                              TimePoint creationTime,
+                              const uuid_t & uuid):
+  source_{source},
+  destination_{destination},
+  priority_{priority},
+  creationTime_{creationTime}
+{
+  uuid_copy(uuid_,uuid);
+}
 
 inline 
 EMANE::PacketInfo::~PacketInfo(){}
@@ -66,4 +82,10 @@ inline
 EMANE::TimePoint EMANE::PacketInfo::getCreationTime() const
 {
   return creationTime_;
+}
+
+inline
+const uuid_t & EMANE::PacketInfo::getUUID() const
+{
+  return uuid_;
 }

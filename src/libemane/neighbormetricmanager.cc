@@ -40,8 +40,6 @@
 
 
 namespace {
-  static const std::uint16_t MAX_SEQ_NUM = 0xffff;
-
   const EMANE::StatisticTableLabels sNeighborMetricLables {"NEM",
                                                            "Rx Pkts", 
                                                            "Tx Pkts", 
@@ -98,18 +96,20 @@ class EMANE::NeighborMetricManager::Implementation
 
 
     void handleRxActivity(NEMId src, 
-                          std::uint16_t u16SeqNum, 
+                          std::uint64_t u64SeqNum, 
+                          const uuid_t & uuid,
                           const EMANE::TimePoint & rxTime)
       {
-        handleR2RIRxActivity(src, u16SeqNum, rxTime);
+        handleR2RIRxActivity(src, u64SeqNum, uuid, rxTime);
 
-        updateNeighborRxActivity(src, u16SeqNum, rxTime);
+        updateNeighborRxActivity(src, u64SeqNum, uuid, rxTime);
       }
 
 
 
     void handleRxActivity(NEMId src, 
-                          std::uint16_t u16SeqNum,
+                          std::uint64_t u64SeqNum,
+                          const uuid_t & uuid,
                           float fSINR,
                           float fNoiseFloor,
                           const EMANE::TimePoint & rxTime,
@@ -117,7 +117,8 @@ class EMANE::NeighborMetricManager::Implementation
                           std::uint64_t u64DataRatebps)
       {
         handleR2RIRxActivity(src, 
-                             u16SeqNum, 
+                             u64SeqNum, 
+                             uuid,
                              fSINR, 
                              fNoiseFloor,
                              rxTime,
@@ -125,7 +126,8 @@ class EMANE::NeighborMetricManager::Implementation
                              u64DataRatebps);
 
         updateNeighborRxActivity(src, 
-                                 u16SeqNum, 
+                                 u64SeqNum, 
+                                 uuid,
                                  fSINR, 
                                  fNoiseFloor,
                                  rxTime,
@@ -153,21 +155,21 @@ class EMANE::NeighborMetricManager::Implementation
                               std::chrono::duration_cast<DoubleSeconds>(
                                 currentTime - pNeighborMetric->lastRxTime_).count();
 
-            float fSINRAvg = getAvg(pNeighborMetric->fSINRSum_, pNeighborMetric->u32NumRxFrames_);
+            float fSINRAvg = getAvg(pNeighborMetric->fSINRSum_, pNeighborMetric->u64NumRxFrames_);
 
-            float fNoiseFloorAvg = getAvg(pNeighborMetric->fNoiseFloorSum_, pNeighborMetric->u32NumRxFrames_);
+            float fNoiseFloorAvg = getAvg(pNeighborMetric->fNoiseFloorSum_, pNeighborMetric->u64NumRxFrames_);
 
             pTable->setCell(iter.first, 
                              NBR_STATUS_TX_FRAMES, 
-                             Any{pNeighborMetric->u32NumTxFrames_});
+                             Any{pNeighborMetric->u64NumTxFrames_});
 
             pTable->setCell(iter.first, 
                              NBR_STATUS_RX_FRAMES, 
-                             Any{pNeighborMetric->u32NumRxFrames_});
+                             Any{pNeighborMetric->u64NumRxFrames_});
 
             pTable->setCell(iter.first,
                              NBR_STATUS_MISSED_FRAMES, 
-                             Any{pNeighborMetric->u32NumRxMissedFrames_});
+                             Any{pNeighborMetric->u64NumRxMissedFrames_});
 
             pTable->setCell(iter.first,
                              NBR_STATUS_BW_CONSUMPTION, 
@@ -220,22 +222,22 @@ class EMANE::NeighborMetricManager::Implementation
                 // get sinr avg and standard deviation 
                 getAvgAndStd(iter->second->fSINRSum_, 
                              iter->second->fSINRSum2_, 
-                             iter->second->u32NumRxFrames_, 
+                             iter->second->u64NumRxFrames_, 
                              fSINRAvg,
                              fSINRStd);
 
                 // get noise floor avg and standard deviation 
                 getAvgAndStd(iter->second->fNoiseFloorSum_, 
                              iter->second->fNoiseFloorSum2_, 
-                             iter->second->u32NumRxFrames_, 
+                             iter->second->u64NumRxFrames_, 
                              fNoiseFloorAvg,
                              fNoiseFloorStdv);
 
                 EMANE::Controls::R2RINeighborMetric 
                   neighborMetric{iter->first,                              // nbr id
-                                 iter->second->u32NumRxFrames_,            // num rx frames (samples)
-                                 iter->second->u32NumTxFrames_,            // num tx frames (samples)
-                                 iter->second->u32NumRxMissedFrames_,      // num rx missed frames
+                                 iter->second->u64NumRxFrames_,            // num rx frames (samples)
+                                 iter->second->u64NumTxFrames_,            // num tx frames (samples)
+                                 iter->second->u64NumRxMissedFrames_,      // num rx missed frames
                                  iter->second->rxUtilizationMicroseconds_, // bandwidth consumption
                                  fSINRAvg,                                 // sinr avg 
                                  fSINRStd,                                 // sinr std deviation
@@ -301,16 +303,16 @@ class EMANE::NeighborMetricManager::Implementation
       struct NeighborData {
         const NEMId      nemId_;
 
-        std::uint16_t    u16LastRxSeqNum_;
+        std::uint64_t    u64LastRxSeqNum_;
  
         bool             bHaveEverHadRxActivity_;
 
         EMANE::TimePoint lastRxTime_;
         EMANE::TimePoint lastTxTime_;
 
-        std::uint32_t    u32NumRxFrames_;
-        std::uint32_t    u32NumRxMissedFrames_;
-        std::uint32_t    u32NumTxFrames_;
+        std::uint64_t    u64NumRxFrames_;
+        std::uint64_t    u64NumRxMissedFrames_;
+        std::uint64_t    u64NumTxFrames_;
 
         EMANE::Microseconds  rxUtilizationMicroseconds_;
 
@@ -327,15 +329,17 @@ class EMANE::NeighborMetricManager::Implementation
         std::uint64_t  u64TxDataRateMax_;
         std::uint64_t  u64TxDataRateAvg_;
 
+        uuid_t uuid_;
+
         NeighborData(NEMId nemId) :
           nemId_{nemId},
-          u16LastRxSeqNum_{},
+          u64LastRxSeqNum_{},
           bHaveEverHadRxActivity_{},
           lastRxTime_{},
           lastTxTime_{},
-          u32NumRxFrames_{},
-          u32NumRxMissedFrames_{},
-          u32NumTxFrames_{},
+          u64NumRxFrames_{},
+          u64NumRxMissedFrames_{},
+          u64NumTxFrames_{},
           rxUtilizationMicroseconds_{},
           fSINRSum_{},
           fSINRSum2_{},
@@ -347,7 +351,9 @@ class EMANE::NeighborMetricManager::Implementation
           u64TxDataRateMin_{},
           u64TxDataRateMax_{},
           u64TxDataRateAvg_{}
-        { }
+        {
+          uuid_clear(uuid_);
+        }
       };
 
 
@@ -457,15 +463,17 @@ class EMANE::NeighborMetricManager::Implementation
 
 
     void handleR2RIRxActivity(NEMId src, 
-                              std::uint16_t u16SeqNum, 
+                              std::uint64_t u64SeqNum,
+                              const uuid_t & uuid,
                               const EMANE::TimePoint & rxTime)
       {
-         updateRxActivityData_i(lookupR2RIMetric(src), u16SeqNum, rxTime);
+        updateRxActivityData_i(lookupR2RIMetric(src), u64SeqNum, uuid, rxTime);
       }
 
 
     void handleR2RIRxActivity(NEMId src, 
-                              std::uint16_t u16SeqNum,
+                              std::uint64_t u64SeqNum,
+                              const uuid_t & uuid,
                               float fSINR,
                               float fNoiseFloor,
                               const EMANE::TimePoint & rxTime,
@@ -474,22 +482,23 @@ class EMANE::NeighborMetricManager::Implementation
       {
         NeighborData * pNeighborMetric = lookupR2RIMetric(src);
 
-        updateRxActivityData_i(pNeighborMetric, u16SeqNum, rxTime);
+        updateRxActivityData_i(pNeighborMetric, u64SeqNum, uuid, rxTime);
 
         updateRxActivityChannelData_i(pNeighborMetric, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
       }
 
 
     void updateNeighborRxActivity(NEMId src, 
-                                  std::uint16_t u16SeqNum, 
+                                  std::uint64_t u64SeqNum,
+                                  const uuid_t & uuid,
                                   const EMANE::TimePoint & rxTime)
       {
          auto neighborDataPair = lookupNeighborData(src);
 
          // update the data
-         updateRxActivityData_i(neighborDataPair.first, u16SeqNum, rxTime);
+         updateRxActivityData_i(neighborDataPair.first, u64SeqNum, uuid, rxTime);
 
-         updateRxActivityData_i(neighborDataPair.second, u16SeqNum, rxTime);
+         updateRxActivityData_i(neighborDataPair.second, u64SeqNum, uuid, rxTime);
 
          // update the long term stats
          updateRxActivityNeighborMetricStatistics_i(neighborDataPair.second);
@@ -498,7 +507,8 @@ class EMANE::NeighborMetricManager::Implementation
 
 
     void updateNeighborRxActivity(NEMId src, 
-                                  std::uint16_t u16SeqNum,
+                                  std::uint64_t u64SeqNum,
+                                  const uuid_t & uuid,
                                   float fSINR,
                                   float fNoiseFloor,
                                   const EMANE::TimePoint & rxTime,
@@ -508,9 +518,9 @@ class EMANE::NeighborMetricManager::Implementation
         auto neighborDataPair = lookupNeighborData(src);
 
         // update the data
-        updateRxActivityData_i(neighborDataPair.first, u16SeqNum, rxTime);
+        updateRxActivityData_i(neighborDataPair.first, u64SeqNum, uuid, rxTime);
 
-        updateRxActivityData_i(neighborDataPair.second, u16SeqNum, rxTime);
+        updateRxActivityData_i(neighborDataPair.second, u64SeqNum, uuid, rxTime);
 
         updateRxActivityChannelData_i(neighborDataPair.first, fSINR, fNoiseFloor, durationMicroseconds, u64DataRatebps);
 
@@ -526,12 +536,12 @@ class EMANE::NeighborMetricManager::Implementation
 
     void updateTxActivityData_i(NeighborData * pNeighborMetric, std::uint64_t u64DataRatebps, const TimePoint & txTime)
       {
-        pNeighborMetric->u32NumTxFrames_ += 1;
+        pNeighborMetric->u64NumTxFrames_ += 1;
 
         pNeighborMetric->lastTxTime_ = txTime;
 
         updateRunningAverage(pNeighborMetric->u64TxDataRateAvg_, 
-                             pNeighborMetric->u32NumTxFrames_, 
+                             pNeighborMetric->u64NumTxFrames_, 
                              u64DataRatebps);
 
         updateMinMax(pNeighborMetric->u64TxDataRateMin_, pNeighborMetric->u64TxDataRateMax_, u64DataRatebps);
@@ -548,7 +558,7 @@ class EMANE::NeighborMetricManager::Implementation
         // set statistic(s)
         pTable->setCell(pNeighborMetric->nemId_, 
                          NBR_METRIC_TX_FRAMES, 
-                         Any{pNeighborMetric->u32NumTxFrames_});
+                         Any{pNeighborMetric->u64NumTxFrames_});
 
         pTable->setCell(pNeighborMetric->nemId_, 
                          NBR_METRIC_TX_DATARATE_AVG, 
@@ -562,34 +572,42 @@ class EMANE::NeighborMetricManager::Implementation
 
 
      void updateRxActivityData_i(NeighborData * pNeighborMetric, 
-                             std::uint16_t u16SeqNum, 
-                             const EMANE::TimePoint & rxTime)
+                                 std::uint64_t u64SeqNum, 
+                                 const uuid_t & uuid,
+                                 const EMANE::TimePoint & rxTime)
       {
-         std::int32_t iSeqDelta{u16SeqNum - pNeighborMetric->u16LastRxSeqNum_};
-
-         // check for roll over
-         if(iSeqDelta < 0)
-           {
-             iSeqDelta = MAX_SEQ_NUM - iSeqDelta;
-           }
-
-         // check for missed frames
-         if(iSeqDelta > 1)
-           {
-             pNeighborMetric->u32NumRxMissedFrames_ += (iSeqDelta - 1);
-           }
-
-         pNeighborMetric->u32NumRxFrames_ += 1;
- 
-         pNeighborMetric->u16LastRxSeqNum_ = u16SeqNum;
-
-         pNeighborMetric->lastRxTime_ = rxTime;
-
-         pNeighborMetric->bHaveEverHadRxActivity_ = true;
+        if(!uuid_compare(uuid,pNeighborMetric->uuid_))
+          {
+            if(u64SeqNum > pNeighborMetric->u64LastRxSeqNum_)
+              {
+                pNeighborMetric->u64NumRxMissedFrames_ += 
+                  u64SeqNum - pNeighborMetric->u64LastRxSeqNum_ - 1;
+                
+                pNeighborMetric->u64LastRxSeqNum_ = u64SeqNum;
+              }
+            else
+              {
+                // out of order, previously accounted for as missed
+                if(pNeighborMetric->u64NumRxMissedFrames_)
+                  {
+                    pNeighborMetric->u64NumRxMissedFrames_ -= 1;
+                  }
+              }
+          }
+        else
+          {
+            // first packet or emulator restart
+            uuid_copy(pNeighborMetric->uuid_,uuid);
+            
+            pNeighborMetric->u64LastRxSeqNum_ = u64SeqNum;
+          }
+        
+        pNeighborMetric->u64NumRxFrames_ += 1;
+        
+        pNeighborMetric->lastRxTime_ = rxTime;
+        
+        pNeighborMetric->bHaveEverHadRxActivity_ = true;
       }
-
-
-   
 
 
     void updateRxActivityNeighborMetricStatistics_i(NeighborData * pNeighborMetric)
@@ -599,11 +617,11 @@ class EMANE::NeighborMetricManager::Implementation
         // update statistic(s)
         pTable->setCell(pNeighborMetric->nemId_, 
                          NBR_METRIC_RX_FRAMES, 
-                         Any{pNeighborMetric->u32NumRxFrames_});
+                         Any{pNeighborMetric->u64NumRxFrames_});
 
         pTable->setCell(pNeighborMetric->nemId_, 
                          NBR_METRIC_MISSED_FRAMES, 
-                         Any{pNeighborMetric->u32NumRxMissedFrames_});
+                         Any{pNeighborMetric->u64NumRxMissedFrames_});
       }
 
 
@@ -623,7 +641,7 @@ class EMANE::NeighborMetricManager::Implementation
 
         updateMinMax(pNeighborMetric->u64RxDataRateMin_, pNeighborMetric->u64RxDataRateMax_, u64DataRatebps);
 
-        updateRunningAverage(pNeighborMetric->u64RxDataRateAvg_, pNeighborMetric->u32NumRxFrames_, u64DataRatebps);
+        updateRunningAverage(pNeighborMetric->u64RxDataRateAvg_, pNeighborMetric->u64NumRxFrames_, u64DataRatebps);
       }
 
 
@@ -634,14 +652,14 @@ class EMANE::NeighborMetricManager::Implementation
         // get sinr avg and standard deviation 
         getAvgAndStd(pNeighborMetric->fSINRSum_, 
                      pNeighborMetric->fSINRSum2_, 
-                     pNeighborMetric->u32NumRxFrames_, 
+                     pNeighborMetric->u64NumRxFrames_, 
                      fSINRAvg,
                      fSINRStdv);
 
         // get noise floor avg and standard deviation 
         getAvgAndStd(pNeighborMetric->fNoiseFloorSum_, 
                      pNeighborMetric->fNoiseFloorSum2_, 
-                     pNeighborMetric->u32NumRxFrames_, 
+                     pNeighborMetric->u64NumRxFrames_, 
                      fNoiseFloorAvg,
                      fNoiseFloorStdv);
 
@@ -684,11 +702,11 @@ class EMANE::NeighborMetricManager::Implementation
          // clear just about everything but the lastRx seq, time and activity flag
         
          // reset missed frames
-         pNeighborMetric->u32NumRxMissedFrames_ = 0;
+         pNeighborMetric->u64NumRxMissedFrames_ = 0;
   
          // reset rx/tx frames
-         pNeighborMetric->u32NumRxFrames_ = 0;
-         pNeighborMetric->u32NumTxFrames_ = 0;
+         pNeighborMetric->u64NumRxFrames_ = 0;
+         pNeighborMetric->u64NumTxFrames_ = 0;
 
          // reset bw consumption
          pNeighborMetric->rxUtilizationMicroseconds_ = EMANE::Microseconds::zero();
@@ -758,7 +776,7 @@ class EMANE::NeighborMetricManager::Implementation
       }
 
     // set the running avg,  based on count, and new value
-    inline void updateRunningAverage(std::uint64_t &avg, std::uint32_t count, std::uint64_t val)
+    inline void updateRunningAverage(std::uint64_t &avg, std::uint64_t count, std::uint64_t val)
      {
        avg = (count == 1) ? val : ((avg * count) + val) / (count + 1);
      }
@@ -792,16 +810,18 @@ EMANE::NeighborMetricManager::updateNeighborTxMetric(NEMId dst, std::uint64_t u6
 
 void 
 EMANE::NeighborMetricManager::updateNeighborRxMetric(NEMId src, 
-                                                     std::uint16_t u16SeqNum, 
+                                                     std::uint64_t u64SeqNum, 
+                                                     const uuid_t & uuid,
                                                      const TimePoint & rxTime)
 {
   // rx activity (short form)
-  pImpl_->handleRxActivity(src, u16SeqNum, rxTime);
+  pImpl_->handleRxActivity(src, u64SeqNum, uuid, rxTime);
 }
 
 
 void EMANE::NeighborMetricManager::updateNeighborRxMetric(NEMId src, 
-                                                          std::uint16_t u16SeqNum,
+                                                          std::uint64_t u64SeqNum,
+                                                          const uuid_t & uuid,
                                                           float fSINR,
                                                           float fNoiseFloor,
                                                           const TimePoint & rxTime,
@@ -810,7 +830,8 @@ void EMANE::NeighborMetricManager::updateNeighborRxMetric(NEMId src,
 {
    // rx activity (short form)
    pImpl_->handleRxActivity(src, 
-                            u16SeqNum,
+                            u64SeqNum,
+                            uuid,
                             fSINR,
                             fNoiseFloor,
                             rxTime,

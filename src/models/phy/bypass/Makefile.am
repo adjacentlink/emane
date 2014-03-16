@@ -3,6 +3,7 @@ lib_LTLIBRARIES = libbypassphylayer.la
 libbypassphylayer_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
  $(ACE_CFLAGS)                 \
+ $(libuuid_CFLAGS)             \
  $(AM_CFLAGS)
 
 libbypassphylayer_la_SOURCES = \

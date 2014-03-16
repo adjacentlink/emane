@@ -313,7 +313,7 @@ namespace EMANE
 
         CollisionTable collisionTable_;
 
-        std::uint16_t u16SequenceNumber_;
+        std::uint64_t u64SequenceNumber_;
 
         std::uint16_t u16EntrySequenceNumber_;
 
@@ -347,13 +347,14 @@ namespace EMANE
         void handleUpstreamPacket(UpstreamPacket & pkt,
                                   double dRxPowerdBm, 
                                   double dNoiseFloordBm,
-                                  std::uint16_t u16SequenceNumber,
+                                  std::uint64_t u64SequenceNumber,
                                   const TimePoint & rBeginTime,
                                   std::uint8_t u8Category);
  
 
         bool checkUpstremReception(UpstreamPacket &pkt,
                                    const TimePoint & currentTime,
+                                   std::uint64_t u64SequenceNumber,
                                    double dRxPowerdBm, 
                                    double dNoiseFloordBm,
                                    const MACHeaderParams & macHeaderParams,

@@ -110,7 +110,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::MACLayer(NEMId id,
   neighborMetricManager_{id},
   queueMetricManager_{id},
   flowControlManager_{*this}, 
-  u16SequenceNumber_{},
+  u64SequenceNumber_{},
   u16EntrySequenceNumber_{},
   modeTiming_{macConfig_},
   channelUsageTimedEventId_{},
@@ -559,8 +559,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                              frequencySegments,
                                              span,
                                              timeNow](UpstreamPacket & pkt,
-                                                        std::uint16_t u16SequenceNumber,
-                                                        std::uint8_t u8Category)
+                                                      std::uint64_t u64SequenceNumber,
+                                                      std::uint8_t u8Category)
         {
           const PacketInfo & pktInfo{pkt.getPacketInfo()};
               
@@ -637,7 +637,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
           handleUpstreamPacket(pkt, 
                                frequencySegment.getRxPowerdBm(),
                                dNoiseFloordB,
-                               u16SequenceNumber,
+                               u64SequenceNumber,
                                timeNow,
                                u8Category);
 
@@ -668,7 +668,7 @@ void
 EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt, 
                                                             double dRxPowerdBm, 
                                                             double dNoiseFloordBm,
-                                                            std::uint16_t u16SequenceNumber,
+                                                            std::uint64_t u64SequenceNumber,
                                                             const TimePoint & timeNow,
                                                             std::uint8_t u8Category)
 { 
@@ -691,11 +691,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         {
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                  DEBUG_LEVEL,
-                                 "MACI %03hu %s::%s: cts pkt from %hu, seq %hu",
+                                 "MACI %03hu %s::%s: cts pkt from %hu, mac seq %ju entry seq %hu",
                                  id_,
                                  pzLayerName,
                                  __func__, 
                                  macHeaderParams.getSrcNEM(),
+                                 u64SequenceNumber,
                                  macHeaderParams.getSequenceNumber());
 
           // update ctrl channel activity
@@ -709,7 +710,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
 
           neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),  // nbr (src)
-                                                        u16SequenceNumber,    // seq
+                                                        u64SequenceNumber,    // seq
+                                                        pktInfo.getUUID(),    // uuid
                                                         timeNow);             // rx time
 
           // bump counter
@@ -764,6 +766,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
           // check reception for collision and sinr
           if(!checkUpstremReception(pkt,
                                     timeNow,
+                                    u64SequenceNumber,
                                     dRxPowerdBm, 
                                     dNoiseFloordBm,
                                     macHeaderParams, 
@@ -795,7 +798,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
             {
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
-                                     "MACI %03hu %s::%s: duplicate pkt from %hu, seq %hu, drop",
+                                     "MACI %03hu %s::%s: duplicate pkt from %hu, entry seq %hu, drop",
                                      id_,
                                      pzLayerName,
                                      __func__, 
@@ -821,6 +824,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
               // did the pkt pass
               if(checkUpstremReception(pkt, 
                                        timeNow,
+                                       u64SequenceNumber,
                                        dRxPowerdBm, 
                                        dNoiseFloordBm,
                                        macHeaderParams, 
@@ -920,6 +924,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 bool 
 EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pkt,
                                                              const TimePoint & timeNow,
+                                                             std::uint64_t u64SequenceNumber,
                                                              double dRxPowerdBm,
                                                              double dNoiseFloordBm,
                                                              const MACHeaderParams & rMACHeaderParams,
@@ -1068,7 +1073,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
 
       neighborMetricManager_.updateNeighborRxMetric(
         pktInfo.getSource(),                                           // nbr (src)
-        rMACHeaderParams.getSequenceNumber(),                          // seq
+        u64SequenceNumber,                                             // seq
+        pktInfo.getUUID(),                                             // uuid
         dSINR,                                                         // sinr in dBm
         dNoiseFloorAdjustmentMilliWatts,                               // noise floor in dBm
         timeNow,                                                       // rx time
@@ -1336,7 +1342,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
                     rMACHeaderParams.getMessageType() == MSG_TYPE_UNICAST_CTS_CTRL);
 
   // send the packet
-  sendDownstreamPacket(CommonMACHeader{registrationId_, u16SequenceNumber_++},           
+  sendDownstreamPacket(CommonMACHeader{registrationId_, u64SequenceNumber_++},           
                        entry.pkt_,                                       
                        {Controls::FrequencyControlMessage::create(
                          0,                                                 // bandwidth (0 uses phy default)

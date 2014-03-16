@@ -3,6 +3,7 @@ lib_LTLIBRARIES = libphyapitestshim.la
 libphyapitestshim_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
  $(ACE_CFLAGS)                 \
+ $(libuuid_CFLAGS)             \
  $(AM_CFLAGS)
 
 libphyapitestshim_la_SOURCES = \

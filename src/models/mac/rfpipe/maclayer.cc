@@ -80,7 +80,7 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
                                           PlatformServiceProvider * pPlatformServiceProvider,
                                           RadioServiceProvider * pRadioServiceProvider):
   MACLayerImplementor{id, pPlatformServiceProvider, pRadioServiceProvider},
-  u16TxSequenceNumber_{},
+  u64TxSequenceNumber_{},
   flowControlManager_{*this},
   pcrManager_(id, pPlatformService_),
   neighborMetricManager_(id),
@@ -776,7 +776,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                  frequencySegments,
                                                  span,
                                                  beginTime](UpstreamPacket & pkt,
-                                                            std::uint16_t u16SequenceNumber,
+                                                            std::uint64_t u64SequenceNumber,
                                                             std::uint64_t u64DataRate)
             {
               const PacketInfo & pktInfo{pkt.getPacketInfo()};
@@ -786,7 +786,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
                                      "MACI %03hu %s upstream EOR processing: src %hu, dst %hu,"
-                                     " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %hu",
+                                     " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %ju",
                                      id_,
                                      pzLayerName,
                                      pktInfo.getSource(),
@@ -795,7 +795,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                      frequencySegment.getFrequencyHz(),
                                      frequencySegment.getOffset().count(),
                                      frequencySegment.getDuration().count(),
-                                     u16SequenceNumber);
+                                     u64SequenceNumber);
               
               
               double dSINR{};
@@ -883,7 +883,8 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
               
               // update neighbor metrics 
               neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
-                                                            u16SequenceNumber,      // sequence number 
+                                                            u64SequenceNumber,      // sequence number
+                                                            pktInfo.getUUID(),
                                                             dSINR,                  // sinr in dBm
                                                             dNoiseFloordB,          // noise floor in dB
                                                             startOfReception,       // rx time
@@ -987,12 +988,12 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
   Microseconds durationMicroseconds{getDurationMicroseconds(pkt.length())};
   
   DownstreamQueueEntry entry{pkt,                   // pkt
-      u16TxSequenceNumber_,  // sequence number
+      u64TxSequenceNumber_,  // sequence number
       beginTime,             // acquire time
       durationMicroseconds,  // duration
       u64DataRatebps_};      // data rate
   
-  ++u16TxSequenceNumber_;
+  ++u64TxSequenceNumber_;
   
   if(bHasPendingDownstreamQueueEntry_)
     {
@@ -1074,7 +1075,7 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
 
        /** [pysicallayer-frequencycontrolmessage-snippet] */
        
-       sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u16SequenceNumber_), 
+       sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u64SequenceNumber_), 
                             pkt,
                             {Controls::FrequencyControlMessage::create(0,                                   // bandwidth (0 means use phy default)
                                                                        {{0, pendingDownstreamQueueEntry_.durationMicroseconds_}}), // freq (0 means use phy default)
