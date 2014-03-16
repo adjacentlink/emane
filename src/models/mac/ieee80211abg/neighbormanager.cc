@@ -400,15 +400,15 @@ EMANE::Models::IEEE80211ABG::NeighborManager::resetStatistics()
       }
    }
 
-  // calculate bw utilization
-  calculateBwUtilization_i(deltaTMicroseconds);
-
   // for each one hop nbr
   for(auto & nbrEntry :oneHopNbrMap_)
     {
-      // reset all utilization
-      nbrEntry.second.resetUtilization();
+      // store history and reset all utilizations
+      nbrEntry.second.storeUtilization();
     }
+
+  // calculate bw utilization
+  calculateBwUtilization_i(deltaTMicroseconds);
 
   // for each two hop nbr
   for(auto & nbr2Entry : twoHopNbrMap_)
