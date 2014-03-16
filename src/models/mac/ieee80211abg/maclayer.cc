@@ -1758,39 +1758,44 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
 
 bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry()
 {
-  // if there is no futher processing for the pending packet
-  //  update the state and see if there is another packet
-  //  pending
-  if(!pTxState_->process(this,pendingDownstreamQueueEntry_))
+  // there are two ways to end processing: schedule a timer or have no
+  //  other packets in the downstream queue once you finish processing
+  //  the pending packet
+  while(bHasPendingDownstreamQueueEntry_)
     {
-      pTxState_->update(this,pendingDownstreamQueueEntry_);
-      
-      std::tie(pendingDownstreamQueueEntry_,bHasPendingDownstreamQueueEntry_) =
-        downstreamQueue_.dequeue();
-      
-      addToken();
+      // if there is no further processing for the pending packet
+      //  update the state and see if there is another packet
+      //  pending
+      if(!pTxState_->process(this,pendingDownstreamQueueEntry_))
+        {
+          pTxState_->update(this,pendingDownstreamQueueEntry_);
+
+          std::tie(pendingDownstreamQueueEntry_,bHasPendingDownstreamQueueEntry_) =
+            downstreamQueue_.dequeue();
+
+          addToken();
+        }
+
+      // if something is pending we need to schedule it - this could be the
+      // same packet entry that we began with
+      if(bHasPendingDownstreamQueueEntry_)
+        {
+          auto optionalWait = pTxState_->getWaitTime(pendingDownstreamQueueEntry_);
+
+          if(optionalWait.second && optionalWait.first > Clock::now())
+            {
+              downstreamQueueTimedEventId_ =
+                pPlatformService_->timerService().
+                scheduleTimedEvent(optionalWait.first,
+                                   new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                                                       this)});
+
+              // we are finished handling the queue entry (for now)
+              break;
+            }
+        }
     }
   
-  // if something is pending we need to shedule it - this could be the
-  // same packet entry that we began with
-  if(bHasPendingDownstreamQueueEntry_)
-    {
-      auto optionalWait = pTxState_->getWaitTime(pendingDownstreamQueueEntry_);
-
-      if(optionalWait.second)
-        {
-          downstreamQueueTimedEventId_ = 
-            pPlatformService_->timerService().
-            scheduleTimedEvent(optionalWait.first,
-                               new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                   this)});
-        }
-      else
-        {
-          handleDownstreamQueueEntry();
-        }
-    }
-
   // delete after executing
   return true;
 }
