@@ -1419,7 +1419,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
   int iCW{modeTiming_.getContentionWindow(entry.u8Category_, entry.numRetries_)};
 
   // set initial pre delay
-  Microseconds preDealyMicroseconds{};
+  Microseconds preDelayMicroseconds{};
 
   // set the initial post delay
   Microseconds postDelayMicroseconds{};
@@ -1429,41 +1429,56 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
     {
       // calcuating excess overhead per neighbor in excess of 2 for the estimated average message duration
       Microseconds messageDurationOverheadExtraMicroseconds{ 
-        std::chrono::duration_cast<Microseconds>(
-           DoubleSeconds{(((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) * 
-              ((iCW * modeTiming_.getSlotSizeMicroseconds().count()) / 2.0f)) / USEC_PER_SEC_F)})};
+        static_cast<Microseconds::rep>((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) * 
+                                       ((iCW * modeTiming_.getSlotSizeMicroseconds().count()) / 2.0f))};
 
       // probability of additional deley required
       float X1{RNDZeroToOne_()};
 
       float fDelayTimeFactor{getRatio(totalOneAndTwoHopUtilizationMicroseconds, deltaT)};
 
+      if(fDelayTimeFactor > 1)
+        {
+          fDelayTimeFactor = 1;
+        }
+
       if(X1 <= fDelayTimeFactor)
         {
           // get pre delay
-          Microseconds nodeDelayMicroseconds{std::chrono::duration_cast<Microseconds>(DoubleSeconds{(
-            floorf(X2 * fNumEstimatedOneAndTwoHopNeighbors) / USEC_PER_SEC_F)})};
-
+          auto nodeDelayMicroseconds = 
+            Microseconds{static_cast<Microseconds::rep>(floorf(X2 * fNumEstimatedOneAndTwoHopNeighbors))};
+          
           // add to the pre dealy
-          preDealyMicroseconds += Microseconds{
-            nodeDelayMicroseconds.count() * averageMessageDurationMicroseconds.count()};
+          preDelayMicroseconds += 
+            Microseconds{nodeDelayMicroseconds.count() * averageMessageDurationMicroseconds.count()};
 
-          // if have node delay
-          if(nodeDelayMicroseconds > Microseconds::zero())
+          if(preDelayMicroseconds > messageDurationOverheadExtraMicroseconds)
             {
               // remove the overhead
-              preDealyMicroseconds -= messageDurationOverheadExtraMicroseconds;
+              preDelayMicroseconds -= messageDurationOverheadExtraMicroseconds;
             }
-
-          // set post delay
-          postDelayMicroseconds = 
-            std::chrono::duration_cast<Microseconds>(DoubleSeconds{((powf(fDelayTimeFactor, 2.0f) * 
-              ((fNumEstimatedOneAndTwoHopNeighbors - 1.0f) * averageMessageDurationMicroseconds.count())) / USEC_PER_SEC_F)});
         }
+
+      // set post delay
+      postDelayMicroseconds = 
+        Microseconds{static_cast<Microseconds::rep>(powf(fDelayTimeFactor, 2.0f) *
+                                                    (fNumEstimatedOneAndTwoHopNeighbors - 1.0f) *
+                                                    averageMessageDurationMicroseconds.count())};
+
+      if(postDelayMicroseconds > preDelayMicroseconds)
+        {
+          postDelayMicroseconds -= preDelayMicroseconds;
+        }
+      else
+        {
+          postDelayMicroseconds = Microseconds::zero();
+        }
+
+      postDelayMicroseconds += averageMessageDurationMicroseconds;
     }
 
   // add defer time to pre delay
-  preDealyMicroseconds += modeTiming_.getDeferIntervalMicroseconds(entry.u8Category_);
+  preDelayMicroseconds += modeTiming_.getDeferIntervalMicroseconds(entry.u8Category_);
 
   // initial set flag that collision will not occur
   entry.bCollisionOccured_ = false;
@@ -1535,7 +1550,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
     }
  
   // set pre delay time 
-  entry.preTxDelayTime_ = timeNow + preDealyMicroseconds;
+  entry.preTxDelayTime_ = timeNow + preDelayMicroseconds;
 
   // set post delay duration
   entry.postTxDelayMicroseconds_ = postDelayMicroseconds;
@@ -1552,7 +1567,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
                          fNumEstimatedTwoHopNeighbors, 
                          std::chrono::duration_cast<DoubleSeconds>(totalOneAndTwoHopUtilizationMicroseconds).count(), 
                          std::chrono::duration_cast<DoubleSeconds>(averageMessageDurationMicroseconds).count(), 
-                         std::chrono::duration_cast<DoubleSeconds>(preDealyMicroseconds).count(), 
+                         std::chrono::duration_cast<DoubleSeconds>(preDelayMicroseconds).count(), 
                          std::chrono::duration_cast<DoubleSeconds>(postDelayMicroseconds).count(),
                          entry.bCollisionOccured_ ? "true" : "false");
 }
@@ -1820,7 +1835,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
   size_t historySize{16};
 
   // entry valid interval 5 seconds
-  Microseconds vaildIntervalMicroseconds{std::chrono::duration_cast<Microseconds>(DoubleSeconds{5.0f})};
+  Microseconds vaildIntervalMicroseconds{std::chrono::seconds{5}};
 
   auto dupIter = duplicateMap_.find(src);
 
