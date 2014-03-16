@@ -82,16 +82,21 @@ namespace
   const std::uint16_t DROP_CODE_BAD_SPECTRUM_QUERY = 6;
   const std::uint16_t DROP_CODE_FLOW_CONTROL_ERROR = 7;
   const std::uint16_t DROP_CODE_DUPLICATE          = 8;
+  const std::uint16_t DROP_CODE_RX_DURING_TX       = 9;
+  const std::uint16_t DROP_CODE_RX_HIDDEN_BUSY     = 10;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS
-  {"SINR",
-      "Reg Id",
-      "Dst MAC",
-      "Queue Overflow",
-      "Bad Control",
-      "Bad Spectrum Query",
-      "Flow Control",
-      "Duplicate"};
+   { "SINR",
+     "Reg Id",
+     "Dst MAC",
+     "Queue Overflow",
+     "Bad Control",
+     "Bad Spectrum Query",
+     "Flow Control",
+     "Duplicate",
+     "Rx During Tx",
+     "Hidden Busy"
+   };
 }
 
 
@@ -771,7 +776,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                     dNoiseFloordBm,
                                     macHeaderParams, 
                                     macHeaderParams.getNumRetries(),
-                                    u8Category))
+                                    u8Category).first)
             {  
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
@@ -781,11 +786,6 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                      __func__,  
                                      macHeaderParams.getSrcNEM(),
                                      macHeaderParams.getDstNEM());
-
-              commonLayerStatistics_[u8Category]->processOutbound(
-                                                                  pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
-                                                                  DROP_CODE_SINR);
 
               // drop
               return;
@@ -814,22 +814,23 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
             }
 
           // assume failed
-          bool bPass{};
+          std::pair <bool, std::uint16_t> result{};
 
           int tryNum{};
 
           // check until retry limit reached or pkt passes
-          for(tryNum = 0; (tryNum <= macHeaderParams.getNumRetries()) && !bPass; ++tryNum)
+          for(tryNum = 0; (tryNum <= macHeaderParams.getNumRetries()) && !result.first; ++tryNum)
             {
               // did the pkt pass
-              if(checkUpstremReception(pkt, 
-                                       timeNow,
-                                       u64SequenceNumber,
-                                       dRxPowerdBm, 
-                                       dNoiseFloordBm,
-                                       macHeaderParams, 
-                                       tryNum,
-                                       u8Category))
+              result = checkUpstremReception(pkt, 
+                                             timeNow,
+                                             u64SequenceNumber,
+                                             dRxPowerdBm, 
+                                             dNoiseFloordBm,
+                                             macHeaderParams, 
+                                             tryNum,
+                                             u8Category);
+              if(result.first)
                 {
                   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                          DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception passed, retires %d", 
@@ -839,13 +840,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                          macHeaderParams.getSrcNEM(),
                                          macHeaderParams.getDstNEM(),
                                          tryNum);
-
-                  // set passed flag
-                  bPass = true;
                 }
             }
 
-          if(!bPass)
+          if(!result.first)
             {
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception failed in %d tries", 
@@ -856,10 +854,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                      macHeaderParams.getDstNEM(),
                                      tryNum);
 
-              commonLayerStatistics_[u8Category]->processOutbound(
-                                                                  pkt, 
+              commonLayerStatistics_[u8Category]->processOutbound(pkt, 
                                                                   std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
-                                                                  DROP_CODE_SINR);
+                                                                  result.second);
 
               // drop
               return;
@@ -921,7 +918,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
 
 
-bool 
+std::pair<bool, std::uint16_t>
 EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pkt,
                                                              const TimePoint & timeNow,
                                                              std::uint64_t u64SequenceNumber,
@@ -953,14 +950,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
                              pzLayerName,
                              __func__);
 
-
       // bump counter
       isBroadcast(rMACHeaderParams.getDstNEM()) ?
         macStatistics_.incrementUpstreamBroadcastDataDiscardDueToClobberRxDuringTx() :
         macStatistics_.incrementUpstreamUnicastDataDiscardDueToClobberRxDuringTx();
 
       // drop
-      return false;
+      return std::pair<bool, std::uint16_t>(false, DROP_CODE_RX_DURING_TX);
     }
 
   // clobbered rx hidden busy
@@ -979,7 +975,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
         macStatistics_.incrementUpstreamUnicastDataDiscardDueToClobberRxHiddenBusy();
 
       // drop
-      return false;
+      return std::pair<bool, std::uint16_t>(false, DROP_CODE_RX_HIDDEN_BUSY);
     }
 
   // noise common rx
@@ -1054,7 +1050,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
         macStatistics_.incrementUpstreamUnicastDataDiscardDueToSinr();
 
       // drop
-      return false;
+      return std::pair<bool, std::uint16_t>(false, DROP_CODE_SINR);
     }
   else
     {
@@ -1084,7 +1080,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
         macConfig_.getUnicastDataRateKbps(rMACHeaderParams.getDataRateIndex())   * 1000ULL);
 
       // pass
-      return true;
+      return std::pair<bool, std::uint16_t>(true, {});
     }
 }
 

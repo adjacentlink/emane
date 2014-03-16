@@ -352,7 +352,7 @@ namespace EMANE
                                   std::uint8_t u8Category);
  
 
-        bool checkUpstremReception(UpstreamPacket &pkt,
+        std::pair<bool, std::uint16_t> checkUpstremReception(UpstreamPacket &pkt,
                                    const TimePoint & currentTime,
                                    std::uint64_t u64SequenceNumber,
                                    double dRxPowerdBm, 
