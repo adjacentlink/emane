@@ -343,6 +343,15 @@ void EMANE::Transports::Virtual::VirtualTransport::postStart()
   if(bFlowControlEnable_)
     {
       flowControlClient_.start();
+
+       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "TRANSPORTI %03hu VirtualTransport::%s sent a flow control"
+                              " token request, a handshake response is required to process"
+                              " packets",
+                              id_, 
+                              __func__);            
+       
     }
 }
 
@@ -470,7 +479,27 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
               const auto pFlowControlControlMessage =
                 static_cast<const Controls::FlowControlControlMessage *>(pMessage);
 
-              flowControlClient_.processFlowControlMessage(pFlowControlControlMessage);
+              if(bFlowControlEnable_)
+                {
+                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                 ERROR_LEVEL,
+                                                 "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                 " token update %hu tokens",
+                                                 id_,
+                                                 __func__,
+                                                 pFlowControlControlMessage->getTokens());
+
+                  flowControlClient_.processFlowControlMessage(pFlowControlControlMessage);
+                }
+              else
+                {
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          ERROR_LEVEL,
+                                          "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                          " message but flow control is not enabled",
+                                          id_, 
+                                          __func__); 
+                }
             }
           break;
 
@@ -488,7 +517,28 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
                         Controls::FlowControlControlMessage::create(
                                                                 pSerializedControlMessage->getSerialization())};
             
-                      flowControlClient_.processFlowControlMessage(pFlowControlControlMessage.get());
+                      if(bFlowControlEnable_)
+                        {
+                          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                 ERROR_LEVEL,
+                                                 "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                 " token update %hu tokens",
+                                                 id_,
+                                                 __func__,
+                                                 pFlowControlControlMessage->getTokens());
+
+                            flowControlClient_.processFlowControlMessage(pFlowControlControlMessage.get());
+                          
+                        }
+                      else
+                        {
+                          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                                  ERROR_LEVEL,
+                                                  "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                  " message but flow control is not enabled",
+                                                  id_, 
+                                                  __func__);
+                        }
                     }
                   break;
 

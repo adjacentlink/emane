@@ -250,6 +250,14 @@ EMANE::Models::IEEE80211ABG::MACLayer::postStart()
   if(macConfig_.getFlowControlEnable())
     {
       flowControlManager_.start(macConfig_.getFlowControlTokens());
+      
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                              DEBUG_LEVEL,
+                              "MACI %03hu %s::%s sent a flow control token update,"
+                              " a handshake response is required to process packets",
+                              id_, 
+                              pzLayerName, 
+                              __func__);
     }
 
   neighborManager_.start();
@@ -410,7 +418,28 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
             const auto pFlowControlControlMessage =
               static_cast<const Controls::FlowControlControlMessage *>(pMessage);
 
-            flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+
+            if(macConfig_.getFlowControlEnable())
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                                        DEBUG_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request/response",
+                                        id_, 
+                                        pzLayerName, 
+                                        __func__);
+
+                flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+              }
+            else
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                        ERROR_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request but"
+                                        " flow control is not enabled", 
+                                        id_,
+                                        pzLayerName,
+                                        __func__);
+              }
           }
 
           break;
@@ -427,10 +456,30 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
                   std::unique_ptr<Controls::FlowControlControlMessage> 
                     pFlowControlControlMessage{Controls::FlowControlControlMessage::create
                       (pSerializedControlMessage->getSerialization())};
-                    
-                  flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+
+                  if(macConfig_.getFlowControlEnable())
+                    {
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                                              DEBUG_LEVEL,
+                                              "MACI %03hu %s::%s received a flow control token request/response",
+                                              id_, 
+                                              pzLayerName, 
+                                              __func__);
+
+                      flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                    }
+                  else
+                    {
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                              ERROR_LEVEL,
+                                              "MACI %03hu %s::%s received a flow control token request but"
+                                              " flow control is not enabled", 
+                                              id_,
+                                              pzLayerName,
+                                              __func__);
+                    }
                 }
-                  
+                
                 break;
               }
           }

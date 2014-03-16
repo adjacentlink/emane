@@ -422,6 +422,14 @@ EMANE::Models::RFPipe::MACLayer::postStart()
     {
       // start flow control 
       flowControlManager_.start(u16FlowControlTokens_);
+
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                              DEBUG_LEVEL,
+                              "MACI %03hu %s::%s sent a flow control token update,"
+                              " a handshake response is required to process packets",
+                              id_, 
+                              pzLayerName, 
+                              __func__);
     }
 
   // set the timer timeout (absolute time), arg, interval
@@ -628,7 +636,27 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
             const auto pFlowControlControlMessage =
               static_cast<const Controls::FlowControlControlMessage *>(pMessage);
 
-            flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+            if(bFlowControlEnable_)
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                                        DEBUG_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request/response",
+                                        id_, 
+                                        pzLayerName, 
+                                        __func__);
+
+                flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+              }
+            else
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                        ERROR_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request but"
+                                        " flow control is not enabled", 
+                                        id_,
+                                        pzLayerName,
+                                        __func__);
+              }
           }
           break;
           
@@ -645,8 +673,21 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
                   std::unique_ptr<Controls::FlowControlControlMessage> 
                     pFlowControlControlMessage{
                     Controls::FlowControlControlMessage::create(pSerializedControlMessage->getSerialization())};
-                      
-                  flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                  
+                  if(bFlowControlEnable_)
+                    {
+                      flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                    }
+                  else
+                    {
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                              ERROR_LEVEL,
+                                              "MACI %03hu %s::%s received a flow control token request but"
+                                              " flow control is not enabled", 
+                                              id_,
+                                              pzLayerName,
+                                              __func__);
+                    }
                 }
                 break;
               }
