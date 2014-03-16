@@ -450,6 +450,13 @@ void EMANE::Transports::Raw::RawTransport::destroy()
 void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket & pkt,
                                                                  const ControlMessages &msgs)
 {
+  // we are not in the running state - the infrastructure should protect
+  // against this but currently it does not for transports.
+  if(!pPcapHandle_)
+    {
+      return;
+    }
+
   // frame sanity check
   if(verifyFrame(pkt.get(), pkt.length()) < 0)
     {
