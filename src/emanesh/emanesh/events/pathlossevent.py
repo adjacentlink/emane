@@ -92,9 +92,75 @@ if __name__ == "__main__":
     from optparse import OptionParser
     from emanesh.events import EventService
 
-    usage = "emaneevent-pathloss [OPTION]... NEMID:NEMID PATHLOSSDB"
+    usage = "emaneevent-pathloss [OPTION]... NEMID[:NEMID] PATHLOSSDB"
 
-    optionParser = OptionParser(usage=usage)
+    description="Publish a pathloss event to all or some of the NEMs specified in a range."
+
+    epilog="""
+The NEM range specification creates a logical two dimensional matrix.
+
+For example:
+
+  emaneevent-pathloss 1:10 90
+
+Will create the following logical matrix:
+
+       Transmitters
+
+       1  2  3  4  5  6  7  8  9  10
+R   1     P  P  P  P  P  P  P  P  P
+e   2  P     P  P  P  P  P  P  P  P
+c   3  P  P     P  P  P  P  P  P  P
+e   4  P  P  P     P  P  P  P  P  P
+i   5  P  P  P  P     P  P  P  P  P
+v   6  P  P  P  P  P     P  P  P  P
+e   7  P  P  P  P  P  P     P  P  P
+r   8  P  P  P  P  P  P  P     P  P
+s   9  P  P  P  P  P  P  P  P     P
+   10  P  P  P  P  P  P  P  P  P   
+
+where, P is (pathloss=90).
+
+Each NEM receives one event with its respective matrix slice
+containing the pathloss value to use for each respective
+transmitter.
+
+This example will publish 10 pathloss events, each event will target
+a specific NEM in the range [1,10].
+
+You can use the '--target' option and the '--reference' to specifically
+target one or more NEMs with one of more of the transmitter values. The
+NEMs specified with '--target' do not have to be in the range.
+
+For example:
+
+  emaneevent-pathloss 1:10 90 -t 3 -t 4 -r 8 -r 9 -r 10
+
+Will send events to NEM 3 and 4 containing the transmitter information
+for NEMs 8, 9 and 10.
+
+  emaneevent-pathloss 13 90 -t 7 -t 8
+
+will send a pathloss event to NEM 7 and 8 with a single entry of 90dB
+for packets transmitted by NEM 13.
+
+  emaneevent-pathloss 15 110 -t 0
+
+will send a pathloss event to all NEMs with a single entry of 110dB
+for packets transmitted by NEM 15.
+
+Asymmetric pathloss can be achieved my invoking emaneevent-pathloss
+multiple times with different targets.
+
+"""
+
+    class LocalParser(OptionParser):
+        def format_epilog(self, formatter):
+            return self.epilog
+
+    optionParser = LocalParser(usage=usage,
+                               description=description,
+                               epilog=epilog)
 
     optionParser.add_option("-p", 
                             "--port",
@@ -119,11 +185,20 @@ if __name__ == "__main__":
                             dest="device",
                             help="Event channel multicast device")
 
-    optionParser.add_option("--target",
-                            action="store",
+    optionParser.add_option("-t",
+                            "--target",
+                            action="append",
                             type="int",
                             dest="target",
-                            help="Only send a single pahtloss event to the target")
+                            help="Only send an event to the target")
+
+    optionParser.add_option("-r",
+                            "--reference",
+                            action="append",
+                            type="int",
+                            dest="reference",
+                            help="Send events to targeted NEMs but only include information for the reference NEM.")
+
 
     (options, args) = optionParser.parse_args()
 
@@ -133,45 +208,52 @@ if __name__ == "__main__":
         print >>sys.stderr,"missing arguments"
         exit(1)
 
-    targets = args[0].split(':')
+    nems = args[0].split(':')
 
-    if len(targets) != 2:
-        print >>sys.stderr,"invalid target format:",args[0]
+    if len(nems) == 0 or len(nems) > 2:
+        print >>sys.stderr,"invalid NEMID format:",args[0]
         exit(1)
 
     try:
-        targets = [int(x) for x in targets]
+        nems = [int(x) for x in nems]
     except:
-        print >>sys.stderr,"invalid target format:",args[0]
+        print >>sys.stderr,"invalid NEMID format:",args[0]
         exit(1)
 
-    targets = range(targets[0],targets[1]+1)
+    if len(nems) > 1:
+        nems = range(nems[0],nems[1]+1)
 
-    if not targets:
-        print >>sys.stderr,"invalid target format:",args[0]
+    if not nems:
+        print >>sys.stderr,"invalid NEMID format:",args[0]
         exit(1)
 
+    pathlossdB = args[1]
+    
     try:
-        pathlossdB = float(args[1])
+        pathlossdB = float(pathlossdB)
     except:
         print >>sys.stderr,"invalid pathloss format:",args[1]
         exit(1) 
 
-    if targets[0] == 0:
-         print >>sys.stderr,"0 is not a valid target"
-         exit(1)
+    if nems[0] == 0:
+        print >>sys.stderr,"0 is not a valid NEMID"
+        exit(1)
 
-    # src nodes
-    nodes = targets
 
     if options.target:
-        targets = [options.target]  
+        targets = options.target
+    else:
+        targets = nems
+
+    if options.reference:
+        references = options.reference
+    else:
+        references = nems
 
     for i in targets:
         event = PathlossEvent()
-        for j in nodes:
-            if i != j:
+        for j in nems:
+            if i != j and j in references:
                 event.append(j,forward=pathlossdB)
-                
-        service.publish(i,event)
 
+        service.publish(i,event)
