@@ -78,7 +78,16 @@ namespace EMANE
       AntennaProfileControlMessage * create(AntennaProfileId id,
                                             double dAntennaAzimuthDegrees,
                                             double dAntennaElevationDegrees);
-      
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      AntennaProfileControlMessage * clone() const override;
+
       /**
        * Destroys an instance
        */
@@ -115,7 +124,7 @@ namespace EMANE
                                    double dAntennaAzimuthDegrees,
                                    double dAntennaElevationDegrees);
       
-      AntennaProfileControlMessage(const AntennaProfileControlMessage &) = delete;
+      AntennaProfileControlMessage(const AntennaProfileControlMessage &);
 
       AntennaProfileControlMessage & 
       operator=(const AntennaProfileControlMessage &) = delete;

@@ -35,6 +35,21 @@
 #include "shimheadermessage.h"
 #include "emane/configureexception.h"
 
+namespace
+{
+  EMANE::ControlMessages clone(const EMANE::ControlMessages & msgs)
+  {
+    EMANE::ControlMessages clones;
+
+    for(const auto & msg : msgs)
+    {
+      clones.push_back(msg->clone()); 
+    }
+
+    return clones;
+  }
+}
+
 
 EMANE::Models::TimingAnalysis::ShimLayer::ShimLayer(NEMId id,
                                                     PlatformServiceProvider * pPlatformService,
@@ -169,7 +184,7 @@ void EMANE::Models::TimingAnalysis::ShimLayer::processUpstreamControl(const Cont
                          id_,
                          __func__);
 
-  sendUpstreamControl(msgs);
+  sendUpstreamControl(clone(msgs));
 }
 
 
@@ -181,7 +196,7 @@ void EMANE::Models::TimingAnalysis::ShimLayer::processDownstreamControl(const Co
                          id_,
                          __func__);
 
-  sendDownstreamControl(msgs);
+  sendDownstreamControl(clone(msgs));
 }
 
 
@@ -231,7 +246,7 @@ void EMANE::Models::TimingAnalysis::ShimLayer::processUpstreamPacket(UpstreamPac
       queue_.push(entry);
     }
 
-  sendUpstreamPacket(pkt, msgs);
+  sendUpstreamPacket(pkt, clone(msgs));
 }
 
 
@@ -256,7 +271,7 @@ void EMANE::Models::TimingAnalysis::ShimLayer::processDownstreamPacket(Downstrea
                          id_,
                          __func__);
 
-  sendDownstreamPacket(pkt, msgs);
+  sendDownstreamPacket(pkt, clone(msgs));
 }
 
 DECLARE_SHIM_LAYER(EMANE::Models::TimingAnalysis::ShimLayer);

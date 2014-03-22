@@ -34,6 +34,7 @@
 #define EMANECONTROLMESSAGE_HEADER_
 
 #include "emane/serializable.h"
+#include "emane/cloneable.h"
 #include "emane/types.h"
 
 #include <list>
@@ -46,7 +47,8 @@ namespace EMANE
    * @brief ControlMessage interface is the base for all
    * control messages
    */
-  class ControlMessage : public Serializable
+  class ControlMessage : public Serializable,
+                         public Cloneable<ControlMessage>
   {
   public:
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,12 @@ private:
   const std::string sSerialization_;
 };
 
+EMANE::Controls::SerializedControlMessage::
+SerializedControlMessage(const SerializedControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::SerializedControlMessage::SerializedControlMessage(ControlMessageId id,
                                                           const void * pData,
                                                           size_t length):
@@ -88,3 +94,8 @@ EMANE::Controls::SerializedControlMessage::create(ControlMessageId id,
   return new SerializedControlMessage(id,pData,length);
 }
 
+EMANE::Controls::SerializedControlMessage *
+EMANE::Controls::SerializedControlMessage::clone() const
+{
+  return new SerializedControlMessage{*this};
+}

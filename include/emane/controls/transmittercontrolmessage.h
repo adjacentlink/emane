@@ -78,6 +78,15 @@ namespace EMANE
        */
       static
       TransmitterControlMessage * create(const Transmitters & transmitters);
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      TransmitterControlMessage * clone() const override;
       
       /**
        * Gets the transmitters
@@ -97,7 +106,7 @@ namespace EMANE
       TransmitterControlMessage(const Transmitters & transmitters);
 
       
-      TransmitterControlMessage(const TransmitterControlMessage &) = delete;
+      TransmitterControlMessage(const TransmitterControlMessage &);
 
       TransmitterControlMessage & 
       operator=(const TransmitterControlMessage &) = delete;

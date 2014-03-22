@@ -365,6 +365,7 @@ emaneinc_HEADERS = \
  buildable.h                             \
  buildable.inl                           \
  buildexception.h                        \
+ cloneable.h                             \
  commonmacheaderexception.h              \
  commonmacheader.h                       \
  commonphyheader.h                       \

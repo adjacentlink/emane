@@ -30,51 +30,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "emane/controls/transmittercontrolmessage.h"
+#ifndef EMANECLONEABLE_T_HEADER_
+#define EMANECLONEABLE_T_HEADER_
 
-class EMANE::Controls::TransmitterControlMessage::Implementation
+namespace EMANE
 {
-public:
-  Implementation(const Transmitters & transmitters):
-    transmitters_{transmitters}{}
-  
-  const Transmitters & getTransmitters() const
+  template <typename T>
+  class Cloneable
   {
-    return transmitters_;
-  }
-  
-private:
-  const Transmitters transmitters_;
-};
-
-EMANE::Controls::TransmitterControlMessage::
-TransmitterControlMessage(const TransmitterControlMessage & msg):
-  ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{*msg.pImpl_}}
-{}
-
-EMANE::Controls::TransmitterControlMessage::TransmitterControlMessage(const Transmitters & transmitters):
-  ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{transmitters}}{}
-
-
-EMANE::Controls::TransmitterControlMessage::~TransmitterControlMessage()
-{}
-
-const EMANE::Transmitters &
-EMANE::Controls::TransmitterControlMessage::getTransmitters() const
-{
-  return pImpl_->getTransmitters();
+  public:
+    ~Cloneable(){}
+    
+    /**
+     * Clone an object on the heap
+     *
+     * @return clone
+     *
+     * @note Caller assumes ownership of the clone
+     */
+    virtual T * clone() const = 0;
+    
+  protected:
+    Cloneable(){}
+  };
 }
 
-EMANE::Controls::TransmitterControlMessage *
-EMANE::Controls::TransmitterControlMessage::create(const Transmitters & transmitters)
-{
-  return new TransmitterControlMessage{transmitters};
-}
-
-EMANE::Controls::TransmitterControlMessage *
-EMANE::Controls::TransmitterControlMessage::clone() const
-{
-  return new TransmitterControlMessage{*this};
-}
+#endif // EMANECLONEABLE_T_HEADER_

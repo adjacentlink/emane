@@ -50,6 +50,13 @@ private:
   const R2RINeighborMetrics neighborMetrics_;
 };
 
+EMANE::Controls::R2RINeighborMetricControlMessage::
+R2RINeighborMetricControlMessage(const R2RINeighborMetricControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
+
 EMANE::Controls::R2RINeighborMetricControlMessage::R2RINeighborMetricControlMessage(const R2RINeighborMetrics & neighborMetrics):
   ControlMessage(IDENTIFIER),
   pImpl_{new Implementation{neighborMetrics}}{}
@@ -156,4 +163,8 @@ EMANE::Controls::R2RINeighborMetricControlMessage::create(const Serialization & 
 }
 
 
-
+EMANE::Controls::R2RINeighborMetricControlMessage *
+EMANE::Controls::R2RINeighborMetricControlMessage::clone() const
+{
+  return new R2RINeighborMetricControlMessage{*this};
+}

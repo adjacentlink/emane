@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,12 @@ private:
   const FrequencySegments frequencySegments_;
 };
 
+EMANE::Controls::FrequencyControlMessage::
+FrequencyControlMessage(const FrequencyControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::FrequencyControlMessage::FrequencyControlMessage(std::uint64_t u64BandwidthHz,
                                                         const FrequencySegments & frequencySegments):
   ControlMessage{IDENTIFIER},
@@ -81,4 +87,8 @@ std::uint64_t EMANE::Controls::FrequencyControlMessage::getBandwidthHz() const
   return pImpl_->getBandwidthHz();
 }
 
-
+EMANE::Controls::FrequencyControlMessage *
+EMANE::Controls::FrequencyControlMessage::clone() const
+{
+  return new FrequencyControlMessage{*this};
+}

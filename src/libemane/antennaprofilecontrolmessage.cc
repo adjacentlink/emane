@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,12 @@ private:
   const double dAntennaElevationDegrees_;
 };
 
+EMANE::Controls::AntennaProfileControlMessage::
+AntennaProfileControlMessage(const AntennaProfileControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::AntennaProfileControlMessage::AntennaProfileControlMessage(AntennaProfileId id,
                                                                   double dAntennaAzimuthDegrees,
                                                                   double dAntennaElevationDegrees):
@@ -99,4 +105,10 @@ EMANE::Controls::AntennaProfileControlMessage::create(AntennaProfileId id,
                                             double dAntennaElevationDegrees)
 {
   return new AntennaProfileControlMessage{id,dAntennaAzimuthDegrees,dAntennaElevationDegrees};
+}
+
+EMANE::Controls::AntennaProfileControlMessage *
+EMANE::Controls::AntennaProfileControlMessage::clone() const
+{
+  return new AntennaProfileControlMessage{*this};
 }

@@ -77,6 +77,16 @@ namespace EMANE
       SerializedControlMessage * create(ControlMessageId id,
                                         const void * pData,
                                         size_t length);
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      SerializedControlMessage * clone() const override;
+
       /**
        * Destroys an instance
        */
@@ -106,7 +116,7 @@ namespace EMANE
                                const void * pData,
                                size_t length);
 
-      SerializedControlMessage(const SerializedControlMessage &) = delete;
+      SerializedControlMessage(const SerializedControlMessage &);
       
       SerializedControlMessage & 
       operator=(const SerializedControlMessage &) = delete;

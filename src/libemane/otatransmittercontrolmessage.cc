@@ -50,6 +50,12 @@ private:
   const OTATransmitters otaTransmitters_;
 };
 
+EMANE::Controls::OTATransmitterControlMessage::
+OTATransmitterControlMessage(const OTATransmitterControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::OTATransmitterControlMessage::~OTATransmitterControlMessage(){}
 
 EMANE::Controls::OTATransmitterControlMessage::OTATransmitterControlMessage(const OTATransmitters & otaTransmitters):
@@ -129,3 +135,8 @@ EMANE::Serialization EMANE::Controls::OTATransmitterControlMessage::serialize() 
 }
 
 
+EMANE::Controls::OTATransmitterControlMessage *
+EMANE::Controls::OTATransmitterControlMessage::clone() const
+{
+  return new OTATransmitterControlMessage{*this};
+}

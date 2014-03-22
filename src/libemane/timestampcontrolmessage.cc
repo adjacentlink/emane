@@ -47,6 +47,12 @@ private:
   const TimePoint timeStamp_;
 };
 
+EMANE::Controls::TimeStampControlMessage::
+TimeStampControlMessage(const TimeStampControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::TimeStampControlMessage::TimeStampControlMessage(const TimePoint & timeStamp):
   ControlMessage{IDENTIFIER},
   pImpl_{new Implementation{timeStamp}}{}
@@ -65,3 +71,8 @@ EMANE::TimePoint EMANE::Controls::TimeStampControlMessage::getTimeStamp() const
   return pImpl_->getTimeStamp();
 }
 
+EMANE::Controls::TimeStampControlMessage *
+EMANE::Controls::TimeStampControlMessage::clone() const
+{
+  return new TimeStampControlMessage{*this};
+}

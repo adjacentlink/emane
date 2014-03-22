@@ -98,6 +98,15 @@ namespace EMANE
       R2RISelfMetricControlMessage * create(std::uint64_t u64BroadcastDataRatebps,
                                             std::uint64_t u64MaxDataRatebps,
                                             const Microseconds & reportInteral);
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      R2RISelfMetricControlMessage * clone() const override;
       
       /**
        * Destroys an instance
@@ -143,7 +152,7 @@ namespace EMANE
                                    std::uint64_t u64MaxDataRatebps,
                                    const Microseconds & tvReportInteral);
       
-      R2RISelfMetricControlMessage(const R2RISelfMetricControlMessage &) = delete;
+      R2RISelfMetricControlMessage(const R2RISelfMetricControlMessage &);
       
       R2RISelfMetricControlMessage & 
       operator=(const R2RISelfMetricControlMessage &) = delete;

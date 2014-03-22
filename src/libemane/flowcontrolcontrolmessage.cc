@@ -48,6 +48,12 @@ private:
   const std::uint16_t u16Tokens_;
 };
 
+EMANE::Controls::FlowControlControlMessage::
+FlowControlControlMessage(const FlowControlControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::FlowControlControlMessage::FlowControlControlMessage(std::uint16_t u16Tokens):
   ControlMessage{IDENTIFIER},
   pImpl_{new Implementation{u16Tokens}}
@@ -108,4 +114,10 @@ EMANE::Controls::FlowControlControlMessage::create(const Serialization & seriali
     }
   
   return new FlowControlControlMessage{static_cast<std::uint16_t>(msg.tokens())};
+}
+
+EMANE::Controls::FlowControlControlMessage *
+EMANE::Controls::FlowControlControlMessage::clone() const
+{
+  return new FlowControlControlMessage{*this};
 }
