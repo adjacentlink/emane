@@ -50,40 +50,26 @@ public:
     broadcastDropTableLabels_{"NEM"},
     unicastAcceptTableLabels_{"NEM", "Num Pkts Tx", "Num Bytes Tx", "Num Pkts Rx", "Num Bytes Rx"},
     broadcastAcceptTableLabels_{"NEM", "Num Pkts Tx", "Num Bytes Tx", "Num Pkts Rx", "Num Bytes Rx"},
-    pNumUpstreamPacketsTx_{},
-    pNumUpstreamBytesTx_{},
     pNumUpstreamPacketsUnicastTx_{},
     pNumUpstreamBytesUnicastTx_{},
     pNumUpstreamPacketsBroadcastTx_{},
     pNumUpstreamBytesBroadcastTx_{},
-    pNumUpstreamPacketsRx_{},
-    pNumUpstreamBytesRx_{},
-    pNumUpstreamPacketsDrop_{},
     pNumUpstreamPacketsUnicastRx_{},
     pNumUpstreamBytesUnicastRx_{},
     pNumUpstreamPacketsUnicastDrop_{},
     pNumUpstreamPacketsBroadcastRx_{},
     pNumUpstreamBytesBroadcastRx_{},
     pNumUpstreamPacketsBroadcastDrop_{},
-    pNumUpstreamProcessingDelay_{},
-    pNumDownstreamPacketsTx_{},
-    pNumDownstreamBytesTx_{},
     pNumDownstreamPacketsUnicastTx_{},
     pNumDownstreamBytesUnicastTx_{},
     pNumDownstreamPacketsBroadcastTx_{},
     pNumDownstreamBytesBroadcastTx_{},
-    pNumDownstreamPacketsRx_{},
-    pNumDownstreamBytesRx_{},
-    pNumDownstreamPacketsDrop_{},
     pNumDownstreamPacketsUnicastRx_{},
     pNumDownstreamBytesUnicastRx_{},
     pNumDownstreamPacketsUnicastDrop_{},
     pNumDownstreamPacketsBroadcastRx_{},
     pNumDownstreamBytesBroadcastRx_{},
     pNumDownstreamPacketsBroadcastDrop_{},
-    pNumDownstreamProcessingDelay_{},
-    pNumDownstreamPacketsGenerated_{},
-    pNumDownstreamBytesGenerated_{},
     pNumDownstreamPacketsUnicastGenerated_{},
     pNumDownstreamBytesUnicastGenerated_{},
     pNumDownstreamPacketsBroadcastGenerated_{},
@@ -122,28 +108,7 @@ public:
 
   void registerStatistics(StatisticRegistrar & statisticRegistrar)
   {
-    // upstream tx all
     /** [statisticservice-registernumeric-snippet] */
-    pNumUpstreamPacketsTx_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamPacketsTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of upstream packets transmitted");
-
-    pNumUpstreamBytesTx_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamBytesTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of upstream bytes transmitted");
-
-    avgUpstreamPacketSizeTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream packet size"));
-    /** [statisticservice-registernumeric-snippet] */
-    // upstream processing delay
-    pNumUpstreamProcessingDelay_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamProcessingDelay" + sInstance_,
-                                                  StatisticProperties::CLEARABLE);
-
     avgUpstreamProcessingDelay_.registerStatistic(
       statisticRegistrar.registerNumeric<Average>("avgUpstreamProcessingDelay" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
@@ -160,12 +125,7 @@ public:
       statisticRegistrar.registerNumeric<Counter>("numUpstreamBytesUnicastTx" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of upstream unicast bytes transmitted");
-
-    avgUpstreamPacketSizeUnicastTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeUnicastTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream unicast packet size transmitted"));
-
+    /** [statisticservice-registernumeric-snippet] */
 
     // upstream tx bcast
     pNumUpstreamPacketsBroadcastTx_ =
@@ -177,33 +137,6 @@ public:
       statisticRegistrar.registerNumeric<Counter>("numUpstreamBytesBroadcastTx" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of updtream broadcast bytes transmitted");
-
-    avgUpstreamPacketSizeBroadcastTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeBroadcastTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream broadcast packet size transmitted"));
-
-
-    // upstream rx all
-    pNumUpstreamPacketsRx_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamPacketsRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of upstream packets received");
-
-    pNumUpstreamBytesRx_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamBytesRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of upstream bytes received");
-
-    pNumUpstreamPacketsDrop_ =
-      statisticRegistrar.registerNumeric<Counter>("numUpstreamPacketsDrop" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number upstream packets droppped");
-
-    avgUpstreamPacketSizeRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream packet size received"));
 
     // upstream rx ucast
     pNumUpstreamPacketsUnicastRx_ =
@@ -221,12 +154,6 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of upstream unicast packets dropped");
 
-    avgUpstreamPacketSizeUnicastRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeUnicastRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream unicast packet size received"));
-
-
     // upstream rx bcast
     pNumUpstreamPacketsBroadcastRx_ =
       statisticRegistrar.registerNumeric<Counter>("numUpstreamPacketsBroadcastRx" + sInstance_,
@@ -243,28 +170,6 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of upstream broadcast packets dropped");
 
-    avgUpstreamPacketSizeBroadcastRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgUpstreamPacketSizeBroadcastRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average upstream broadcast packet size received"));
-
-
-    // downstream tx all
-    pNumDownstreamPacketsTx_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of downstream packets transmitted");
-
-    pNumDownstreamBytesTx_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamBytesTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of downstream bytes transmitted");
-
-    avgDownstreamPacketSizeTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream packet size transmitted"));
-
     // downstream tx ucast
     pNumDownstreamPacketsUnicastTx_ =
       statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsUnicastTx" + sInstance_,
@@ -276,11 +181,6 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of downstream unicast bytes transmitted");
 
-    avgDownstreamPacketSizeUnicastTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeUnicastTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream unicast packet size transmitted"));
-
     // downstream tx bcast
     pNumDownstreamPacketsBroadcastTx_ =
       statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsBroadcastTx" + sInstance_,
@@ -291,33 +191,6 @@ public:
       statisticRegistrar.registerNumeric<Counter>("numDownstreamBytesBroadcastTx" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of downstream broadcast bytes transmitted");
-
-    avgDownstreamPacketSizeBroadcastTx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeBroadcastTx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream broadcast packet size transmitted"));
-
-
-    // downstream rx all
-    pNumDownstreamPacketsRx_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of downstream packets received");
-
-    pNumDownstreamBytesRx_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamBytesRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of downstream bytes received");
-
-    pNumDownstreamPacketsDrop_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsDrop" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "number of downstream packets dropped");
-
-    avgDownstreamPacketSizeRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream packet size received"));
 
     // downstream rx ucast
     pNumDownstreamPacketsUnicastRx_ =
@@ -335,11 +208,6 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of downstream unicast packets dropped");
 
-    avgDownstreamPacketSizeUnicastRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeUnicastRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream unicast packet size received"));
-
     // downstream rx bcast
     pNumDownstreamPacketsBroadcastRx_ =
       statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsBroadcastRx" + sInstance_,
@@ -356,38 +224,12 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of downstream broadcast packets dropped");
 
-    avgDownstreamPacketSizeBroadcastRx_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeBroadcastRx" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average downstream broadcast packet size received"));
-
-    // downstream processing delay
-    pNumDownstreamProcessingDelay_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamProcessingDelay" + sInstance_,
-                                                  StatisticProperties::CLEARABLE);
 
     avgDownstreamProcessingDelay_.registerStatistic(
       statisticRegistrar.registerNumeric<Average>("avgDownstreamProcessingDelay" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Average downstream processing delay"));
 
-
-
-    // downstream generated all
-    pNumDownstreamPacketsGenerated_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsGenerated" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of layer generated downstream packets");
-
-    pNumDownstreamBytesGenerated_ =
-      statisticRegistrar.registerNumeric<Counter>("numDownstreamBytesGenerated" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Number of layer generated downstream bytes");
-
-    avgDownstreamPacketSizeGenerated_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeGenerated" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average layer generated downstream packet size"));
 
     // downstream generated ucast
     pNumDownstreamPacketsUnicastGenerated_ =
@@ -400,11 +242,6 @@ public:
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of layer generated downstream unicast bytes");
 
-    avgDownstreamPacketSizeUnicastGenerated_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeUnicastGenerated" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average layer generated downstream unicast packet size"));
-
     // downstream generated bcast
     pNumDownstreamPacketsBroadcastGenerated_ =
       statisticRegistrar.registerNumeric<Counter>("numDownstreamPacketsBroadcastGenerated" + sInstance_,
@@ -415,11 +252,6 @@ public:
       statisticRegistrar.registerNumeric<Counter>("numDownstreamBytesBroadcastGenerated" + sInstance_,
                                                   StatisticProperties::CLEARABLE,
                                                   "Number of layer generated downstream broadcast bytes");
-
-    avgDownstreamPacketSizeBroadcastGenerated_.registerStatistic(
-      statisticRegistrar.registerNumeric<Average>("avgDownstreamPacketSizeBroadcastGenerated" + sInstance_,
-                                                  StatisticProperties::CLEARABLE,
-                                                  "Average layer generated downstream broadcast packet size"));
 
     if(bHaveDropTables_)
       {
@@ -473,28 +305,17 @@ public:
 
   void processInbound(const UpstreamPacket & pkt)
   {
-    // update all rx stats
-    ++*pNumUpstreamPacketsRx_;
-
-    *pNumUpstreamBytesRx_ += pkt.length();
-
-    avgUpstreamPacketSizeRx_.update(pkt.length());
-
     if(isBroadcast(pkt))
       {
         ++*pNumUpstreamPacketsBroadcastRx_;
 
         *pNumUpstreamBytesBroadcastRx_ += pkt.length();
-
-        avgUpstreamPacketSizeBroadcastRx_.update(pkt.length());
       }
     else
       {
         ++*pNumUpstreamPacketsUnicastRx_;
 
         *pNumUpstreamBytesUnicastRx_ += pkt.length();
-
-        avgUpstreamPacketSizeUnicastRx_.update(pkt.length());
       }
   }
 
@@ -513,8 +334,6 @@ public:
 
     if(dropCode != 0)
       {
-        ++*pNumUpstreamPacketsDrop_;
-
         if(isBroadcast(pkt))
           {
             ++*pNumUpstreamPacketsBroadcastDrop_;
@@ -527,14 +346,6 @@ public:
     // update all tx stats
     else
       {
-        ++*pNumUpstreamPacketsTx_;
-
-        *pNumUpstreamBytesTx_ += pkt.length();
-
-        avgUpstreamPacketSizeTx_.update(pkt.length());
-
-        *pNumUpstreamProcessingDelay_ += delay.count();
-
         avgUpstreamProcessingDelay_.update(delay.count());
 
         if(isBroadcast(pkt))
@@ -542,16 +353,12 @@ public:
             ++*pNumUpstreamPacketsBroadcastTx_;
 
             *pNumUpstreamBytesBroadcastTx_ += pkt.length();
-
-            avgUpstreamPacketSizeBroadcastTx_.update(pkt.length());
           }
         else
           {
             ++*pNumUpstreamPacketsUnicastTx_;
 
             *pNumUpstreamBytesUnicastTx_ += pkt.length();
-
-            avgUpstreamPacketSizeUnicastTx_.update(pkt.length());
           }
       }
   }
@@ -559,28 +366,17 @@ public:
 
   void processInbound(const DownstreamPacket & pkt)
   {
-    // update all rx stats
-    ++*pNumDownstreamPacketsRx_;
-
-    *pNumDownstreamBytesRx_ += pkt.length();
-
-    avgDownstreamPacketSizeRx_.update(pkt.length());
-
     if(isBroadcast(pkt))
       {
         ++*pNumDownstreamPacketsBroadcastRx_;
 
         *pNumDownstreamBytesBroadcastRx_ += pkt.length();
-
-        avgDownstreamPacketSizeBroadcastRx_.update(pkt.length());
       }
     else
       {
         ++*pNumDownstreamPacketsUnicastRx_;
 
         *pNumDownstreamBytesUnicastRx_ += pkt.length();
-
-        avgDownstreamPacketSizeUnicastRx_.update(pkt.length());
       }
   }
 
@@ -598,8 +394,6 @@ public:
 
     if(dropCode != 0)
       {
-        ++*pNumDownstreamPacketsDrop_;
-
         if(isBroadcast(pkt))
           {
             ++*pNumDownstreamPacketsBroadcastDrop_;
@@ -612,39 +406,21 @@ public:
     // update all tx stats
     else
       {
-        ++*pNumDownstreamPacketsTx_;
-
-        *pNumDownstreamBytesTx_ += pkt.length();
-
-        avgDownstreamPacketSizeTx_.update(pkt.length());
-
-        *pNumDownstreamProcessingDelay_ += delay.count();
-
         avgDownstreamProcessingDelay_.update(delay.count());
 
         if(bSelfGenerated)
           {
-            ++*pNumDownstreamPacketsGenerated_;
-
-            *pNumDownstreamBytesGenerated_ += pkt.length();
-
-            avgDownstreamPacketSizeGenerated_.update(pkt.length());
-
             if(isBroadcast(pkt))
               {
                 ++*pNumDownstreamPacketsBroadcastGenerated_;
 
                 pNumDownstreamBytesBroadcastGenerated_ += pkt.length();
-
-                avgDownstreamPacketSizeBroadcastGenerated_.update(pkt.length());
               }
             else
               {
                 ++*pNumDownstreamPacketsUnicastGenerated_;
 
                 pNumDownstreamBytesUnicastGenerated_ += pkt.length();
-
-                avgDownstreamPacketSizeUnicastGenerated_.update(pkt.length());
               }
           }
         else
@@ -654,16 +430,12 @@ public:
                 ++*pNumDownstreamPacketsBroadcastTx_;
 
                 *pNumDownstreamBytesBroadcastTx_ += pkt.length();
-
-                avgDownstreamPacketSizeBroadcastTx_.update(pkt.length());
               }
             else
               {
                 ++*pNumDownstreamPacketsUnicastTx_;
 
                 *pNumDownstreamBytesUnicastTx_ += pkt.length();
-
-                avgDownstreamPacketSizeUnicastTx_.update(pkt.length());
               }
           }
       }
@@ -894,94 +666,55 @@ private:
   StatisticTableLabels broadcastAcceptTableLabels_;
 
    
-  // upstream tx all
-  StatisticNumeric<Counter> * pNumUpstreamPacketsTx_;
-  StatisticNumeric<Counter> * pNumUpstreamBytesTx_;
-  RunningAverage<Average>     avgUpstreamPacketSizeTx_;
-
   // upstream tx ucast
   StatisticNumeric<Counter> * pNumUpstreamPacketsUnicastTx_;
   StatisticNumeric<Counter> * pNumUpstreamBytesUnicastTx_;
-  RunningAverage<Average>     avgUpstreamPacketSizeUnicastTx_;
 
   // upstream tx bcast
   StatisticNumeric<Counter> * pNumUpstreamPacketsBroadcastTx_;
   StatisticNumeric<Counter> * pNumUpstreamBytesBroadcastTx_;
-  RunningAverage<Average>     avgUpstreamPacketSizeBroadcastTx_;
-
-  // upstream rx all
-  StatisticNumeric<Counter> * pNumUpstreamPacketsRx_;
-  StatisticNumeric<Counter> * pNumUpstreamBytesRx_;
-  StatisticNumeric<Counter> * pNumUpstreamPacketsDrop_;
-  RunningAverage<Average>     avgUpstreamPacketSizeRx_;
 
   // upstream rx ucast
   StatisticNumeric<Counter> * pNumUpstreamPacketsUnicastRx_;
   StatisticNumeric<Counter> * pNumUpstreamBytesUnicastRx_;
   StatisticNumeric<Counter> * pNumUpstreamPacketsUnicastDrop_;
-  RunningAverage<Average>     avgUpstreamPacketSizeUnicastRx_;
 
   // upstream rx bcast
   StatisticNumeric<Counter> * pNumUpstreamPacketsBroadcastRx_;
   StatisticNumeric<Counter> * pNumUpstreamBytesBroadcastRx_;
   StatisticNumeric<Counter> * pNumUpstreamPacketsBroadcastDrop_;
-  RunningAverage<Average>     avgUpstreamPacketSizeBroadcastRx_;
 
   // upstream processing delay
-  StatisticNumeric<Counter> * pNumUpstreamProcessingDelay_;
   RunningAverage<Average>     avgUpstreamProcessingDelay_;
-
-  // downstream tx all
-  StatisticNumeric<Counter> * pNumDownstreamPacketsTx_;
-  StatisticNumeric<Counter> * pNumDownstreamBytesTx_;
-  RunningAverage<Average>     avgDownstreamPacketSizeTx_;
 
   // downstream tx ucast
   StatisticNumeric<Counter> * pNumDownstreamPacketsUnicastTx_;
   StatisticNumeric<Counter> * pNumDownstreamBytesUnicastTx_;
-  RunningAverage<Average>     avgDownstreamPacketSizeUnicastTx_;
 
   // downstream tx bcast
   StatisticNumeric<Counter> * pNumDownstreamPacketsBroadcastTx_;
   StatisticNumeric<Counter> * pNumDownstreamBytesBroadcastTx_;
-  RunningAverage<Average>     avgDownstreamPacketSizeBroadcastTx_;
-
-  // downstream rx all
-  StatisticNumeric<Counter> * pNumDownstreamPacketsRx_;
-  StatisticNumeric<Counter> * pNumDownstreamBytesRx_;
-  StatisticNumeric<Counter> * pNumDownstreamPacketsDrop_;
-  RunningAverage<Average>     avgDownstreamPacketSizeRx_;
 
   // downstream rx ucast
   StatisticNumeric<Counter> * pNumDownstreamPacketsUnicastRx_;
   StatisticNumeric<Counter> * pNumDownstreamBytesUnicastRx_;
   StatisticNumeric<Counter> * pNumDownstreamPacketsUnicastDrop_;
-  RunningAverage<Average>     avgDownstreamPacketSizeUnicastRx_;
 
   // downstream rx bcast
   StatisticNumeric<Counter> * pNumDownstreamPacketsBroadcastRx_;
   StatisticNumeric<Counter> * pNumDownstreamBytesBroadcastRx_;
   StatisticNumeric<Counter> * pNumDownstreamPacketsBroadcastDrop_;
-  RunningAverage<Average>     avgDownstreamPacketSizeBroadcastRx_;
 
   // downstream processing delay
-  StatisticNumeric<Counter> * pNumDownstreamProcessingDelay_;
   RunningAverage<Average>     avgDownstreamProcessingDelay_;
-
-  // downstream generated all
-  StatisticNumeric<Counter> * pNumDownstreamPacketsGenerated_;
-  StatisticNumeric<Counter> * pNumDownstreamBytesGenerated_;
-  RunningAverage<Average>     avgDownstreamPacketSizeGenerated_;
 
   // downstream generated ucast
   StatisticNumeric<Counter> * pNumDownstreamPacketsUnicastGenerated_;
   StatisticNumeric<Counter> * pNumDownstreamBytesUnicastGenerated_;
-  RunningAverage<Average>     avgDownstreamPacketSizeUnicastGenerated_;
 
   // downstream generated bcast
   StatisticNumeric<Counter> * pNumDownstreamPacketsBroadcastGenerated_;
   StatisticNumeric<Counter> * pNumDownstreamBytesBroadcastGenerated_;
-  RunningAverage<Average>     avgDownstreamPacketSizeBroadcastGenerated_;
 
   StatisticTable<NEMId> * pStatisticUnicastDropTable_;
   StatisticTable<NEMId> * pStatisticBroadcastDropTable_;
