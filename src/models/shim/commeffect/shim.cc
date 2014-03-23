@@ -713,39 +713,47 @@ size_t EMANE::Models::CommEffect::Shim::getTaskCount(float fLoss, float fDups)
 {
   size_t count = 0;
   
-  if((fLoss > 0) && (fLoss < 100.0f))
+  if(fLoss < 100)
     {
-      // if loss is less then random value
-      if((RNDZeroToOneHundred_()) >= fLoss)
+      if(fLoss > 0)
         {
-          // add to count
+          // if loss is less then random value
+          if((RNDZeroToOneHundred_()) >= fLoss)
+            {
+              // add to count
+              ++count;
+            }
+        }
+      else
+        {
+          // no loss, add to count
           ++count;
         }
     }
-  else
-    {
-      // no loss, add to count
-      ++count;
-    }
   
-  // calcultate probability of duplicate
-  // and add to the current count if any
-  if(fDups >= 100.0f)
+  
+  // you can only duplicate a packet you receive 
+  if(count)
     {
-      // add to count
-      count += fDups / 100.0f;
-      
-      // reduce
-      fDups = fmodf(fDups,100.0f);
-    }
-
-  if((fDups > 0.0f) && (fDups < 100.0f))
-    {
-      // if dups is greater/equal then random value
-      if((RNDZeroToOneHundred_()) <= fDups)
+      // calculate probability of duplicate
+      // and add to the current count if any
+      if(fDups >= 100.0f)
         {
           // add to count
-          ++count;
+          count += fDups / 100.0f;
+          
+          // reduce
+          fDups = fmodf(fDups,100.0f);
+        }
+      
+      if((fDups > 0.0f) && (fDups < 100.0f))
+        {
+          // if dups is greater/equal then random value
+          if((RNDZeroToOneHundred_()) <= fDups)
+            {
+              // add to count
+              ++count;
+            }
         }
     }
 
