@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE phy SYSTEM "file://@datadir@/dtd/phy.dtd">
+<phy name="bypassphy" library="bypassphylayer"/>

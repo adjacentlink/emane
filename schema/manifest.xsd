@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+ Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+
+ * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+ * Neither the name of Adjacent Link LLC nor the names of its
+   contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+-->
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+
+  <xs:simpleType name='YesNoType'> 
+    <xs:restriction base='xs:token'>
+      <xs:enumeration value='yes'/>
+      <xs:enumeration value='no'/>
+    </xs:restriction> 
+  </xs:simpleType>    
+
+  <xs:simpleType name='NumericDataType'>
+    <xs:restriction base='xs:token'>
+      <xs:enumeration value='int8'/>
+      <xs:enumeration value='int16'/>
+      <xs:enumeration value='int32'/>
+      <xs:enumeration value='int64'/>
+      <xs:enumeration value='uint8'/>
+      <xs:enumeration value='uint16'/>
+      <xs:enumeration value='uint32'/>
+      <xs:enumeration value='uint64'/>
+      <xs:enumeration value='bool'/>
+      <xs:enumeration value='float'/>
+      <xs:enumeration value='double'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='NonNumericDataType'>
+    <xs:restriction base='xs:token'>
+      <xs:enumeration value='string'/>
+      <xs:enumeration value='inetaddr'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='DataType'>
+    <xs:union memberTypes='NumericDataType NonNumericDataType'/>
+  </xs:simpleType>
+
+  <xs:simpleType name='NumericValueType'>
+    <xs:restriction base='xs:token'>
+      <xs:pattern value='(\+|\-){0,1}[0-9]+|(\+|\-){0,1}[0-9]*\.[0-9]+|(true|false)'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+ <xs:simpleType name='NameType'>
+   <xs:restriction base='xs:token'>
+     <xs:pattern value='[A-Za-z0-9]+'/>
+   </xs:restriction>
+ </xs:simpleType>
+
+  <xs:element name='manifest'>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name='plugin'>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name='configuration' minOccurs='0'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='parameter' minOccurs='0' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:choice>
+                          <xs:element name='numeric'>
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name='values'>
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name='value' type='NumericValueType' minOccurs='0' maxOccurs='unbounded'/>
+                                    </xs:sequence>
+                                    <xs:attribute name='minOccurs' type='xs:unsignedLong' use='required'/>
+                                    <xs:attribute name='maxOccurs' type='xs:unsignedLong' use='required'/>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name='regex' type='xs:string' minOccurs='0'/>
+                                <xs:element name='description' type='xs:string' minOccurs='0'/>
+                              </xs:sequence>
+                              <xs:attribute name='type' type='NumericDataType' use='required'/>
+                              <xs:attribute name='minValue' type='NumericValueType' use='required'/>
+                              <xs:attribute name='maxValue' type='NumericValueType' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name='nonnumeric'>
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name='values'>
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name='value' type='xs:string' minOccurs='0' maxOccurs='unbounded'/>
+                                    </xs:sequence>
+                                    <xs:attribute name='minOccurs' type='xs:unsignedLong' use='required'/>
+                                    <xs:attribute name='maxOccurs' type='xs:unsignedLong' use='required'/>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name='regex' type='xs:string' minOccurs='0'/>
+                                <xs:element name='description' type='xs:string' minOccurs='0'/>
+                              </xs:sequence>
+                              <xs:attribute name='type' type='NonNumericDataType' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:choice>
+                        <xs:attribute name='name' type='NameType' use='required'/>
+                        <xs:attribute name='default' type='YesNoType' use='required'/>
+                        <xs:attribute name='required' type='YesNoType' use='required'/>
+                        <xs:attribute name='modifiable' type='YesNoType' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+                <xs:unique name='ConfigurationParameterNameUniqueness'>
+                  <xs:selector xpath='.//parameter'/>
+                  <xs:field xpath='@name'/>
+                </xs:unique>
+              </xs:element>
+              <xs:element name='statistics' minOccurs='0'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='element' minOccurs='0' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='description' type='xs:string' minOccurs='0'/>
+                        </xs:sequence>
+                        <xs:attribute name='name' type='NameType' use='required'/>
+                        <xs:attribute name='clearable' type='YesNoType' use='required'/>
+                        <xs:attribute name='type' type='DataType' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+                <xs:unique name='StatisticElementNameUniqueness'>
+                  <xs:selector xpath='.//element'/>
+                  <xs:field xpath='@name'/>
+                </xs:unique>
+              </xs:element>
+              <xs:element name='statistictables' minOccurs='0'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='table' minOccurs='0' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='description' type='xs:string' minOccurs='0'/>
+                        </xs:sequence>
+                        <xs:attribute name='name' type='NameType' use='required'/>
+                        <xs:attribute name='clearable' type='YesNoType' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name='name' type='xs:string' use='required'/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:unique name='StatisticTableNameUniqueness'>
+      <xs:selector xpath='.//table'/>
+      <xs:field xpath='@name'/>
+    </xs:unique>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,9 @@
+<?xml encoding="UTF-8"?>
+
+<!ENTITY % attrs SYSTEM "attrs.ent">
+
+<!ELEMENT eventagent (param|paramlist)*>
+<!ATTLIST eventagent %attrs; >
+
+<!ENTITY % param SYSTEM "param.dtd">
+%param;

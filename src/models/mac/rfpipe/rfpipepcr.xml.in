@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pcr SYSTEM "file://@datadir@/dtd/rfpipepcr.dtd">
+<pcr>
+    <table pktsize="0">
+        <row sinr="0.0" 	por="0"/>
+        <row sinr="0.5"  	por="2.5"/>
+        <row sinr="1.0" 	por="5"/>
+        <row sinr="1.5"  	por="7.5"/>
+        <row sinr="2.0" 	por="10"/>
+        <row sinr="2.5"  	por="12.5"/>
+        <row sinr="3.0" 	por="15"/>
+        <row sinr="3.5"  	por="17.5"/>
+        <row sinr="4.0" 	por="20"/>
+        <row sinr="4.5"  	por="22.5"/>
+        <row sinr="5.0" 	por="25"/>
+        <row sinr="5.5"  	por="27.5"/>
+        <row sinr="6.0" 	por="30"/>
+        <row sinr="6.5"  	por="32.5"/>
+        <row sinr="7.0" 	por="35"/>
+        <row sinr="7.5"  	por="37.5"/>
+        <row sinr="8.0"  	por="40"/>
+        <row sinr="8.5"  	por="42.5"/>
+        <row sinr="9.0" 	por="45"/>
+        <row sinr="9.5"  	por="47.5"/>
+        <row sinr="10.0"  	por="50"/>
+        <row sinr="10.5"  	por="52.5"/>
+        <row sinr="11.0" 	por="55"/>
+        <row sinr="11.5"  	por="57.5"/>
+        <row sinr="12.0" 	por="60"/>
+        <row sinr="12.5"  	por="62.5"/>
+        <row sinr="13.0" 	por="65"/>
+        <row sinr="13.5"  	por="67.5"/>
+        <row sinr="14.0" 	por="70"/>
+        <row sinr="14.5"  	por="72.5"/>
+        <row sinr="15.0" 	por="75"/>
+        <row sinr="15.5"  	por="77.5"/>
+        <row sinr="16.0" 	por="80"/>
+        <row sinr="16.5"  	por="82.5"/>
+        <row sinr="17.0" 	por="85"/>
+        <row sinr="17.5"  	por="87.5"/>
+        <row sinr="18.0"  	por="90"/>
+        <row sinr="18.5"  	por="92.5"/>
+        <row sinr="19.0" 	por="95"/>
+        <row sinr="19.5"  	por="97.5"/>
+        <row sinr="20.0"  	por="100"/>
+    </table>
+</pcr>

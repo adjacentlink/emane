@@ -1,0 +1,70 @@
+.TH emaneeventservice 1 "@RELDATE@" "emaneeventservice @VERSION@"
+.SH NAME
+emaneeventservice - EMANE Event Service
+.SH SYNOPSIS
+emaneeventservice [OPTIONS]... CONFIG_URI
+.SH DESCRIPTION
+.P
+emaneeventservice loads generator plugins that create EMANE events targeting NEMs.
+.P
+\fBCONFIG_URI\fP is the XML containing the Event Service configuration.
+.SH OPTIONS
+.P
+The following options are supported:
+.TP
+.B \-v, \--version
+Display version and exit
+.TP
+.B \-l, \--loglevel [0,4]
+Set the current application log level. Default is 2.
+.br
+.B 0 - No Logging
+.br
+.B 1 - Abort Level
+.br
+.B 2 - Error Level
+.br
+.B 3 - INFO Level
+.br
+.B 4 - Debug Level
+.TP
+.B \-r, \--realtime
+Run with realtime priority and SCHED_RR.  Must have superuser privileged.
+.TP
+.B \-p, \--priority [0,99]
+Set the realtime priority level. Valid only with \fB\-r, \--realtime\fP. Default is 50.
+.TP
+.B \--logfile FILE
+Log to a file instead of stdout.
+.TP
+.B \-d, --daemonize 
+Run in the background.
+.TP
+.B \--syslog
+Log to syslog instead of stdout.
+.TP
+.B \--pidfile
+Write application pid to file.
+.TP
+.B \--uuidfile
+Write instance UUID file.
+.TP
+.B \--starttime
+Time to start event generation HH:MM:SS (ex. 09:30:00)
+.TP
+.B \--nextday
+Start time is tomorrow, i.e. after midnight.
+.SH VERSION
+@VERSION@
+.SH BUGS
+To report a bug, please send and email to <labs at adjacentlink dot com>
+.SH SEE ALSO
+emanetransport(1) emaneeventservice(1) emaneeventd(1) emanesh
+.SH AUTHORS
+Adjacent Link LLC
+.br 
+https://github.com/adjacentlink/emane
+.SH NOTES
+.P
+EMANE is released under the BSD License.
+

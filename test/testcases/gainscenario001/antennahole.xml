@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE antennaprofile SYSTEM "../../../dtd/antennaprofile.dtd">
+
+<!-- 30degree sector antenna pattern with main beam at +6dB and gain decreasing by 3dB every 5 degrees in elevation or bearing.-->
+<antennaprofile>
+  <antennapattern>
+    <elevation min='-15' max='-11'>
+      <bearing min='0' max='5'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='-6'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='-6'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='0'/>
+      </bearing>
+    </elevation>
+    <elevation min='-10' max='-6'>
+      <bearing min='0' max='5'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='3'/>
+      </bearing>
+    </elevation>
+    <elevation min='-5' max='-1'>
+      <bearing min='0' max='5'>
+        <gain value='6'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='6'/>
+      </bearing>
+    </elevation>
+    <elevation min='0' max='5'>
+      <bearing min='0' max='5'>
+        <gain value='6'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='6'/>
+      </bearing>
+    </elevation>
+    <elevation min='6' max='10'>
+      <bearing min='0' max='5'>
+        <gain value='3'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='3'/>
+      </bearing>
+    </elevation>
+    <elevation min='11' max='15'>
+      <bearing min='0' max='5'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='6' max='10'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='11' max='15'>
+        <gain value='-6'/>
+      </bearing>
+      <bearing min='345' max='349'>
+        <gain value='-6'/>
+      </bearing>
+      <bearing min='350' max='354'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='355' max='359'>
+        <gain value='0'/>
+      </bearing>
+    </elevation>
+  </antennapattern>
+</antennaprofile>
+
+
+
+

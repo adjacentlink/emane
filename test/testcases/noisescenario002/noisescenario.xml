@@ -1,0 +1,55 @@
+<noisescenario start="3000000">
+  <action>
+    <initialize binduration='20' bandwidth="1200000" mode="all" sensitivity="0"
+                maxsegmentoffset='300000' maxsegmentduration='500000' maxmessagepropagation='200000'
+                clamp='yes' timesyncthreshold='1000'>
+      <frequency value="3000000000"/>
+    </initialize>
+  </action>
+  
+  <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="210" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="1"/>
+      </transmitters>
+    </update>
+  </action>
+
+ <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="210" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="2"/>
+      </transmitters>
+    </update>
+  </action>
+
+ <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="210" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="3"/>
+      </transmitters>
+    </update>
+  </action>
+
+ <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="105" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="1"/>
+      </transmitters>
+    </update>
+  </action>
+
+ <action>
+    <update now="3005" txtime="3200" propagation="0" transmitterbandwidth="1200000" inband="yes">
+      <segment frequency="3000000000" offset="0" duration="400" rxpower="1"/>
+      <transmitters>
+        <transmitter nem="2"/>
+      </transmitters>
+    </update>
+  </action>
+
+</noisescenario>

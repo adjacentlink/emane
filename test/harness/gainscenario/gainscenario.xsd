@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' >
+  <xs:element name='gainscenario'>
+    <xs:complexType>     
+      <xs:sequence>
+        <xs:element name='action' maxOccurs='unbounded'>
+           <xs:complexType>
+             <xs:choice>
+               <xs:element name='locations'>
+                 <xs:complexType>
+                   <xs:sequence>
+                     <xs:element name='pov' maxOccurs='unbounded'>
+                       <xs:complexType>
+                         <xs:sequence>
+                           <xs:element name='position'>
+                             <xs:complexType>
+                               <xs:attribute name='latitude' type='xs:decimal' use='required'/>
+                               <xs:attribute name='longitude' type='xs:decimal' use='required'/>
+                               <xs:attribute name='altitude' type='xs:decimal' use='required'/>
+                             </xs:complexType>
+                           </xs:element>
+                           <xs:element name='orientation' minOccurs="0">
+                             <xs:complexType>
+                               <xs:attribute name='pitch' type='xs:decimal' use='required'/>
+                               <xs:attribute name='roll' type='xs:decimal' use='required'/>
+                               <xs:attribute name='yaw' type='xs:decimal' use='required'/>
+                             </xs:complexType>
+                           </xs:element>
+                           <xs:element name='velocity' minOccurs="0">
+                             <xs:complexType>
+                               <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
+                               <xs:attribute name='elevation' type='xs:decimal' use='required'/>
+                               <xs:attribute name='magnitude' type='xs:decimal' use='required'/>
+                             </xs:complexType>
+                           </xs:element>
+                         </xs:sequence>
+                         <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                       </xs:complexType>
+                     </xs:element>
+                   </xs:sequence>
+                 </xs:complexType>
+               </xs:element>
+               <xs:element name='antennaprofiles'>
+                 <xs:complexType>
+                   <xs:sequence>
+                     <xs:element name='profile' maxOccurs='unbounded'>
+                       <xs:complexType>
+                         <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                         <xs:attribute name='id' type='xs:unsignedShort' use='required'/>
+                         <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
+                         <xs:attribute name='elevation' type='xs:decimal' use='required'/>
+                       </xs:complexType>
+                     </xs:element>
+                   </xs:sequence>
+                 </xs:complexType>
+               </xs:element>
+               <xs:element name='request'>
+                 <xs:complexType>
+                   <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                   <xs:attribute name='rxfixedgain' type='xs:decimal' use='optional'/>
+                   <xs:attribute name='txfixedgain' type='xs:decimal' use='optional'/>
+                 </xs:complexType>
+               </xs:element>
+             </xs:choice>
+           </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

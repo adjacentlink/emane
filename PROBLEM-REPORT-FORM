@@ -1,0 +1,93 @@
+ Please use the PRF form below to submit bug reports, problem reports,
+ etc., to the EMANE developers and interested users.  Send to
+ emane-users@pf.itd.nrl.navy.mil.  Please be sure to send your PRF as
+ plain ASCII text.
+
+ You can subscribe to the EMANE users mailing list here: 
+ 
+   http://pf.itd.nrl.navy.mil/mailman/listinfo/emane-users
+
+ Replace/remove all the explanatory text in brackets (<>) before mailing.
+
+ PLEASE make your Subject: line as descriptive as possible.  Subjects like
+ "EMANE bug" or "bug report" are not helpful.
+
+8<----------8<----------8<----------8<----------8<----------8<----------8<----
+
+To: emane-users@pf.itd.nrl.navy.mil
+Subject: EMANE PRF: <your problem synopsis here>
+
+[[=== SYSTEM INFORMATION ====]]
+
+ HOST OPERATING SYSTEM: <??>
+
+ HOST ARCHITECTURE: <??>
+
+ TARGET OPERATING SYSTEM (if different): <??>
+
+ TARGET ARCHITECTURE (if different): <??>
+
+ COMPILER and COMPILER VERSION (if applicable) <??>
+
+
+[[=== VERSION INFORMATION ====]]
+
+ EMANE VERSION: <??>
+
+ ACE VERSION: <??>
+
+ LIBXML2 VERSION: <??>
+
+ LIBPCAP_VERSION (if applicable): <??>
+
+ WINPCAP_VERSION (if applicable): <??>
+
+ EMANE ADD-ON NAMES and VERSIONS (if applicable): <??>
+
+
+[[== INSTALLATION INFORMATION ==]
+
+ EMANE INSTALLATION METHOD (MAKE INSTALL, RPM, OTHER) 
+ (if applicable): <??>
+
+ <If OTHER please specify>
+
+
+[[=== PROBLEM INFORMATION ====]]
+
+ TYPE (COMPILATION, INSTALLATION, EXECUTION, OTHER): <??>
+
+ BRIEF SUMMARY:
+
+ <Short description of the problem> 
+
+
+ DETAILED DESCRIPTION:
+ 
+ <Detailed description of the problem: inputs, outputs, failures, etc> 
+
+
+ REPEAT BY:
+
+ <Instructions for reproducing the problem: procedures, test cases,
+ sample code, etc>
+
+
+ CONFIGURATION:
+ 
+ <Describe XML configuration used if problem is related to execution:
+ number of platforms, number of NEMs and their types, types of
+ transports, etc.>
+
+
+ ATTACHED FILE DESCRIPTION:
+ 
+ <If the problem is related to execution submitting all the related
+ EMANE XML will greatly enhance the odds of determining the root cause.
+ List and describe all attached files. ONLY ATTACH ASCII TEXT XML FILES>
+
+
+ SAMPLE FIX/WORKAROUND:
+
+ <Any information related to resolving the problem>
+

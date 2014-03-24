@@ -1,0 +1,402 @@
+[1] configure 
+[1]  bandwidth:
+[1]    1200000
+[1]  fixedantennagain:
+[1]    0.000000
+[1]  fixedantennagainenable:
+[1]    0
+[1]  frequency:
+[1]    250000000
+[1]  frequencyofinterest:
+[1]    250000000
+[1]    2000000000
+[1]    3000000000
+[1]  noisebinsize:
+[1]    20
+[1]  noisemaxclampenable:
+[1]    0
+[1]  noisemaxmessagepropagation:
+[1]    200000
+[1]  noisemaxsegmentduration:
+[1]    1000000
+[1]  noisemaxsegmentoffset:
+[1]    300000
+[1]  noisemode:
+[1]    all
+[1]  propagationmodel:
+[1]    precomputed
+[1]  subid:
+[1]    1
+[1]  systemnoisefigure:
+[1]    4.000000
+[1]  timesyncthreshold:
+[1]    10000
+[1]  txpower:
+[1]    0.000000
+
+[2] pathloss 2 Forward Pathloss: 90 Reverse Pathloss: 90
+[2] pathloss 3 Forward Pathloss: 100 Reverse Pathloss: 100
+[2] pathloss 4 Forward Pathloss: 100 Reverse Pathloss: 100
+
+[3] packet
+[3]  Common PHY Header data:
+[3]   regid: 7
+[3]   seq: 1
+[3]   bandwidth: 1200000
+[3]   fixed antenna gain: on
+[3]   fixed antenna gain: 0.000000
+[3]   tx time: 30.000000
+[3]   freq: 2500000000
+[3]   duration: 200
+[3]   offset: 0
+[3]   src: 2
+[3]   power: 0.000000
+
+[3]  Packet dropped
+
+[3] BroadcastPacketDropTable0
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[3] |2  |0          |0             |0                |1            |0           |0           |0      |0             |
+[3] UnicastPacketDropTable0
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[4] location 1 P:[40.025495,-74.515441,3]
+[4] location 2 P:[40.025495,-74.312888,3]
+
+[5] packet
+[5]  Common PHY Header data:
+[5]   regid: 7
+[5]   seq: 2
+[5]   bandwidth: 1200000
+[5]   fixed antenna gain: on
+[5]   fixed antenna gain: 0.000000
+[5]   tx time: 30.000010
+[5]   freq: 250000000
+[5]   duration: 200
+[5]   offset: 0
+[5]   src: 2
+[5]   power: 0.000000
+
+[5]  Packet dropped
+
+[5] BroadcastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[5] |2  |0          |0             |0                |1            |0           |1           |0      |0             |
+[5] UnicastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[6] profile 1 profileId: 3 azimuth: 45 elevation: 0
+[6] profile 4 profileId: 4 azimuth: 330 elevation: 60
+
+[7] packet
+[7]  Common PHY Header data:
+[7]   regid: 7
+[7]   seq: 3
+[7]   bandwidth: 1200000
+[7]   fixed antenna gain: on
+[7]   fixed antenna gain: 0.000000
+[7]   tx time: 30.000020
+[7]   freq: 250000000
+[7]   duration: 200
+[7]   offset: 0
+[7]   src: 2
+[7]   power: 0.000000
+
+[7]  Packet dropped
+
+[7] BroadcastPacketDropTable0
+[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[7] |2  |0          |1             |0                |1            |0           |1           |0      |0             |
+[7] UnicastPacketDropTable0
+[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[8] location 1 P:[40.025495,-74.315441,3] O:[0,0,30] V:[60,0,10]
+[8] location 2 P:[40.023235,-74.312889,3]
+[8] location 3 P:[40.023235,-74.312889,3]
+[8] location 4 P:[40.023235,-74.312889,3]
+
+[9] packet
+[9]  Common PHY Header data:
+[9]   regid: 7
+[9]   seq: 4
+[9]   bandwidth: 1200000
+[9]   fixed antenna gain: off
+[9]   fixed antenna gain: 0.000000
+[9]   tx time: 30.000040
+[9]   freq: 250000000
+[9]   duration: 200
+[9]   offset: 0
+[9]   src: 4
+[9]   power: 0.000000
+
+[9]  Packet dropped
+
+[9] BroadcastPacketDropTable0
+[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[9] |2  |0          |1             |0                |1            |0           |1           |0      |0             |
+[9] |4  |0          |1             |0                |0            |0           |0           |0      |0             |
+[9] UnicastPacketDropTable0
+[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[10] profile 1 profileId: 3 azimuth: 45 elevation: -8
+[10] profile 4 profileId: 4 azimuth: 330 elevation: 0
+
+[11] location 1 P:[40.025495,-74.315441,3] O:[32,0,30] V:[60,-20,10]
+
+[12] packet
+[12]  Common PHY Header data:
+[12]   regid: 7
+[12]   seq: 5
+[12]   bandwidth: 1200000
+[12]   fixed antenna gain: off
+[12]   fixed antenna gain: 0.000000
+[12]   tx time: 30.000060
+[12]   freq: 250000000
+[12]   duration: 200
+[12]   offset: 100
+[12]   src: 4
+[12]   power: 2.000000
+
+[12]  Packet forwarded to next layer
+
+[12]  MAC FrequencyControlMessage data:
+[12]   bandwidth: 1200000
+[12]   freq: 250000000
+[12]   duration: 200
+[12]   offset: 100
+[12]   power: -100.000000
+
+[12]  MAC ReceivePropertiesControlMessage data:
+[12]   sot: 30.000060
+[12]   span: 200
+[12]   prop delay: 1
+[12]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[13] window
+[13]  request window time: 30000160
+[13]  frequency: 250000000
+[13]  window response timepoint: 30000160
+[13]  bin size: 20
+[13]  rx sensitivity: 1.2e-11
+[13]  signal in noise: yes
+[13]    0:1.000000013e-10
+
+[14] packet
+[14]  Common PHY Header data:
+[14]   regid: 7
+[14]   seq: 6
+[14]   bandwidth: 1200000
+[14]   fixed antenna gain: on
+[14]   fixed antenna gain: 0.000000
+[14]   tx time: 30.002000
+[14]   freq: 250000000
+[14]   duration: 100
+[14]   offset: 200
+[14]   src: 2
+[14]   power: 0.000000
+[14]   src: 3
+[14]   power: 5.000000
+
+[14]  Packet dropped
+
+[14] BroadcastPacketDropTable0
+[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[14] |2  |1          |1             |0                |1            |0           |1           |0      |0             |
+[14] |4  |0          |1             |0                |0            |0           |0           |0      |0             |
+[14] UnicastPacketDropTable0
+[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[15] packet
+[15]  Common PHY Header data:
+[15]   regid: 7
+[15]   seq: 7
+[15]   bandwidth: 1200000
+[15]   fixed antenna gain: off
+[15]   fixed antenna gain: 0.000000
+[15]   tx time: 30.002000
+[15]   freq: 250000000
+[15]   duration: 500
+[15]   offset: 0
+[15]   src: 4
+[15]   power: 12.000000
+
+[15]  Packet forwarded to next layer
+
+[15]  MAC FrequencyControlMessage data:
+[15]   bandwidth: 1200000
+[15]   freq: 250000000
+[15]   duration: 500
+[15]   offset: 0
+[15]   power: -90.000000
+
+[15]  MAC ReceivePropertiesControlMessage data:
+[15]   sot: 30.002000
+[15]   span: 500
+[15]   prop delay: 1
+[15]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[16] window
+[16]  request window time: 30002000
+[16]  frequency: 250000000
+[16]  window response timepoint: 30002000
+[16]  bin size: 20
+[16]  rx sensitivity: 1.2e-11
+[16]  signal in noise: yes
+[16]    0:9.999999717e-10
+[16]    10:1.830483543e-09
+[16]    16:9.999999717e-10
+
+[17] packet
+[17]  Common PHY Header data:
+[17]   regid: 7
+[17]   seq: 8
+[17]   bandwidth: 1200000
+[17]   fixed antenna gain: off
+[17]   fixed antenna gain: 0.000000
+[17]   tx time: 40.002010
+[17]   freq: 250000000
+[17]   duration: 500
+[17]   offset: 0
+[17]   src: 4
+[17]   power: 12.000000
+
+[17]  Packet forwarded to next layer
+
+[17]  MAC FrequencyControlMessage data:
+[17]   bandwidth: 1200000
+[17]   freq: 250000000
+[17]   duration: 500
+[17]   offset: 0
+[17]   power: -90.000000
+
+[17]  MAC ReceivePropertiesControlMessage data:
+[17]   sot: 40.002000
+[17]   span: 500
+[17]   prop delay: 1
+[17]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[18] packet
+[18]  Common PHY Header data:
+[18]   regid: 7
+[18]   seq: 9
+[18]   bandwidth: 1200000
+[18]   fixed antenna gain: on
+[18]   fixed antenna gain: 0.000000
+[18]   tx time: 40.002105
+[18]   freq: 250000000
+[18]   duration: 400
+[18]   offset: 0
+[18]   src: 2
+[18]   power: 0.000000
+
+[18]  Packet dropped
+
+[18] BroadcastPacketDropTable0
+[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[18] |2  |2          |1             |0                |1            |0           |1           |0      |0             |
+[18] |4  |0          |1             |0                |0            |0           |0           |0      |0             |
+[18] UnicastPacketDropTable0
+[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[19] packet
+[19]  Common PHY Header data:
+[19]   regid: 7
+[19]   seq: 10
+[19]   bandwidth: 1200000
+[19]   fixed antenna gain: on
+[19]   fixed antenna gain: 0.000000
+[19]   tx time: 40.002115
+[19]   freq: 250000000
+[19]   duration: 410
+[19]   offset: 100
+[19]   src: 3
+[19]   power: 5.000000
+
+[19]  Packet dropped
+
+[19] BroadcastPacketDropTable0
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[19] |2  |2          |1             |0                |1            |0           |1           |0      |0             |
+[19] |3  |1          |0             |0                |0            |0           |0           |0      |0             |
+[19] |4  |0          |1             |0                |0            |0           |0           |0      |0             |
+[19] UnicastPacketDropTable0
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[20] window
+[20]  request window time: 40002011
+[20]  frequency: 250000000
+[20]  window response timepoint: 40002000
+[20]  bin size: 20
+[20]  rx sensitivity: 1.2e-11
+[20]  signal in noise: yes
+[20]    0:9.999999717e-10
+[20]    5:1.630957369e-09
+[20]    10:1.830483543e-09
+
+[21] window
+[21]  request window time: 40002011
+[21]  frequency: 250000000
+[21]  window response timepoint: 40002000
+[21]  bin size: 20
+[21]  rx sensitivity: 1.2e-11
+[21]  signal in noise: yes
+[21]    0:9.999999717e-10
+[21]    5:1.630957369e-09
+[21]    10:1.830483543e-09
+[21]  Power (dBm): -90
+[21]  max bin noise floor start time: 40002011
+[21]  max bin noise floor end time: 40002041
+[21]  noise floor (dBm): -109.2081875 (mW):  1.2e-11
+[21]  signal in noise: yes
+
+[22] window
+[22]  request window time: 40002011
+[22]  frequency: 250000000
+[22]  window response timepoint: 40002000
+[22]  bin size: 20
+[22]  rx sensitivity: 1.2e-11
+[22]  signal in noise: yes
+[22]    0:9.999999717e-10
+[22]    5:1.630957369e-09
+[22]    10:1.830483543e-09
+[22]  Power (dBm): -90
+[22]  max bin noise floor start time: 40002042
+[22]  max bin noise floor end time: 40002180
+[22]  noise floor (dBm): -92 (mW):  6.309573445e-10
+[22]  signal in noise: yes
+
+[23] window
+[23]  request window time: 40002011
+[23]  frequency: 250000000
+[23]  window response timepoint: 40002000
+[23]  bin size: 20
+[23]  rx sensitivity: 1.2e-11
+[23]  signal in noise: yes
+[23]    0:9.999999717e-10
+[23]    5:1.630957369e-09
+[23]    10:1.830483543e-09
+[23]  Power (dBm): -90
+[23]  max bin noise floor start time: 40002181
+[23]  max bin noise floor end time: 40002511
+[23]  noise floor (dBm): -90.80668952 (mW):  8.30483576e-10
+[23]  signal in noise: yes
+
+[24] window
+[24]  request window time: 40002011
+[24]  frequency: 250000000
+[24]  window response timepoint: 40002000
+[24]  bin size: 20
+[24]  rx sensitivity: 1.2e-11
+[24]  signal in noise: yes
+[24]    0:9.999999717e-10
+[24]    5:1.630957369e-09
+[24]    10:1.830483543e-09
+[24]  Power (dBm): -90
+[24]  max bin noise floor start time: 40002000
+[24]  max bin noise floor end time: 40002520
+[24]  noise floor (dBm): -90.80668952 (mW):  8.30483576e-10
+[24]  signal in noise: yes
+

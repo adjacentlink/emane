@@ -1,0 +1,352 @@
+<phyupstreamscenario nem="1">
+
+  <!-- action 1 -->
+  <action>
+    <configure>
+      <paramlist name='propagationmodel'>
+        <item value='precomputed'/>
+      </paramlist>
+      <paramlist name='fixedantennagainenable'>
+        <item value='off'/>
+      </paramlist>
+      <paramlist name='systemnoisefigure'>
+        <item value='4'/>
+      </paramlist>
+      <paramlist name='noisemode'>
+        <item value='outofband'/>
+      </paramlist>
+      <paramlist name='bandwidth'>
+        <item value='1.2M'/>
+      </paramlist>
+      <paramlist name='frequency'>
+        <item value='250M'/>
+      </paramlist>
+      <paramlist name='frequencyofinterest'>
+        <item value='250M'/>
+        <item value='2G'/>
+        <item value='3G'/>
+      </paramlist>
+      <paramlist name='subid'>
+        <item value='1'/>
+      </paramlist>
+      <paramlist name='noisemaxclampenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='timesyncthreshold'>
+        <item value='1000'/>
+      </paramlist>
+    </configure>
+  </action>
+
+  <!-- action 2 -->
+  <action>
+    <pathloss>
+      <entry nem='2' pathloss='90'/>
+      <entry nem='3' pathloss='100'/>
+      <entry nem='4' pathloss='100'/>
+    </pathloss>
+  </action>
+
+
+  <!-- action 3
+       
+       Expected Result: Packet discarded  NO GAIN (LOCATION)
+  -->
+  <action>                        
+    <packet now='30000005' txtime='30000000' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='1'>
+      <segments>
+        <segment frequency="2500000000" offset="0" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+
+  <!-- action 4 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.515441" altitude="3"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+
+  <!-- action 5
+       
+       Expected Result: Packet discarded  NO GAIN (PROFILE)
+  -->
+  <action>                        
+    <packet now='30000015' txtime='30000010' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+
+  <!-- action 6 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="0"/>
+      <profile nem="4" id="4" azimuth="330" elevation="60"/>
+    </antennaprofiles>
+  </action>
+
+
+  <!-- action 7
+       
+       Expected Result: Packet discarded  NO GAIN (BELOW HORIZON) 
+  -->
+  <action>                        
+    <packet now='30000025' txtime='30000020' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 8 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <orientation pitch="0" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="0" magnitude="10"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+      <pov nem="3">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+      <pov nem="4">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 9
+       
+       Expected Result: Packet discarded SPECTRUM MONITOR (RX SENSITIVITY) 
+  -->
+  <action>                        
+    <packet now='30000045' txtime='30000040' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+ <!-- action 10 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="-8"/>
+      <profile nem="4" id="4" azimuth="330" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+ <!-- action 11 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <orientation pitch="32" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="-20" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+  
+  <!-- action 12
+       
+       Expected Result: 
+
+         Frequency Control to MAC:
+          FREQ = 250M  
+          BANDWIDTH = 1.2M
+          DURATION = 200
+          OFFSET = 100
+          POWER = -100
+          
+       Rx Properties to MAC:
+         SOT = 30000060
+         SPAN = 200
+         PROPDELAY = 1
+         RXSENSITIVITY = -109.2082
+  -->
+  <action>                        
+    <packet now='30000065' txtime='30000060' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 13
+       
+       Expected Result:
+       
+         All BINS = 1.12e-10 (mW)
+         In-Band noise included in response
+         Signal = 1e-10
+         RxSensitvity = 1.2e-11
+  -->
+  <action>
+    <window now="30000360" time="30000160" duration="200" frequency="250000000"/>
+  </action>
+
+
+  <!-- action 14
+       
+       Expected Result: 
+
+         Update 250M wheel with 8.4248e-10
+         (total power from 3 and 4 + rxsensitivity)
+
+       Power:
+         NEM2 = 0-2-90=-92
+         NEM3 = 5-2-100=-97
+  -->
+  <action>                        
+    <packet now='30002005' txtime='30002000' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='2'>
+      <segments>
+        <segment frequency="250000000" offset="200" duration="100"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+        <transmitter nem='3' power='5'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+  
+  <!-- action 15
+
+       Expected Result:      
+
+         Frequency Control to MAC:
+           FREQ = 250M  
+           BANDWIDTH = 1.2M
+           DURATION = 500
+           OFFSET = 0
+           POWER = -90
+
+         Rx Properties to MAC:
+           SOT = 30002000
+           SPAN = 500
+           PROPDELAY = 1
+           RXSENSITIVITY = -109.2082
+  -->
+  <action>                        
+    <packet now='30002010' txtime='30002000' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="500"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='12'/>
+      </transmitters>
+    </packet>
+  </action>
+  
+  <!-- action 16
+       
+       Expected Result:
+         BINS 0:9   Power = 1.2e-11
+         BINS 10:14  Power =  8.4248e-10
+         BINS 15:24  Power = 1.2e-11
+
+  -->
+  <action>
+    <window now="30002500" time="30002000" duration="500" frequency="250000000"/>
+  </action>
+
+
+ <!-- action 17
+
+       Expected Result:      
+
+         Frequency Control to MAC:
+           FREQ = 250M  
+           BANDWIDTH = 1.2M
+           DURATION = 200
+           OFFSET = 100
+           POWER = -100
+
+         Rx Properties to MAC:
+           SOT = 30000100
+           SPAN = 300
+           PROPDELAY = 1
+           RXSENSITIVITY = -109.2082
+
+        Verifying SOT is set to NOW in Rx properties message when TxTime > NOW.
+  -->
+  <action>                        
+    <packet now='300000100' txtime='300000110' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+
+ <!-- action 18
+
+       Expected Result:      
+         Frequency Control to MAC:
+           FREQ = 250M  
+           BANDWIDTH = 1.2M
+           DURATION = 200
+           OFFSET = 300000
+           POWER = -100
+
+         Rx Properties to MAC:
+           SOT = 30003000
+           SPAN = 200
+           PROPDELAY = 1
+           RXSENSITIVITY = -109.2082
+
+        Verifying SOT is set to NOW in Rx properties message when NOW - TxTime > 1000.
+
+        Also verifies offset is clamped t0 300000.
+  -->
+  <action>                        
+    <packet now='300003000' txtime='300001999' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="300075" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+</phyupstreamscenario>

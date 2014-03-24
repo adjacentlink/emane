@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mac SYSTEM "file://@datadir@/dtd/mac.dtd">
+<mac name="IEEE 802.11 MAC" library="ieee80211abgmaclayer">
+  <param name="mode"                  value="0"/>
+  <param name="enablepromiscuousmode" value="off"/>
+  <param name="distance"              value="1000"/>
+  <param name="unicastrate"           value="4"/>
+  <param name="multicastrate"         value="1"/>
+  <param name="rtsthreshold"          value="0"/>
+  <param name="pcrcurveuri"
+         value="file://@datadir@/xml/models/mac/ieee80211abg/ieee80211pcr.xml"/>
+  <param name="flowcontrolenable"     value="off"/>
+  <param name="flowcontroltokens"     value="10"/>
+</mac>

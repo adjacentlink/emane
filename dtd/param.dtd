@@ -1,0 +1,15 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT param EMPTY>
+<!ATTLIST param 
+          name CDATA #REQUIRED
+          value CDATA #REQUIRED>
+
+<!ELEMENT paramlist (item+)>
+<!ATTLIST paramlist 
+          name CDATA #REQUIRED>
+
+<!ELEMENT item EMPTY>
+<!ATTLIST item
+          value CDATA #REQUIRED>
+

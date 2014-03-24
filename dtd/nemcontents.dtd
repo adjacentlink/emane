@@ -1,0 +1,6 @@
+<?xml encoding="UTF-8"?>
+
+<!ENTITY % toplayers "((param+, shim*) | shim+)">
+<!ENTITY % midlayers "(mac, (shim*, (phy, shim*)?)?) | (phy, shim*)">
+<!ENTITY % botlayers "transport">
+<!ENTITY % alllayers "(%toplayers;)?, (%midlayers;)?, (%botlayers;)?">

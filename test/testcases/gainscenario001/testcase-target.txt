@@ -1,0 +1,163 @@
+[1] request 2 rxgain=7 txgain=0 -> gain: 7
+
+[2] profile 1 profileId: 1 azimuth: 0 elevation: 0
+
+[3] request 5 rxgain=0 -> error: Missing required location info
+
+[4] location 1 P:[40.025495,-74.51544,3]
+
+[5] request 5 rxgain=0 -> error: Missing required location info
+
+[6] location 2 P:[40.025495,-74.312888,3]
+[6] location 3 P:[40.025495,-74.312888,3]
+[6] location 4 P:[40.025495,-74.312888,3]
+
+[7] request 4 -> error: Missing required antenna profile info
+
+[8] profile 4 profileId: 1 azimuth: 0 elevation: 0
+
+[9] request 4 -> error: Below Horizon
+
+[10] profile 4 profileId: 2 azimuth: 0 elevation: 0
+
+[11] request 4 -> gain: 10
+
+[12] request 4 txgain=0 -> gain: 5
+
+[13] profile 1 profileId: 3 azimuth: 0 elevation: 0
+[13] profile 4 profileId: 4 azimuth: 0 elevation: 60
+
+[14] location 1 P:[40.025495,-74.315441,3]
+[14] location 2 P:[40.025495,-74.312888,3]
+[14] location 3 P:[40.023235,-74.315437,3]
+[14] location 4 P:[40.023235,-74.312889,3]
+
+[15] request 2 txgain=0 -> gain: -400
+
+[16] request 3 txgain=5 -> gain: -395
+
+[17] request 4 -> gain: -600
+
+[18] location 1 P:[40.025495,-74.315441,3] O:[0,0,90]
+
+[19] request 2 txgain=0 -> gain: 6
+
+[20] request 3 txgain=5 -> gain: -395
+
+[21] request 4 -> gain: -400
+
+[22] profile 1 profileId: 3 azimuth: 45 elevation: 0
+[22] profile 4 profileId: 4 azimuth: 330 elevation: 0
+
+[23] request 2 txgain=0 -> gain: -200
+
+[24] request 3 txgain=5 -> gain: -395
+
+[25] request 4 -> gain: 6
+
+[26] location 1 P:[40.025495,-74.315441,3] O:[12,0,90]
+
+[27] request 4 -> gain: -5
+
+[28] profile 1 profileId: 3 azimuth: 45 elevation: -8
+
+[29] request 4 -> gain: -2
+
+[30] profile 1 profileId: 3 azimuth: 0 elevation: 0
+
+[31] location 1 P:[40.025495,-74.315441,3] O:[0,0,300]
+
+[32] request 4 -> gain: -400
+
+[33] profile 1 profileId: 3 azimuth: 200 elevation: 0
+
+[34] request 2 txgain=0 -> gain: -400
+
+[35] request 3 txgain=5 -> gain: -395
+
+[36] request 4 -> gain: -194
+
+[37] profile 1 profileId: 3 azimuth: 0 elevation: 0
+[37] profile 4 profileId: 4 azimuth: 0 elevation: 60
+
+[38] location 1 P:[40.025495,-74.315441,3] O:[0,0,30] V:[60,0,10]
+
+[39] request 2 txgain=0 -> gain: 6
+
+[40] request 3 txgain=5 -> gain: -395
+
+[41] request 4 -> gain: -400
+
+[42] profile 1 profileId: 3 azimuth: 45 elevation: 0
+[42] profile 4 profileId: 4 azimuth: 330 elevation: 0
+
+[43] request 2 txgain=0 -> gain: -200
+
+[44] request 3 txgain=5 -> gain: -395
+
+[45] request 4 -> gain: 6
+
+[46] location 1 P:[40.025495,-74.315441,3] O:[32,0,30] V:[60,-20,10]
+
+[47] request 4 -> gain: -5
+
+[48] profile 1 profileId: 3 azimuth: 45 elevation: -8
+
+[49] request 4 -> gain: -2
+
+[50] profile 1 profileId: 3 azimuth: 0 elevation: 0
+
+[51] location 1 P:[40.025495,-74.315441,3] O:[0,0,240] V:[60,-20,10]
+
+[52] request 4 -> gain: -400
+
+[53] profile 1 profileId: 3 azimuth: 200 elevation: 0
+
+[54] request 2 txgain=0 -> gain: -400
+
+[55] request 3 txgain=5 -> gain: -395
+
+[56] request 4 -> gain: -400
+
+[57] profile 1 profileId: 5 azimuth: 0 elevation: 0
+[57] profile 4 profileId: 4 azimuth: 0 elevation: 60
+
+[58] location 1 P:[40.025495,-74.315441,3] O:[0,0,30] V:[60,0,10]
+
+[59] request 2 txgain=0 -> gain: 6
+
+[60] request 3 txgain=5 -> gain: -522
+
+[61] request 4 -> gain: -527
+
+[62] profile 1 profileId: 5 azimuth: 45 elevation: 0
+[62] profile 4 profileId: 4 azimuth: 330 elevation: 0
+
+[63] request 2 txgain=0 -> gain: -327
+
+[64] request 3 txgain=5 -> gain: -522
+
+[65] request 4 -> gain: 6
+
+[66] location 1 P:[40.025495,-74.315441,3] O:[32,0,30] V:[60,-20,10]
+
+[67] request 4 -> gain: -5
+
+[68] profile 1 profileId: 5 azimuth: 45 elevation: -8
+
+[69] request 4 -> gain: -2
+
+[70] profile 1 profileId: 5 azimuth: 0 elevation: 0
+
+[71] location 1 P:[40.025495,-74.315441,3] O:[0,0,240]
+
+[72] request 4 -> gain: -527
+
+[73] profile 1 profileId: 5 azimuth: 200 elevation: 0
+
+[74] request 2 txgain=0 -> gain: -527
+
+[75] request 3 txgain=5 -> gain: -522
+
+[76] request 4 -> gain: -527
+

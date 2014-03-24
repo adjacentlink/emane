@@ -1,0 +1,85 @@
+# configure output
+**/Makefile
+config.log
+config.status
+libtool
+autom4te.cache
+
+# protocol buffers output
+*.pb.cc
+*.pb.h
+*_pb2.py
+
+# object files/dependencies
+*.la
+*.lo
+*.o
+**/.deps
+**/.libs
+
+# python byte code
+*.pyc
+
+# rpm
+emane.spec
+.rpmbuild
+
+# deb
+.debbuild
+
+# dist
+emane-*.tar.gz
+
+# documentation output
+doc/emane.doxygen
+doc/html
+
+# emane shell
+src/emanesh/build
+src/emanesh/dist
+src/emanesh/emanesh/schema/manifest.xsd
+src/emanesh/setup.py
+src/emanesh/MANIFEST
+
+# man pages
+*.1
+
+# applications
+src/applications/emaneeventservice/emaneeventservice
+src/applications/emane/emane
+src/applications/emaneeventd/emaneeventd
+src/applications/emaneinfo/emaneinfo
+src/applications/emanetransportd/emanetransportd
+
+# test harness applications (no install)
+test/harness/gainscenario/gainscenario
+test/harness/noisescenario/noisescenario
+test/harness/phyupstreamscenario/phyupstreamscenario
+test/harness/profilescenario/profilescenario
+test/harness/propagationscenario/propagationscenario
+
+# test case output
+**/testcase-output.txt
+
+# sample XML and PCR
+src/agents/gpsdlocation/gpsdlocationagent.xml
+src/applications/emaneeventd/eventdaemon.xml
+src/applications/emaneeventservice/eventservice.xml
+src/applications/emanetransportd/transportdaemon.xml
+src/generators/eel/eelgenerator.xml
+src/models/mac/bypass/bypassmac.xml
+src/models/mac/bypass/bypassnem.xml
+src/models/mac/ieee80211abg/ieee80211abgmac.xml
+src/models/mac/ieee80211abg/ieee80211abgnem.xml
+src/models/mac/ieee80211abg/ieee80211pcr.xml
+src/models/mac/rfpipe/rfpipemac.xml
+src/models/mac/rfpipe/rfpipenem.xml
+src/models/mac/rfpipe/rfpipepcr.xml
+src/models/phy/bypass/bypassphy.xml
+src/models/shim/commeffect/commeffectfilters.xml
+src/models/shim/commeffect/commeffectnem.xml
+src/models/shim/commeffect/commeffectshim.xml
+src/models/shim/phyapitest/phyapitestshim.xml
+src/models/shim/timinganalysis/timinganalysisshim.xml
+src/transports/raw/transraw.xml
+src/transports/virtual/transvirtual.xml

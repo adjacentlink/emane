@@ -14,6 +14,9 @@ enable shared code emulation.
 
 Need more information?
 ==
+Visit the EMANE Wiki:
+
+ https://github.com/adjacentlink/emane/wiki
 
 Join the EMANE mailing list and post a question:
 

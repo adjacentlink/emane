@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE antennaprofile SYSTEM "../../../dtd/antennaprofile.dtd">
+
+<!-- 0dBi omin antenna-->
+<antennaprofile>
+  <antennapattern>
+    <elevation min='-90' max='90'>
+      <bearing min='0' max='359'>
+        <gain value='5'/>
+      </bearing>
+    </elevation>
+  </antennapattern>
+</antennaprofile>
+
+
+
+

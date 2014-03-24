@@ -1,0 +1,263 @@
+[1] configure 
+[1]  bandwidth:
+[1]    20000000
+[1]  fixedantennagain:
+[1]    5.000000
+[1]  fixedantennagainenable:
+[1]    1
+[1]  frequency:
+[1]    2000000000
+[1]  frequencyofinterest:
+[1]    2000000000
+[1]    2020000000
+[1]    2040000000
+[1]  noisebinsize:
+[1]    20
+[1]  noisemaxclampenable:
+[1]    0
+[1]  noisemaxmessagepropagation:
+[1]    200000
+[1]  noisemaxsegmentduration:
+[1]    1000000
+[1]  noisemaxsegmentoffset:
+[1]    300000
+[1]  noisemode:
+[1]    none
+[1]  propagationmodel:
+[1]    precomputed
+[1]  subid:
+[1]    1
+[1]  systemnoisefigure:
+[1]    6.000000
+[1]  timesyncthreshold:
+[1]    10000
+[1]  txpower:
+[1]    0.000000
+
+[2] packet
+[2]  Common PHY Header data:
+[2]   regid: 7
+[2]   seq: 1
+[2]   bandwidth: 20000000
+[2]   fixed antenna gain: on
+[2]   fixed antenna gain: 0.000000
+[2]   tx time: 30.000005
+[2]   freq: 2000000000
+[2]   duration: 200
+[2]   offset: 0
+[2]   src: 2
+[2]   power: 0.000000
+
+[2]  Packet dropped
+
+[2] BroadcastPacketDropTable0
+[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[2] |2  |0          |0             |1                |0            |0           |0           |0      |0             |
+[2] UnicastPacketDropTable0
+[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[3] pathloss 2 Forward Pathloss: 90 Reverse Pathloss: 90
+[3] pathloss 3 Forward Pathloss: 100 Reverse Pathloss: 100
+[3] pathloss 4 Forward Pathloss: 100 Reverse Pathloss: 100
+
+[4] packet
+[4]  Common PHY Header data:
+[4]   regid: 7
+[4]   seq: 2
+[4]   bandwidth: 20000000
+[4]   fixed antenna gain: on
+[4]   fixed antenna gain: 0.000000
+[4]   tx time: 30.000005
+[4]   freq: 2200000000
+[4]   duration: 200
+[4]   offset: 0
+[4]   src: 2
+[4]   power: 0.000000
+
+[4]  Packet dropped
+
+[4] BroadcastPacketDropTable0
+[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[4] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
+[4] UnicastPacketDropTable0
+[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[5] packet
+[5]  Common PHY Header data:
+[5]   regid: 7
+[5]   seq: 3
+[5]   bandwidth: 20000000
+[5]   fixed antenna gain: on
+[5]   fixed antenna gain: 0.000000
+[5]   tx time: 30.000010
+[5]   freq: 2000000000
+[5]   duration: 200
+[5]   offset: 0
+[5]   src: 4
+[5]   power: 3.000000
+
+[5]  Packet dropped
+
+[5] BroadcastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[5] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
+[5] |4  |1          |0             |0                |0            |0           |0           |0      |0             |
+[5] UnicastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[6] packet
+[6]  Common PHY Header data:
+[6]   regid: 7
+[6]   seq: 4
+[6]   bandwidth: 20000000
+[6]   fixed antenna gain: on
+[6]   fixed antenna gain: 2.000000
+[6]   tx time: 30.000010
+[6]   freq: 2000000000
+[6]   duration: 200
+[6]   offset: 0
+[6]   src: 2
+[6]   power: 3.000000
+
+[6]  Packet forwarded to next layer
+
+[6]  MAC FrequencyControlMessage data:
+[6]   bandwidth: 20000000
+[6]   freq: 2000000000
+[6]   duration: 200
+[6]   offset: 0
+[6]   power: -80.000000
+
+[6]  MAC ReceivePropertiesControlMessage data:
+[6]   sot: 30.000010
+[6]   span: 200
+[6]   prop delay: 0
+[6]   receiver sensativity: -94.989700
+
+Processing upstream packet...
+[7] location 1 P:[40.025495,-74.315441,3]
+[7] location 2 P:[40.025495,-74.512888,3]
+
+[8] packet
+[8]  Common PHY Header data:
+[8]   regid: 7
+[8]   seq: 5
+[8]   bandwidth: 20000000
+[8]   fixed antenna gain: on
+[8]   fixed antenna gain: 2.000000
+[8]   tx time: 30.000020
+[8]   freq: 2000000000
+[8]   duration: 200
+[8]   offset: 0
+[8]   src: 2
+[8]   power: 5.000000
+
+[8]  Packet forwarded to next layer
+
+[8]  MAC FrequencyControlMessage data:
+[8]   bandwidth: 20000000
+[8]   freq: 2000000000
+[8]   duration: 200
+[8]   offset: 0
+[8]   power: -78.000000
+
+[8]  MAC ReceivePropertiesControlMessage data:
+[8]   sot: 30.000020
+[8]   span: 200
+[8]   prop delay: 56
+[8]   receiver sensativity: -94.989700
+
+Processing upstream packet...
+[9] location 2 P:[40.025495,-74.412888,3]
+
+[10] packet
+[10]  Common PHY Header data:
+[10]   regid: 7
+[10]   seq: 6
+[10]   bandwidth: 20000000
+[10]   fixed antenna gain: on
+[10]   fixed antenna gain: 2.000000
+[10]   tx time: 30.000030
+[10]   freq: 2000000000
+[10]   duration: 400
+[10]   offset: 0
+[10]   src: 2
+[10]   power: 5.000000
+
+[10]  Packet forwarded to next layer
+
+[10]  MAC FrequencyControlMessage data:
+[10]   bandwidth: 20000000
+[10]   freq: 2000000000
+[10]   duration: 400
+[10]   offset: 0
+[10]   power: -78.000000
+
+[10]  MAC ReceivePropertiesControlMessage data:
+[10]   sot: 30.000030
+[10]   span: 400
+[10]   prop delay: 28
+[10]   receiver sensativity: -94.989700
+
+Processing upstream packet...
+[11] packet
+[11]  Common PHY Header data:
+[11]   regid: 7
+[11]   seq: 7
+[11]   bandwidth: 20000000
+[11]   fixed antenna gain: on
+[11]   fixed antenna gain: 0.000000
+[11]   tx time: 30.000040
+[11]   freq: 2000000000
+[11]   duration: 400
+[11]   offset: 0
+[11]   src: 3
+[11]   power: 0.000000
+
+[11]  Packet dropped
+
+[11] BroadcastPacketDropTable0
+[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[11] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
+[11] |3  |0          |1             |0                |0            |0           |0           |0      |0             |
+[11] |4  |1          |0             |0                |0            |0           |0           |0      |0             |
+[11] UnicastPacketDropTable0
+[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[12] packet
+[12]  Common PHY Header data:
+[12]   regid: 7
+[12]   seq: 8
+[12]   bandwidth: 20000000
+[12]   fixed antenna gain: on
+[12]   fixed antenna gain: 2.000000
+[12]   tx time: 30.000060
+[12]   freq: 2000000000
+[12]   duration: 100
+[12]   offset: 0
+[12]   freq: 2020000000
+[12]   duration: 100
+[12]   offset: 120
+[12]   src: 2
+[12]   power: 5.000000
+
+[12]  Packet forwarded to next layer
+
+[12]  MAC FrequencyControlMessage data:
+[12]   bandwidth: 20000000
+[12]   freq: 2000000000
+[12]   duration: 100
+[12]   offset: 0
+[12]   power: -78.000000
+[12]   freq: 2020000000
+[12]   duration: 100
+[12]   offset: 120
+[12]   power: -78.000000
+
+[12]  MAC ReceivePropertiesControlMessage data:
+[12]   sot: 30.000060
+[12]   span: 220
+[12]   prop delay: 28
+[12]   receiver sensativity: -94.989700
+
+Processing upstream packet...

@@ -1,0 +1,28 @@
+<?xml encoding="UTF-8"?>
+
+<!ENTITY % nemcontents SYSTEM "nemcontents.dtd">
+%nemcontents;
+
+<!ELEMENT nem (%alllayers;)>
+<!ATTLIST nem 
+          name CDATA #IMPLIED
+          type (structured | unstructured) "structured">
+
+<!ENTITY % param SYSTEM "param.dtd">
+%param;
+
+<!ELEMENT shim (param|paramlist)*>
+<!ATTLIST shim 
+          definition NMTOKEN #REQUIRED>
+
+<!ELEMENT mac (param|paramlist)*>
+<!ATTLIST mac 
+          definition NMTOKEN #REQUIRED>
+
+<!ELEMENT phy (param|paramlist)*>
+<!ATTLIST phy 
+          definition NMTOKEN #IMPLIED>
+
+<!ELEMENT transport (param|paramlist)*>
+<!ATTLIST transport 
+          definition NMTOKEN #REQUIRED>

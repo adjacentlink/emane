@@ -1,0 +1,4 @@
+SUBDIRS=            \
+ harness            \
+ testcases
+

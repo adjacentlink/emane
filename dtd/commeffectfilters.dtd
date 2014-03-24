@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!ELEMENT commeffect (filter+)>
+
+<!ELEMENT filter (description, ((target, effect) | (effect, target)))>
+
+<!ELEMENT description (#PCDATA)>
+
+<!ELEMENT target (ipv4?)>
+
+<!ELEMENT ipv4 ((udp, protocol?) | (protocol, udp?))?>
+<!ATTLIST ipv4
+          src CDATA #IMPLIED
+          dst CDATA #IMPLIED
+          len NMTOKEN #IMPLIED
+          ttl NMTOKEN #IMPLIED
+          tos NMTOKEN #IMPLIED>
+
+<!ELEMENT udp EMPTY>
+<!ATTLIST udp
+          sport NMTOKEN #IMPLIED
+          dport NMTOKEN #IMPLIED>
+
+<!ELEMENT protocol EMPTY>
+<!ATTLIST protocol
+          type NMTOKEN #IMPLIED>
+
+<!ELEMENT effect (loss?, duplicate?, latency?, jitter?, broadcastbitrate?, unicastbitrate?)>
+
+<!ELEMENT loss (#PCDATA)>
+
+<!ELEMENT duplicate (#PCDATA)>
+
+<!ELEMENT broadcastbitrate (#PCDATA)>
+
+<!ELEMENT unicastbitrate (#PCDATA)>
+
+<!ELEMENT latency EMPTY>
+<!ATTLIST latency
+          sec NMTOKEN #IMPLIED
+          usec NMTOKEN #IMPLIED>
+
+<!ELEMENT jitter EMPTY>
+<!ATTLIST jitter
+          sec NMTOKEN #IMPLIED
+          usec NMTOKEN #IMPLIED>

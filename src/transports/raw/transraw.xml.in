@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE transport SYSTEM "file://@datadir@/dtd/transport.dtd">
+<transport name="Raw transport" library="transraw">
+  <param name="bitrate" value="0.0"/>
+  <param name="device" value="eth0"/>
+</transport>

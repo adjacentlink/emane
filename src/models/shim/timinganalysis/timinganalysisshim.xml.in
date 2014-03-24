@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE shim SYSTEM "file://@datadir@/dtd/shim.dtd">
+<shim name="TimingAnalysis SHIM" library="timinganalysisshim">
+  <param name="maxqueuesize" value="100"/>
+</shim>

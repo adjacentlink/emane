@@ -1,0 +1,147 @@
+[1] configure 
+[1]  bandwidth:
+[1]    1200000
+[1]  fixedantennagain:
+[1]    5.000000
+[1]  fixedantennagainenable:
+[1]    1
+[1]  frequency:
+[1]    250000000
+[1]  frequencyofinterest:
+[1]    250000000
+[1]    2000000000
+[1]    3000000000
+[1]  noisebinsize:
+[1]    20
+[1]  noisemaxclampenable:
+[1]    0
+[1]  noisemaxmessagepropagation:
+[1]    200000
+[1]  noisemaxsegmentduration:
+[1]    1000000
+[1]  noisemaxsegmentoffset:
+[1]    300000
+[1]  noisemode:
+[1]    none
+[1]  propagationmodel:
+[1]    freespace
+[1]  subid:
+[1]    1
+[1]  systemnoisefigure:
+[1]    4.000000
+[1]  timesyncthreshold:
+[1]    10000
+[1]  txpower:
+[1]    0.000000
+
+[2] pathloss 2 Forward Pathloss: 90 Reverse Pathloss: 90
+[2] pathloss 3 Forward Pathloss: 100 Reverse Pathloss: 100
+[2] pathloss 4 Forward Pathloss: 100 Reverse Pathloss: 100
+
+[3] packet
+[3]  Common PHY Header data:
+[3]   regid: 7
+[3]   seq: 1
+[3]   bandwidth: 1200000
+[3]   fixed antenna gain: on
+[3]   fixed antenna gain: 0.000000
+[3]   tx time: 30.000000
+[3]   freq: 2500000000
+[3]   duration: 200
+[3]   offset: 0
+[3]   src: 2
+[3]   power: 0.000000
+
+[3]  Packet dropped
+
+[3] BroadcastPacketDropTable0
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[3] |2  |0          |0             |1                |0            |0           |0           |0      |0             |
+[3] UnicastPacketDropTable0
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[4] location 1 P:[40.025495,-74.315441,3]
+[4] location 2 P:[40.025495,-74.512888,3]
+
+[5] packet
+[5]  Common PHY Header data:
+[5]   regid: 7
+[5]   seq: 2
+[5]   bandwidth: 1200000
+[5]   fixed antenna gain: on
+[5]   fixed antenna gain: 0.000000
+[5]   tx time: 30.000020
+[5]   freq: 3000000000
+[5]   duration: 100
+[5]   offset: 0
+[5]   freq: 250000000
+[5]   duration: 100
+[5]   offset: 200
+[5]   freq: 2000000000
+[5]   duration: 100
+[5]   offset: 400
+[5]   src: 2
+[5]   power: 5.000000
+
+[5]  Packet forwarded to next layer
+
+[5]  MAC FrequencyControlMessage data:
+[5]   bandwidth: 1200000
+[5]   freq: 250000000
+[5]   duration: 100
+[5]   offset: 200
+[5]   power: -94.940895
+
+[5]  MAC ReceivePropertiesControlMessage data:
+[5]   sot: 30.000020
+[5]   span: 100
+[5]   prop delay: 56
+[5]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[6] location 2 P:[40.025495,-74.372888,3]
+
+[7] packet
+[7]  Common PHY Header data:
+[7]   regid: 7
+[7]   seq: 3
+[7]   bandwidth: 1200000
+[7]   fixed antenna gain: on
+[7]   fixed antenna gain: 0.000000
+[7]   tx time: 30.000040
+[7]   freq: 3000000000
+[7]   duration: 100
+[7]   offset: 0
+[7]   freq: 250000000
+[7]   duration: 100
+[7]   offset: 200
+[7]   freq: 2000000000
+[7]   duration: 100
+[7]   offset: 400
+[7]   src: 2
+[7]   power: 5.000000
+
+[7]  Packet forwarded to next layer
+
+[7]  MAC FrequencyControlMessage data:
+[7]   bandwidth: 1200000
+[7]   freq: 3000000000
+[7]   duration: 100
+[7]   offset: 0
+[7]   power: -105.800860
+[7]   freq: 250000000
+[7]   duration: 100
+[7]   offset: 200
+[7]   power: -84.217235
+[7]   freq: 2000000000
+[7]   duration: 100
+[7]   offset: 400
+[7]   power: -102.279035
+
+[7]  MAC ReceivePropertiesControlMessage data:
+[7]   sot: 30.000040
+[7]   span: 500
+[7]   prop delay: 16
+[7]   receiver sensativity: -109.208188
+
+Processing upstream packet...

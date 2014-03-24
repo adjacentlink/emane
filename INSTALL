@@ -1,0 +1,128 @@
+Installing EMANE from source
+==
+
+Untar the source:
+
+ # tar zxvf emane-X.Y.Z.tar.gz
+
+ # cd emane-X.Y.Z
+
+ # ./configure && make install
+
+By default emane will install to /usr/local. If you wish to install to a more 
+standard system location use the --prefix option:
+
+ # ./configure --prefix=/usr && make install
+
+The emanesh python package will not install from a toplevel 'make install'. To 
+install:
+
+ # cd emane-X.Y.Z/src/emanesh
+ # make
+ # python setup.py install
+
+
+Making distribution packages
+==
+
+To make RPMs on Fedora/RHEL distributions [1]:
+
+ # ./configure && make rpm
+
+[1] You must have the rpm-build package installed. It is available via the 
+distribution package repository.
+
+To make debs on Ubuntu [2]:
+
+ # ./configure && make deb 
+
+[2] You must have both debhelper and python-stdeb packages installed. Both are 
+available via the distribution package repository.
+
+See './configure --help' for more build options.
+
+
+EMANE Dependencies
+==
+
+Most run-time dependency packages are available via the distribution package
+repository.
+
+Name        Fedora/RHEL         Ubuntu
+--          -----------         ------
+libxml-2.0  libxml2             libxml2
+protobuf    protobuf            libprotobuf6
+            protobuf-python     python-protobuf
+libpcap     libpcap             libpcap0.8
+libpcre     pcre                libpcre3
+libuuid     libuuid             libuuid1
+ACE         ace[1]              libace       
+
+[1] Available from:
+http://download.opensuse.org/repositories/devel:/libraries:/ACE:/micro/
+
+EMANE is currently transitioning away from using ACE[2]. We expect to be
+completely ACE free by the next major release.
+
+[2] http://www.cs.wustl.edu/~schmidt/ACE.html
+
+Most build-time dependency packages are available via the distribution package 
+repository.
+
+Name        Fedora/RHEL         Ubuntu
+--          -----------         ------
+libxml-2.0  libxml2-devel       libxml2-dev
+protobuf    protobuf-devel      libprotobuf-dev
+            protobuf-python     python-protobuf
+libpcap     libpcap-devel       libpcap-dev
+libpcre     pcre-devel          libpcre3-dev
+libuuid     libuuid-devel       uuid-dev
+ACE         ace-devel[1]        libace-dev
+            mpc[1]                  
+
+[1] Available from:
+http://download.opensuse.org/repositories/devel:/libraries:/ACE:/micro/
+
+
+Build Notes
+==
+
+EMANE uses C++11. If you are using an older distribution you may find the
+following information useful:
+
+Updating Ubuntu 12.04 to GCC 4.7.0 for C++11 support
+
+1. sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+2. sudo apt-get update
+
+3. sudo apt-get install gcc-4.7 g++-4.7
+
+4. The easiest way to build with autotools:
+   ./configure CXX=g++-4.7
+
+Updating CentOS/SL 6.x to GCC 4.7.0 for C++11 support
+
+1. Create /etc/yum.repo.d/devtools.repo
+
+=== start cut-and-paste ===
+[testing-devtools-$releasever]
+name=testing devtools for CentOS $releasever
+baseurl=http://people.centos.org/tru/devtools/6/$basearch/RPMS
+gpgcheck=0
+=== end cut-and-paste ===
+
+2. sudo yum install devtoolset-1.0-gcc-c++
+
+3. The easiest way to build is to source in the devtoolset-1.0 environment:
+   . /opt/centos/devtoolset-1.0/enable
+   ./configure
+
+
+Need more help?
+==
+
+Join the EMANE mailing list and post a question:
+
+ http://pf.itd.nrl.navy.mil/mailman/listinfo/emane-users
+

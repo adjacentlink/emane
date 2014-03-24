@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT pcr (table+)>
+
+<!ELEMENT table (row+)>
+<!ATTLIST table
+          pktsize  CDATA #REQUIRED>
+
+<!ELEMENT row EMPTY>
+<!ATTLIST row
+          sinr CDATA #REQUIRED
+          por  CDATA #REQUIRED>

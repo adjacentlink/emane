@@ -1,0 +1,504 @@
+<gainscenario nem="1">
+
+  <!-- action 1 -->
+  <action>
+    <request nem="2" rxfixedgain="7" txfixedgain="0"/>
+  </action>
+  
+  <!-- action 2 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="1" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+  
+  <!-- action 3 -->
+  <action>
+    <request nem="5" rxfixedgain="0"/>
+  </action>
+  
+  <!-- action 4 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.51544" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 5 -->
+  <action>
+    <request nem="5" rxfixedgain="0"/>
+  </action>
+
+  <!-- action 6 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+
+      <pov nem="3">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+
+      <pov nem="4">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 7 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 8 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="4" id="1" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 9 -->
+  <action>
+    <request nem="4"/>
+  </action>
+  
+  <!-- action 10 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="4" id="2" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 11 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 12 -->
+  <action>
+    <request nem="4" txfixedgain="0"/>
+  </action>
+
+  <!-- action 13 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="0" elevation="0"/>
+      <profile nem="4" id="4" azimuth="0" elevation="60"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 14 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.312888" altitude="3"/>
+      </pov>
+      <pov nem="3">
+        <position latitude="40.023235" longitude="-74.315437" altitude="3"/>
+      </pov>
+      <pov nem="4">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 15 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 16 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 17 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 18 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="0" roll="0" yaw="90"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 19 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 20 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 21 -->
+  <action>
+    <request nem="4"/>
+  </action>  
+
+  <!-- action 22 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="0"/>
+      <profile nem="4" id="4" azimuth="330" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 23 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 24 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 25 -->
+  <action>
+    <request nem="4"/>
+  </action> 
+
+  <!-- action 26 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="12" roll="0" yaw="90"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 27 -->
+  <action>
+    <request nem="4"/>
+  </action> 
+
+  <!-- action 28 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="-8"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 29 -->
+  <action>
+    <request nem="4"/>
+  </action> 
+
+  <!-- action 30 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 31 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="0" roll="0" yaw="300"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 32 -->
+  <action>
+    <request nem="4"/>
+  </action> 
+
+  <!-- action 33 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="200" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 34 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 35 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 36 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 37 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="0" elevation="0"/>
+      <profile nem="4" id="4" azimuth="0" elevation="60"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 38 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="0" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="0" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+  
+  <!-- action 39 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 40 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 41 -->
+  <action>
+    <request nem="4"/>
+  </action>
+  
+  <!-- action 42 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="0"/>
+      <profile nem="4" id="4" azimuth="330" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 43 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+  
+  <!-- action 44 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+  
+  <!-- action 45 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 46 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="32" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="-20" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+  
+  <!-- action 47 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 48 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="-8"/>
+    </antennaprofiles>
+  </action>
+  
+  <!-- action 49 -->
+  <action>
+    <request nem="4"/>
+  </action>
+  
+  <!-- action 50 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 51 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="0" roll="0" yaw="240"/>
+        <velocity azimuth="60" elevation="-20" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 52 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 53 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="200" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 54 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+  
+  <!-- action 55 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+  
+  <!-- action 56 -->
+  <action>
+    <request nem="4"/>
+  </action>
+  
+  <!-- action 57 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="5" azimuth="0" elevation="0"/>
+      <profile nem="4" id="4" azimuth="0" elevation="60"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 58 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="0" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="0" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 59 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 60 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 61 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 62 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="5" azimuth="45" elevation="0"/>
+      <profile nem="4" id="4" azimuth="330" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 63 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 64 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 65 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 66 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+        <orientation pitch="32" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="-20" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 67 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 68 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="5" azimuth="45" elevation="-8"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 69 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 70 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="5" azimuth="0" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 71 -->
+  <action>
+    <locations>
+      <pov nem="1">
+      <position latitude="40.025495" longitude="-74.315441" altitude="3"/>
+      <orientation pitch="0" roll="0" yaw="240"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 72 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+  <!-- action 73 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="5" azimuth="200" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 74 -->
+  <action>
+    <request nem="2" txfixedgain="0"/>
+  </action>
+
+  <!-- action 75 -->
+  <action>
+    <request nem="3" txfixedgain="5"/>
+  </action>
+
+  <!-- action 76 -->
+  <action>
+    <request nem="4"/>
+  </action>
+
+</gainscenario>

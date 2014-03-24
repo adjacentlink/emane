@@ -1,0 +1,452 @@
+Summary: EMANE - Extendable Mobile Ad-hoc Network Emultor 
+Name: emane
+Version: @VERSION@
+Release: 1%{?dist}
+License: BSD
+Group: Applications/System
+URL: https://github.com/adjacentlink/emane
+Source0: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+Requires: libxml2 ace protobuf pcre emane-libs >= %{version} emane-dtds >= %{version}
+BuildRequires: libxml2-devel ace-devel protobuf-devel pcre-devel libpcap-devel
+Prefix: /usr
+Vendor: Adjacent Link LLC
+
+%description
+EMANE is an Extendable Mobile Ad-hoc Network Emulator that allows for 
+heterogeneous network emulation using a pluggable MAC and PHY layer 
+architecture.
+
+%package devel
+Summary: Headers necessary to build EMANE network emulation modules.
+Group: Development/Libraries
+
+%description devel
+Headers necessary to build EMANE network emulation modules.
+
+%package dtds
+Summary: EMANE DTDs
+Group: Applications/System
+
+%description  dtds
+EMANE DTDs required for EMANE XML.
+
+%package utils
+Requires: emane-dtds  >= %{version} perl-XML-LibXML perl-XML-Simple
+Summary: EMANE utilites
+Group:  Applications/System
+
+%description  utils
+EMANE utilities
+
+%package libs
+Requires: libxml2 ace
+Summary: EMANE Libraries
+Group: Libraries
+
+%description  libs
+EMANE Libraries required for components
+
+%package transportdaemon
+Requires: emane-libs  >= %{version} emane-dtds >= %{version}
+Summary: EMANE transport daemon
+Group: Applications/System
+
+%description  transportdaemon
+EMANE transport daemon.  Creates and manages one or more transports.
+
+%package eventdaemon
+Requires: emane-libs >= %{version} emane-dtds >= %{version}
+Summary: EMANE event deamon
+Group: Applications/System
+
+%description  eventdaemon
+EMANE event deamon forwards events to registered agents.
+
+%package eventservice
+Requires: emane-libs  >= %{version} emane-dtds >= %{version}
+Summary: EMANE event service
+Group: Applications/System
+
+%description  eventservice
+EMANE event service creates and manages event generators. 
+
+%package model-rfpipe
+Requires: emane >= %{version}
+Summary: EMANE RF Pipe MAC Layer
+Group: Libraries
+
+%description model-rfpipe
+EMANE RF Pipe MAC Layer
+
+%package model-ieee80211abg
+Requires: emane >= %{version}
+Summary: EMANE  802.11abg MAC Layer
+Group: Libraries
+
+%description model-ieee80211abg
+EMANE 802.11abg MAC Layer
+
+%package model-bypass
+Requires: emane >= %{version}
+Summary: EMANE Bypass MAC and PHY Layer
+Group: Libraries
+
+%description model-bypass
+EMANE Bypass MAC and PHY Layer
+
+%package model-commeffect
+Summary: EMANE commeffect shim model.
+Requires: emane-dtds >= %{version}
+Group: Libraries
+
+%description model-commeffect
+EMANE commeffect model replacement for commercial network emulators.
+
+%package agent-gpsdlocation
+Requires: emane-eventdaemon >= %{version}
+Summary: EMANE gpsd location agent 
+Group: Libraries
+
+%description agent-gpsdlocation
+EMANE gpsd location agent translates location events into NMEA strings
+and transmits them to gpsd via a pseudo terminal device.
+
+%package trans-virtual
+Requires: emane-transportdaemon >= %{version}
+Summary: EMANE virtual transport implementation
+Group: Libraries
+
+%description trans-virtual
+EMANE virtual transport.  Uses tun device to create a network layer
+entry point for the NEM stack.
+
+%package trans-raw
+Requires: emane-transportdaemon >= %{version}
+Summary: EMANE raw transport implementation
+Group: Libraries
+
+%description trans-raw
+EMANE raw transport.  Uses raw IP to create a network layer
+entry point for the NEM stack.
+
+%package model-phyapitestshim
+Requires: emane >= %{version}
+Summary: EMANE PHY API Test shim
+Group: Libraries
+
+%description model-phyapitestshim
+EMANE PHY API Test shim
+
+%package model-timinganalysisshim
+Requires: emane >= %{version}
+Summary: EMANE Timing Test shim
+Group: Libraries
+
+%description model-timinganalysisshim
+EMANE Timing Test shim
+
+%package gen-eel
+Requires: emane >= %{version}
+Summary: EMANE Emulation Event Log Generator
+Group: Libraries
+
+%description gen-eel
+EMANE Emulation Event Log Generator
+
+%package manifest
+Summary: EMANE PLugin Manifests
+Group: Applications/System
+
+%description manifest
+EMANE Plugin Manifests
+
+%prep
+%setup -q
+
+%build
+%configure
+make
+
+%install
+make DESTDIR=${RPM_BUILD_ROOT} install
+find ${RPM_BUILD_ROOT} -name '*.a' -exec rm '{}'  \;
+find ${RPM_BUILD_ROOT} -name '*.la' -exec rm '{}' \;
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post
+/sbin/ldconfig
+
+%postun
+/sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%{_bindir}/emane
+%{_bindir}/emaneinfo
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_mandir}/man1/emane.1.gz
+
+%files utils
+%defattr(-, root, root)
+%{_bindir}/emanegentransportxml
+%{_bindir}/emaneconvertdtdpath
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_mandir}/man1/emanegentransportxml.1.gz
+
+%files dtds
+%defattr(-, root, root)
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/dtd/attrs.ent
+%doc %{_datadir}/emane/dtd/mac.dtd
+%doc %{_datadir}/emane/dtd/nem.dtd
+%doc %{_datadir}/emane/dtd/nemcontents.dtd
+%doc %{_datadir}/emane/dtd/param.dtd
+%doc %{_datadir}/emane/dtd/phy.dtd
+%doc %{_datadir}/emane/dtd/platform.dtd
+%doc %{_datadir}/emane/dtd/shim.dtd
+%doc %{_datadir}/emane/dtd/transport.dtd
+%doc %{_datadir}/emane/dtd/transportdaemon.dtd
+%doc %{_datadir}/emane/dtd/eventagent.dtd
+%doc %{_datadir}/emane/dtd/eventdaemon.dtd
+%doc %{_datadir}/emane/dtd/eventgenerator.dtd
+%doc %{_datadir}/emane/dtd/eventservice.dtd
+%doc %{_datadir}/emane/dtd/rfpipepcr.dtd
+%doc %{_datadir}/emane/dtd/ieee80211pcr.dtd
+%doc %{_datadir}/emane/dtd/antennaprofile.dtd
+%doc %{_datadir}/emane/dtd/commeffectfilters.dtd
+%doc %{_datadir}/emane/schema/manifest.xsd
+
+%files libs
+%defattr(-, root, root)
+%{_libdir}/libemanexmlparser.*
+%{_libdir}/libemane.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+
+%files transportdaemon
+%defattr(-, root, root)
+%{_bindir}/emanetransportd
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_mandir}/man1/emanetransportd.1.gz
+
+%files eventdaemon
+%defattr(-, root, root)
+%{_bindir}/emaneeventd
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_mandir}/man1/emaneeventd.1.gz
+
+%files eventservice
+%defattr(-, root, root)
+%{_bindir}/emaneeventservice
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_mandir}/man1/emaneeventservice.1.gz
+
+%files devel
+%defattr(-, root, root)
+%{_includedir}/emane/*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+
+%files model-rfpipe
+%defattr(-, root, root)
+%{_libdir}/librfpipemaclayer.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/mac/rfpipe/rfpipemac.xml
+%doc %{_datadir}/emane/xml/models/mac/rfpipe/rfpipenem.xml
+%doc %{_datadir}/emane/xml/models/mac/rfpipe/rfpipepcr.xml
+
+%files model-bypass
+%defattr(-, root, root)
+%{_libdir}/libbypassmaclayer.*
+%{_libdir}/libbypassphylayer.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/phy/bypass/bypassphy.xml
+%doc %{_datadir}/emane/xml/models/mac/bypass/bypassmac.xml
+%doc %{_datadir}/emane/xml/models/mac/bypass/bypassnem.xml
+
+%files model-ieee80211abg
+%defattr(-, root, root)
+%{_libdir}/libieee80211abgmaclayer.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211abgmac.xml
+%doc %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211abgnem.xml
+%doc %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211pcr.xml
+
+
+%files agent-gpsdlocation
+%defattr(-, root, root)
+%{_libdir}/libgpsdlocationagent.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/agents/gpsdlocation/gpsdlocationagent.xml
+
+%files trans-virtual
+%defattr(-, root, root)
+%{_libdir}/libtransvirtual.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/transports/virtual/transvirtual.xml
+
+%files trans-raw
+%defattr(-, root, root)
+%{_libdir}/libtransraw.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/transports/raw/transraw.xml
+
+%files model-phyapitestshim
+%defattr(-, root, root)
+%{_libdir}/libphyapitestshim.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/shim/phyapitest/phyapitestshim.xml
+
+%files model-timinganalysisshim
+%defattr(-, root, root)
+%{_libdir}/libtiminganalysisshim.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/shim/timinganalysis/timinganalysisshim.xml
+
+%files model-commeffect
+%defattr(-,root,root,-)
+%{_libdir}/libcommeffectshim.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectshim.xml
+%doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectnem.xml
+%doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectfilters.xml
+
+%files gen-eel
+%defattr(-,root,root,-)
+%{_libdir}/libeelgenerator.*
+%{_libdir}/libeelloaderlocation.*
+%{_libdir}/libeelloaderpathloss.*
+%{_libdir}/libeelloaderantennaprofile.*
+%{_libdir}/libeelloadercommeffect.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc SPONSOR
+%doc %{_datadir}/emane/xml/generators/eel/eelgenerator.xml
+
+%files manifest
+%defattr(-, root, root)
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc PROBLEM-REPORT-FORM
+%doc SPONSOR
+%doc %{_datadir}/emane/manifest/*.xml

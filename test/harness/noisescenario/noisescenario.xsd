@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' >
+  <xs:simpleType name='YesNoType'> 
+    <xs:restriction base='xs:token'>
+      <xs:enumeration value='yes'/>
+      <xs:enumeration value='no'/>
+    </xs:restriction> 
+  </xs:simpleType>    
+
+  <xs:simpleType name='ModeType'> 
+    <xs:restriction base='xs:token'>
+      <xs:enumeration value='none'/>
+      <xs:enumeration value='all'/>
+      <xs:enumeration value='outofband'/>
+    </xs:restriction> 
+  </xs:simpleType>    
+
+  <xs:element name='noisescenario'>
+    <xs:complexType>     
+      <xs:sequence>
+        <xs:element name='action' maxOccurs='unbounded'>
+           <xs:complexType>
+             <xs:choice>
+               <xs:element name='initialize'>
+                 <xs:complexType>
+                   <xs:sequence>
+                     <xs:element name='frequency' maxOccurs='unbounded'>
+                       <xs:complexType>
+                         <xs:attribute name='value' type='xs:unsignedLong' use='required'/>
+                       </xs:complexType>
+                     </xs:element>
+                   </xs:sequence>
+                   <xs:attribute name='binduration' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='maxsegmentoffset' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='maxsegmentduration' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='maxmessagepropagation' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='timesyncthreshold' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='clamp' type='YesNoType' use='required'/>
+                   <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='sensitivity' type='xs:decimal' use='required'/>
+                   <xs:attribute name='mode' type='ModeType' use='required'/>
+                 </xs:complexType>
+               </xs:element>
+               <xs:element name='update'>
+                 <xs:complexType>
+                   <xs:sequence>
+                     <xs:element name='segment' maxOccurs='unbounded'>
+                       <xs:complexType>
+                         <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
+                         <xs:attribute name='duration' type='xs:unsignedLong' use='required'/>
+                         <xs:attribute name='offset' type='xs:unsignedLong' use='required'/>
+                         <xs:attribute name='rxpower' type='xs:decimal' use='required'/>
+                       </xs:complexType>
+                     </xs:element>
+                     <xs:element name='transmitters'>
+                       <xs:complexType>
+                         <xs:sequence>
+                           <xs:element name='transmitter' maxOccurs='unbounded'>
+                             <xs:complexType>
+                               <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                             </xs:complexType>
+                           </xs:element>
+                         </xs:sequence>
+                       </xs:complexType>
+                     </xs:element>
+                   </xs:sequence>
+                   <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='txtime' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='transmitterbandwidth' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='propagation' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='inband' type='YesNoType' use='required'/>
+                 </xs:complexType>
+               </xs:element>
+               <xs:element name='request'>
+                 <xs:complexType>
+                   <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='time' type='xs:unsignedLong' use='optional'/>
+                   <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
+                   <xs:attribute name='duration' type='xs:unsignedLong' use='optional'/>
+                 </xs:complexType>
+               </xs:element>
+             </xs:choice>
+           </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name='start' type='xs:unsignedLong' use='required'/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

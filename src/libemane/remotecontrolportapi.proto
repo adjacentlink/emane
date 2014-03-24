@@ -1,0 +1,423 @@
+/*
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in
+ *   the documentation and/or other materials provided with the
+ *   distribution.
+ * * Neither the name of Adjacent Link LLC nor the names of its
+ *   contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// Transmission Protocol
+//
+// Remote Control Port API messages are transmitted over a TCP connection 
+// established between the emulator and a client application. The emulator 
+// can support multiple simultaneous client connections. Each API message is 
+// transmitted using length prefix framing, where the length of the message 
+// is sent as an unsigned 32-bit integer value (4 bytes) in network byte 
+// order preceding the transmission of the serialized message. The length 
+// prefix framing exists outside the Google Protocol Buffers specification 
+// and is used to delineate message boundaries in a data stream.
+
+package EMANERemoteControlPortAPI;
+
+option optimize_for = SPEED;
+
+// query message types
+enum QueryMessageType
+{
+  TYPE_QUERY_CONFIGURATION = 1;
+  TYPE_QUERY_MANIFEST = 2;
+  TYPE_QUERY_STATISTIC = 3;
+  TYPE_QUERY_STATISTICTABLE = 4;
+}
+
+// update message types
+enum UpdateMessageType
+{
+  TYPE_UPDATE_CONFIGURATION = 1;
+  TYPE_UPDATE_STATISTICCLEAR = 2;
+  TYPE_UPDATE_STATISTICTABLECLEAR = 3;
+  TYPE_UPDATE_LOGLEVEL = 4;
+}
+
+// Any message is used to hold any of the allowable
+// configuration parameter and statistic types
+message Any
+{
+  enum AnyType
+  {
+    TYPE_ANY_INT8 = 1;
+    TYPE_ANY_UINT8 = 2;
+    TYPE_ANY_INT16 = 3;
+    TYPE_ANY_UINT16 = 4;
+    TYPE_ANY_INT32 = 5;
+    TYPE_ANY_UINT32 = 6;
+    TYPE_ANY_INT64 = 7;
+    TYPE_ANY_UINT64 = 8;
+    TYPE_ANY_FLOAT = 9;
+    TYPE_ANY_DOUBLE = 10;
+    TYPE_ANY_STRING = 11;
+    TYPE_ANY_BOOLEAN = 12;
+    TYPE_ANY_INETADDR = 13;
+  }
+  
+  // Any data type
+  required AnyType type = 1;
+  
+  // stores UINT8, UINT16 and UINT32
+  optional uint32 u32Value = 2;
+
+  // stores INT8, INT16 and INT32
+  optional sint32 i32Value = 3;
+
+  // stores UINT64
+  optional uint64 u64Value = 4;
+
+  // stores INT64
+  optional sint64 i64Value = 5;
+
+  // stores Float
+  optional float fValue = 6;
+
+  // stores Double
+  optional double dValue = 7;
+
+  // stores Boolean
+  optional bool bValue = 8;
+
+  // stores String and INET Addr
+  optional string sValue = 9;
+}
+
+message Request
+{
+  message Query
+  {
+    // Query the emulator for component configuration
+    message Configuration
+    {
+      // build id of the target component
+      required uint32 buildId = 1;
+
+      // configuration parameter names to retrieve
+      // specify none to retrieve all
+      repeated string names = 2;
+    }
+
+    // Query the emulator for component statistic values
+    message Statistic
+    {
+      // build id of the target component
+      required uint32 buildId = 1;
+      
+      // statistic element names to retrieve
+      // specify none to retrieve all
+      repeated string names = 2;
+    }
+
+    // Query the emulator for component statistic table values
+    message StatisticTable
+    {
+      // build id of the target component
+      required uint32 buildId = 1;
+      
+      // statistic table names to retrieve
+      // specify none to retrieve all
+      repeated string names = 2;
+    }
+    
+    // set to the appropriate Query type
+    required QueryMessageType type = 1;
+
+    // must be present when type == TYPE_QUERY_CONFIGURATION
+    optional Configuration configuration = 2;
+
+    // must be present when type == TYPE_QUERY_STATISTIC
+    optional Statistic statistic = 3;
+
+    // must be present when type == TYPE_QUERY_STATISTICTABLE
+    optional StatisticTable statisticTable = 4;
+  }
+  
+
+  message Update
+  {
+    // Update component configuration parameters
+    message Configuration
+    {
+      message Parameter
+      {
+        // configuration parameter name
+        required string name = 1;
+        
+        // one or more configuration parameter values
+        repeated Any values = 2;
+      }
+      
+      // build id of the target component
+      required uint32 buildId = 1;
+      
+      // one or more configuration parameters to update
+      repeated Parameter parameters = 2;
+    }
+    
+    // Clear component statistic element values
+    message StatisticClear
+    {
+      // build id of the target component
+      required uint32 buildId = 1;
+
+      // statistic element names to clear
+      // specify none to clear all
+      repeated string names = 2;
+    }
+
+    // Clear component statistic table values
+    message StatisticTableClear
+    {
+      // build id of the target component
+      required uint32 buildId = 1;
+
+      // statistic table names to clear
+      // specify none to clear all
+      repeated string names = 2;
+    }
+    
+    // Set the log level
+    message LogLevel
+    {
+      // desired log level
+      required uint32 level = 1;
+    }
+
+    // set to the appropriate Update type
+    required UpdateMessageType type = 1;
+
+    // must be present when type == TYPE_UPDATE_CONFIGURATION
+    optional Configuration configuration = 2;
+    
+    // must be present when type == TYPE_UPDATE_STATISTICCLEAR
+    optional StatisticClear statisticClear = 3;
+
+    // must be present when type == TYPE_UPDATE_STATISTICTABLECLEAR
+    optional StatisticTableClear statisticTableClear = 4;
+
+    // must be present when type == TYPE_UPDATE_LOGLEVEL
+    optional LogLevel logLevel = 5;
+  }
+
+  // Request message types
+  enum RequestMessageType
+  {
+    TYPE_REQUEST_QUERY = 1;
+    TYPE_REQUEST_UPDATE = 2;
+  }
+
+  // message sequence number referenced in corresponding
+  // response message
+  required uint32 sequence = 1;
+  
+  // set to the appropriate Request message type
+  required RequestMessageType type = 2;
+
+  // must be present when type == TYPE_REQUEST_QUERY
+  optional Query query = 3;
+
+  // must be present when type == TYPE_REQUEST_UPDATE
+  optional Update update = 4;
+}
+
+message Response
+{ 
+  message Query
+  {
+    // Query response with running component info
+    message Manifest
+    {
+      message NEM
+      {
+        message Component
+        {
+          // component types
+          enum ComponentType
+          {
+            TYPE_COMPONENT_MAC = 1;
+            TYPE_COMPONENT_PHY = 2;
+            TYPE_COMPONENT_SHIM = 3;
+          }
+          // component build id
+          required uint32 buildId = 1;
+          
+          // component type
+          required ComponentType type = 2;
+
+          // component plugin name
+          required string plugin = 3;
+        }
+        
+        // NEM id
+        required uint32 id = 1;
+        
+        // Components comprising NEM
+        // order represents NEM layer order
+        repeated Component components = 2;
+      }
+      
+      repeated NEM nems = 1;
+    }
+    
+    // Query response with component configuration
+    // parameter values
+    message Configuration
+    {
+      message Parameter
+      {
+        // configuration parameter name
+        required string name = 1;
+
+        // configuration parameter value
+        repeated Any values = 2;
+      }
+      
+      // build id of the target component
+      required uint32 buildId = 1;
+      
+      // 0 or more configuration parameters
+      repeated Parameter parameters = 2;
+    }
+
+    // Query response with component statistic
+    // element values
+    message Statistic
+    {
+      message Element
+      {
+        // statistic element name
+        required string name = 1;
+
+        // statistic element value
+        required Any value = 2;
+      }
+      
+      // build id of the target component
+      required uint32 buildId = 1;
+
+      // 0 or more statistic elements
+      repeated Element elements = 2;
+    }
+
+    // Query response with component statistic
+    // table values
+    message StatisticTable
+    {
+      message Table
+      {
+        message Row
+        {
+          // row of table values
+          repeated Any values = 1;
+        }
+        
+        // table name
+        required string name = 1;
+
+        // table rows
+        repeated Row rows = 2;
+
+        // table column labels
+        repeated string labels = 3;
+      }
+
+      // build id of the target component
+      required uint32 buildId = 1;
+
+      // 0 or more statistic tables
+      repeated Table tables = 2;
+    }
+
+    // set to the appropriate Query type
+    required QueryMessageType type = 1;
+
+    // must be present when type == TYPE_QUERY_MANIFEST
+    optional Manifest manifest = 2;
+    
+    // must be present when type == TYPE_QUERY_CONFIGURATION
+    optional Configuration configuration = 3;
+
+    // must be present when type == TYPE_QUERY_STATISTIC
+    optional Statistic statistic = 4;
+
+    // must be present when type == TYPE_QUERY_STATISTICTABLE
+    optional StatisticTable statisticTable = 5;
+  }
+
+  message Update
+  {
+    // update message type
+    required UpdateMessageType type = 1;
+  }
+
+  message Error
+  {
+    enum ErrorType
+    {
+      TYPE_ERROR_PARAMETER = 1;
+      TYPE_ERROR_MALFORMED = 2;
+    }
+
+    // error type
+    required ErrorType type = 1;
+
+    // error description
+    required string description = 2;
+  }
+
+  enum ResponseMessageType
+  {
+    TYPE_RESPONSE_QUERY = 1;
+    TYPE_RESPONSE_UPDATE = 2;
+    TYPE_RESPONSE_ERROR = 3;
+  }
+
+  // message sequence number
+  required uint32 sequence = 1;
+  
+  // reference sequence number corresponding to Request
+  // message sequence number
+  required uint32 reference = 2;
+  
+  // set to the appropriate Response message type
+  required ResponseMessageType type = 3;
+
+  // must be present when type == TYPE_RESPONSE_QUERY
+  optional Query query = 4;
+
+  // must be present when type == TYPE_RESPONSE_UPDATE
+  optional Update update = 5;
+  
+  // must be present when type == TYPE_RESPONSE_ERROR
+  optional Error error = 6;
+}

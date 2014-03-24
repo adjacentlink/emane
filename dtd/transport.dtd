@@ -1,0 +1,9 @@
+<?xml encoding="UTF-8"?>
+
+<!ENTITY % attrs SYSTEM "attrs.ent">
+
+<!ELEMENT transport (param|paramlist)*>
+<!ATTLIST transport %attrs;>
+
+<!ENTITY % param SYSTEM "param.dtd">
+%param;

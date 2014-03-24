@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE eventgenerator SYSTEM "file://@datadir@/dtd/eventgenerator.dtd">
+<eventgenerator name="emanegeneel" library="eelgenerator">
+  <param name="inputfile" value="/opt/path_loss_matrix_00.eel"/>
+  <param name="loader" value="location:eelloaderlocation:full"/>
+  <param name="loader" value="pathloss:eelloaderpathloss:full"/>
+</eventgenerator>
