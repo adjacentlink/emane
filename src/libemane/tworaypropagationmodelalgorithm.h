@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ namespace EMANE
               log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
         }
         
-      return {std::vector<double>(segments.size(),dPathloss),true};
+      return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
     }
   };
 }

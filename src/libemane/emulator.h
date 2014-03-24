@@ -54,7 +54,7 @@ namespace EMANE
       
       void doStart() override
       {
-        pManager_ = pDirector_->construct();
+        pManager_ = pDirector_->construct(getUUID());
       
         pManager_->start();
     

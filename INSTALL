@@ -32,7 +32,7 @@ To make RPMs on Fedora/RHEL distributions [1]:
 [1] You must have the rpm-build package installed. It is available via the 
 distribution package repository.
 
-To make debs on Ubuntu [1]:
+To make debs on Ubuntu [2]:
 
  # ./configure && make deb 
 

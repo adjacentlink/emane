@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,16 @@
 #include "emane/exception.h"
 #include "manifest.h"
 #include "configurationloader.h"
+#include "nemmanagerimpl.h"
+#include "transportmanagerimpl.h"
+#include "eventgeneratormanagerimpl.h"
+#include "eventagentmanagerimpl.h"
+#include "registrarproxy.h"
+#include "buildidservice.h"
 #include <sstream>
 #include <iostream>
 #include <tuple>
+#include <uuid.h>
 
 #include <ace/ACE.h>
 #include <ace/Get_Opt.h>
@@ -54,9 +61,20 @@
 #include <ace/OS_NS_fcntl.h>
 #include <ace/OS_NS_stdio.h>
 
-
 void usage();
-  
+
+template<typename T>
+T * createManager()
+{
+  uuid_t uuid{};
+  uuid_generate(uuid);
+  T *  pManager{new T{uuid}};
+  auto buildId = EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pManager);
+  EMANE::RegistrarProxy registrarProxy{buildId};
+  pManager->initialize(registrarProxy);
+  return pManager;
+}
+
 int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
 {
   EMANE::Application::initialize();
@@ -155,69 +173,96 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
           sPluginName = sFileName;
         }
 
-      if(sPluginName == "emanephy" || sPluginName.empty())
-        {
-          sPluginName.clear();
-          pluginType = EMANE::Application::PluginType::PHY;
-        }
-
-
       std::unique_ptr<EMANE::Component> pComponent;
       EMANE::BuildId buildId{};
 
-      // the nem layer API is all the same, so you can get
-      // away with building a shim if you are accessing
-      // the Component and Buildable API
-      switch(pluginType)
+      if(sPluginName == "nemmanager")
         {
-        case EMANE::Application::PluginType::PHY:
-          {
-            auto pPlugin = nemBuilder.buildPHYLayer(1,sPluginName,request,!bConfiguration);
-            buildId = pPlugin->getBuildId();
-            pComponent.reset(pPlugin.release());
-          }
-          break;
+          auto pManager = createManager<EMANE::Application::NEMManagerImpl>();
+          buildId = pManager->getBuildId();
+          pComponent.reset(pManager);
+        }
+      else if(sPluginName == "transportmanager")
+        {
+          auto pManager = createManager<EMANE::Application::TransportManagerImpl>();
+          buildId = pManager->getBuildId();
+          pComponent.reset(pManager);
+        }
+      else if(sPluginName == "eventgeneratormanager")
+        {
+          auto pManager = createManager<EMANE::Application::EventGeneratorManagerImpl>();
+          buildId = pManager->getBuildId();
+          pComponent.reset(pManager);
+        }
+      else if(sPluginName == "eventagentmanager")
+        {
+          auto pManager = createManager<EMANE::Application::EventAgentManagerImpl>();
+          buildId = pManager->getBuildId();
+          pComponent.reset(pManager);
+        }
+      else
+        {
+          if(sPluginName == "emanephy" || sPluginName.empty())
+            {
+              sPluginName.clear();
+              pluginType = EMANE::Application::PluginType::PHY;
+            }
 
-        case EMANE::Application::PluginType::MAC:
-          {
-            auto pPlugin = nemBuilder.buildMACLayer(1,sPluginName,request,!bConfiguration);
-            buildId = pPlugin->getBuildId();
-            pComponent.reset(pPlugin.release());
-          }
-          break;
+
+          // the nem layer API is all the same, so you can get
+          // away with building a shim if you are accessing
+          // the Component and Buildable API
+          switch(pluginType)
+            {
+            case EMANE::Application::PluginType::PHY:
+              {
+                auto pPlugin = nemBuilder.buildPHYLayer(1,sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
+              break;
+
+            case EMANE::Application::PluginType::MAC:
+              {
+                auto pPlugin = nemBuilder.buildMACLayer(1,sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
+              break;
           
-        case EMANE::Application::PluginType::SHIM:
-          {
-            auto pPlugin = nemBuilder.buildShimLayer(1,sPluginName,request,!bConfiguration);
-            buildId = pPlugin->getBuildId();
-            pComponent.reset(pPlugin.release());
-          }
-          break;
+            case EMANE::Application::PluginType::SHIM:
+              {
+                auto pPlugin = nemBuilder.buildShimLayer(1,sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
+              break;
 
-         case EMANE::Application::PluginType::GENERATOR:
-           {
-             auto pPlugin = eventGeneratorBuilder.buildEventGenerator(sPluginName,request,!bConfiguration);
-             buildId = pPlugin->getBuildId();
-             pComponent.reset(pPlugin.release());
-           }
-           break;
+            case EMANE::Application::PluginType::GENERATOR:
+              {
+                auto pPlugin = eventGeneratorBuilder.buildEventGenerator(sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
+              break;
            
-        case EMANE::Application::PluginType::AGENT:
-          {
-            auto pPlugin = eventAgentBuilder.buildEventAgent(1,sPluginName,request,!bConfiguration);
-            buildId = pPlugin->getBuildId();
-            pComponent.reset(pPlugin.release());
-          }
-          break;
+            case EMANE::Application::PluginType::AGENT:
+              {
+                auto pPlugin = eventAgentBuilder.buildEventAgent(1,sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
+              break;
           
-        case EMANE::Application::PluginType::TRANSPORT:
-          {
-            auto pPlugin = transportBuilder.buildTransport(1,sPluginName,request,!bConfiguration);
-            buildId = pPlugin->getBuildId();
-            pComponent.reset(pPlugin.release());
-          }
+            case EMANE::Application::PluginType::TRANSPORT:
+              {
+                auto pPlugin = transportBuilder.buildTransport(1,sPluginName,request,!bConfiguration);
+                buildId = pPlugin->getBuildId();
+                pComponent.reset(pPlugin.release());
+              }
 
-          break;
+              break;
+            }
         }
       
       if(bShowManifest)
@@ -249,7 +294,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
 
 void usage()
 {
-  std::cout<<"usage: emaneinfo [OPTIONS]... plugin"<<std::endl;
+  std::cout<<"usage: emaneinfo [OPTIONS]... <plugin>|'nemmanager'|'transportmanager'|"<<std::endl;
+  std::cout<<"                              'eventagentmanager'|'eventgeneratormanager'"<<std::endl;
   std::cout<<std::endl;
   std::cout<<" CONFIG_URI                    URI of XML configuration file."<<std::endl;
   std::cout<<std::endl;

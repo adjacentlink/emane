@@ -52,7 +52,7 @@ namespace EMANE
   class TransportManagerImpl : public TransportManager
   {
   public:
-    TransportManagerImpl();
+    TransportManagerImpl(const uuid_t & uuid);
 
     ~TransportManagerImpl();
     

@@ -32,7 +32,7 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.0.5,[emane at adjacent link dot com])
+AC_INIT([emane],0.9.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -84,6 +84,10 @@ PKG_CHECK_MODULES([libxml2], libxml-2.0)
 PKG_CHECK_MODULES([protobuf], protobuf)
 PKG_CHECK_MODULES([libpcre], libpcre)
 PKG_CHECK_MODULES([libuuid], uuid)
+
+AC_CHECK_HEADER(sys/timerfd.h,
+ [],
+ [AC_MSG_ERROR("Missing sys/timerfd.h header")])
 
 _cppflags=${CPPFLAGS}
 _ldflags=${LDFLAGS}
@@ -159,7 +163,7 @@ AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 
 # compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -O2"
+CXXFLAGS="$CXXFLAGS -W -Wall -g0 -O3"
 
 # options for use with gprof
 if test "$with_profile" = "yes"

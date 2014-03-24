@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,11 @@ namespace EMANE
 {
   namespace Application
   {
+    /**
+     * @class ConfigurationController
+     *
+     * @brief External application interface to the configuration service
+     */
     class ConfigurationController
     {
     public:
@@ -58,7 +63,13 @@ namespace EMANE
       static ConfigurationUpdate buildUpdates(BuildId buildId,
                                               const ConfigurationUpdateRequest & parameters);
       
-      
+      /**
+       * Gets the configuration manifest for the specified Buildable
+       *
+       * @param buildId Target component build Id
+       *
+       * @return configuration manifest
+       */
       static ConfigurationManifest getConfigurationManifest(BuildId buildId);
     };
   }

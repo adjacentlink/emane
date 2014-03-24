@@ -70,6 +70,11 @@ private:
   const Microseconds reportInteral_;
 };
 
+EMANE::Controls::R2RISelfMetricControlMessage::
+R2RISelfMetricControlMessage(const R2RISelfMetricControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
 
 EMANE::Controls::R2RISelfMetricControlMessage::
 R2RISelfMetricControlMessage(std::uint64_t u64BroadcastDataRatebps,
@@ -154,5 +159,10 @@ EMANE::Controls::R2RISelfMetricControlMessage::create(const Serialization & seri
   
 }
 
+EMANE::Controls::R2RISelfMetricControlMessage *
+EMANE::Controls::R2RISelfMetricControlMessage::clone() const
+{
+  return new R2RISelfMetricControlMessage{*this};
+}
 
 

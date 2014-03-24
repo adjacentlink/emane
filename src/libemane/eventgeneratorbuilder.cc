@@ -49,7 +49,8 @@ EMANE::Application::EventGeneratorBuilder::EventGeneratorBuilder(){}
 EMANE::Application::EventGeneratorBuilder::~EventGeneratorBuilder(){}
 
 std::unique_ptr<EMANE::Application::EventGeneratorManager>
-EMANE::Application::EventGeneratorBuilder::buildEventGeneratorManager(EventGenerators & generators,
+EMANE::Application::EventGeneratorBuilder::buildEventGeneratorManager(const uuid_t & uuid,
+                                                                      EventGenerators & generators,
                                                                       const ConfigurationUpdateRequest & request)
 {
   if(generators.empty())
@@ -57,7 +58,7 @@ EMANE::Application::EventGeneratorBuilder::buildEventGeneratorManager(EventGener
       throw BuildException("Trying to build an EventGeneratorManager without any EventGenerators");
     }
 
-  std::unique_ptr<EventGeneratorManager> pManager{new EventGeneratorManagerImpl};
+  std::unique_ptr<EventGeneratorManager> pManager{new EventGeneratorManagerImpl{uuid}};
     
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pManager.get())};
 
@@ -102,6 +103,13 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
 
   // pass generator to platform service
   pPlatformService->setPlatformServiceUser(buildId,pGenerator.get());
+
+  // register event service user with event service
+  // event generators will get any event they register for
+  // regardless of target nem
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pGenerator.get(),
+                                                              0);
 
   RegistrarProxy registrarProxy{buildId};
 

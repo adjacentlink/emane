@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,6 @@ namespace EMANE
      *
      * @brief Ensure a class only has one instance, and  provide a global
      * point of access to it.
-     *
-     * @note Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
-     * Design Patterns: Elements of Reusable Object-Oriented Software.
-     * Addison-Wesley, Reading MA, 1995
-     * Singleton, p 127
      */
     template<typename T>
     class Singleton

@@ -4,6 +4,7 @@ libieee80211abgmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
  $(ACE_CFLAGS)                       \
  $(AM_CFLAGS)                        \
+ $(libuuid_CFLAGS)                   \
  $(libxml2_CFLAGS)
 
 libieee80211abgmaclayer_la_SOURCES = \

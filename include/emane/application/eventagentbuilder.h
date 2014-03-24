@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -52,27 +52,28 @@ namespace EMANE
      *
      * @brief Provides methods for constructing event agents and a
      * manager to contain and control them as a group.
-     *
-     * Reference:
-     * Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
-     * Design Patterns: Elements of Reusable Object-Oriented Software.
-     * Addison-Wesley, Reading MA, 1995
-     * Builder, p 97
      */
     class EventAgentBuilder
     {
     public:
+      /**
+       * Creates an instance
+       */
       EventAgentBuilder();
     
+      /**
+       * Destroys an instance
+       */
       ~EventAgentBuilder();
     
       /**
-       * Build and return a configured EventAgentManager
+       * Builds an EventAgentManager
        *
+       * @param uuid Instance UUID
        * @param agents the list of agents to manage
        * @param request configuration update
        *
-       * @return pointer to an initialized and configured EventAgentManager
+       * @return Unique pointer to an initialized and configured EventAgentManager
        *
        * @throw InitializeException when an error occurs during
        * initialization.
@@ -82,18 +83,21 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<EventAgentManager>
-      buildEventAgentManager(EventAgents & agents,
+      buildEventAgentManager(const uuid_t & uuid,
+                             EventAgents & agents,
                              const ConfigurationUpdateRequest& request);
 
       /**
-       * Build and return a configured EventAgent
+       * Builds an EventAgent
        *
-       * @param nemId  NEM id of the nem for which this event agent is being 
-       *               created
+       * @param nemId NEM id of the nem for which this event agent is being 
+       * created
        * @param sLibraryFile Name of the dll containing the generator
        * @param request configuration update
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
        *
-       * @return pointer to an initialized and configured EventAgent
+       * @return Unique pointer to an initialized and configured EventAgent
        *
        * @throw Utils::FactoryException when a DLL load error occurs.
        * @throw InitializeException when an error occurs during

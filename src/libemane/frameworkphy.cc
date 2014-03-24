@@ -39,8 +39,11 @@
 #include "emane/utils/conversionutils.h"
 
 #include "emane/events/antennaprofileevent.h"
+#include "emane/events/antennaprofileeventformatter.h"
 #include "emane/events/locationevent.h"
+#include "emane/events/locationeventformatter.h"
 #include "emane/events/pathlossevent.h"
+#include "emane/events/pathlosseventformatter.h"
 
 #include "emane/controls/frequencycontrolmessage.h"
 #include "emane/controls/otatransmittercontrolmessage.h"
@@ -104,7 +107,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Defines the antenna gain in dBi.");
+                                         "Defines the antenna gain in dBi and is valid only when"
+                                          " fixedantennagainenable is enabled.");
   
   configRegistrar.registerNumeric<bool>("fixedantennagainenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
@@ -115,22 +119,24 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("bandwidth",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {1000000},
-                                                 "Defines the center frequency bandwidth in Hz",
+                                                 "Defines receiver bandwidth in Hz and also serves as the"
+                                                 " default bandwidth for OTA transmissions when not provided"
+                                                 " by the MAC.",
                                                  1);  
 
   configRegistrar.registerNumeric<std::uint64_t>("frequency",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {2347000000},
-                                                 "Defines the transmit center frequency in Hz. This"
-                                                 " value is included in the Common PHY Header of all"
-                                                 " transmitted OTA packets.",
+                                                 "Defines the default transmit center frequency in Hz when not"
+                                                 " provided by the MAC. This value is included in the Common PHY"
+                                                 " Header of all transmitted OTA packets.",
                                                  1);
   
   configRegistrar.registerNumeric<std::uint64_t>("frequencyofinterest",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {2347000000},
-                                                 "Defines a set of frequencies in Hz that the"
-                                                 " will be monitor.",
+                                                 "Defines a set of center frequencies in Hz that are monitored"
+                                                 " for reception as either in-band or out-of-band.",
                                                  std::numeric_limits<std::uint64_t>::min(),
                                                  std::numeric_limits<std::uint64_t>::max(),
                                                  1,
@@ -149,23 +155,27 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("noisebinsize",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {20},
-                                                 "Noise bin size in microseconds.",
+                                                 "Defines the noise bin size in microseconds and translates"
+                                                 " into timing accuracy associated with aligning the start and"
+                                                 " end of reception times of multiple packets for modeling of"
+                                                 " interference effects.",
                                                  1);
 
   configRegistrar.registerNumeric<bool>("noisemaxclampenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Clamp any above max segment offset, segment duration or message"
-                                        " propagation to the maximums defined by noisemaxsegmentoffset,"
+                                        "Defines whether segment offset, segment duration and message"
+                                        " propagation associated with a received packet will be clamped"
+                                        " to their respective maximums defined by noisemaxsegmentoffset,"
                                         " noisemaxsegmentduration and noisemaxmessagepropagation. When"
-                                        " disabled any packet with an above max value will be dropped.",
+                                        " disabled, any packet with an above max value will be dropped.",
                                         1);
 
 
   configRegistrar.registerNumeric<std::uint64_t>("noisemaxsegmentoffset",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {300000},
-                                                 "Noise maximum segment offset microseconds.",
+                                                 "Noise maximum segment offset in microseconds.",
                                                  1);
 
   configRegistrar.registerNumeric<std::uint64_t>("noisemaxmessagepropagation",
@@ -183,11 +193,12 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<std::uint64_t>("timesyncthreshold",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {10000},
-                                                 "Time sync detection threshold in microseconds. If a received"
-                                                 " OTA message is more than this threshold, the message reception"
-                                                 " time will be used as the source transmission time instead of"
-                                                 " the time contained in the Common PHY Header. This allows the"
-                                                 " emulator to be used across distributed nodes without time sync.",
+                                                 "Defines the time sync detection threshold in microseconds."
+                                                 " If a received OTA message is more than this threshold, the"
+                                                 " message reception time will be used as the source transmission"
+                                                 " time instead of the time contained in the Common PHY Header."
+                                                 " This allows the emulator to be used across distributed nodes"
+                                                 " without time sync.",
                                                  1);
  
   configRegistrar.registerNonNumeric<std::string>("propagationmodel",
@@ -202,17 +213,18 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<double>("systemnoisefigure",
                                           EMANE::ConfigurationProperties::DEFAULT,
                                           {4.0},
-                                          "Defines the system noise figure in dB.");
+                                          "Defines the system noise figure in dB and is used to determine the"
+                                          " receiver sensitivity.");
 
   configRegistrar.registerNumeric<std::uint16_t>("subid",
                                                  EMANE::ConfigurationProperties::REQUIRED,
                                                  {},
-                                                 "Defines the Framework PHY subid used by multiple NEM"
+                                                 "Defines the emulator PHY subid used by multiple NEM"
                                                  " definitions. Once instantiated, these NEMs may be using the"
-                                                 " same frequency. In order to differentiate between Framework"
+                                                 " same frequency. In order to differentiate between emulator"
                                                  " PHY instances for different waveforms, the subid is used as"
                                                  " part of the unique waveform identifying tuple: PHY Layer"
-                                                 " Registration Id, Framework PHY subid and packet center"
+                                                 " Registration Id, emulator PHY subid and packet center"
                                                  " frequency.",
                                                  1);
  
@@ -221,7 +233,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                          EMANE::ConfigurationProperties::MODIFIABLE,
                                          {0.0},
                                           "Defines the transmit power in dBm.");
-
+  /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
   
   eventRegistrar.registerEvent(Events::PathlossEvent::IDENTIFIER);
@@ -229,6 +241,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
   
   eventRegistrar.registerEvent(Events::AntennaProfileEvent::IDENTIFIER);
+  /** [eventservice-registerevent-snippet] */
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
@@ -422,6 +435,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   dSystemNoiseFiguredB);
         }
+      /** [configurationregistrar-processmultiplicity-snippet] */
       else if(item.first == "frequencyofinterest")
         {
           for(const auto & any : item.second)
@@ -447,6 +461,8 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                 }
             }
         }
+      /** [configurationregistrar-processmultiplicity-snippet] */
+      /** [configurationregistrar-processsingle-snippet] */
       else if(item.first == "txpower")
         {
           dTxPowerdBm_ = item.second[0].asDouble();
@@ -459,6 +475,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   dTxPowerdBm_);
         }
+      /** [configurationregistrar-processsingle-snippet] */
       else if(item.first == "frequency")
         {
           u64TxFrequencyHz_ = item.second[0].asUINT64();
@@ -540,6 +557,38 @@ void EMANE::FrameworkPHY::destroy() throw()
 
 }
 
+void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & update)
+{
+  for(const auto & item : update)
+    {
+      if(item.first == "fixedantennagain")
+        {
+          optionalFixedAntennaGaindBi_.first = item.second[0].asDouble();
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBi",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  optionalFixedAntennaGaindBi_.first);
+          
+        }
+      else if(item.first == "txpower")
+        {
+          dTxPowerdBm_ = item.second[0].asDouble();
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBm",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  dTxPowerdBm_);
+        }
+    }
+}
+
 void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -554,7 +603,8 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
         {
           const auto pAntennaProfileControlMessage =
             reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
-          
+
+          /** [eventservice-sendevent-snippet] */ 
           AntennaProfiles profiles{{id_,
                 pAntennaProfileControlMessage->getAntennaProfileId(),
                 pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
@@ -563,6 +613,7 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
           gainManager_.update(profiles);
           
           pPlatformService_->eventService().sendEvent(0,Events::AntennaProfileEvent{profiles});
+          /** [eventservice-sendevent-snippet] */ 
         }
       else
         {
@@ -690,7 +741,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                    pAntennaProfileControlMessage->getAntennaProfileId(),
                                    pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
                                    pAntennaProfileControlMessage->getAntennaElevationDegrees());
-         
+
+            /** [physicallayer-attachevent-snippet] */
             AntennaProfiles profiles{{id_,
                   pAntennaProfileControlMessage->getAntennaProfileId(),
                   pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
@@ -699,6 +751,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
             gainManager_.update(profiles);
             
             pkt.attachEvent(0,Events::AntennaProfileEvent{profiles});
+            /** [physicallayer-attachevent-snippet] */
           }
           
           break;
@@ -979,6 +1032,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                               pktInfo.getSource(),
                                               pktInfo.getDestination());
                       
+                      /** [physicallayer-sendupstreampacket-snippet] */
                       // send to mac with associated control messages
                       sendUpstreamPacket(pkt,
                                          {Controls::FrequencyControlMessage::create(commonPHYHeader.getBandwidthHz(),
@@ -987,6 +1041,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                                                                propagationDelay,
                                                                                                span,
                                                                                                dReceiverSensitivitydBm_)});
+                      /** [physicallayer-sendupstreampacket-snippet] */
                     }
                   else
                     {
@@ -1059,24 +1114,25 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                       exp.what());
             }
         }
-      else
-        {
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
-                                                 DROP_CODE_OUT_OF_BAND);
-          
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
-                                  " drop out of band",
-                                  id_,
-                                  __func__,
-                                  pktInfo.getSource(),
-                                  pktInfo.getDestination());
-        }
+    }
+  else
+    {
+      commonLayerStatistics_.processOutbound(pkt, 
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                                             DROP_CODE_OUT_OF_BAND);
+      
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
+                              " drop out of band",
+                              id_,
+                              __func__,
+                              pktInfo.getSource(),
+                              pktInfo.getDestination());
     }
 }
 
+/** [eventservice-processevent-snippet] */
 void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
                                        const Serialization & serialization)
 {
@@ -1094,6 +1150,14 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::AntennaProfileEvent antennaProfile{serialization};
         gainManager_.update(antennaProfile.getAntennaProfiles());
         eventTablePublisher_.update(antennaProfile.getAntennaProfiles());
+        
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::AntennaProfileEventFormatter(antennaProfile),
+                                         "PHYI %03hu FrameworkPHY::%s antenna profile event: ",
+                                         id_,
+                                         __func__);
+                                
       }
       break;
 
@@ -1102,6 +1166,13 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::LocationEvent locationEvent{serialization};
         locationManager_.update(locationEvent.getLocations());
         eventTablePublisher_.update(locationEvent.getLocations());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::LocationEventFormatter(locationEvent),
+                                         "PHYI %03hu FrameworkPHY::%s location event: ",
+                                         id_,
+                                         __func__);
       }
       break;
 
@@ -1110,7 +1181,15 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::PathlossEvent pathlossEvent{serialization};
         pPropagationModelAlgorithm_->update(pathlossEvent.getPathlosses());
         eventTablePublisher_.update(pathlossEvent.getPathlosses());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::PathlossEventFormatter(pathlossEvent),
+                                         "PHYI %03hu FrameworkPHY::%s pathloss event: ",
+                                         id_,
+                                         __func__);
       }
       break;
     }
 }
+/** [eventservice-processevent-snippet] */

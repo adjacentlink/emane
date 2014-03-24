@@ -45,8 +45,8 @@
 
 #include <ace/Reactor.h>
 
-EMANE::Application::NEMManagerImpl::NEMManagerImpl(EMANE::PlatformId id):
-  platformId_{id},
+EMANE::Application::NEMManagerImpl::NEMManagerImpl(const uuid_t & uuid):
+  NEMManager{uuid},
   thread_{}{}
 
 EMANE::Application::NEMManagerImpl::~NEMManagerImpl(){}
@@ -55,9 +55,8 @@ void EMANE::Application::NEMManagerImpl::add(std::unique_ptr<Application::NEM> &
 {
   if(!platformNEMMap_.insert(std::make_pair(pNEM->getNEMId(),std::move(pNEM))).second)
     {
-      throw makeException<PlatformException>("NEMManagerImpl %hu:  Multiple NEMs with id"
+      throw makeException<PlatformException>("NEMManagerImpl:  Multiple NEMs with id"
                                              " %hu detected",
-                                             platformId_,
                                              pNEM->getNEMId());
     }
 }
@@ -257,10 +256,6 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
 
 void EMANE::Application::NEMManagerImpl::start()
 {
-  uuid_t uuid;
-
-  uuid_generate(uuid);
-  
   if(bOTAManagerChannelEnable_)
     {
       const char * pzDevice{nullptr};
@@ -276,7 +271,7 @@ void EMANE::Application::NEMManagerImpl::start()
                                                 pzDevice,
                                                 bOTAManagerChannelLoopback_,
                                                 u8OTAManagerTTL_,
-                                                uuid);
+                                                uuid_);
         }
       catch(OTAException & exp)
         {
@@ -290,7 +285,7 @@ void EMANE::Application::NEMManagerImpl::start()
                                                      sEventServiceDevice_,
                                                      u8EventServiceTTL_,
                                                      true,
-                                                     uuid);
+                                                     uuid_);
     }
   catch(EventServiceException & e)
     {

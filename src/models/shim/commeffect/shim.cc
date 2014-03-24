@@ -125,25 +125,35 @@ void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar)
   configRegistrar.registerNonNumeric<std::string>("filterfile",
                                                   ConfigurationProperties::NONE,
                                                   {},
-                                                  "Comm Effect filter XML file.");
+                                                  "Defines the absolute URI of the effects filter XML"
+                                                  " file which contains static filters to control"
+                                                  " network impairments.");
 
 
   configRegistrar.registerNumeric<std::uint32_t>("groupid",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {0},
                                                  "Defines the Comm Effect Group Id.  Only NEMs in the"
-                                                 " same Comm Effect Group can communticate.");
+                                                 " same Comm Effect Group can communicate.");
 
   configRegistrar.registerNumeric<bool>("enablepromiscuousmode",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Enable promiscuous mode.");
+                                        "Defines whether promiscuous mode is enabled or not. If promiscuous"
+                                        " mode is enabled, all received packets (intended for the given node"
+                                        " or not) that pass the receive test are sent upstream to the transport.");
 
 
   configRegistrar.registerNumeric<double>("receivebufferperiod",
                                           EMANE::ConfigurationProperties::DEFAULT,
                                          {1.0},
-                                         "Receive buffer period in seconds.");
+                                         "Defines the max buffering time in seconds for packets received from an NEM."
+                                          " The buffering interval for a given packet is determined by the bitrate"
+                                          " for the source NEM and the packet size. Packets are then placed in a"
+                                          " timed queue based on this interval and all packets that would cause the"
+                                          " receive buffer period to be exceeded are discarded. A value of 0.0"
+                                          " disables the limit and allows all received packets to stack up in the"
+                                          " queue.");
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
@@ -703,39 +713,47 @@ size_t EMANE::Models::CommEffect::Shim::getTaskCount(float fLoss, float fDups)
 {
   size_t count = 0;
   
-  if((fLoss > 0) && (fLoss < 100.0f))
+  if(fLoss < 100)
     {
-      // if loss is less then random value
-      if((RNDZeroToOneHundred_()) >= fLoss)
+      if(fLoss > 0)
         {
-          // add to count
+          // if loss is less then random value
+          if((RNDZeroToOneHundred_()) >= fLoss)
+            {
+              // add to count
+              ++count;
+            }
+        }
+      else
+        {
+          // no loss, add to count
           ++count;
         }
     }
-  else
-    {
-      // no loss, add to count
-      ++count;
-    }
   
-  // calcultate probability of duplicate
-  // and add to the current count if any
-  if(fDups >= 100.0f)
+  
+  // you can only duplicate a packet you receive 
+  if(count)
     {
-      // add to count
-      count += fDups / 100.0f;
-      
-      // reduce
-      fDups = fmodf(fDups,100.0f);
-    }
-
-  if((fDups > 0.0f) && (fDups < 100.0f))
-    {
-      // if dups is greater/equal then random value
-      if((RNDZeroToOneHundred_()) <= fDups)
+      // calculate probability of duplicate
+      // and add to the current count if any
+      if(fDups >= 100.0f)
         {
           // add to count
-          ++count;
+          count += fDups / 100.0f;
+          
+          // reduce
+          fDups = fmodf(fDups,100.0f);
+        }
+      
+      if((fDups > 0.0f) && (fDups < 100.0f))
+        {
+          // if dups is greater/equal then random value
+          if((RNDZeroToOneHundred_()) <= fDups)
+            {
+              // add to count
+              ++count;
+            }
         }
     }
 

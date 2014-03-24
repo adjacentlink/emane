@@ -57,9 +57,9 @@ namespace EMANE
        * Creates an R2RINeighborMetric
        *
        * @param id Neighbor NEM id
-       * @param u32NumRxFrames Number of frames received from the neighbor
-       * @param u32NumTxFrames Number of frames sent to the neighbor
-       * @param u32NumMissedFrames Number of frames missed from the neighbor
+       * @param u64NumRxFrames Number of frames received from the neighbor
+       * @param u64NumTxFrames Number of frames sent to the neighbor
+       * @param u64NumMissedFrames Number of frames missed from the neighbor
        * @param bandwidthConsumption Bandwidth consumption in microseconds
        * @param fSINRAvgdBm Average SINR from neighbor in dBm
        * @param fSINRStddev Standard deviation SINR from neighbor
@@ -73,9 +73,9 @@ namespace EMANE
        * @see R2RISelfMetricControlMessage for report interval
        */
       R2RINeighborMetric(NEMId id,
-                         std::uint32_t u32NumRxFrames,
-                         std::uint32_t u32NumTxFrames,
-                         std::uint32_t u32NumMissedFrames,
+                         std::uint64_t u64NumRxFrames,
+                         std::uint64_t u64NumTxFrames,
+                         std::uint64_t u64NumMissedFrames,
                          const Microseconds & bandwidthConsumption,
                          float fSINRAvgdBm,
                          float fSINRStddev,
@@ -101,21 +101,21 @@ namespace EMANE
        * 
        * @return number of frames
        */
-      std::uint32_t getNumRxFrames() const;
+      std::uint64_t getNumRxFrames() const;
 
       /**
        * Gets the number of frames transmitted during the report interval
        * 
        * @return number of frames
        */
-      std::uint32_t getNumTxFrames() const;
+      std::uint64_t getNumTxFrames() const;
       
       /**
        * Gets the number of frames missed during the report interval
        * 
        * @return number of frames
        */
-      std::uint32_t getNumMissedFrames() const;
+      std::uint64_t getNumMissedFrames() const;
       
       /**
        * Gets the bandwidth consumption over the report interval
@@ -168,9 +168,9 @@ namespace EMANE
       
     private:
       const NEMId id_;
-      const std::uint32_t u32NumRxFrames_;
-      const std::uint32_t u32NumTxFrames_;
-      const std::uint32_t u32NumMissedFrames_;
+      const std::uint64_t u64NumRxFrames_;
+      const std::uint64_t u64NumTxFrames_;
+      const std::uint64_t u64NumMissedFrames_;
       const Microseconds bandwidthConsumption_;
       const float fSINRAvgdBm_;
       const float fSINRStddev_;

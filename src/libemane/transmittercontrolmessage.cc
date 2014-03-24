@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,11 @@ private:
   const Transmitters transmitters_;
 };
 
+EMANE::Controls::TransmitterControlMessage::
+TransmitterControlMessage(const TransmitterControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
 
 EMANE::Controls::TransmitterControlMessage::TransmitterControlMessage(const Transmitters & transmitters):
   ControlMessage{IDENTIFIER},
@@ -66,4 +71,10 @@ EMANE::Controls::TransmitterControlMessage *
 EMANE::Controls::TransmitterControlMessage::create(const Transmitters & transmitters)
 {
   return new TransmitterControlMessage{transmitters};
+}
+
+EMANE::Controls::TransmitterControlMessage *
+EMANE::Controls::TransmitterControlMessage::clone() const
+{
+  return new TransmitterControlMessage{*this};
 }

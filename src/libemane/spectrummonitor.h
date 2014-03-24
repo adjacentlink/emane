@@ -79,6 +79,8 @@ namespace EMANE
 
     FrequencySet getFrequencies() const override;
 
+    double getReceiverSensitivitydBm() const override;
+
     // test harness access
     SpectrumWindow request_i(const TimePoint & now,
                              std::uint64_t u64FrequencyHz,

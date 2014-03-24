@@ -91,17 +91,22 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                         ConfigurationProperties::DEFAULT |
                                         ConfigurationProperties::MODIFIABLE,
                                         {false},
-                                        "Enable promiscuous mode.");
+                                        "Defines whether promiscuous mode is enabled or not. If promiscuous"
+                                        " mode is enabled, all received packets (intended for the given"
+                                        " node or not) that pass the probability of reception check are"
+                                        " sent upstream to the transport.");
 
   configRegistrar.registerNumeric<bool>("wmmenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Wireless multimedia enable/disable.");
+                                        "Defines if wireless multimedia mode (WMM) is enabled.");
 
   configRegistrar.registerNumeric<std::uint8_t>("mode",
                                                 ConfigurationProperties::DEFAULT,
                                                 {0},
-                                                "Mode index.",
+                                                "Defines the 802.11abg mode of operation.  0|2 = 802.11b"
+                                                " (DSS), 1 = 802.11a/g (OFDM), and 3 = 802.11b/g"
+                                                " (mixed mode).",
                                                 MODULATION_TYPE_INDEX_MIN,
                                                 MODULATION_TYPE_INDEX_MAX);
 
@@ -109,65 +114,90 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {4},
-                                                 "Unicast data rate index.",
+                                                "Defines the data rate to be used when transmitting unicast"
+                                                " packets. The index (1 through 12) to rate (Mbps) mapping is as"
+                                                " follows: [1 2 5.5 11 6 9 12 18 24 36 48 54]. DSS rates [1 2"
+                                                " 5.5 11] Mbps are valid when mode is set to 802.11b or 802.11b/g."
+                                                " OFDM rates [6 9 12 18 24 36 48 54] Mbps are valid when mode is"
+                                                " set to 802.11a/g or 802.11b/g.",
                                                  1, 
-                                                 UnicastDataRateIndexTable.size());
+                                                12);
 
   configRegistrar.registerNumeric<std::uint8_t>("multicastrate",
-                                                 ConfigurationProperties::DEFAULT |
-                                                 ConfigurationProperties::MODIFIABLE,
-                                                 {1},
-                                                 "Multicast data rate index.",
+                                                ConfigurationProperties::DEFAULT |
+                                                ConfigurationProperties::MODIFIABLE,
+                                                {1},
+                                                "Defines the data rate to be used when transmitting"
+                                                " broadcast/multicast packets. The index (1 through 12) to rate"
+                                                " (Mbps) mapping is as follows: [1 2 5.5 11 6 9 12 18 24 36 48"
+                                                " 54].  DSS rates [1 2 5.5 11] Mbps are valid when mode is set to"
+                                                " 802.11b or 802.11b/g.  OFDM rates [6 9 12 18 24 36 48 54] Mbps"
+                                                " are valid when mode is set to 802.11a/g or 802.11b/g.",
                                                  1, 
-                                                 BroadcastDataRateIndexTable.size());
+                                                 12);
 
   configRegistrar.registerNumeric<std::uint16_t>("rtsthreshold",
                                                  ConfigurationProperties::DEFAULT,
                                                  {255},
-                                                 "The rts/cts threshold in bytes.",
+                                                 "Defines a threshold in bytes for when RTS/CTS is used as part of"
+                                                 " the carrier sensing channel access protocol when transmitting"
+                                                 " unicast packets.",
                                                  0, 
                                                  0xffff);
 
   configRegistrar.registerNumeric<bool>("flowcontrolenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Enable flow control with transport.");
+                                        "Defines whether flow control is enabled. Flow control only"
+                                        " works with the virtual transport and the setting must"
+                                        " match the setting within the virtual transport"
+                                        " configuration.");
 
   configRegistrar.registerNumeric<std::uint16_t>("flowcontroltokens",
                                                  ConfigurationProperties::DEFAULT,
                                                  {10},
-                                                 "Number of flow control tokens.",
+                                                 "Defines the maximum number of flow control tokens"
+                                                 " (packet transmission units) that can be processed"
+                                                 " from the virtual transport without being refreshed."
+                                                 " The number of available tokens at any given time is"
+                                                 " coordinated with the virtual transport and when the"
+                                                 " token count reaches zero, no further packets are"
+                                                 " transmitted causing application socket queues to backup.",
                                                  1);
 
   configRegistrar.registerNumeric<std::uint32_t>("distance",
                                                  ConfigurationProperties::DEFAULT,
                                                  {1000},
-                                                 "Max distance.");
+                                                 "Defines the max propagation distance in meters used"
+                                                 " to compute slot size.");
 
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
-                                                  "Absolute URI of the PCR curve file.");
+                                                  "Defines the absolute URI of the Packet Completion Rate (PCR)"
+                                                  " curve file. The PCR curve file contains probability of"
+                                                  " reception curves as a function of Signal to Interference"
+                                                  " plus Noise Ratio (SINR) for each data rate.");
 
   configRegistrar.registerNumeric<std::uint8_t>("queuesize0",
                                                   ConfigurationProperties::DEFAULT,
                                                   {QUEUE_SIZE_DEFAULT},
-                                                  "Queue size category 0");
+                                                  "Defines the queue size for category 0.");
 
   configRegistrar.registerNumeric<std::uint8_t>("queuesize1",
                                                   ConfigurationProperties::DEFAULT,
                                                   {QUEUE_SIZE_DEFAULT},
-                                                  "Queue size category 1");
+                                                  "Defines the queue size for category 1.");
 
   configRegistrar.registerNumeric<std::uint8_t>("queuesize2",
                                                   ConfigurationProperties::DEFAULT,
                                                   {QUEUE_SIZE_DEFAULT},
-                                                  "Queue size category 2");
+                                                  "Defines the queue size for category 2.");
 
   configRegistrar.registerNumeric<std::uint8_t>("queuesize3",
                                                   ConfigurationProperties::DEFAULT,
                                                   {QUEUE_SIZE_DEFAULT},
-                                                  "Queue size category 3");
+                                                  "Defines the queue size for category 3.");
 
   configRegistrar.registerNumeric<std::uint16_t>("msdu0",
                                                   ConfigurationProperties::DEFAULT,
@@ -193,7 +223,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {32},
-                                                 "Minimum contention window size category 0",
+                                                 "Defines the minimum contention window size in slots"
+                                                 " for category 0.",
                                                  1,
                                                  0xffff);
 
@@ -201,7 +232,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {32},
-                                                 "Minimum contention window size category 1",
+                                                 "Defines the minimum contention window size in slots"
+                                                 " for category 1.",
                                                  1,
                                                  0xffff);
 
@@ -209,7 +241,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {16},
-                                                 "Minimum contention window size category 2",
+                                                 "Defines the minimum contention window size in slots"
+                                                 " for category 2.",
                                                  1,
                                                  0xffff);
 
@@ -217,7 +250,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {8},
-                                                 "Minimum contention window size category 3",
+                                                 "Defines the minimum contention window size in slots"
+                                                 " for category 3.",
                                                  1,
                                                  0xffff);
 
@@ -225,7 +259,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {1024},
-                                                 "Maximum contention window size category 0",
+                                                 "Defines the maximum contention window size in slots"
+                                                 " for category 0.",
                                                  1,
                                                  0xffff);
 
@@ -233,7 +268,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {1024},
-                                                 "Maximum contention window size category 1",
+                                                 "Defines the maximum contention window size in slots"
+                                                 " for category 1.",
                                                  1,
                                                  0xffff);
 
@@ -241,7 +277,8 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {64},
-                                                 "Maximum contention window size category 2",
+                                                 "Defines the maximum contention window size in slots"
+                                                 " for category 2.",
                                                  1,
                                                  0xffff);
 
@@ -249,14 +286,18 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {16},
-                                                 "Maximum contention window size category 3",
+                                                 "Defines the maximum contention window size in slots"
+                                                 " for category 3.",
                                                  1,
                                                  0xffff);
 
   configRegistrar.registerNumeric<float>("aifs0",
                                          ConfigurationProperties::DEFAULT,
                                          {0.000002f},
-                                         "Arbitration inter frame spacing time category 0",
+                                         "Defines the arbitration inter frame spacing time for category 0"
+                                         " and contributes to the calculation of channel access overhead"
+                                         " when transmitting category 0 packets.  If WMM is disabled,"
+                                         " aifs0 is used for all traffic.",
                                          0.0f,
                                          0.000255f);
 
@@ -264,7 +305,9 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
   configRegistrar.registerNumeric<float>("aifs1",
                                          ConfigurationProperties::DEFAULT,
                                          {0.000002f},
-                                         "Arbitration inter frame spacing time category 1",
+                                         "Defines the arbitration inter frame spacing time for category 1"
+                                         " and contributes to the calculation of channel access overhead"
+                                         " when transmitting category 1 packets.",
                                          0.0f,
                                          0.000255);
 
@@ -272,7 +315,9 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
   configRegistrar.registerNumeric<float>("aifs2",
                                          ConfigurationProperties::DEFAULT,
                                          {0.000002f},
-                                         "Arbitration inter frame spacing time category 2",
+                                         "Defines the arbitration inter frame spacing time for category 2"
+                                         " and contributes to the calculation of channel access overhead"
+                                         " when transmitting category 2 packets.",
                                          0.0f,
                                          0.000255f);
 
@@ -280,62 +325,71 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
   configRegistrar.registerNumeric<float>("aifs3",
                                          ConfigurationProperties::DEFAULT,
                                          {0.000001f},
-                                         "Arbitration inter frame spacing time category 3",
+                                         "Defines the arbitration inter frame spacing time for category 3"
+                                         " and contributes to the calculation of channel access overhead"
+                                         " when transmitting category 3 packets.",
                                          0.0f,
                                          0.000255f);
 
   configRegistrar.registerNumeric<float>("txop0",
                                          ConfigurationProperties::DEFAULT,
                                          {0.0f},
-                                         "Transmit oppurtunity time category 0",
+                                         "Defines the transmit opportunity time for category 0.",
                                          0.0f,
                                          1.0f);
 
   configRegistrar.registerNumeric<float>("txop1",
                                          ConfigurationProperties::DEFAULT,
                                          {0.0f},
-                                         "Transmit oppurtunity time category 1",
+                                         "Defines the transmit opportunity time for category 1.",
                                          0.0f,
                                          1.0f);
 
   configRegistrar.registerNumeric<float>("txop2",
                                          ConfigurationProperties::DEFAULT,
                                          {0.0f},
-                                         "Transmit oppurtunity time category 2",
+                                         "Defines the transmit opportunity time for category 2.",
                                          0.0f,
                                          1.0f);
 
   configRegistrar.registerNumeric<float>("txop3",
                                          ConfigurationProperties::DEFAULT,
                                          {0.0f},
-                                         "Transmit oppurtunity time category 3",
+                                         "Defines the transmit opportunity time for category 3.",
                                          0.0f,
                                          1.0f);
 
   configRegistrar.registerNumeric<std::uint8_t>("retrylimit0",
                                                 ConfigurationProperties::DEFAULT,
                                                 {2},
-                                                "Retry limit category 0");
+                                                "Defines the maximum number of retries attempted for"
+                                                " category 0.");
 
   configRegistrar.registerNumeric<std::uint8_t>("retrylimit1",
                                                 ConfigurationProperties::DEFAULT,
                                                 {2},
-                                                "Retry limit category 1");
+                                                "Defines the maximum number of retries attempted for"
+                                                " category 1.");
 
   configRegistrar.registerNumeric<std::uint8_t>("retrylimit2",
                                                 ConfigurationProperties::DEFAULT,
                                                 {2},
-                                                "Retry limit category 2");
+                                                "Defines the maximum number of retries attempted for"
+                                                " category 2.");
 
   configRegistrar.registerNumeric<std::uint8_t>("retrylimit3",
                                                 ConfigurationProperties::DEFAULT,
                                                 {2},
-                                                "Retry limit category 3");
+                                                "Defines the maximum number of retries attempted for"
+                                                " category 3.");
 
   configRegistrar.registerNumeric<float>("channelactivityestimationtimer",
                                          ConfigurationProperties::DEFAULT,
                                          {0.1f},
-                                         "Chanel activity estimation timer in sec.",
+                                         "Defines the channel activity estimation timer in seconds. The"
+                                         " timer determines the lag associated with the statistical"
+                                         " model used to estimate number of transmitting common and"
+                                         " hidden neighbors based on channel activity.",
                                          0.001f,
                                          1.0f);
 
@@ -343,27 +397,32 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
   configRegistrar.registerNumeric<float>("neighbortimeout",
                                          ConfigurationProperties::DEFAULT,
                                          {30.0f},
-                                         "Neighbor timeout in sec.",
+                                         "Defines the neighbor timeout in seconds for the neighbor"
+                                         " estimation algorithm.",
                                          0.0f,
                                          3600.0f);
 
   configRegistrar.registerNumeric<bool>("radiometricenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Radio metric enable/disable.");
+                                        "Defines if radio metrics will be reported up via the Radio to"
+                                        " Router Interface (R2RI).");
+  
 
 
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
                                          ConfigurationProperties::DEFAULT,
                                          {1.0f},
-                                         "Radio metric report interval in sec.",
+                                         "Defines the  metric report interval in seconds in support of"
+                                         " the R2RI feature.",
                                          0.1f,
                                          60.0f);
 
   configRegistrar.registerNumeric<float>("neighbormetricdeletetime",
                                          ConfigurationProperties::DEFAULT,
                                          {60.0f},
-                                         "Neighbor metric delete time in sec.",
+                                         "Defines the time in seconds of no RF receptions from a given"
+                                         " neighbor before it is removed from the neighbor table.",
                                          1.0f,
                                          3660.0f);
 }
@@ -371,7 +430,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
 
 /**
 *
-* @brief get the promiscous mode
+* @brief get the promiscuous mode
 *
 *
 * @retval true if on, false if off

@@ -184,7 +184,7 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
           u64BitRate_ =  item.second[0].asUINT64();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu Transports::Raw::RawTransport %s %s: %ju",
                                   id_, 
                                   __func__, 
@@ -196,7 +196,7 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
           sTargetDevice_ = item.second[0].asString();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu RawTransport %s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -208,7 +208,7 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
           bBroadcastMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03d RawTransport %s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -220,7 +220,7 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
           bArpCacheMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03d RawTransport %s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -450,6 +450,13 @@ void EMANE::Transports::Raw::RawTransport::destroy()
 void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket & pkt,
                                                                  const ControlMessages &msgs)
 {
+  // we are not in the running state - the infrastructure should protect
+  // against this but currently it does not for transports.
+  if(!pPcapHandle_)
+    {
+      return;
+    }
+
   // frame sanity check
   if(verifyFrame(pkt.get(), pkt.length()) < 0)
     {

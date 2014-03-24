@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -40,6 +40,7 @@
 #include "emane/application/nem.h"
 
 #include <memory>
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -48,11 +49,15 @@ namespace EMANE
     /**
      * @class NEMManager
      *
+     * @brief Contains and manages NEM instances
      */
     class NEMManager :  public Component,
                         public Buildable
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~NEMManager(){}
       
       /**
@@ -64,9 +69,29 @@ namespace EMANE
        * while adding and NEM to a platform
        */
       virtual void add(std::unique_ptr<NEM> & pNEM) = 0;
+
+      /**
+       * Gets the UUID
+       *
+       * @return UUID
+       */
+      const uuid_t & getUUID() const
+      {
+        return uuid_;
+      }
       
     protected:
-      NEMManager(){}
+      /**
+       * Creates an NEMManager instance
+       *
+       * @param uuid Instance UUID
+       */
+      NEMManager(const uuid_t & uuid)
+        {
+          uuid_copy(uuid_,uuid);
+        }
+
+      uuid_t uuid_;
     };
   }
 }

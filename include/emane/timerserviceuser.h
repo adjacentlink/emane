@@ -54,7 +54,7 @@ namespace EMANE
      * @param eventId Identifier corresponding to the timer being processed
      * @param expireTime The time the timer was scheduled to expire
      * @param scheduleTime The Time the timer was scheduled
-     * @param fire Time time The time the timer actually fired
+     * @param fireTime Time time The time the timer actually fired
      * @param arg Opaque timed event data
      *
      * @note All times are abosulte using CLOCK_REALTIME

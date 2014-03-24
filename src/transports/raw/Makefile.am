@@ -5,6 +5,7 @@ libtransraw_la_CPPFLAGS= \
  -I../common             \
  $(ACE_CFLAGS)           \
  $(pcap_CFLAGS)          \
+ $(libuuid_CFLAGS)       \
  $(AM_CFLAGS)
 
 libtransraw_la_SOURCES= \

@@ -93,6 +93,16 @@ namespace EMANE
        */
       static
       FlowControlControlMessage * create(std::uint16_t u16Tokens);
+
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      FlowControlControlMessage * clone() const override;
       
       /**
        * Destroys an instance
@@ -119,7 +129,7 @@ namespace EMANE
       
       FlowControlControlMessage(std::uint16_t u16Tokens);
       
-      FlowControlControlMessage(const FlowControlControlMessage & r) = delete;
+      FlowControlControlMessage(const FlowControlControlMessage & r);
       
       FlowControlControlMessage & 
       operator=(const FlowControlControlMessage &) = delete;

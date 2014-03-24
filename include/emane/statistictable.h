@@ -89,7 +89,7 @@ namespace EMANE
      * @param anys Vector of any values
      *
      * @throw StatisticTableException when either the row key is invalid or
-     * the number of coloumns in the row values does not match the table
+     * the number of columns in the row values does not match the table
      */
     void setRow(const Key & key,
                 const std::vector<Any> & anys);
@@ -101,7 +101,7 @@ namespace EMANE
      * @param anys Vector of any values
      *
      * @throw StatisticTableException when either the row key is already in use or
-     * the number of coloumns in the row values does not match the table
+     * the number of columns in the row values does not match the table
      */
     void addRow(const Key & key,
                 const std::vector<Any> & anys = {});

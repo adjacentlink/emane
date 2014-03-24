@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,8 +39,8 @@
 
 #include "emane/application/transportadapter.h"
 
-
 #include <memory>
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -55,9 +55,11 @@ namespace EMANE
      */
     class TransportManager : public Component,
                              public Buildable
-
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~TransportManager(){}
       
       /**
@@ -66,9 +68,29 @@ namespace EMANE
        * @param pTransportAdapter to add
        */
       virtual void add(std::unique_ptr<TransportAdapter> & pTransportAdapter) = 0;
+
+      /**
+       * Gets the UUID
+       *
+       * @return UUID
+       */
+      const uuid_t & getUUID() const
+      {
+        return uuid_;
+      }
       
     protected:
-      TransportManager(){}
+      /**
+       * Creates an TransportManager instance
+       *
+       * @param uuid Instance UUID
+       */
+      TransportManager(const uuid_t & uuid)
+      {
+        uuid_copy(uuid_,uuid);
+      }
+
+      uuid_t uuid_;
     };
   }
 }

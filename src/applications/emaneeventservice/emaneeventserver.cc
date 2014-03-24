@@ -112,7 +112,7 @@ namespace EMANE
 
       void doStart() override
       {
-        pManager_ = pDirector_->construct();
+        pManager_ = pDirector_->construct(getUUID());
         
         if(secondsStart_ != std::chrono::seconds::zero())
           {

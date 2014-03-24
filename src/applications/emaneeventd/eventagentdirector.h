@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,11 +34,12 @@
 #ifndef EMANEEVENTAGENTDIRECTOR_HEADER_
 #define EMANEEVENTAGENTDIRECTOR_HEADER_
 
-#include <string>
-
 #include "emane/application/eventagentbuilder.h"
 #include "eventdaemonconfiguration.h"
 #include "emane/configureexception.h"
+
+#include <string>
+#include <uuid.h>
 
 /**
  * @class EMANE::EventAgentDirector eventagentdirector.h "eventagentdirector.h"
@@ -79,8 +80,10 @@ namespace EMANE
   
       /**
        * Constructs the passed-in platform
+       *
+       * @param uuid Instance UUID
        */
-      std::unique_ptr<EventAgentManager> construct();
+      std::unique_ptr<EventAgentManager> construct(const uuid_t & uuid);
 
     private:
       /**

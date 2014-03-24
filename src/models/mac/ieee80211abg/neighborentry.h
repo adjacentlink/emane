@@ -85,14 +85,11 @@ namespace EMANE
 
          /**
           *
-          * resets the bandwidth utilization parameter(s)
-          *
-          * @param msgTypeMask  the msg type (unicast, unicast rts/cts, broadcast)
+          * stores previous and resets the current bandwidth utilization parameter(s)
           *
           */
-          void resetUtilization(std::uint8_t msgTypeMask);
+          void storeUtilization();
 
-          void resetUtilization();
 
           EMANE::TimePoint getLastActivityTime() const;
 
@@ -202,7 +199,9 @@ namespace EMANE
 
           using UtilizationTypeMap = std::map<std::uint8_t, Utilization>;
 
-          UtilizationTypeMap utilizationTypeMap_;
+          UtilizationTypeMap prevUtilizationTypeMap_;
+
+          UtilizationTypeMap currUtilizationTypeMap_;
 
           TimePoint lastActivityTime_;
 

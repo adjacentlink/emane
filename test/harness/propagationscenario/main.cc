@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -401,7 +401,7 @@ int main(int argc, char* argv[])
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "request"))
                             {
-
+                              ++iActionIndex;
                               EMANE::FrequencySegments segments;
                               std::vector<double> powers;
                               

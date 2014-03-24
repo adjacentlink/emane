@@ -53,7 +53,7 @@ namespace EMANE
      * Creates a Transmitter instance
      *
      * @param id NEM id of the transmitter
-     * @param id Power level of the transmitter in dBm
+     * @param dPowerdBm Power level of the transmitter in dBm
      */
     Transmitter(NEMId id,
                 double dPowerdBm);

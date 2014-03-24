@@ -61,7 +61,3 @@ namespace EMANE
 }
 
 #endif // EMANECONTROLPORTSERVICEHANDLER_HEADER_
-
-/**
- * @page ControlPortInterface Control Port Interface
- */

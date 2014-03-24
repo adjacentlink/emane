@@ -50,6 +50,12 @@ private:
   const R2RIQueueMetrics queueMetrics_;
 };
 
+EMANE::Controls::R2RIQueueMetricControlMessage::
+R2RIQueueMetricControlMessage(const R2RIQueueMetricControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
 EMANE::Controls::R2RIQueueMetricControlMessage::~R2RIQueueMetricControlMessage(){}
 
 EMANE::Controls::R2RIQueueMetricControlMessage::R2RIQueueMetricControlMessage(const R2RIQueueMetrics & queueMetrics):
@@ -140,4 +146,8 @@ EMANE::Controls::R2RIQueueMetricControlMessage::create(const Serialization & ser
 }
 
 
-
+EMANE::Controls::R2RIQueueMetricControlMessage *
+EMANE::Controls::R2RIQueueMetricControlMessage::clone() const
+{
+  return new R2RIQueueMetricControlMessage{*this};
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,13 +34,14 @@
 #ifndef EMANENEMDIRECTOR_HEADER_
 #define EMANENEMDIRECTOR_HEADER_
 
-#include <string>
-#include <memory>
-
 #include "emane/application/nembuilder.h"
 #include "platformconfiguration.h"
 #include "emaneparseexception.h"
 #include "emane/configureexception.h"
+
+#include <string>
+#include <memory>
+#include <uuid.h>
 
 /**
  * @class EMANE::NEMDirector nemdirector.h "nemdirector.h"
@@ -81,8 +82,10 @@ namespace EMANE
   
       /**
        * Constructs the platform
+       *
+       * @param uuid Application UUID
        */
-      std::unique_ptr<NEMManager> construct();
+      std::unique_ptr<NEMManager> construct(const uuid_t & uuid);
 
     private:
       /**

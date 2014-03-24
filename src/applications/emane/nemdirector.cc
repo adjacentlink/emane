@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -48,7 +48,7 @@ EMANE::Application::NEMDirector::~NEMDirector()
 {}
 
 std::unique_ptr<EMANE::Application::NEMManager>
-EMANE::Application::NEMDirector::construct()
+EMANE::Application::NEMDirector::construct(const uuid_t & uuid)
 {
   NEMs nems;
   
@@ -59,7 +59,7 @@ EMANE::Application::NEMDirector::construct()
 
   /* Construct a platform first (initialized) */
   std::unique_ptr<NEMManager> 
-    pPlatform{rNEMBuilder_.buildNEMManager(configPlatform_.getPlatformId(),
+    pPlatform{rNEMBuilder_.buildNEMManager(uuid,
                                            nems,
                                            configPlatform_.getConfigurationUpdateRequest())};
 

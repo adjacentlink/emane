@@ -35,16 +35,16 @@ inline EMANEMessage::LoggerMessage_LogLevel EMANE::convertLogLevel(EMANE::LogLev
      switch(level)
       {
       case EMANE::ABORT_LEVEL:
-        return EMANEMessage::LoggerMessage_LogLevel_ABORT;
+        return EMANEMessage::LoggerMessage_LogLevel_ABORT_LEVEL;
         
       case EMANE::ERROR_LEVEL:
-        return EMANEMessage::LoggerMessage_LogLevel_ERROR;
+        return EMANEMessage::LoggerMessage_LogLevel_ERROR_LEVEL;
         
       case EMANE::INFO_LEVEL:
-        return EMANEMessage::LoggerMessage_LogLevel_INFO;
+        return EMANEMessage::LoggerMessage_LogLevel_INFO_LEVEL;
         
       default:
-        return EMANEMessage::LoggerMessage_LogLevel_DEBUG;
+        return EMANEMessage::LoggerMessage_LogLevel_DEBUG_LEVEL;
       }
    }
 
@@ -53,13 +53,13 @@ inline EMANE::LogLevel EMANE::convertLogLevel(EMANEMessage::LoggerMessage_LogLev
    {
      switch(level)
       {
-        case EMANEMessage::LoggerMessage_LogLevel_ABORT:
+        case EMANEMessage::LoggerMessage_LogLevel_ABORT_LEVEL:
           return EMANE::ABORT_LEVEL;
 
-        case EMANEMessage::LoggerMessage_LogLevel_ERROR:
+        case EMANEMessage::LoggerMessage_LogLevel_ERROR_LEVEL:
           return EMANE::ERROR_LEVEL;
 
-      case EMANEMessage::LoggerMessage_LogLevel_INFO:
+      case EMANEMessage::LoggerMessage_LogLevel_INFO_LEVEL:
           return EMANE::INFO_LEVEL;
 
         default:

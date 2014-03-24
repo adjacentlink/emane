@@ -18,7 +18,7 @@ dist-hook:
 cleantar:
 	@(rm -f emane*.tar.gz)
 
-RPMARCH=`rpm --showrc | awk '/^build arch/ {print $$4}'`
+RPMARCH=`arch`
 
 if HAVE_RPMBUILD
 
@@ -31,7 +31,7 @@ rpm: emane.spec dist-gzip
 	.rpmbuild/RPMS/noarch \
 	.rpmbuild/tmp
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
+	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp"
 	$(MAKE) -C src/emanesh rpm &&\

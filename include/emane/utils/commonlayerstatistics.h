@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,34 +44,85 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * @class CommonLayerStatistics
+     *
+     * @brief Common NEM layer statistics and drop reason tables
+     */
     class CommonLayerStatistics
     {
-      public:
-        CommonLayerStatistics(const StatisticTableLabels & unicastDropTableLabels,
-                              const StatisticTableLabels & broadcastDropTableLabels = {},
-                              const std::string & sInstance = {});
+    public:
+      /**
+       * Creates a CommonLayerStatistics instance
+       *
+       * @param unicastDropTableLabels Unicast drop table row labels
+       * @param broadcastDropTableLabels Broadcast drop table row labels.
+       * Defaults to Unicast drop table labels.
+       * @param sInstance String to append to all statistic names
+       */
+      CommonLayerStatistics(const StatisticTableLabels & unicastDropTableLabels,
+                            const StatisticTableLabels & broadcastDropTableLabels = {},
+                            const std::string & sInstance = {});
 
-        ~CommonLayerStatistics();
+      /**
+       * Destroys an instance
+       */
+      ~CommonLayerStatistics();
 
-        void registerStatistics(StatisticRegistrar & statisticRegistrar);
+      /**
+       * Registers all statistics and tables
+       *
+       * @param statisticRegistrar Statistic registrar reference
+       *
+       * @throw RegistrarException when a error occurs during
+       * registration.
+       */
+      void registerStatistics(StatisticRegistrar & statisticRegistrar);
 
-        void processInbound(const UpstreamPacket & pkt);
+      /**
+       * Processes statistics for an inbound upstream packet 
+       *
+       * @param pkt Inbound packet
+       */
+      void processInbound(const UpstreamPacket & pkt);
 
-        void processOutbound(const UpstreamPacket & pkt, Microseconds delay, size_t dropCode = {});
 
-        void processInbound(const DownstreamPacket & pkt);
+      /**
+       * Processes statistics for an outbound upstream packet
+       *
+       * @param pkt Inbound packet
+       * @param delay Processing duration in microseconds
+       * @param dropCode Drop code label index. Default is no drop.
+       */
+      void processOutbound(const UpstreamPacket & pkt, Microseconds delay, size_t dropCode = {});
 
-        void processOutbound(const DownstreamPacket & pkt, 
-                             Microseconds delay,
-                             size_t dropCode = {}, 
-                             bool bSelfGenerated = {});
+      /**
+       * Processes statistics for an inbound downstream packet 
+       *
+       * @param pkt Outbound packet
+       */
+      void processInbound(const DownstreamPacket & pkt);
 
-      private:
-        class Implementation;
-        std::unique_ptr<Implementation> pImpl_;
+      /**
+       * Processes statistics for an outbound downstream packet 
+       *
+       * @param pkt Inbound packet
+       * @param delay Processing duration in microseconds
+       * @param dropCode Drop code label index. Default is no drop.
+       * @param bSelfGenerated Flag indicating whether the outbound
+       * packet was self generated
+       */
+      void processOutbound(const DownstreamPacket & pkt, 
+                           Microseconds delay,
+                           size_t dropCode = {}, 
+                           bool bSelfGenerated = {});
 
-        CommonLayerStatistics(const CommonLayerStatistics &) = delete;
-        CommonLayerStatistics & operator = (const CommonLayerStatistics &) = delete;
+    private:
+      class Implementation;
+      std::unique_ptr<Implementation> pImpl_;
+
+      CommonLayerStatistics(const CommonLayerStatistics &) = delete;
+      CommonLayerStatistics & operator = (const CommonLayerStatistics &) = delete;
     };
   }
 }

@@ -37,6 +37,7 @@ EMANE::EventTablePublisher::EventTablePublisher(NEMId nemId):
 
 void EMANE::EventTablePublisher::registerStatistics(StatisticRegistrar & statisticRegistrar)
 {
+  /** [statisticservice-registertable-snippet] */
   pLocationTable_ =
     statisticRegistrar.registerTable<NEMId>("LocationEventInfoTable", 
       {"NEM","Latitude","Longitude","Altitude","Pitch","Roll","Yaw","Azimuth","Elevation","Magnitude"},
@@ -54,6 +55,7 @@ void EMANE::EventTablePublisher::registerStatistics(StatisticRegistrar & statist
       {"NEM","Antenna Profile","Antenna Azimuth","Antenna Elevation"},
       StatisticProperties::NONE,
       "Shows the antenna profile information received");
+  /** [statisticservice-registertable-snippet] */
 }
 
 void EMANE::EventTablePublisher::update(const Events::Locations & locations)

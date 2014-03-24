@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,17 +41,49 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class Pathloss
+     *
+     * @brief A pathloss entry holds the source NEM Id and the forward and
+     * reverse pathloss to apply to received transmissions.
+     *
+     * @see PathlossEvent
+     *
+     * @note Instances are immutable
+     */
     class Pathloss
     {
     public:
+      /**
+       * Creates a Pathloss instance
+       *
+       * @param id NEM id of the transmitter
+       * @param fForwardPathlossdB The pathloss from transmitter to receiver in dB
+       * @param fReversePathlossdB The pathloss from the receiver to the transmitter in dB
+       */
       Pathloss(NEMId id,
                float fForwardPathlossdB,
                float fReversePathlossdB);
       
+      /**
+       * Gets the NEM Id of of the transmitter
+       *
+       * @return id
+       */
       NEMId getNEMId() const;
       
+      /**
+       * Gets the pathloss from the transmitter to receiver in dB
+       *
+       * @return pathloss
+       */
       float getForwardPathlossdB() const;
-      
+
+      /**
+       * Gets the pathloss from the receiver to the transmitter in dB
+       *
+       * @return pathloss
+       */
       float getReversePathlossdB() const;
       
     private:
@@ -60,7 +92,7 @@ namespace EMANE
       float fReversePathlossdB_;
     };
     
-    typedef std::list<Pathloss> Pathlosses;
+    using Pathlosses = std::list<Pathloss>;
   }
 }
 

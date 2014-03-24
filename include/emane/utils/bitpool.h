@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -48,21 +48,47 @@ namespace EMANE
     /**
      * @class BitPool
      *
-     * @brief Bit pool implementation
+     * @brief Implementation of a rate limiting bit pool
      *
      * @note Uses a thread to allow blocking dequeues
      */
     class BitPool
     {
     public:
+      /**
+       * Creates a BitPool instance
+       */
       BitPool(PlatformServiceProvider * pPlatformService, NEMId id);
 
+      /**
+       * Destroys an instance
+       */
       ~BitPool();
 
+      /**
+       * Gets bits from pool
+       *
+       * @param u64Request request size
+       * @param bFullFill Continue until entire request is fulfilled
+       *
+       * @return Number outstanding or 0 if disabled
+       */
       std::uint64_t get(std::uint64_t u64Request, bool bFullFill = true);
 
+      /**
+       * Gets current pool size
+       *
+       * @return the current pool size
+       *
+       */
       std::uint64_t getCurrentSize();
 
+      /**
+       * Set pool size
+       *
+       * @param u64NewSize pool size request in bits
+       *
+       */
       void setMaxSize(std::uint64_t u64NewSize);
 
     private:
@@ -80,10 +106,26 @@ namespace EMANE
 
       ACE_Thread_Mutex      mutex_;
 
+      /**
+       * Adds to pool
+       *
+       * @param requestTime   request time
+       */
       void doFillPool(const TimePoint & requestTime);
 
+      /**
+       * Drains the pool
+       *
+       * @param u64Request            request size
+       * @param requestTime           request time (abs time)
+       * @param intervalMicroseconds  time to wait until request would be fulfilled
+       *
+       * @return  number available in the pool
+       *
+       */
       std::uint64_t doDrainPool(std::uint64_t u64Request, 
-                                const TimePoint & requestTime, Microseconds & intervalMicroseconds);
+                                const TimePoint & requestTime,
+                                Microseconds & intervalMicroseconds);
     };
   }
 }

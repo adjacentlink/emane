@@ -58,13 +58,13 @@ namespace EMANE
      * @param buf Pointer to the buffer
      * @param len Length of the buffer
      */
-    UpstreamPacket(const PacketInfo & info,const void * buf, size_t len);
+    UpstreamPacket(const PacketInfo & info,const void * buf,size_t len);
     
     /**
      * Creates an UpstreamPacket instance from a Utils::VectorIO
      *
      * @param info The PacketInfo to use
-     * @vectorIO Vectored IO object
+     * @param vectorIO Vectored IO object
      *
      * @note A deep copy is performed and the internal packet data
      * is stored contiguously

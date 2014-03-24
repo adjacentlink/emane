@@ -31,7 +31,7 @@
 #
 
 import event_pb2
-import otaheader_pb2
+from ..ota import otaheader_pb2
 from . import EventServiceException
 import os
 import socket
@@ -148,29 +148,32 @@ class EventService:
                         running = False
                         break
 
-                    event = event_pb2.Event()
-                    
-                    event.ParseFromString(data)
+                    (length,) = struct.unpack_from("!H",data)
 
-                    for serialization in event.data.serializations:
-                        self._lock.acquire()
+                    if length == len(data) - 2:
+                        event = event_pb2.Event()
 
-                        try:
-                            
-                            if serialization.eventId in self._handlers:
-                                self._handlers[serialization.eventId](serialization.nemId,
-                                                                      serialization.eventId,
-                                                                      serialization.data,
-                                                                      uuid.UUID(bytes=event.uuid),
-                                                                      event.sequenceNumber)
-                            elif default:
-                                default(serialization.nemId,
-                                        serialization.eventId,
-                                        serialization.data,
-                                        uuid.UUID(bytes=event.uuid),
-                                        msg.sequenceNumber)                              
-                        finally:
-                            self._lock.release()  
+                        event.ParseFromString(data[2:])
+
+                        for serialization in event.data.serializations:
+                            self._lock.acquire()
+
+                            try:
+
+                                if serialization.eventId in self._handlers:
+                                    self._handlers[serialization.eventId](serialization.nemId,
+                                                                          serialization.eventId,
+                                                                          serialization.data,
+                                                                          uuid.UUID(bytes=event.uuid),
+                                                                          event.sequenceNumber)
+                                elif default:
+                                    default(serialization.nemId,
+                                            serialization.eventId,
+                                            serialization.data,
+                                            uuid.UUID(bytes=event.uuid),
+                                            msg.sequenceNumber)                              
+                            finally:
+                                self._lock.release()  
 
                 elif fd is self._readFd:
                     running = False
@@ -237,18 +240,21 @@ class EventService:
                         running = False
                         break
 
-                    event = event_pb2.Event()
+                    (length,) = struct.unpack_from("!H",data)
 
-                    event.ParseFromString(data)
+                    if length == len(data) - 2:
+                        event = event_pb2.Event()
 
-                    for serialization in event.data.serializations:
-                        events.append((serialization.nemId,
-                                       serialization.eventId,
-                                       serialization.data))
+                        event.ParseFromString(data[2:])
 
-                    return (uuid.UUID(bytes=event.uuid),
-                            event.sequenceNumber,
-                            tuple(events))
+                        for serialization in event.data.serializations:
+                            events.append((serialization.nemId,
+                                           serialization.eventId,
+                                           serialization.data))
+
+                        return (uuid.UUID(bytes=event.uuid),
+                                event.sequenceNumber,
+                                tuple(events))
 
                 elif fd is self._socketOTA:
                     data,_ = self._socketOTA.recvfrom(65535)
@@ -305,7 +311,10 @@ class EventService:
         serialization.eventId = event.IDENTIFIER
         serialization.data = event.serialize()
         
-        self._socket.sendto(msg.SerializeToString(),(self._multicastGroup,self._port))
+        buf = msg.SerializeToString()
+        
+        self._socket.sendto(struct.pack("!H",len(buf)) + buf,
+                            (self._multicastGroup,self._port))
 
 
 if __name__ == "__main__":

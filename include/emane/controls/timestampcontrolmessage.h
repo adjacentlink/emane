@@ -78,6 +78,15 @@ namespace EMANE
       TimeStampControlMessage * create(const TimePoint & timestamp);
 
       /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      TimeStampControlMessage * clone() const override;
+
+      /**
        * Destroys an instance
        */
       ~TimeStampControlMessage();
@@ -97,7 +106,7 @@ namespace EMANE
       
       TimeStampControlMessage(const TimePoint & timestamp);
       
-      TimeStampControlMessage(const TimeStampControlMessage &) = delete;
+      TimeStampControlMessage(const TimeStampControlMessage &);
 
       TimeStampControlMessage &
       operator=(const TimeStampControlMessage &) = delete;

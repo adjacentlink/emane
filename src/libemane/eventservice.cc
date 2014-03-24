@@ -40,6 +40,8 @@
 
 #include "emane/utils/spawnmemberfunc.h"
 #include "emane/utils/recvcancelable.h"
+#include "emane/utils/vectorio.h"
+#include "emane/net.h"
 
 #include <sstream>
 
@@ -324,7 +326,13 @@ void EMANE::EventService::sendEvent(BuildId buildId,
                                       "Event %03hu EMANE::EventService::sendEvent",
                                       eventId);
 
-              if(mcast_.send(sSerialization.c_str(),sSerialization.size()) == -1)
+              std::uint16_t u16Length = HTONS(sSerialization.size());
+
+              Utils::VectorIO vectorIO{
+                {reinterpret_cast<char *>(&u16Length),sizeof(u16Length)},
+                  {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}};
+              
+              if(mcast_.send(&vectorIO[0],static_cast<int>(vectorIO.size())) == -1)
                 {
                   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                           ERROR_LEVEL,
@@ -411,13 +419,18 @@ ACE_THR_FUNC_RETURN  EMANE::EventService::processEventMessage()
                                   "EventService packet received len: %zd",
                                   len);
           
+          std::uint16_t * pu16Length{reinterpret_cast<std::uint16_t *>(buf)};
 
+          *pu16Length = NTOHS(*pu16Length);
+              
+          len -= sizeof(std::uint16_t);
 
           EMANEMessage::Event msg;
   
           try
             {
-              if(msg.ParseFromArray(buf,len))
+              if(static_cast<size_t>(len) == *pu16Length && 
+                 msg.ParseFromArray(&buf[2], *pu16Length))
                 {
                   // only process multicast events that were not sourced locally
                   if(uuid_compare(uuid_,reinterpret_cast<const unsigned char *>(msg.uuid().data())))
@@ -442,7 +455,7 @@ ACE_THR_FUNC_RETURN  EMANE::EventService::processEventMessage()
                               
                               std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
                               
-                              if(!nemId || registeredNEMId == nemId)
+                              if(!nemId || !registeredNEMId || registeredNEMId == nemId)
                                 {
                                   pEventServiceUser->processEvent(static_cast<EventId>(repeatedSerialization.eventid()),
                                                                   repeatedSerialization.data());

@@ -86,6 +86,10 @@ void EMANE::Agents::GPSDLocation::Agent::initialize(Registrar & registrar)
                                         ConfigurationProperties::DEFAULT,
                                         {false},
                                         "Enable active connection to GPSd.");
+
+  auto & eventRegistrar = registrar.eventRegistrar();
+  
+  eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
 }
 
 void EMANE::Agents::GPSDLocation::Agent::configure(const ConfigurationUpdate & update)

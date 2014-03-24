@@ -84,6 +84,15 @@ namespace EMANE
                                                double dReceiverSensitivitydBm);
 
       /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      ReceivePropertiesControlMessage * clone() const override;
+
+      /**
        * Destroys an instance
        */
       ~ReceivePropertiesControlMessage();
@@ -148,7 +157,7 @@ namespace EMANE
                                       const Microseconds & span,
                                       double dReceiverSensitivitydBm);
       
-      ReceivePropertiesControlMessage(const ReceivePropertiesControlMessage &) = delete;
+      ReceivePropertiesControlMessage(const ReceivePropertiesControlMessage &);
 
       ReceivePropertiesControlMessage &
       operator=(const ReceivePropertiesControlMessage &) = delete;

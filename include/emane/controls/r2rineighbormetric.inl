@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 
 inline
 EMANE::Controls::R2RINeighborMetric::R2RINeighborMetric(NEMId id,
-                                                        std::uint32_t u32NumRxFrames,
-                                                        std::uint32_t u32NumTxFrames,
-                                                        std::uint32_t u32NumMissedFrames,
+                                                        std::uint64_t u64NumRxFrames,
+                                                        std::uint64_t u64NumTxFrames,
+                                                        std::uint64_t u64NumMissedFrames,
                                                         const EMANE::Microseconds & bandwidthConsumption,
                                                         float fSINRAvgdBm,
                                                         float fSINRStddev,
@@ -44,9 +44,9 @@ EMANE::Controls::R2RINeighborMetric::R2RINeighborMetric(NEMId id,
                                                         std::uint64_t u64TxAvgDataRatebps):
 
 id_{id},
-  u32NumRxFrames_{u32NumRxFrames},
-  u32NumTxFrames_{u32NumTxFrames},
-  u32NumMissedFrames_{u32NumMissedFrames},
+  u64NumRxFrames_{u64NumRxFrames},
+  u64NumTxFrames_{u64NumTxFrames},
+  u64NumMissedFrames_{u64NumMissedFrames},
   bandwidthConsumption_{bandwidthConsumption},
   fSINRAvgdBm_{fSINRAvgdBm},
   fSINRStddev_{fSINRStddev},
@@ -65,21 +65,21 @@ EMANE::NEMId EMANE::Controls::R2RINeighborMetric::getId() const
 }
 
 inline
-std::uint32_t EMANE::Controls::R2RINeighborMetric::getNumRxFrames() const
+std::uint64_t EMANE::Controls::R2RINeighborMetric::getNumRxFrames() const
 {
-  return u32NumRxFrames_;
+  return u64NumRxFrames_;
 }
 
 inline   
-std::uint32_t EMANE::Controls::R2RINeighborMetric::getNumTxFrames() const
+std::uint64_t EMANE::Controls::R2RINeighborMetric::getNumTxFrames() const
 {
-  return u32NumTxFrames_;
+  return u64NumTxFrames_;
 }
 
 inline   
-std::uint32_t EMANE::Controls::R2RINeighborMetric::getNumMissedFrames() const
+std::uint64_t EMANE::Controls::R2RINeighborMetric::getNumMissedFrames() const
 {
-  return u32NumMissedFrames_;
+  return u64NumMissedFrames_;
 }
 
 inline

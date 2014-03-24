@@ -25,7 +25,11 @@ for plugin in eelgenerator \
     commeffectshim \
     timinganalysisshim \
     phyapitestshim \
-    emanephy;
+    emanephy \
+    nemmanager \
+    transportmanager \
+    eventgeneratormanager \
+    eventagentmanager;
 do
     LD_LIBRARY_PATH=$ld_library_path_orig
     

@@ -1,7 +1,8 @@
 bin_PROGRAMS = emaneinfo
 
 emaneinfo_CPPFLAGS =                     \
- -I@top_srcdir@/include                
+ -I@top_srcdir@/include                  \
+ -I@top_srcdir@/src/libemane               
 
 emaneinfo_CXXFLAGS =                     \
  $(libemane_CFLAGS)

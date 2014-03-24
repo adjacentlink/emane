@@ -352,7 +352,7 @@ SUBDIRS = src                            \
 edit = sed                                \
        -e 's|@VERSION[@]|$(VERSION)|g'      
 
-RPMARCH = `rpm --showrc | awk '/^build arch/ {print $$4}'`
+RPMARCH = `arch`
 EXTRA_DIST = \
  AUTHORS             \
  COPYING             \
@@ -845,7 +845,7 @@ cleantar:
 @HAVE_RPMBUILD_TRUE@	.rpmbuild/RPMS/noarch \
 @HAVE_RPMBUILD_TRUE@	.rpmbuild/tmp
 @HAVE_RPMBUILD_TRUE@	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-@HAVE_RPMBUILD_TRUE@	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
+@HAVE_RPMBUILD_TRUE@	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
 @HAVE_RPMBUILD_TRUE@    --define "_topdir $$PWD/.rpmbuild" \
 @HAVE_RPMBUILD_TRUE@    --define "_tmppath $$PWD/.rpmbuild/tmp"
 @HAVE_RPMBUILD_TRUE@	$(MAKE) -C src/emanesh rpm &&\

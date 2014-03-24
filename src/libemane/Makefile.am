@@ -41,11 +41,13 @@ libemane_la_SOURCES =                         \
  antennapattern.cc                            \
  antennaprofilecontrolmessage.cc              \
  antennaprofileevent.cc                       \
+ antennaprofileeventformatter.cc              \
  antennaprofilemanifest.cc                    \
  any.cc                                       \
  boundarymessagemanager.cc                    \
  buildidservice.cc                            \
  commeffectevent.cc                           \
+ commeffecteventformatter.cc                  \
  commonlayerstatistics.cc                     \
  commonmacheader.cc                           \
  commonphyheader.cc                           \
@@ -81,6 +83,8 @@ libemane_la_SOURCES =                         \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
  locationevent.cc                             \
+ locationeventformatter.cc                    \
+ locationinfoformatter.cc                     \
  locationmanager.cc                           \
  logger.cc                                    \
  loglevelupdatehandler.cc                     \
@@ -106,16 +110,24 @@ libemane_la_SOURCES =                         \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
  noiserecorder.cc                             \
+ orientationformatter.cc                      \
  otamanager.cc                                \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
+ pathlosseventformatter.cc                    \
  phylayer.cc                                  \
  phylayerfactory.cc                           \
  platformservice.cc                           \
+ positionformatter.cc                         \
+ positionneuformatter.cc                      \
+ positionorientationvelocityformatter.cc      \
  queuemetricmanager.cc                        \
  r2rineighbormetriccontrolmessage.cc          \
+ r2rineighbormetriccontrolmessageformatter.cc \
  r2riqueuemetriccontrolmessage.cc             \
+ r2riqueuemetriccontrolmessageformatter.cc    \
  r2riselfmetriccontrolmessage.cc              \
+ r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
@@ -145,6 +157,7 @@ libemane_la_SOURCES =                         \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
+ velocityformatter.cc                         \
  antennaprofileevent.pb.cc                    \
  commeffectevent.pb.cc                        \
  commonmacheader.pb.cc                        \
@@ -158,6 +171,7 @@ libemane_la_SOURCES =                         \
  pathlossevent.pb.cc                          \
  radiotorouter.pb.cc                          \
  remotecontrolportapi.pb.cc                   
+
 
 
 EXTRA_DIST=                                   \
@@ -197,6 +211,7 @@ EXTRA_DIST=                                   \
  layerfactorymanager.h                        \
  locationinfo.h                               \
  locationinfo.inl                             \
+ locationinfoformatter.h                      \
  locationmanager.h                            \
  loggerlevelconvert.h                         \
  loggerlevelconvert.inl                       \
@@ -234,8 +249,10 @@ EXTRA_DIST=                                   \
  positionecef.inl                             \
  positionneu.h                                \
  positionneu.inl                              \
+ positionneuformatter.h                       \
  positionorientationvelocity.h                \
  positionorientationvelocity.inl              \
+ positionorientationvelocityformatter.h       \
  positionutils.h                              \
  precomputedpropagationmodelalgorithm.h       \
  propagationmodelalgorithm.h                  \

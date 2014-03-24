@@ -51,10 +51,10 @@ namespace EMANE
      * Create a CommonMACHeader
      *
      * @param registrationId Unique MAC registration id
-     * @param u16SequenceNumber Packet sequence number
+     * @param u64SequenceNumber Packet sequence number
      */
     CommonMACHeader(RegistrationId registrationId, 
-                    std::uint16_t u16SequenceNumber);
+                    std::uint64_t u64SequenceNumber);
 
 
     /**
@@ -89,7 +89,7 @@ namespace EMANE
      *
      * @return sequence number
      */
-    std::uint16_t getSequenceNumber() const;
+    std::uint64_t getSequenceNumber() const;
 
     /**
      * Prepends CommonMACHeader to downstream packet

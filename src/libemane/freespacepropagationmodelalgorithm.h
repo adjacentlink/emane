@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ namespace EMANE
                                                     const LocationInfo & locationInfo,
                                                     const FrequencySegments & segments) override
     {
-      const float FSPL_CONST{41.916900439033640};
+      const double FSPL_CONST{41.916900439033640};
       
       // at least one location is unknown
       if(!locationInfo)
@@ -64,7 +64,10 @@ namespace EMANE
           
           for(const auto & segment : segments)
             {
-              pathloss[i++] = 20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / USEC_PER_SEC_F) * (dDistance / 1000.0));
+              auto val = 
+                20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
+
+              pathloss[i++] = val < 0 ? 0 : val;
             }
         }
       

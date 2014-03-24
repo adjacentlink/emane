@@ -5,18 +5,18 @@ emaneeventservice - EMANE Event Service
 emaneeventservice [OPTIONS]... CONFIG_URI
 .SH DESCRIPTION
 .P
-emaneeventservice creates and manages event generators. These generators create events that are transmitted to targeted NEM components.
+emaneeventservice loads generator plugins that create EMANE events targeting NEMs.
 .P
-CONFIG_URI is the XML containing the Event Service configuration.
+\fBCONFIG_URI\fP is the XML containing the Event Service configuration.
 .SH OPTIONS
 .P
 The following options are supported:
 .TP
-.B \--version
+.B \-v, \--version
 Display version and exit
 .TP
-.B \--loglevel [0,4]
-Set the current application log level.
+.B \-l, \--loglevel [0,4]
+Set the current application log level. Default is 2.
 .br
 .B 0 - No Logging
 .br
@@ -24,50 +24,47 @@ Set the current application log level.
 .br
 .B 2 - Error Level
 .br
-.B 3 - Stat Level
+.B 3 - INFO Level
 .br
 .B 4 - Debug Level
 .TP
-.B \--realtime
-Run with realtime priority and SCHED_RR.  Must have superuser privledge.
+.B \-r, \--realtime
+Run with realtime priority and SCHED_RR.  Must have superuser privileged.
 .TP
-.B \--starttime
-Set the start time HH:MM:SS (ex. 09:30:00)
-.TP
-.B \--nextday
-Set the start time to start the test on the next day, after midnight
-.TP
-.B \--logserver DESTINATION:PORT
-Enable remote logging and direct all logging messages to the given endpoint.
+.B \-p, \--priority [0,99]
+Set the realtime priority level. Valid only with \fB\-r, \--realtime\fP. Default is 50.
 .TP
 .B \--logfile FILE
-Log to a file
+Log to a file instead of stdout.
 .TP
-.B \--daemonize 
-Run EMANE in the background
+.B \-d, --daemonize 
+Run in the background.
 .TP
 .B \--syslog
-Log to syslogd
-.SH Example
-Example event service XML using the mitremobility generator
-.br
-.nf
-
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE eventservice SYSTEM "http://configserver/dtd/eventservice.dtd">
-<eventservice name="Sample Event Service" deployment="deployment.xml">
-  <param name="eventservicegroup" value="224.1.2.8:45703"/>
-  <generator name="Mobility Model Generator" definition="mitremobilitygenerator.xml"/>
-</eventservice>
-.fi
+Log to syslog instead of stdout.
+.TP
+.B \--pidfile
+Write application pid to file.
+.TP
+.B \--uuidfile
+Write instance UUID file.
+.TP
+.B \--starttime
+Time to start event generation HH:MM:SS (ex. 09:30:00)
+.TP
+.B \--nextday
+Start time is tomorrow, i.e. after midnight.
 .SH VERSION
 @VERSION@
 .SH BUGS
-To report a bug, please send and email to <labs at cengen dot com>
+To report a bug, please send and email to <labs at adjacentlink dot com>
+.SH SEE ALSO
+emanetransport(1) emaneeventservice(1) emaneeventd(1) emanesh
 .SH AUTHORS
-DRS CenGen, LLC Columbia, MD
-.br
-http://cengen.com
+Adjacent Link LLC
+.br 
+https://github.com/adjacentlink/emane
 .SH NOTES
 .P
 EMANE is released under the BSD License.
+

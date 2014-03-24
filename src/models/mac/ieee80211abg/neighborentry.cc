@@ -41,10 +41,15 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::NeighborEntry():
  fAverageHiddenRxPowerMilliWatts_{},
  fAverageCommonRxPowerMilliWatts_{}
 {
-  utilizationTypeMap_.insert(std::make_pair(MSG_TYPE_BROADCAST_DATA,        NeighborEntry::Utilization()));
-  utilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_DATA,          NeighborEntry::Utilization()));
-  utilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_RTS_CTS_DATA,  NeighborEntry::Utilization()));
-  utilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_CTS_CTRL,      NeighborEntry::Utilization()));
+  prevUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_BROADCAST_DATA,        NeighborEntry::Utilization()));
+  prevUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_DATA,          NeighborEntry::Utilization()));
+  prevUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_RTS_CTS_DATA,  NeighborEntry::Utilization()));
+  prevUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_CTS_CTRL,      NeighborEntry::Utilization()));
+
+  currUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_BROADCAST_DATA,        NeighborEntry::Utilization()));
+  currUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_DATA,          NeighborEntry::Utilization()));
+  currUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_RTS_CTS_DATA,  NeighborEntry::Utilization()));
+  currUtilizationTypeMap_.insert(std::make_pair(MSG_TYPE_UNICAST_CTS_CTRL,      NeighborEntry::Utilization()));
 }
 
 
@@ -63,7 +68,7 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::getUtilizationMicroseconds(std::uint
   EMANE::Microseconds result{};
 
   // all utilization types
-  for(auto & iter : utilizationTypeMap_)
+  for(auto & iter : prevUtilizationTypeMap_)
    {
      // check mask
      if(iter.first & msgTypeMask)
@@ -99,7 +104,7 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::getNumberOfPackets(std::uint8_t msgT
   size_t result = 0;
 
   // all utilization types
-  for(auto & iter : utilizationTypeMap_)
+  for(auto & iter : prevUtilizationTypeMap_)
    {
      // check mask
      if(iter.first & msgTypeMask)
@@ -164,7 +169,7 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::getRxPowerMilliWatts(std::uint8_t ms
 {
   float result{};
 
-  for(auto & iter : utilizationTypeMap_)
+  for(auto & iter : prevUtilizationTypeMap_)
    {
      // check mask
      if(iter.first & msgTypeMask)
@@ -177,27 +182,14 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::getRxPowerMilliWatts(std::uint8_t ms
 }
 
 
-void 
-EMANE::Models::IEEE80211ABG::NeighborEntry::resetUtilization(std::uint8_t msgTypeMask)
-{
-  for(auto & iter : utilizationTypeMap_)
-   {
-     // check mask
-     if(iter.first & msgTypeMask)
-      {
-        // reset entry
-        iter.second.reset();
-      }
-   }
-}
-
-
 
 void 
-EMANE::Models::IEEE80211ABG::NeighborEntry::resetUtilization()
+EMANE::Models::IEEE80211ABG::NeighborEntry::storeUtilization()
 {
+  prevUtilizationTypeMap_ = currUtilizationTypeMap_;
+
   // all utilization types
-  for(auto & iter : utilizationTypeMap_)
+  for(auto & iter : currUtilizationTypeMap_)
     {
       // reset entry
       iter.second.reset();
@@ -212,7 +204,7 @@ EMANE::Models::IEEE80211ABG::NeighborEntry::updateChannelActivity(const EMANE::M
                                                                   float fRxPowerMilliWatts, 
                                                                   size_t numPackets)
 {
-  utilizationTypeMap_[type].update(numPackets, bandWidthMicroseconds, fRxPowerMilliWatts);
+  currUtilizationTypeMap_[type].update(numPackets, bandWidthMicroseconds, fRxPowerMilliWatts);
 
   lastActivityTime_ = activityTime;
 }

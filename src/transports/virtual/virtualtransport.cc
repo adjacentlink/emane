@@ -44,6 +44,15 @@
 #include "emane/controls/serializedcontrolmessage.h"
 #include "emane/controls/flowcontrolcontrolmessage.h"
 
+#include "emane/controls/r2rineighbormetriccontrolmessage.h"
+#include "emane/controls/r2rineighbormetriccontrolmessageformatter.h"
+
+#include "emane/controls/r2riqueuemetriccontrolmessage.h"
+#include "emane/controls/r2riqueuemetriccontrolmessageformatter.h"
+
+#include "emane/controls/r2riselfmetriccontrolmessage.h"
+#include "emane/controls/r2riselfmetriccontrolmessageformatter.h"
+
 #include <sstream>
 
 namespace {
@@ -160,7 +169,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           u64BitRate_ = item.second[0].asUINT64();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %ju",
                                   id_, 
                                   __func__, 
@@ -172,7 +181,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           sDevicePath_ = item.second[0].asString();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s",
                                   id_, 
                                   __func__, 
@@ -184,7 +193,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           sDeviceName_ = item.second[0].asString();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -196,7 +205,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           mask_ =  item.second[0].asINETAddr();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -208,7 +217,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           address_ = item.second[0].asINETAddr();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %s", 
                                   id_, 
                                   __func__, 
@@ -220,7 +229,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bARPMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d",
                                   id_, 
                                   __func__, 
@@ -232,7 +241,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bBroadcastMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -244,7 +253,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bArpCacheMode_ = item.second[0].asBool();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -256,7 +265,7 @@ void EMANE::Transports::Virtual::VirtualTransport::configure(const Configuration
           bFlowControlEnable_ = item.second[0].asBool();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
+                                  INFO_LEVEL, 
                                   "TRANSPORTI %03hu VirtualTransport::%s %s: %d", 
                                   id_, 
                                   __func__, 
@@ -334,6 +343,15 @@ void EMANE::Transports::Virtual::VirtualTransport::postStart()
   if(bFlowControlEnable_)
     {
       flowControlClient_.start();
+
+       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "TRANSPORTI %03hu VirtualTransport::%s sent a flow control"
+                              " token request, a handshake response is required to process"
+                              " packets",
+                              id_, 
+                              __func__);            
+       
     }
 }
 
@@ -461,7 +479,27 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
               const auto pFlowControlControlMessage =
                 static_cast<const Controls::FlowControlControlMessage *>(pMessage);
 
-              flowControlClient_.processFlowControlMessage(pFlowControlControlMessage);
+              if(bFlowControlEnable_)
+                {
+                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                 ERROR_LEVEL,
+                                                 "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                 " token update %hu tokens",
+                                                 id_,
+                                                 __func__,
+                                                 pFlowControlControlMessage->getTokens());
+
+                  flowControlClient_.processFlowControlMessage(pFlowControlControlMessage);
+                }
+              else
+                {
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          ERROR_LEVEL,
+                                          "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                          " message but flow control is not enabled",
+                                          id_, 
+                                          __func__); 
+                }
             }
           break;
 
@@ -479,7 +517,79 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
                         Controls::FlowControlControlMessage::create(
                                                                 pSerializedControlMessage->getSerialization())};
             
-                      flowControlClient_.processFlowControlMessage(pFlowControlControlMessage.get());
+                      if(bFlowControlEnable_)
+                        {
+                          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                 ERROR_LEVEL,
+                                                 "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                 " token update %hu tokens",
+                                                 id_,
+                                                 __func__,
+                                                 pFlowControlControlMessage->getTokens());
+
+                            flowControlClient_.processFlowControlMessage(pFlowControlControlMessage.get());
+                          
+                        }
+                      else
+                        {
+                          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                                  ERROR_LEVEL,
+                                                  "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
+                                                  " message but flow control is not enabled",
+                                                  id_, 
+                                                  __func__);
+                        }
+                    }
+                  break;
+
+                  case Controls::R2RINeighborMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RINeighborMetricControlMessage> 
+                        pR2RINeighborMetricControlMessage{
+                        Controls::R2RINeighborMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RINeighborMetricControlMessageFormatter(
+                                                       pR2RINeighborMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
+                    }
+                  break;
+
+                  case Controls::R2RIQueueMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RIQueueMetricControlMessage> 
+                        pR2RIQueueMetricControlMessage{
+                        Controls::R2RIQueueMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RIQueueMetricControlMessageFormatter(
+                                                       pR2RIQueueMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
+                    }
+                  break;
+
+                  case Controls::R2RISelfMetricControlMessage::IDENTIFIER:
+                    {
+                      std::unique_ptr<Controls::R2RISelfMetricControlMessage> 
+                        pR2RISelfMetricControlMessage{
+                        Controls::R2RISelfMetricControlMessage::create(
+                                                                pSerializedControlMessage->getSerialization())};
+
+                      LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                      DEBUG_LEVEL, 
+                                                      Controls::R2RISelfMetricControlMessageFormatter(
+                                                       pR2RISelfMetricControlMessage.get()),
+                                                      "TRANSPORTI %03hu VirtualTransport::%s",
+                                                      id_, 
+                                                      __func__);
                     }
                   break;
 

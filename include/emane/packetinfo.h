@@ -35,6 +35,7 @@
 #define EMANEPACKETINFO_HEADER_
 
 #include "emane/types.h"
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -61,6 +62,22 @@ namespace EMANE
                NEMId destination,
                Priority priority,
                TimePoint creationTime);
+
+    /**
+     * Creates a PacketInfo instance
+     *
+     * @param source The src NEM
+     * @param destination The destination NEM
+     * @param priority The priority
+     * @param creationTime Creation time of the packet
+     * @param uuid Application UUID (upstream only)
+     */
+    PacketInfo(NEMId source,
+               NEMId destination,
+               Priority priority,
+               TimePoint creationTime,
+               const uuid_t & uuid);
+
     
     /**
      * Destroys an instance
@@ -97,11 +114,19 @@ namespace EMANE
      */
     TimePoint getCreationTime() const;
     
+    /**
+     * Gets the application UUID
+     *
+     * @return uuid
+     */
+    const uuid_t & getUUID() const;
+    
   private:
     NEMId source_;      
     NEMId destination_;
     Priority priority_; 
     TimePoint creationTime_;
+    uuid_t uuid_;
   };
 }
 

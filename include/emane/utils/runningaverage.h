@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,16 +39,32 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * @class RunningAverage
+     *
+     * @brief A running average statistic wrapper
+     */
     template<class T>
     class RunningAverage
     {
     public:
+      /**
+       * Creates a RunningAverage instance
+       */
       RunningAverage() :
         pStatistic_{},
         value_{},
         count_{}
-      { }
+      {}
 
+      /**
+       * Updates the running average
+       *
+       * @param value New value to add to running average
+       *
+       * @note Internally detects when the underlying statistic
+       * has been cleared and accounts for the change
+       */
       void update(T value)
       {
         T newValue{value};
@@ -72,6 +88,11 @@ namespace EMANE
           }
       }
 
+      /**
+       * Assign the underlying statistic to hold the running average
+       *
+       * @param p Pointer to a numeric statistic
+       */
       void registerStatistic(StatisticNumeric<T> * p)
       {
         pStatistic_ = p;

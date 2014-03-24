@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008,2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -57,6 +57,7 @@ namespace EMANE
      *
      * @param pStatefulLayer Reference to the stateful layer
      * @param pLayer Reference to the wrapped layer
+     * @param registrar Registrar reference
      * 
      * @exception InitializeException
      *

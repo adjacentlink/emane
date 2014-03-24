@@ -93,6 +93,15 @@ namespace EMANE
        */
       static
       R2RIQueueMetricControlMessage * create(const R2RIQueueMetrics & queueMetrics);
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      R2RIQueueMetricControlMessage * clone() const override;
       
       /**
        * Destroys an instance
@@ -121,7 +130,7 @@ namespace EMANE
       
       R2RIQueueMetricControlMessage(const  R2RIQueueMetrics & queueMetrics);
       
-      R2RIQueueMetricControlMessage(const  R2RIQueueMetricControlMessage &) = delete;
+      R2RIQueueMetricControlMessage(const  R2RIQueueMetricControlMessage &);
       
       R2RIQueueMetricControlMessage & 
       operator=(const R2RIQueueMetricControlMessage &) = delete;

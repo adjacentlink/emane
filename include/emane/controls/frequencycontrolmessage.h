@@ -79,6 +79,15 @@ namespace EMANE
                                        const FrequencySegments & frequencySegments);
 
       /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      FrequencyControlMessage * clone() const override;
+
+      /**
        * Destroys an instance
        */
       ~FrequencyControlMessage();
@@ -108,7 +117,7 @@ namespace EMANE
       FrequencyControlMessage(std::uint64_t u64BandwidthHz,
                               const FrequencySegments & frequencySegments);
       
-      FrequencyControlMessage(const FrequencyControlMessage &) = delete;
+      FrequencyControlMessage(const FrequencyControlMessage &);
 
       FrequencyControlMessage &
       operator=(const FrequencyControlMessage &) = delete;

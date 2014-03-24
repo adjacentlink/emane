@@ -97,6 +97,15 @@ namespace EMANE
       OTATransmitterControlMessage * create(const OTATransmitters & transmitters);
 
       /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      OTATransmitterControlMessage * clone() const override;
+
+      /**
        * Destroys an instance
        */
       ~OTATransmitterControlMessage();
@@ -123,7 +132,7 @@ namespace EMANE
       
       OTATransmitterControlMessage(const OTATransmitters & transmitters);
       
-      OTATransmitterControlMessage(const OTATransmitterControlMessage &) = delete;
+      OTATransmitterControlMessage(const OTATransmitterControlMessage &);
       
       OTATransmitterControlMessage & 
       operator=(const OTATransmitterControlMessage &) = delete;

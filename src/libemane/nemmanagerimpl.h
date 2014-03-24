@@ -58,14 +58,7 @@ namespace EMANE
     class NEMManagerImpl : public NEMManager
     {
     public:
-      /**
-       * Constructor
-       *
-       * @param id Platform id as configured in XML
-       * @param statsManager reference to the StatisticsManager
-       *
-       */
-      NEMManagerImpl(PlatformId id);
+      NEMManagerImpl(const uuid_t & uuid);
 
       ~NEMManagerImpl();
 
@@ -88,8 +81,6 @@ namespace EMANE
       using PlatformNEMMap = std::map<NEMId,std::unique_ptr<NEM>>;
     
       PlatformNEMMap platformNEMMap_;
-
-      PlatformId platformId_;
 
       ACE_Acceptor<EMANE::ControlPort::ControlPortService,ACE_SOCK_ACCEPTOR> acceptor_;
 

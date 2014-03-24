@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -63,16 +63,14 @@ namespace EMANE
     /**
      * @brief schedule a timed event.
      *
-     * @param taskType              identifier corresponding to the task type, used by handler
-     *                              to determine what action to take.
-     * @param arg                   opaque data.
-     * @param tvTimeOut             the absolute time the event is scheduled to occur.
-     * @param tvInterval            optional the interval time the event shall re-occur.
-     * @param pPlatformServiceUser  reference to the PlatformServiceUser.
+     * @param timePoint Schedule absolute time for timer to go off
+     * @param arg Opaque data pointer
+     * @param interval Timer reschedule interval. Default is one shot.
+     * @param pTimerServiceUser Pointer to the TimerServiceUser
      *
      * @return identifier corresponding to the event id, or -1 on failure
      */
-    TimerEventId scheduleTimedEvent(const TimePoint & timeout, 
+    TimerEventId scheduleTimedEvent(const TimePoint & timePoint, 
                                     const void *arg, 
                                     const Microseconds & interval,
                                     TimerServiceUser *pTimerServiceUser);

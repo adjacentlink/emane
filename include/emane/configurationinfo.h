@@ -54,6 +54,7 @@ namespace EMANE
      * configuration items (ones with min and max values)
      *
      * @param sName Name of the configuration item
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description
@@ -79,6 +80,7 @@ namespace EMANE
      * configuration items (ones without min and max values)
      *
      * @param sName Name of the configuration item
+     * @param type Underlying Any type
      * @param properties Configuration properties mask
      * @param values Default configuration values
      * @param sUsage Parameter usage description

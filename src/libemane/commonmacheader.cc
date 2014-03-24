@@ -37,9 +37,9 @@ class EMANE::CommonMACHeader::Implementation
 {
 public:
   Implementation(RegistrationId registrationId,
-                 std::uint16_t u16SequenceNumber):
+                 std::uint64_t u64SequenceNumber):
     registrationId_{registrationId},
-    u16SequenceNumber_{u16SequenceNumber}
+    u64SequenceNumber_{u64SequenceNumber}
     {}
     
   RegistrationId getRegistrationId() const
@@ -47,14 +47,14 @@ public:
     return registrationId_;
   }
   
-  std::uint16_t getSequenceNumber() const
+  std::uint64_t getSequenceNumber() const
   {
-    return u16SequenceNumber_;
+    return u64SequenceNumber_;
   }
   
 private:
   RegistrationId registrationId_;
-  std::uint16_t u16SequenceNumber_;
+  std::uint64_t u64SequenceNumber_;
 };
 
 EMANE::CommonMACHeader::CommonMACHeader(UpstreamPacket & pkt)
@@ -79,11 +79,8 @@ EMANE::CommonMACHeader::CommonMACHeader(UpstreamPacket & pkt)
               throw SerializationException("unable to deserialize CommonMACHeader");
             }
           
-          const RegistrationId registrationId{static_cast<RegistrationId>(msg.registrationid())};
-          const std::uint16_t u16SequenceNumber{static_cast<std::uint16_t>(msg.sequencenumber())};
-
-          pImpl_.reset(new Implementation{registrationId,
-                                          u16SequenceNumber});
+          pImpl_.reset(new Implementation{static_cast<RegistrationId>(msg.registrationid()),
+                msg.sequencenumber()});
 
         }
       else
@@ -102,9 +99,9 @@ EMANE::CommonMACHeader::CommonMACHeader(UpstreamPacket & pkt)
 
 
 EMANE::CommonMACHeader::CommonMACHeader(RegistrationId registrationId, 
-                                        std::uint16_t u16SequenceNumber):
+                                        std::uint64_t u64SequenceNumber):
 pImpl_{new Implementation{registrationId, 
-                          u16SequenceNumber}}
+                          u64SequenceNumber}}
 {}
 
 
@@ -119,7 +116,7 @@ EMANE::RegistrationId EMANE::CommonMACHeader::getRegistrationId() const
   return pImpl_->getRegistrationId();
 }
     
-std::uint16_t EMANE::CommonMACHeader::getSequenceNumber() const
+std::uint64_t EMANE::CommonMACHeader::getSequenceNumber() const
 {
   return pImpl_->getSequenceNumber();
 }

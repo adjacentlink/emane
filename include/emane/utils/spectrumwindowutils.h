@@ -87,8 +87,9 @@ namespace EMANE
      * @param noiseData Spectrum window bin data to analyze
      * @param dRxSensitivityMilliWatt Receiver sensitivity in mW
      * @param dRxPowerdBm Signal power level in dBm
+     * @param bSignalInNoise Flag indicating whether in-band signal is in the window
      * @param startBin Start bin index
-     * @param startBin End bin index
+     * @param endBin End bin index
      *
      * @return A pair indicating the noise floor in dBm and a boolean flag set @a true if
      * the in-band signal was contained in the bin.
@@ -132,15 +133,15 @@ namespace EMANE
      * @return compressed representation
      * 
      * Compression format consists of wheel-index wheel-value pairs where:
-     *  (1) An implicit initial pair index=0, value=0 exists unless index 0
+     *  -# An implicit initial pair index=0, value=0 exists unless index 0
      *      is otherwise specified
-     *  (2) An index value is valid until a new index value is specified
-     *  (3) The last index value pair is valid through the end of the wheel
+     *  -# An index value is valid until a new index value is specified
+     *  -# The last index value pair is valid through the end of the wheel
      *
      * Examples if the wheel contained 100 values and:
-     *   (1) All values were 0, the entire CompressedRepresentation would be empty: {}
-     *   (2) First 50 values were 1 and the next 50 values were 2: {{0,1},{50,2}}
-     *   (3) First 10 values were 1 and the last 10 values were 1: {{0,1},{10,0},{90,1}}
+     *   -# All values were 0, the entire CompressedRepresentation would be empty: {}
+     *   -# First 50 values were 1 and the next 50 values were 2: {{0,1},{50,2}}
+     *   -# First 10 values were 1 and the last 10 values were 1: {{0,1},{10,0},{90,1}}
      *
      * @note This is currently used in the standalone test cases
      */

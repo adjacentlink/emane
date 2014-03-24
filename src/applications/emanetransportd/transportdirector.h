@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,11 +34,12 @@
 #ifndef EMANETRANSPORTDIRECTOR_HEADER_
 #define EMANETRANSPORTDIRECTOR_HEADER_
 
-#include <string>
-
 #include "emane/application/transportbuilder.h"
 #include "transportdaemonconfiguration.h"
 #include "emane/configureexception.h"
+
+#include <string>
+#include <uuid.h>
 
 /**
  * @class EMANE::TransportDirector transportdirector.h "transportdirector.h"
@@ -79,8 +80,10 @@ namespace EMANE
   
     /**
      * Constructs the passed-in platform
+     *
+     * @param uuid Instance UUID
      */
-    std::unique_ptr<TransportManager> construct();
+    std::unique_ptr<TransportManager> construct(const uuid_t & uuid);
 
   private:
     /**

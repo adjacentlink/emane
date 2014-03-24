@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -55,7 +55,7 @@ namespace EMANE
     class EventAgentManagerImpl : public EventAgentManager
     {
     public:
-      EventAgentManagerImpl();
+      EventAgentManagerImpl(const uuid_t & uuid);
       
       ~EventAgentManagerImpl();
       

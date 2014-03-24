@@ -348,7 +348,8 @@ libtransvirtual_la_CPPFLAGS = \
  -I@top_srcdir@/include      \
  -I../common                 \
  $(ACE_CFLAGS)               \
- $(AM_CFLAGS)
+ $(AM_CFLAGS)                \
+ $(libuuid_CFLAGS)           
 
 libtransvirtual_la_SOURCES = \
  virtualtransport.cc        \

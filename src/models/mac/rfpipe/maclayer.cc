@@ -80,7 +80,7 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
                                           PlatformServiceProvider * pPlatformServiceProvider,
                                           RadioServiceProvider * pRadioServiceProvider):
   MACLayerImplementor{id, pPlatformServiceProvider, pRadioServiceProvider},
-  u16TxSequenceNumber_{},
+  u64TxSequenceNumber_{},
   flowControlManager_{*this},
   pcrManager_(id, pPlatformService_),
   neighborMetricManager_(id),
@@ -116,54 +116,80 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                         ConfigurationProperties::DEFAULT |
                                         ConfigurationProperties::MODIFIABLE,
                                         {false},
-                                        "Enable promiscuous mode.");
+                                        "Defines whether promiscuous mode is enabled or not."
+                                        " If promiscuous mode is enabled, all received packets"
+                                        " (intended for the given node or not) that pass the"
+                                        " probability of reception check are sent upstream to"
+                                        " the transport.");
 
   configRegistrar.registerNumeric<std::uint64_t>("datarate",
                                                  ConfigurationProperties::DEFAULT |
                                                  ConfigurationProperties::MODIFIABLE,
                                                  {1000000},
-                                                 "Datarate in bps.",
+                                                 "Defines the transmit datarate in bps."
+                                                 " The datarate is used by the transmitter"
+                                                 " to compute the transmit delay (packet size/datarate)"
+                                                 " between successive transmissions.",
                                                  1);
+
+  /** [configurationregistrar-registernumeric-snippet] */
 
   configRegistrar.registerNumeric<float>("jitter",
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Jitter in seconds.",
+                                         "Defines delay jitter in seconds applied to each transmitted packet."
+                                         " The jitter is added to the configured delay based on a uniform"
+                                         " random distribution between +/- the configured jitter value.",
                                          0.0f);
 
   configRegistrar.registerNumeric<float>("delay",
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {0},
-                                         "Delay in seconds.",
+                                         "Defines an additional fixed delay in seconds applied to each"
+                                         " transmitted packet.",
                                          0.0f);
 
   configRegistrar.registerNumeric<bool>("flowcontrolenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Enable flow control with transport.");
+                                        "Defines whether flow control is enabled. Flow control only works"
+                                        " with the virtual transport and the setting must match the setting"
+                                        " within the virtual transport configuration.");
 
   configRegistrar.registerNumeric<std::uint16_t>("flowcontroltokens",
                                                  ConfigurationProperties::DEFAULT,
                                                  {10},
-                                                 "Number of flow control tokens.");
+                                                 "Defines the maximum number of flow control tokens"
+                                                 " (packet transmission units) that can be processed from the"
+                                                 " virtual transport without being refreshed. The number of"
+                                                 " available tokens at any given time is coordinated with the"
+                                                 " virtual transport and when the token count reaches zero, no"
+                                                 " further packets are transmitted causing application socket"
+                                                 " queues to backup.");
+  /** [configurationregistrar-registernumeric-snippet] */
 
+  /** [configurationregistrar-registernonnumeric-snippet] */
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
-                                                  "Absolute URI of the PCR curve file.");
+                                                  "Defines the absolute URI of the Packet Completion Rate (PCR) curve"
+                                                  " file. The PCR curve file contains probability of reception curves"
+                                                  " as a function of Signal to Interference plus Noise Ratio (SINR).");
+  /** [configurationregistrar-registernonnumeric-snippet] */
 
   configRegistrar.registerNumeric<bool>("radiometricenable",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
-                                        "Radio metric enable/disable.");
+                                        "Defines if radio metrics will be reported up via the Radio to Router Interface"
+                                        " (R2RI).");
 
            
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
                                          ConfigurationProperties::DEFAULT,
                                          {1.0f},
-                                         "Radio metric report interval in sec.",
+                                         "Defines the metric report interval in seconds in support of the R2RI feature.",
                                          0.1f,
                                          60.0f);
 
@@ -171,7 +197,8 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                          ConfigurationProperties::DEFAULT |
                                          ConfigurationProperties::MODIFIABLE,
                                          {60.0f},
-                                         "Neighbor metric delete time in sec.",
+                                         "Defines the time in seconds of no RF receptions from a given neighbor"
+                                         " before it is removed from the neighbor table.",
                                          1.0f,
                                          3660.0f);
 
@@ -202,11 +229,12 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
                           id_, 
                           pzLayerName, 
                           __func__);
-  
+
   for(const auto & item : update)
     {
       if(item.first == "enablepromiscuousmode")
         {
+          /** [logservice-infolog-snippet] */  
           bPromiscuousMode_ = item.second[0].asBool();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
@@ -217,7 +245,7 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
                                   __func__, 
                                   item.first.c_str(), 
                                   bPromiscuousMode_ ? "on" : "off");
-          
+          /** [logservice-infolog-snippet] */  
         }
       else if(item.first == "datarate")
         {
@@ -371,14 +399,11 @@ EMANE::Models::RFPipe::MACLayer::start()
   // load pcr curve
   pcrManager_.load(sPCRCurveURI_);
   
-  if(bRadioMetricEnable_)
-    {
-      // set the neighbor delete time
-      neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
+  // set the neighbor delete time
+  neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
 
-      // add downstream queue to be tracked
-      queueMetricManager_.addQueueMetric(0, downstreamQueue_.getMaxCapacity());
-    }
+  // add downstream queue to be tracked
+  queueMetricManager_.addQueueMetric(0, downstreamQueue_.getMaxCapacity());
 }
 
 
@@ -397,37 +422,51 @@ EMANE::Models::RFPipe::MACLayer::postStart()
     {
       // start flow control 
       flowControlManager_.start(u16FlowControlTokens_);
-    }
 
-  if(bRadioMetricEnable_)
-    {
-      // set the timer timeout (absolute time), arg, interval
-      radioMetricTimedEventId_ = 
-        pPlatformService_->timerService().
-        scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
-                           new std::function<bool()>{[this]()
-                               {
-                                 ControlMessages msgs{
-                                   Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
-                                                                                  u64DataRatebps_,
-                                                                                  radioMetricReportIntervalMicroseconds_),
-                                     Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
-                                     Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
-                                 
-                                 sendUpstreamControl(msgs);
-
-                                 return false;
-                               }},
-                           radioMetricReportIntervalMicroseconds_);
-
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
                               DEBUG_LEVEL,
-                              "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
+                              "MACI %03hu %s::%s sent a flow control token update,"
+                              " a handshake response is required to process packets",
                               id_, 
-                              pzLayerName,
-                              __func__,
-                              radioMetricTimedEventId_);
+                              pzLayerName, 
+                              __func__);
     }
+
+  // set the timer timeout (absolute time), arg, interval
+  /** [timerservice-scheduletimedevent-snippet] */
+  radioMetricTimedEventId_ = 
+    pPlatformService_->timerService().
+      scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
+                         new std::function<bool()>{[this]()
+                             {
+                               if(!bRadioMetricEnable_)
+                                 {
+                                   neighborMetricManager_.updateNeighborStatus();
+                                 }
+                               else
+                                 {
+                                   ControlMessages msgs{
+                                       Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
+                                                                                      u64DataRatebps_,
+                                                                                      radioMetricReportIntervalMicroseconds_),
+                                       Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
+                                       Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
+
+                                    sendUpstreamControl(msgs);
+                                 }
+
+                                return false;
+                             }},
+                         radioMetricReportIntervalMicroseconds_);
+  /** [timerservice-scheduletimedevent-snippet] */
+
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                          DEBUG_LEVEL,
+                          "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
+                          id_, 
+                          pzLayerName,
+                          __func__,
+                          radioMetricTimedEventId_);
 }
 
 
@@ -544,8 +583,10 @@ EMANE::Models::RFPipe::MACLayer::stop()
                           pzLayerName,
                           __func__);
 
+  /** [timerservice-canceltimedevent-snippet] */ 
   pPlatformService_->timerService().cancelTimedEvent(downstreamQueueTimedEventId_);
-  
+  /** [timerservice-canceltimedevent-snippet] */ 
+
   downstreamQueueTimedEventId_ = 0;
 
   // check flow control enabled
@@ -595,7 +636,27 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
             const auto pFlowControlControlMessage =
               static_cast<const Controls::FlowControlControlMessage *>(pMessage);
 
-            flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+            if(bFlowControlEnable_)
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                                        DEBUG_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request/response",
+                                        id_, 
+                                        pzLayerName, 
+                                        __func__);
+
+                flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+              }
+            else
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                        ERROR_LEVEL,
+                                        "MACI %03hu %s::%s received a flow control token request but"
+                                        " flow control is not enabled", 
+                                        id_,
+                                        pzLayerName,
+                                        __func__);
+              }
           }
           break;
           
@@ -612,8 +673,21 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
                   std::unique_ptr<Controls::FlowControlControlMessage> 
                     pFlowControlControlMessage{
                     Controls::FlowControlControlMessage::create(pSerializedControlMessage->getSerialization())};
-                      
-                  flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                  
+                  if(bFlowControlEnable_)
+                    {
+                      flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                    }
+                  else
+                    {
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                              ERROR_LEVEL,
+                                              "MACI %03hu %s::%s received a flow control token request but"
+                                              " flow control is not enabled", 
+                                              id_,
+                                              pzLayerName,
+                                              __func__);
+                    }
                 }
                 break;
               }
@@ -673,6 +747,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
             {
             case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
               {
+                /** [logservice-loggerfnvargs-snippet] */  
                 pReceivePropertiesControlMessage =
                   static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage); 
 
@@ -682,6 +757,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                 "MACI %03hu RFPipe::%s Receiver Properties Control Message",
                                                 id_,
                                                 __func__);
+                /** [logservice-loggerfnvargs-snippet] */  
               }
               break;
               
@@ -741,7 +817,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                  frequencySegments,
                                                  span,
                                                  beginTime](UpstreamPacket & pkt,
-                                                            std::uint16_t u16SequenceNumber,
+                                                            std::uint64_t u64SequenceNumber,
                                                             std::uint64_t u64DataRate)
             {
               const PacketInfo & pktInfo{pkt.getPacketInfo()};
@@ -751,7 +827,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
                                      "MACI %03hu %s upstream EOR processing: src %hu, dst %hu,"
-                                     " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %hu",
+                                     " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %ju",
                                      id_,
                                      pzLayerName,
                                      pktInfo.getSource(),
@@ -760,7 +836,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                      frequencySegment.getFrequencyHz(),
                                      frequencySegment.getOffset().count(),
                                      frequencySegment.getDuration().count(),
-                                     u16SequenceNumber);
+                                     u64SequenceNumber);
               
               
               double dSINR{};
@@ -846,18 +922,16 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                   return true;
                 }
               
-              if(bRadioMetricEnable_)
-                {
-                  // update neighbor metrics 
-                  neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
-                                                                u16SequenceNumber,      // sequence number 
-                                                                dSINR,                  // sinr in dBm
-                                                                dNoiseFloordB,          // noise floor in dB
-                                                                startOfReception,       // rx time
-                                                                durationMicroseconds,   // duration
-                                                                u64DataRate);           // data rate bps
-                }
-              
+              // update neighbor metrics 
+              neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
+                                                            u64SequenceNumber,      // sequence number
+                                                            pktInfo.getUUID(),
+                                                            dSINR,                  // sinr in dBm
+                                                            dNoiseFloordB,          // noise floor in dB
+                                                            startOfReception,       // rx time
+                                                            durationMicroseconds,   // duration
+                                                            u64DataRate);           // data rate bps
+             
               // check promiscuous mode, destination is this nem or to all nem's
               if(bPromiscuousMode_ ||
                  (pktInfo.getDestination() == id_) ||
@@ -955,12 +1029,12 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
   Microseconds durationMicroseconds{getDurationMicroseconds(pkt.length())};
   
   DownstreamQueueEntry entry{pkt,                   // pkt
-      u16TxSequenceNumber_,  // sequence number
+      u64TxSequenceNumber_,  // sequence number
       beginTime,             // acquire time
       durationMicroseconds,  // duration
       u64DataRatebps_};      // data rate
   
-  ++u16TxSequenceNumber_;
+  ++u64TxSequenceNumber_;
   
   if(bHasPendingDownstreamQueueEntry_)
     {
@@ -1039,14 +1113,16 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
        
        commonLayerStatistics_.processOutbound(pkt, 
                                               std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_));
+
+       /** [pysicallayer-frequencycontrolmessage-snippet] */
        
-       sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u16SequenceNumber_), 
+       sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u64SequenceNumber_), 
                             pkt,
                             {Controls::FrequencyControlMessage::create(0,                                   // bandwidth (0 means use phy default)
                                                                        {{0, pendingDownstreamQueueEntry_.durationMicroseconds_}}), // freq (0 means use phy default)
                                 Controls::TimeStampControlMessage::create(sot)});
        
-       
+       /** [pysicallayer-frequencycontrolmessage-snippet] */
       // queue delay
       Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - sot)}; 
       
@@ -1054,18 +1130,15 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
       
       avgDownstreamQueueDelay_.update(queueDelayMicroseconds.count());
       
-      if(bRadioMetricEnable_)
-        {
-          queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
-                                                downstreamQueue_.getMaxCapacity(),      // queue size
-                                                downstreamQueue_.getCurrentDepth(),     // queue depth
-                                                downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
-                                                queueDelayMicroseconds);                // queue delay 
+      queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
+                                            downstreamQueue_.getMaxCapacity(),      // queue size
+                                            downstreamQueue_.getCurrentDepth(),     // queue depth
+                                            downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
+                                            queueDelayMicroseconds);                // queue delay 
           
-          neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
-                                                        pendingDownstreamQueueEntry_.u64DataRatebps_, 
-                                                        now);
-        }
+      neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
+                                                    pendingDownstreamQueueEntry_.u64DataRatebps_, 
+                                                    now);
       
 
       auto eor = sot + pendingDownstreamQueueEntry_.durationMicroseconds_;
@@ -1177,7 +1250,7 @@ EMANE::Models::RFPipe::MACLayer::checkPOR(float fSINR, size_t packetSize)
   return bResult;       
 }
 
- 
+/** [timerservice-processtimedevent-snippet] */ 
 void 
 EMANE::Models::RFPipe::MACLayer::processTimedEvent(TimerEventId,
                                                    const TimePoint &,
@@ -1192,6 +1265,6 @@ EMANE::Models::RFPipe::MACLayer::processTimedEvent(TimerEventId,
       delete pCallBack;
     }
 }
-
+/** [timerservice-processtimedevent-snippet] */ 
 
 DECLARE_MAC_LAYER(EMANE::Models::RFPipe::MACLayer);

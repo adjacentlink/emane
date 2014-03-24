@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,29 +41,81 @@ namespace EMANE
 {
   namespace Events
   {
+    /**
+     * @class CommEffect
+     *
+     * @brief A CommEffect entry holds the NEM Id of a transmitter and
+     * the link effects to apply to received transmission.
+     * 
+     * @note Instances are immutable
+     */
     class CommEffect
     {
     public:
+      /**
+       * Creates a CommEffect instance
+       *
+       * @param nemId NEM Id of the transmitter
+       * @param lattency Latency in microseconds
+       * @param jitter Jitter in microseconds
+       * @param fProbabilityLoss Probability of loss
+       * @param fProbabilityDuplicate Probability of duplication
+       * @param u64UnicastBitRate Unicast bitrate in bps
+       * @param u64BroadcastBitRate Broadcast bitrate in bps
+       */
       CommEffect(NEMId nemId,
-                 const Microseconds &lattency,
+                 const Microseconds & lattency,
                  const Microseconds & jitter,
                  float fProbabilityLoss,
                  float fProbabilityDuplicate,
                  std::uint64_t u64UnicastBitRate,
                  std::uint64_t u64BroadcastBitRate);
 
+      /**
+       * Gets the NEM id
+       *
+       * @return NEM Id
+       */
       NEMId getNEMId() const;
       
+      /**
+       * Gets the latency in microseconds
+       *
+       * @return latency
+       */
       const Microseconds & getLatency() const;
 
+      /**
+       * Gets the jitter in microseconds
+       */
       const Microseconds & getJitter() const;
 
+      /**
+       * Gets the loss probability
+       *
+       * @return probability
+       */
       float getProbabilityLoss() const;
 
+      /**
+       * Gets the duplication probability
+       *
+       * @return probability
+       */
       float getProbabilityDuplicate() const;
 
+      /**
+       * Getst the unicast bitrate in bps
+       *
+       * @return bitrate
+       */
       std::uint64_t getUnicastBitRate() const;
 
+      /**
+       * Gets the broadcast bitrate in bps
+       *
+       * @return bitrate
+       */
       std::uint64_t getBroadcastBitRate() const;
 
     private:
@@ -76,7 +128,7 @@ namespace EMANE
       std::uint64_t u64BroadcastBitRate_;
     };
 
-    typedef std::list<CommEffect> CommEffects;
+    using CommEffects = std::list<CommEffect>;
   }
 }
 

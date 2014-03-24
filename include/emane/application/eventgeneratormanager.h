@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,6 +39,7 @@
 #include "emane/buildable.h"
 
 #include <memory>
+#include <uuid.h>
 
 namespace EMANE
 {
@@ -56,17 +57,40 @@ namespace EMANE
                                   public Buildable
     {
     public:
+      /**
+       * Destroys an instance
+       */
       virtual ~EventGeneratorManager() {}
       
       /**
-       * Add and event generator
+       * Add an event generator
        * 
        * @param pEventGenerator EventGenerator to add
        */
       virtual void add(std::unique_ptr<EventGenerator> & pEventGenerator) = 0;
-      
+
+      /**
+       * Gets the UUID
+       *
+       * @return UUID
+       */
+      const uuid_t & getUUID() const
+      {
+        return uuid_;
+      }
+
     protected:
-      EventGeneratorManager() {}
+      /**
+       * Creates an EventGeneratorManager instance
+       *
+       * @param uuid Instance UUID
+       */
+      EventGeneratorManager(const uuid_t & uuid)
+      {
+        uuid_copy(uuid_,uuid);
+      }
+
+      uuid_t uuid_;
     };
   }
 }

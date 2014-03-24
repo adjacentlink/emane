@@ -39,7 +39,8 @@
 #include "emane/configureexception.h"
 #include "emane/startexception.h"
 
-EMANE::Application::EventGeneratorManagerImpl::EventGeneratorManagerImpl(){}
+EMANE::Application::EventGeneratorManagerImpl::EventGeneratorManagerImpl(const uuid_t & uuid):
+  EventGeneratorManager{uuid}{}
 
 EMANE::Application::EventGeneratorManagerImpl::~EventGeneratorManagerImpl(){}
 
@@ -118,17 +119,13 @@ void EMANE::Application::EventGeneratorManagerImpl::configure(const Configuratio
 
 void EMANE::Application::EventGeneratorManagerImpl::start()
 {
-  uuid_t uuid;
-
-  uuid_generate(uuid);
-
   try
     {
       EventServiceSingleton::instance()->open(eventServiceGroupAddr_,
                                               sEventServiceDevice_,
                                               u8EventServiceTTL_,
                                               true,
-                                              uuid);
+                                              uuid_);
     }
   catch(EventServiceException & e)
     {

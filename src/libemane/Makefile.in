@@ -126,9 +126,11 @@ libemane_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-antennaprofilecontrolmessage.lo \
 	libemane_la-antennaprofileevent.lo \
+	libemane_la-antennaprofileeventformatter.lo \
 	libemane_la-antennaprofilemanifest.lo libemane_la-any.lo \
 	libemane_la-boundarymessagemanager.lo \
 	libemane_la-buildidservice.lo libemane_la-commeffectevent.lo \
+	libemane_la-commeffecteventformatter.lo \
 	libemane_la-commonlayerstatistics.lo \
 	libemane_la-commonmacheader.lo libemane_la-commonphyheader.lo \
 	libemane_la-configurationcontroller.lo \
@@ -158,6 +160,8 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-frequencycontrolmessageformatter.lo \
 	libemane_la-gainmanager.lo libemane_la-layerfactorymanager.lo \
 	libemane_la-libemane.lo libemane_la-locationevent.lo \
+	libemane_la-locationeventformatter.lo \
+	libemane_la-locationinfoformatter.lo \
 	libemane_la-locationmanager.lo libemane_la-logger.lo \
 	libemane_la-loglevelupdatehandler.lo \
 	libemane_la-loggerrecordmessage.lo libemane_la-logservice.lo \
@@ -175,14 +179,21 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-nemmanagerimpl.lo libemane_la-nemnetworkadapter.lo \
 	libemane_la-nemotaadapter.lo libemane_la-nemqueuedlayer.lo \
 	libemane_la-nemstatefullayer.lo libemane_la-noiserecorder.lo \
-	libemane_la-otamanager.lo \
+	libemane_la-orientationformatter.lo libemane_la-otamanager.lo \
 	libemane_la-otatransmittercontrolmessage.lo \
-	libemane_la-pathlossevent.lo libemane_la-phylayer.lo \
+	libemane_la-pathlossevent.lo \
+	libemane_la-pathlosseventformatter.lo libemane_la-phylayer.lo \
 	libemane_la-phylayerfactory.lo libemane_la-platformservice.lo \
+	libemane_la-positionformatter.lo \
+	libemane_la-positionneuformatter.lo \
+	libemane_la-positionorientationvelocityformatter.lo \
 	libemane_la-queuemetricmanager.lo \
 	libemane_la-r2rineighbormetriccontrolmessage.lo \
+	libemane_la-r2rineighbormetriccontrolmessageformatter.lo \
 	libemane_la-r2riqueuemetriccontrolmessage.lo \
+	libemane_la-r2riqueuemetriccontrolmessageformatter.lo \
 	libemane_la-r2riselfmetriccontrolmessage.lo \
+	libemane_la-r2riselfmetriccontrolmessageformatter.lo \
 	libemane_la-radioservice.lo \
 	libemane_la-receivepropertiescontrolmessage.lo \
 	libemane_la-receivepropertiescontrolmessageformatter.lo \
@@ -208,6 +219,7 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-transportfactorymanager.lo \
 	libemane_la-transportmanagerimpl.lo \
 	libemane_la-upstreampacket.lo libemane_la-upstreamtransport.lo \
+	libemane_la-velocityformatter.lo \
 	libemane_la-antennaprofileevent.pb.lo \
 	libemane_la-commeffectevent.pb.lo \
 	libemane_la-commonmacheader.pb.lo \
@@ -475,11 +487,13 @@ libemane_la_SOURCES = \
  antennapattern.cc                            \
  antennaprofilecontrolmessage.cc              \
  antennaprofileevent.cc                       \
+ antennaprofileeventformatter.cc              \
  antennaprofilemanifest.cc                    \
  any.cc                                       \
  boundarymessagemanager.cc                    \
  buildidservice.cc                            \
  commeffectevent.cc                           \
+ commeffecteventformatter.cc                  \
  commonlayerstatistics.cc                     \
  commonmacheader.cc                           \
  commonphyheader.cc                           \
@@ -515,6 +529,8 @@ libemane_la_SOURCES = \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
  locationevent.cc                             \
+ locationeventformatter.cc                    \
+ locationinfoformatter.cc                     \
  locationmanager.cc                           \
  logger.cc                                    \
  loglevelupdatehandler.cc                     \
@@ -540,16 +556,24 @@ libemane_la_SOURCES = \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
  noiserecorder.cc                             \
+ orientationformatter.cc                      \
  otamanager.cc                                \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
+ pathlosseventformatter.cc                    \
  phylayer.cc                                  \
  phylayerfactory.cc                           \
  platformservice.cc                           \
+ positionformatter.cc                         \
+ positionneuformatter.cc                      \
+ positionorientationvelocityformatter.cc      \
  queuemetricmanager.cc                        \
  r2rineighbormetriccontrolmessage.cc          \
+ r2rineighbormetriccontrolmessageformatter.cc \
  r2riqueuemetriccontrolmessage.cc             \
+ r2riqueuemetriccontrolmessageformatter.cc    \
  r2riselfmetriccontrolmessage.cc              \
+ r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
@@ -579,6 +603,7 @@ libemane_la_SOURCES = \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
+ velocityformatter.cc                         \
  antennaprofileevent.pb.cc                    \
  commeffectevent.pb.cc                        \
  commonmacheader.pb.cc                        \
@@ -630,6 +655,7 @@ EXTRA_DIST = \
  layerfactorymanager.h                        \
  locationinfo.h                               \
  locationinfo.inl                             \
+ locationinfoformatter.h                      \
  locationmanager.h                            \
  loggerlevelconvert.h                         \
  loggerlevelconvert.inl                       \
@@ -667,8 +693,10 @@ EXTRA_DIST = \
  positionecef.inl                             \
  positionneu.h                                \
  positionneu.inl                              \
+ positionneuformatter.h                       \
  positionorientationvelocity.h                \
  positionorientationvelocity.inl              \
+ positionorientationvelocityformatter.h       \
  positionutils.h                              \
  precomputedpropagationmodelalgorithm.h       \
  propagationmodelalgorithm.h                  \
@@ -801,12 +829,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-antennaprofilecontrolmessage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-antennaprofileevent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-antennaprofileevent.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-antennaprofileeventformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-antennaprofilemanifest.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-any.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-boundarymessagemanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-buildidservice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commeffectevent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commeffectevent.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commeffecteventformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commonlayerstatistics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commonmacheader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-commonmacheader.pb.Plo@am__quote@
@@ -847,6 +877,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-libemane.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-locationevent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-locationevent.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-locationeventformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-locationinfoformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-locationmanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-logger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-loggermessage.pb.Plo@am__quote@
@@ -873,19 +905,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-nemqueuedlayer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-nemstatefullayer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-noiserecorder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-orientationformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-otaheader.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-otamanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-otatransmitter.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-otatransmittercontrolmessage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-pathlossevent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-pathlossevent.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-pathlosseventformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-phylayer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-phylayerfactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-platformservice.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-positionformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-positionneuformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-positionorientationvelocityformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-queuemetricmanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2rineighbormetriccontrolmessage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2rineighbormetriccontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2riselfmetriccontrolmessage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2riselfmetriccontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-radioservice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-radiotorouter.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-receivepropertiescontrolmessage.Plo@am__quote@
@@ -917,6 +957,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportmanagerimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreampacket.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreamtransport.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-velocityformatter.Plo@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -960,6 +1001,13 @@ libemane_la-antennaprofileevent.lo: antennaprofileevent.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-antennaprofileevent.lo `test -f 'antennaprofileevent.cc' || echo '$(srcdir)/'`antennaprofileevent.cc
 
+libemane_la-antennaprofileeventformatter.lo: antennaprofileeventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-antennaprofileeventformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-antennaprofileeventformatter.Tpo -c -o libemane_la-antennaprofileeventformatter.lo `test -f 'antennaprofileeventformatter.cc' || echo '$(srcdir)/'`antennaprofileeventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-antennaprofileeventformatter.Tpo $(DEPDIR)/libemane_la-antennaprofileeventformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='antennaprofileeventformatter.cc' object='libemane_la-antennaprofileeventformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-antennaprofileeventformatter.lo `test -f 'antennaprofileeventformatter.cc' || echo '$(srcdir)/'`antennaprofileeventformatter.cc
+
 libemane_la-antennaprofilemanifest.lo: antennaprofilemanifest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-antennaprofilemanifest.lo -MD -MP -MF $(DEPDIR)/libemane_la-antennaprofilemanifest.Tpo -c -o libemane_la-antennaprofilemanifest.lo `test -f 'antennaprofilemanifest.cc' || echo '$(srcdir)/'`antennaprofilemanifest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-antennaprofilemanifest.Tpo $(DEPDIR)/libemane_la-antennaprofilemanifest.Plo
@@ -994,6 +1042,13 @@ libemane_la-commeffectevent.lo: commeffectevent.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='commeffectevent.cc' object='libemane_la-commeffectevent.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-commeffectevent.lo `test -f 'commeffectevent.cc' || echo '$(srcdir)/'`commeffectevent.cc
+
+libemane_la-commeffecteventformatter.lo: commeffecteventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-commeffecteventformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-commeffecteventformatter.Tpo -c -o libemane_la-commeffecteventformatter.lo `test -f 'commeffecteventformatter.cc' || echo '$(srcdir)/'`commeffecteventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-commeffecteventformatter.Tpo $(DEPDIR)/libemane_la-commeffecteventformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='commeffecteventformatter.cc' object='libemane_la-commeffecteventformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-commeffecteventformatter.lo `test -f 'commeffecteventformatter.cc' || echo '$(srcdir)/'`commeffecteventformatter.cc
 
 libemane_la-commonlayerstatistics.lo: commonlayerstatistics.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-commonlayerstatistics.lo -MD -MP -MF $(DEPDIR)/libemane_la-commonlayerstatistics.Tpo -c -o libemane_la-commonlayerstatistics.lo `test -f 'commonlayerstatistics.cc' || echo '$(srcdir)/'`commonlayerstatistics.cc
@@ -1240,6 +1295,20 @@ libemane_la-locationevent.lo: locationevent.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-locationevent.lo `test -f 'locationevent.cc' || echo '$(srcdir)/'`locationevent.cc
 
+libemane_la-locationeventformatter.lo: locationeventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-locationeventformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-locationeventformatter.Tpo -c -o libemane_la-locationeventformatter.lo `test -f 'locationeventformatter.cc' || echo '$(srcdir)/'`locationeventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-locationeventformatter.Tpo $(DEPDIR)/libemane_la-locationeventformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='locationeventformatter.cc' object='libemane_la-locationeventformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-locationeventformatter.lo `test -f 'locationeventformatter.cc' || echo '$(srcdir)/'`locationeventformatter.cc
+
+libemane_la-locationinfoformatter.lo: locationinfoformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-locationinfoformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-locationinfoformatter.Tpo -c -o libemane_la-locationinfoformatter.lo `test -f 'locationinfoformatter.cc' || echo '$(srcdir)/'`locationinfoformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-locationinfoformatter.Tpo $(DEPDIR)/libemane_la-locationinfoformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='locationinfoformatter.cc' object='libemane_la-locationinfoformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-locationinfoformatter.lo `test -f 'locationinfoformatter.cc' || echo '$(srcdir)/'`locationinfoformatter.cc
+
 libemane_la-locationmanager.lo: locationmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-locationmanager.lo -MD -MP -MF $(DEPDIR)/libemane_la-locationmanager.Tpo -c -o libemane_la-locationmanager.lo `test -f 'locationmanager.cc' || echo '$(srcdir)/'`locationmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-locationmanager.Tpo $(DEPDIR)/libemane_la-locationmanager.Plo
@@ -1415,6 +1484,13 @@ libemane_la-noiserecorder.lo: noiserecorder.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-noiserecorder.lo `test -f 'noiserecorder.cc' || echo '$(srcdir)/'`noiserecorder.cc
 
+libemane_la-orientationformatter.lo: orientationformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-orientationformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-orientationformatter.Tpo -c -o libemane_la-orientationformatter.lo `test -f 'orientationformatter.cc' || echo '$(srcdir)/'`orientationformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-orientationformatter.Tpo $(DEPDIR)/libemane_la-orientationformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='orientationformatter.cc' object='libemane_la-orientationformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-orientationformatter.lo `test -f 'orientationformatter.cc' || echo '$(srcdir)/'`orientationformatter.cc
+
 libemane_la-otamanager.lo: otamanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-otamanager.lo -MD -MP -MF $(DEPDIR)/libemane_la-otamanager.Tpo -c -o libemane_la-otamanager.lo `test -f 'otamanager.cc' || echo '$(srcdir)/'`otamanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-otamanager.Tpo $(DEPDIR)/libemane_la-otamanager.Plo
@@ -1435,6 +1511,13 @@ libemane_la-pathlossevent.lo: pathlossevent.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='pathlossevent.cc' object='libemane_la-pathlossevent.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-pathlossevent.lo `test -f 'pathlossevent.cc' || echo '$(srcdir)/'`pathlossevent.cc
+
+libemane_la-pathlosseventformatter.lo: pathlosseventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-pathlosseventformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-pathlosseventformatter.Tpo -c -o libemane_la-pathlosseventformatter.lo `test -f 'pathlosseventformatter.cc' || echo '$(srcdir)/'`pathlosseventformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-pathlosseventformatter.Tpo $(DEPDIR)/libemane_la-pathlosseventformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='pathlosseventformatter.cc' object='libemane_la-pathlosseventformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-pathlosseventformatter.lo `test -f 'pathlosseventformatter.cc' || echo '$(srcdir)/'`pathlosseventformatter.cc
 
 libemane_la-phylayer.lo: phylayer.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-phylayer.lo -MD -MP -MF $(DEPDIR)/libemane_la-phylayer.Tpo -c -o libemane_la-phylayer.lo `test -f 'phylayer.cc' || echo '$(srcdir)/'`phylayer.cc
@@ -1457,6 +1540,27 @@ libemane_la-platformservice.lo: platformservice.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-platformservice.lo `test -f 'platformservice.cc' || echo '$(srcdir)/'`platformservice.cc
 
+libemane_la-positionformatter.lo: positionformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-positionformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-positionformatter.Tpo -c -o libemane_la-positionformatter.lo `test -f 'positionformatter.cc' || echo '$(srcdir)/'`positionformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-positionformatter.Tpo $(DEPDIR)/libemane_la-positionformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='positionformatter.cc' object='libemane_la-positionformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-positionformatter.lo `test -f 'positionformatter.cc' || echo '$(srcdir)/'`positionformatter.cc
+
+libemane_la-positionneuformatter.lo: positionneuformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-positionneuformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-positionneuformatter.Tpo -c -o libemane_la-positionneuformatter.lo `test -f 'positionneuformatter.cc' || echo '$(srcdir)/'`positionneuformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-positionneuformatter.Tpo $(DEPDIR)/libemane_la-positionneuformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='positionneuformatter.cc' object='libemane_la-positionneuformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-positionneuformatter.lo `test -f 'positionneuformatter.cc' || echo '$(srcdir)/'`positionneuformatter.cc
+
+libemane_la-positionorientationvelocityformatter.lo: positionorientationvelocityformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-positionorientationvelocityformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-positionorientationvelocityformatter.Tpo -c -o libemane_la-positionorientationvelocityformatter.lo `test -f 'positionorientationvelocityformatter.cc' || echo '$(srcdir)/'`positionorientationvelocityformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-positionorientationvelocityformatter.Tpo $(DEPDIR)/libemane_la-positionorientationvelocityformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='positionorientationvelocityformatter.cc' object='libemane_la-positionorientationvelocityformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-positionorientationvelocityformatter.lo `test -f 'positionorientationvelocityformatter.cc' || echo '$(srcdir)/'`positionorientationvelocityformatter.cc
+
 libemane_la-queuemetricmanager.lo: queuemetricmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-queuemetricmanager.lo -MD -MP -MF $(DEPDIR)/libemane_la-queuemetricmanager.Tpo -c -o libemane_la-queuemetricmanager.lo `test -f 'queuemetricmanager.cc' || echo '$(srcdir)/'`queuemetricmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-queuemetricmanager.Tpo $(DEPDIR)/libemane_la-queuemetricmanager.Plo
@@ -1471,6 +1575,13 @@ libemane_la-r2rineighbormetriccontrolmessage.lo: r2rineighbormetriccontrolmessag
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2rineighbormetriccontrolmessage.lo `test -f 'r2rineighbormetriccontrolmessage.cc' || echo '$(srcdir)/'`r2rineighbormetriccontrolmessage.cc
 
+libemane_la-r2rineighbormetriccontrolmessageformatter.lo: r2rineighbormetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-r2rineighbormetriccontrolmessageformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-r2rineighbormetriccontrolmessageformatter.Tpo -c -o libemane_la-r2rineighbormetriccontrolmessageformatter.lo `test -f 'r2rineighbormetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2rineighbormetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-r2rineighbormetriccontrolmessageformatter.Tpo $(DEPDIR)/libemane_la-r2rineighbormetriccontrolmessageformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='r2rineighbormetriccontrolmessageformatter.cc' object='libemane_la-r2rineighbormetriccontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2rineighbormetriccontrolmessageformatter.lo `test -f 'r2rineighbormetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2rineighbormetriccontrolmessageformatter.cc
+
 libemane_la-r2riqueuemetriccontrolmessage.lo: r2riqueuemetriccontrolmessage.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-r2riqueuemetriccontrolmessage.lo -MD -MP -MF $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessage.Tpo -c -o libemane_la-r2riqueuemetriccontrolmessage.lo `test -f 'r2riqueuemetriccontrolmessage.cc' || echo '$(srcdir)/'`r2riqueuemetriccontrolmessage.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessage.Tpo $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessage.Plo
@@ -1478,12 +1589,26 @@ libemane_la-r2riqueuemetriccontrolmessage.lo: r2riqueuemetriccontrolmessage.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2riqueuemetriccontrolmessage.lo `test -f 'r2riqueuemetriccontrolmessage.cc' || echo '$(srcdir)/'`r2riqueuemetriccontrolmessage.cc
 
+libemane_la-r2riqueuemetriccontrolmessageformatter.lo: r2riqueuemetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-r2riqueuemetriccontrolmessageformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessageformatter.Tpo -c -o libemane_la-r2riqueuemetriccontrolmessageformatter.lo `test -f 'r2riqueuemetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2riqueuemetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessageformatter.Tpo $(DEPDIR)/libemane_la-r2riqueuemetriccontrolmessageformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='r2riqueuemetriccontrolmessageformatter.cc' object='libemane_la-r2riqueuemetriccontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2riqueuemetriccontrolmessageformatter.lo `test -f 'r2riqueuemetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2riqueuemetriccontrolmessageformatter.cc
+
 libemane_la-r2riselfmetriccontrolmessage.lo: r2riselfmetriccontrolmessage.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-r2riselfmetriccontrolmessage.lo -MD -MP -MF $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessage.Tpo -c -o libemane_la-r2riselfmetriccontrolmessage.lo `test -f 'r2riselfmetriccontrolmessage.cc' || echo '$(srcdir)/'`r2riselfmetriccontrolmessage.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessage.Tpo $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessage.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='r2riselfmetriccontrolmessage.cc' object='libemane_la-r2riselfmetriccontrolmessage.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2riselfmetriccontrolmessage.lo `test -f 'r2riselfmetriccontrolmessage.cc' || echo '$(srcdir)/'`r2riselfmetriccontrolmessage.cc
+
+libemane_la-r2riselfmetriccontrolmessageformatter.lo: r2riselfmetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-r2riselfmetriccontrolmessageformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessageformatter.Tpo -c -o libemane_la-r2riselfmetriccontrolmessageformatter.lo `test -f 'r2riselfmetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2riselfmetriccontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessageformatter.Tpo $(DEPDIR)/libemane_la-r2riselfmetriccontrolmessageformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='r2riselfmetriccontrolmessageformatter.cc' object='libemane_la-r2riselfmetriccontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-r2riselfmetriccontrolmessageformatter.lo `test -f 'r2riselfmetriccontrolmessageformatter.cc' || echo '$(srcdir)/'`r2riselfmetriccontrolmessageformatter.cc
 
 libemane_la-radioservice.lo: radioservice.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-radioservice.lo -MD -MP -MF $(DEPDIR)/libemane_la-radioservice.Tpo -c -o libemane_la-radioservice.lo `test -f 'radioservice.cc' || echo '$(srcdir)/'`radioservice.cc
@@ -1687,6 +1812,13 @@ libemane_la-upstreamtransport.lo: upstreamtransport.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='upstreamtransport.cc' object='libemane_la-upstreamtransport.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-upstreamtransport.lo `test -f 'upstreamtransport.cc' || echo '$(srcdir)/'`upstreamtransport.cc
+
+libemane_la-velocityformatter.lo: velocityformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-velocityformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-velocityformatter.Tpo -c -o libemane_la-velocityformatter.lo `test -f 'velocityformatter.cc' || echo '$(srcdir)/'`velocityformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-velocityformatter.Tpo $(DEPDIR)/libemane_la-velocityformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='velocityformatter.cc' object='libemane_la-velocityformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-velocityformatter.lo `test -f 'velocityformatter.cc' || echo '$(srcdir)/'`velocityformatter.cc
 
 libemane_la-antennaprofileevent.pb.lo: antennaprofileevent.pb.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-antennaprofileevent.pb.lo -MD -MP -MF $(DEPDIR)/libemane_la-antennaprofileevent.pb.Tpo -c -o libemane_la-antennaprofileevent.pb.lo `test -f 'antennaprofileevent.pb.cc' || echo '$(srcdir)/'`antennaprofileevent.pb.cc

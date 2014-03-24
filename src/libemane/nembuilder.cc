@@ -318,7 +318,7 @@ EMANE::Application::NEMBuilder::buildNEM(NEMId id,
 
 
 std::unique_ptr<EMANE::Application::NEMManager>
-EMANE::Application::NEMBuilder::buildNEMManager(PlatformId id, 
+EMANE::Application::NEMBuilder::buildNEMManager(const uuid_t & uuid,
                                                 NEMs & nems,
                                                 const ConfigurationUpdateRequest & request)
 {
@@ -327,7 +327,7 @@ EMANE::Application::NEMBuilder::buildNEMManager(PlatformId id,
       throw BuildException("Trying to build an NEM Manager without any NEMs.");
     }
 
-  std::unique_ptr<Application::NEMManager> pPlatform{new NEMManagerImpl{id}};
+  std::unique_ptr<Application::NEMManager> pPlatform{new NEMManagerImpl{uuid}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pPlatform.get())};
 

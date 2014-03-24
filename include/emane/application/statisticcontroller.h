@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,11 +37,30 @@ namespace EMANE
 {
   namespace Application
   {
+    /**
+     * @class StatisticController
+     *
+     * @brief External application interface to the statistic service
+     */
     class StatisticController
     {
     public:
+      /**
+       * Gets the statistic manifest for the specified Buildable
+       *
+       * @param buildId Target component build Id
+       *
+       * @return manifest
+       */
       static StatisticManifest getStatisticManifest(BuildId buildId);
 
+      /**
+       * Gets the statistic table manifest for the specified Buildable
+       *
+       * @param buildId Target component build Id
+       *
+       * @return table manifest
+       */
       static StatisticTableManifest getTableManifest(BuildId buildId);
     };
   }

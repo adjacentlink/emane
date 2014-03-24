@@ -88,7 +88,7 @@ namespace EMANE
     /**
      * Handles a flow control update message
      *
-     * @param ctrl flow control message
+     * @param pMsg Flow control message
      */
     void processFlowControlMessage(const Controls::FlowControlControlMessage * pMsg);
     

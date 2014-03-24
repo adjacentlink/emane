@@ -31,4 +31,4 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 set -f
-python -m emanesh.events.eventservice $@
+python -m emanesh.events.eventservice "$@"

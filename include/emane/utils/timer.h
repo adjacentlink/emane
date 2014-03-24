@@ -44,6 +44,11 @@ namespace EMANE
 {
   namespace Utils
   {
+    /**
+     * @class Timer
+     *
+     * @brief A timer class that uses Linux interval timers
+     */
     class Timer
     {
     public:
@@ -73,7 +78,6 @@ namespace EMANE
        *
        * @return bool flag true - canceled, false - not canceled
        *                  
-       *
        * @note Canceling an expired timer has not effect.
        */
       bool cancel(TimerId timerId);

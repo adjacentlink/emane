@@ -176,7 +176,7 @@ EMANE::PositionNEU  EMANE::PositionOrientationVelocity::getPositionNEU(const Pos
 
   PositionNEU otherNEU{dNorthMeters,dEastMeters,dUpMeters};
         
-  if(bHasOrientation_)
+  if(bHasOrientation_ || bHasVelocity_)
     {
       otherNEU.rotate(adjustedOrientation_);
     }

@@ -96,6 +96,15 @@ namespace EMANE
        */
       static
       R2RINeighborMetricControlMessage * create(const R2RINeighborMetrics & neighborMetrics);
+
+      /**
+       * Clones the control message on the heap
+       *
+       * @return cloned message
+       *
+       * @note Caller assumes ownership of the clone
+       */
+      R2RINeighborMetricControlMessage * clone() const override;
       
       /**
        * Destroys an instance
@@ -126,7 +135,7 @@ namespace EMANE
       
       R2RINeighborMetricControlMessage(const  R2RINeighborMetrics & neighborMetrics);
       
-      R2RINeighborMetricControlMessage(const  R2RINeighborMetricControlMessage & r) = delete;
+      R2RINeighborMetricControlMessage(const  R2RINeighborMetricControlMessage & r);
       
       R2RINeighborMetricControlMessage & 
       operator=(const R2RINeighborMetricControlMessage &) = delete;

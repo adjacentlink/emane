@@ -39,8 +39,7 @@
 
 EMANE::PlatformConfiguration::PlatformConfiguration(const std::string &sFile)
   : 
-  LayerConfiguration{"platform"},
-  u16Id_{0}
+  LayerConfiguration{"platform"}
 {
   processDefinition("platform", sFile);
 
@@ -67,13 +66,6 @@ EMANE::PlatformConfiguration::~PlatformConfiguration()
 }
 
 
-ACE_UINT16 
-EMANE::PlatformConfiguration::getPlatformId()
-{
-  return u16Id_;
-}
-
-
 const EMANE::NEMConfigurations&
 EMANE::PlatformConfiguration::getNEMs()
 {
@@ -85,8 +77,6 @@ void
 EMANE::PlatformConfiguration::doProcessRootAttributes(xmlNodePtr pRoot)
 {
   sName_ = getAttrVal(pRoot, "name");
-
-  u16Id_ = getAttrValNumeric(pRoot, "id");
 }
 
 

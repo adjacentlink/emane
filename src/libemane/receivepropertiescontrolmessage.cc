@@ -71,6 +71,13 @@ private:
   const double dReceiverSensitivitydBm_;
 };
 
+EMANE::Controls::ReceivePropertiesControlMessage::
+ReceivePropertiesControlMessage(const ReceivePropertiesControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
+
+
 EMANE::Controls::ReceivePropertiesControlMessage::ReceivePropertiesControlMessage(const TimePoint & sot,
                                                                                   const Microseconds & propagation,
                                                                                   const Microseconds & span,
@@ -109,4 +116,10 @@ EMANE::Microseconds EMANE::Controls::ReceivePropertiesControlMessage::getPropaga
 EMANE::Microseconds EMANE::Controls::ReceivePropertiesControlMessage::getSpan() const
 {
   return pImpl_->getSpan();
+}
+
+EMANE::Controls::ReceivePropertiesControlMessage *
+EMANE::Controls::ReceivePropertiesControlMessage::clone() const
+{
+  return new ReceivePropertiesControlMessage{*this};
 }

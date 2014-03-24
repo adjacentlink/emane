@@ -2,8 +2,7 @@
 
 <!ELEMENT platform ((param|paramlist)*, nem+)>
 <!ATTLIST platform 
-          name CDATA #IMPLIED
-          id CDATA #REQUIRED>
+          name CDATA #IMPLIED>
 
 <!ENTITY % nemcontents SYSTEM "nemcontents.dtd">
 %nemcontents;

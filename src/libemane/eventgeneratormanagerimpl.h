@@ -55,7 +55,7 @@ namespace EMANE
     class EventGeneratorManagerImpl : public EventGeneratorManager
     {
     public:
-      EventGeneratorManagerImpl();
+      EventGeneratorManagerImpl(const uuid_t & uuid);
 
       ~EventGeneratorManagerImpl();
     

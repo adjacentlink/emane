@@ -60,6 +60,8 @@ namespace EMANE
   using ConfigurationUpdateRequest = 
     std::vector<ConfigurationNameStringValues>;
 
+  /** [configurationregistrar-configurationnameanyvalues-snippet] */
+
   /**
    *  Configuration item name and values as EMANE::Any instances
    *
@@ -78,6 +80,8 @@ namespace EMANE
    */
   using ConfigurationUpdate =
     std::vector<ConfigurationNameAnyValues>;
+
+  /** [configurationregistrar-configurationnameanyvalues-snippet] */
 
   /**
    * Configuration item manifest

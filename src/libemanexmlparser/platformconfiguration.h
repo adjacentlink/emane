@@ -67,13 +67,6 @@ namespace EMANE
     ~PlatformConfiguration();
 
     /**
-     * Gets this platform's id
-     *
-     * @return Id of this platform
-     */
-    ACE_UINT16 getPlatformId();
-
-    /**
      * Returns the container with NEMs
      *
      * @return Container with NEM configuration objects
@@ -100,11 +93,6 @@ namespace EMANE
     void doProcessChildNode(xmlNodePtr pNode);
 
   private:
-    /**
-     * Platform Id
-     */
-    ACE_UINT16 u16Id_;
-
     /**
      * List with NEM Configurations
      */
