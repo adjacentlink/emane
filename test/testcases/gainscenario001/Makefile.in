@@ -265,9 +265,11 @@ harness_schema = gainscenario.xsd
 testcase_inputs = \
  antenna30dsector.xml \
  antennaomni.xml      \
+ antennahole.xml      \
  antennaprofiles.xml  \
  blockageaft.xml      \
- gainscenario.xml     
+ blockagehole.xml     \
+ gainscenario.xml
 
 EXTRA_DIST = \
  $(testcase_inputs)   \
