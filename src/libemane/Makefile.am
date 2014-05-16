@@ -79,6 +79,8 @@ libemane_la_SOURCES =                         \
  frameworkphy.cc                              \
  frequencycontrolmessage.cc                   \
  frequencycontrolmessageformatter.cc          \
+ frequencyofinterestcontrolmessage.cc         \
+ frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
  layerfactorymanager.cc                       \
  libemane.cc                                  \

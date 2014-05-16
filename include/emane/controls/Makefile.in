@@ -306,13 +306,15 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-emaneincdir = $(includedir)/emane/controls/
+emaneincdir = $(includedir)/emane/controls
 emaneinc_HEADERS = \
  antennaprofilecontrolmessage.h              \
  controlmessageids.h                         \
  flowcontrolcontrolmessage.h                 \
  frequencycontrolmessageformatter.h          \
  frequencycontrolmessage.h                   \
+ frequencyofinterestcontrolmessage.h         \
+ frequencyofinterestcontrolmessageformatter.h\
  otatransmittercontrolmessage.h              \
  r2rineighbormetriccontrolmessage.h          \
  r2rineighbormetriccontrolmessageformatter.h \

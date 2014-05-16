@@ -141,6 +141,18 @@
                     <xs:attribute name='duration' type='xs:unsignedLong' use='optional'/>
                  </xs:complexType>
                </xs:element>
+               <xs:element name='frequencyofinterest'>
+                 <xs:complexType>
+                   <xs:sequence>
+                     <xs:element name='frequency' maxOccurs='unbounded'>
+                       <xs:complexType>
+                         <xs:attribute name='value' type='xs:unsignedLong' use='required'/>
+                       </xs:complexType>
+                     </xs:element>
+                   </xs:sequence>
+                   <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
+                 </xs:complexType>
+               </xs:element>
              </xs:choice>
            </xs:complexType>
         </xs:element>

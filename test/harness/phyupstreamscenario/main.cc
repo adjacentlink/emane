@@ -51,6 +51,9 @@
 
 #include "emane/controls/frequencycontrolmessageformatter.h"
 #include "emane/controls/receivepropertiescontrolmessageformatter.h"
+
+#include "emane/controls/frequencyofinterestcontrolmessage.h"
+
 #include "emane/utils/spectrumwindowutils.h"
 
 #include <libxml/parser.h>
@@ -1100,6 +1103,59 @@ int main(int argc, char * argv[])
                                   throw;
                                 }
                             }
+                          else if(!xmlStrcmp(pActionNode->name,BAD_CAST "frequencyofinterest"))
+                            {
+                              xmlChar * pBandwidth = xmlGetProp(pActionNode,BAD_CAST "bandwidth");
+                           
+                              auto bandwidth = 
+                                EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidth)).toUINT64();
+                           
+                              xmlFree(pBandwidth);
+
+                              EMANE::FrequencySet foi{};
+
+                              for(xmlNodePtr pChildNode = pActionNode->children; pChildNode; pChildNode = pChildNode->next)
+                                {
+                                  if(pChildNode->type == XML_ELEMENT_NODE)
+                                    {
+                                      if(!xmlStrcmp(pChildNode->name,BAD_CAST "frequency"))
+                                        {
+                                          xmlChar * pFrequency = xmlGetProp(pChildNode,BAD_CAST "value");
+                                       
+                                          foi.insert(EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64());
+                                       
+                                          xmlFree(pFrequency);
+                                        }
+                                    }
+                                }
+
+                              std::cout<<"["<<++iActionIndex
+                                       <<"] frequencyofinterest "
+                                       <<std::endl;
+
+                              std::cout<<"["<<iActionIndex
+                                       <<"]    bandwidth: "
+                                       <<bandwidth
+                                       <<std::endl;
+
+                              for(const auto & freqHz : foi)
+                                {
+                                  std::cout<<"["<<iActionIndex
+                                           <<"]    frequency: "
+                                           <<freqHz
+                                           <<std::endl;
+                                }
+
+                              auto pFrequencyOfInterestControlMessage = 
+                                EMANE::Controls::FrequencyOfInterestControlMessage::create(bandwidth,foi);
+
+                              pPHYLayer->processDownstreamControl({pFrequencyOfInterestControlMessage});
+
+                              std::cout<<std::endl;
+
+                            }
+
+                          //XXX
                         }
                     }
                 }
