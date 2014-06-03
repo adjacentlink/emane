@@ -96,9 +96,9 @@ try:
         if root.tag != 'platform':
             print >>sys.stderr,  "error %s:" % platform,"wrong document type"
 
-        for nem in root.xpath("nem"):
-            nemId = int(nem.get("id"))
-            nemDefinition = nem.get("definition")
+        for nem in root.xpath('nem'):
+            nemId = int(nem.get('id'))
+            nemDefinition = nem.get('definition')
 
             if nemId not in instances:
                 instances[nemId] = {}
@@ -127,8 +127,8 @@ try:
 
                 nemTree = etree.parse(urljoin(platform,nemDefinition),parser)
 
-                for transport in nemTree.xpath("/nem/transport"):
-                    transportDefinition = transport.get("definition")
+                for transport in nemTree.xpath('/nem/transport'):
+                    transportDefinition = transport.get('definition')
 
                     if 'definition' not in metas[nemId]:
                         metas[nemId]['definition'] = transportDefinition
@@ -144,16 +144,32 @@ try:
                         transportTree = etree.parse(urljoin(platform,transportDefinition),parser)
 
                         # process transport XML parameters
-                        for param in transportTree.xpath("/transport/param"):
-                            instances[nemId][param.get("name")] = param.get("value")
+                        for param in transportTree.xpath('/transport/param'):
+                            instances[nemId][param.get('name')] = [param.get('value')]
+
+                        # process transport XML parameter lists
+                        for paramlist in transportTree.xpath('/transport/paramlist'):
+
+                            instances[nemId][paramlist.get('name')] = []
+                            
+                            for item in paramlist.xpath('item'):
+                                instances[nemId][paramlist.get('name')].append(item.get('value'))
 
                     except etree.XMLSyntaxError, exp:
                         print >>sys.stderr, "error %s:" % transportDefinition,exp
                         exit(1)        
                     
                     # process nem XML parameters
-                    for param in nemTree.xpath("/nem/transport/param"):
-                        instances[nemId][param.get("name")] = param.get("value")
+                    for param in nemTree.xpath('/nem/transport/param'):
+                        instances[nemId][param.get('name')] = [param.get('value')]
+
+                    # process nem XML parameter lists
+                    for paramlist in nemTree.xpath('/nem/transport/paramlist'):
+
+                        instances[nemId][paramlist.get('name')] = []
+                            
+                        for item in paramlist.xpath('item'):
+                            instances[nemId][paramlist.get('name')].append(item.get('value'))
 
             except etree.XMLSyntaxError, exp:
                 print >>sys.stderr, "error %s:" % nemDefinition,exp
@@ -165,7 +181,7 @@ try:
             group = str(nemId)
 
             if transport is not None:
-                transportDefinition = transport.get("definition")
+                transportDefinition = transport.get('definition')
 
                 group = transport.get("group")
                 
@@ -179,9 +195,16 @@ try:
                     exit(1) 
 
                 # process platform XML nem element transport parameters
-                for param in transport.xpath("param"):
-                    instances[nemId][param.get("name")] = param.get("value")
+                for param in transport.xpath('param'):
+                    instances[nemId][param.get('name')] = [param.get('value')]
 
+                # process nem XML parameter lists
+                for paramlist in transport.xpath('paramlist'):
+                    
+                    instances[nemId][paramlist.get('name')] = []
+                            
+                    for item in paramlist.xpath('item'):
+                        instances[nemId][paramlist.get('name')].append(item.get('value'))
 
             if group not in groups:
                 groups[group] = []
@@ -198,7 +221,7 @@ except IOError,exp:
 for members in sorted(groups.values()):
     output="transportdaemon%d.xml" % min(members)
 
-    root = etree.Element("transportdaemon")
+    root = etree.Element('transportdaemon')
 
     for nemId in members:
         params = instances[nemId]
@@ -219,7 +242,13 @@ for members in sorted(groups.values()):
 
 
         for name,value in params.items():
-            etree.SubElement(transportElement,'param', name=name,value=value)
+            if len(value) == 1:
+                etree.SubElement(transportElement,'param', name=name,value=value[0])
+            else:
+                paramlist = etree.SubElement(transportElement,'paramlist', name=name) 
+
+                for item in value:
+                    etree.SubElement(paramlist,'item', value=item) 
 
 
     target = "transportdaemon%d.xml" % min(members)
@@ -237,7 +266,7 @@ for members in sorted(groups.values()):
         if options.verbose:
             print "generating XML:",target
         
-        output=open(os.path.join(options.outpath,target),"w")
+        output=open(os.path.join(options.outpath,target),'w')
         
         print >>output,xml
 
