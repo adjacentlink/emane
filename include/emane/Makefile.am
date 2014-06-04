@@ -110,8 +110,11 @@ emaneinc_HEADERS =                       \
  upstreamtransport.inl                   \
  velocity.h                              \
  velocity.inl                            \
- velocityformatter.h                     
+ velocityformatter.h                     \
+ version.h
 
+EXTRA_DIST=                              \
+ version.h.in
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(emaneincdir)

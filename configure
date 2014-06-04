@@ -670,6 +670,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+PACKAGE_VERSION_CODE
 DEBIAN_VERSION
 HAVE_DEB_FALSE
 HAVE_DEB_TRUE
@@ -17063,7 +17064,10 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile include/emane/Makefile include/emane/utils/Makefile include/emane/controls/Makefile include/emane/application/Makefile include/emane/generators/Makefile include/emane/generators/eel/Makefile include/emane/events/Makefile src/Makefile src/libemanexmlparser/Makefile src/libemane/Makefile src/applications/Makefile src/applications/emane/Makefile src/applications/emaneinfo/Makefile src/applications/emanetransportd/Makefile src/applications/emaneeventd/Makefile src/applications/emaneeventservice/Makefile src/emanesh/Makefile src/transports/Makefile src/transports/virtual/Makefile src/transports/raw/Makefile src/models/Makefile src/models/mac/Makefile src/models/mac/bypass/Makefile src/models/phy/Makefile src/models/phy/bypass/Makefile src/models/mac/rfpipe/Makefile src/models/mac/ieee80211abg/Makefile src/models/shim/Makefile src/models/shim/timinganalysis/Makefile src/models/shim/phyapitest/Makefile src/models/shim/commeffect/Makefile src/agents/Makefile src/agents/gpsdlocation/Makefile src/generators/Makefile src/generators/eel/Makefile src/generators/eel/loaders/Makefile src/generators/eel/loaders/location/Makefile src/generators/eel/loaders/pathloss/Makefile src/generators/eel/loaders/antennaprofile/Makefile src/generators/eel/loaders/commeffect/Makefile test/Makefile test/harness/Makefile test/harness/gainscenario/Makefile test/harness/noisescenario/Makefile test/harness/profilescenario/Makefile test/harness/propagationscenario/Makefile test/harness/phyupstreamscenario/Makefile test/testcases/Makefile test/testcases/gainscenario001/Makefile test/testcases/noisescenario001/Makefile test/testcases/noisescenario002/Makefile test/testcases/profilescenario001/Makefile test/testcases/propagationscenario001/Makefile test/testcases/phyupstreamscenario001/Makefile test/testcases/phyupstreamscenario002/Makefile test/testcases/phyupstreamscenario003/Makefile test/testcases/phyupstreamscenario004/Makefile scripts/Makefile scripts/doc/Makefile dtd/Makefile schema/Makefile doc/Makefile"
+PACKAGE_VERSION_CODE=`echo $PACKAGE_VERSION | gawk 'match($0, /([0-9]+)\.([0-9]+)\.([0-9]+)/,m){printf "%d",lshift(m[1],16)+lshift(m[2],8)+m[3];}'`
+
+
+ac_config_files="$ac_config_files Makefile include/emane/Makefile include/emane/utils/Makefile include/emane/controls/Makefile include/emane/application/Makefile include/emane/generators/Makefile include/emane/generators/eel/Makefile include/emane/events/Makefile include/emane/version.h src/Makefile src/libemanexmlparser/Makefile src/libemane/Makefile src/applications/Makefile src/applications/emane/Makefile src/applications/emaneinfo/Makefile src/applications/emanetransportd/Makefile src/applications/emaneeventd/Makefile src/applications/emaneeventservice/Makefile src/emanesh/Makefile src/transports/Makefile src/transports/virtual/Makefile src/transports/raw/Makefile src/models/Makefile src/models/mac/Makefile src/models/mac/bypass/Makefile src/models/phy/Makefile src/models/phy/bypass/Makefile src/models/mac/rfpipe/Makefile src/models/mac/ieee80211abg/Makefile src/models/shim/Makefile src/models/shim/timinganalysis/Makefile src/models/shim/phyapitest/Makefile src/models/shim/commeffect/Makefile src/agents/Makefile src/agents/gpsdlocation/Makefile src/generators/Makefile src/generators/eel/Makefile src/generators/eel/loaders/Makefile src/generators/eel/loaders/location/Makefile src/generators/eel/loaders/pathloss/Makefile src/generators/eel/loaders/antennaprofile/Makefile src/generators/eel/loaders/commeffect/Makefile test/Makefile test/harness/Makefile test/harness/gainscenario/Makefile test/harness/noisescenario/Makefile test/harness/profilescenario/Makefile test/harness/propagationscenario/Makefile test/harness/phyupstreamscenario/Makefile test/testcases/Makefile test/testcases/gainscenario001/Makefile test/testcases/noisescenario001/Makefile test/testcases/noisescenario002/Makefile test/testcases/profilescenario001/Makefile test/testcases/propagationscenario001/Makefile test/testcases/phyupstreamscenario001/Makefile test/testcases/phyupstreamscenario002/Makefile test/testcases/phyupstreamscenario003/Makefile test/testcases/phyupstreamscenario004/Makefile scripts/Makefile scripts/doc/Makefile dtd/Makefile schema/Makefile doc/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -18238,6 +18242,7 @@ do
     "include/emane/generators/Makefile") CONFIG_FILES="$CONFIG_FILES include/emane/generators/Makefile" ;;
     "include/emane/generators/eel/Makefile") CONFIG_FILES="$CONFIG_FILES include/emane/generators/eel/Makefile" ;;
     "include/emane/events/Makefile") CONFIG_FILES="$CONFIG_FILES include/emane/events/Makefile" ;;
+    "include/emane/version.h") CONFIG_FILES="$CONFIG_FILES include/emane/version.h" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/libemanexmlparser/Makefile") CONFIG_FILES="$CONFIG_FILES src/libemanexmlparser/Makefile" ;;
     "src/libemane/Makefile") CONFIG_FILES="$CONFIG_FILES src/libemane/Makefile" ;;
