@@ -1,5 +1,8 @@
 lib_LTLIBRARIES = libemane.la
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libemane.pc
+
 libemane_la_CPPFLAGS =  \
  -I@top_srcdir@/include
 

@@ -236,6 +236,7 @@ AC_OUTPUT(
  src/Makefile
  src/libemanexmlparser/Makefile 
  src/libemane/Makefile
+ src/libemane/libemane.pc
  src/applications/Makefile
  src/applications/emane/Makefile
  src/applications/emaneinfo/Makefile
