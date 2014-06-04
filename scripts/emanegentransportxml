@@ -1,6 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env python
 #
-# Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
+# Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -13,7 +13,7 @@
 #   notice, this list of conditions and the following disclaimer in
 #   the documentation and/or other materials provided with the
 #   distribution.
-# * Neither the name of DRS CenGen, LLC nor the names of its
+# * Neither the name of Adjacent Link LLC nor the names of its
 #   contributors may be used to endorse or promote products derived
 #   from this software without specific prior written permission.
 #
@@ -31,540 +31,251 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-use XML::LibXML;
-use XML::LibXML::SAX::Parser;
-use Getopt::Long;
-use strict;
+from lxml import etree
+from optparse import OptionParser
+import sys
+import os.path
+from urlparse import urljoin
 
-use constant DEFAULT_DTD_FILE => "transportdaemon.dtd";
+usage = "%prog [OPTION].. PLATFORMXML..."
 
-# Options:
-my ($outputPath, $dtdPath, $dtdFile, $debug, $help);
-GetOptions('outpath=s' => \$outputPath,
-           'dtdpath=s' => \$dtdPath,
-           'dtd=s' => \$dtdFile,
-           'debug' => \$debug,
-           'help' => \$help);
+optionParser =  OptionParser(usage=usage)
 
-# Verify we received what we expect.
-&usage and exit 1 if ($help);
-&usage and exit -1 unless (@ARGV);
+optionParser.add_option("-v", 
+                        "--verbose",
+                        action="store_true",
+                        dest="verbose",
+                        help="Verbose output mode")
 
-#---GLOBALS---
-# Hash containing transport params:
-my %transportHash = ();
+optionParser.add_option("", 
+                        "--dtd",
+                        action="store",
+                        type="string",
+                        dest="dtd",
+                        default='file:///usr/share/emane/dtd/transportdaemon.dtd',
+                        help="Transport Daemon XML DTD [default: %default]")  
 
-# Hash containing transport group lists:
-my %groupHash = ();
+optionParser.add_option("-o", 
+                        "--outpath",
+                        action="store",
+                        type="string",
+                        dest="outpath",
+                        default=".",
+                        help="Transport Daemon XML output directory [default: %default]")
 
-# Creating custom SAX event handler...
-my $handler = EMANE::SAXHandler->new(TransportHash => \%transportHash);
+(options, args) = optionParser.parse_args()
 
-# ...to use it inside the LibXML Parser
-my $saxparser = XML::LibXML::SAX::Parser->new(Handler => $handler);
-
-# New parser (the SAX parser above works on the DOM structure created 
-#             by the 'regular' parser)
-my $parser = XML::LibXML->new();
-
-# need to validate
-#$parser->validation(1); #<--doesn't work for platform...
-
-# Get base-path (for relative filenames inside the xml files).
-my $basePath = "";
-$outputPath = "" unless $outputPath;
-
-# DTD file
-$dtdFile = DEFAULT_DTD_FILE unless ($dtdFile);
-
-#----GLOBALS end HERE----
-
-# Iterate through all files from command line
-for my $platform (@ARGV)
-{
-  # Force validation OFF for platforms (DTD is too complicated)
-  $parser->validation(0);
-
-  if ($platform =~ /((.*\\)+).*[^\.]\.xml/) 
-  {
-    $basePath = $1;
-    $outputPath .= "\\" if $outputPath;
-    print "WINSUCK! ($basePath => $outputPath)\n" if $debug;
-  }
-  elsif ($platform =~ /((.*\/)+).*[^\.]\.xml/) 
-  {
-    $basePath = $1;
-    $outputPath .= "\/" if $outputPath;
-    print "NORMAL! ($basePath => $outputPath)\n" if $debug;
-  }
-  else 
-  {
-    # Use current working directory by default.
-    #    $basePath = "";
-    #    $outputPath = "";
-  }
-
-  my $doc = undef;
-  # Parse the file ($doc will contain the DOM document structure)
-  eval { $doc = $parser->parse_file($platform); };
-  if ($@)
-  {
-    my $error = "Make sure server with XML and DTD data is available and accessible.\n";
-    
-    $error = "Make sure $platform exists and is available for parsing.\n" 
-      if ($@ =~ /^Could not create file parser context.*/);
-    
-    print "$@";
-    print $error;
-    exit(-1);
-  }
-
-  # DTD path, if not specified on the command line, use the file
-  unless ($dtdPath) 
-  {
-    $dtdPath = $doc->internalSubset()->systemId();
-    $dtdPath = $1 if ($dtdPath =~ /(.*\/)[^\/]+/);
-  }
-
-  # Show user where things will go...
-  print "--> Platform XML file: $platform\n";
-
-  # The call below will generate SAX events from the parsed document
-  # which will cascade into other parse() calls depending on how many
-  # xml files are nested inside the platform xml file.
-  $saxparser->generate($doc);
-  
-  # Once the above call is finished, all files referenced within the 
-  # platform xml file should have been validated. The processing below
-  # is responsible for reading default transport data and overwriting it
-  # with the data from the platform file (if any).
-  
-  #===============================================================#
-  # Below is the 'main' loop chunk of this script.                #
-  # It goes through the platform file and does the following:     #
-  # 1) Gets the xml file from the NEM definition and reads in the #
-  #    data into the global $transportHash variable.              #
-  #    The data will be referenced (key'ed by) the nem 'id' attri-#
-  #    bute of the currently-being-evaluated NEM.                 #
-  # 2) Upon completion of default data write from the embedded xml#
-  #    file, a search is conducted for any <transport> elements   #
-  #    and any data present therein is then written on top of the #
-  #    default data for this (current) NEM (new values are added).#
-  #===============================================================#
-  
-  # Get the nem node(s) from the platform file
-  my $nemTree = $doc->findnodes('//platform/nem');
-  foreach my $nemNode ($nemTree->get_nodelist()) 
-  {
-    print "---NEM is ", $nemNode->getAttribute("name"), " with id: ", $nemNode->getAttribute("id"), " ...in a file called: ", $nemNode->getAttribute("definition"), "\n" if $debug;
-    
-    my $nemId = $nemNode->getAttribute("id");
-    my $name  = $nemNode->getAttribute("name");
-    my $def   = $nemNode->getAttribute("definition");
-        
-    # Store the NEM-specific data in the hash (allow overwriting):
-    $transportHash{$nemId}{'instance'} = () unless $transportHash{$nemId}{'instance'};
-    $transportHash{$nemId}{'transport'}{'param'} = () unless $transportHash{$nemId}{'transport'}{'param'};
-    
-    # Grab the localaddress and remoteaddress out of the NEM section
-    my $paramTree = $nemNode->findnodes('param');
-    
-    if($paramTree) 
-    {
-      foreach my $tParam ($paramTree->get_nodelist) 
-      {
-        my ($param_name, $param_value) = ($tParam->getAttribute("name"), $tParam->getAttribute("value"));
-
-        print "NEM Param Name: $param_name  with value: $param_value \n" if $debug;
-        
-        if($tParam->getAttribute("name") eq "localaddress" ||
-           $tParam->getAttribute("name") eq "platformendpoint")
-        {
-          $transportHash{$nemId}{instance}{"platformendpoint"} = $tParam->getAttribute("value");
-        }
-        elsif($tParam->getAttribute("name") eq "remoteaddress" ||
-              $tParam->getAttribute("name") eq "transportendpoint")
-        {
-          $transportHash{$nemId}{instance}{"transportendpoint"} = $tParam->getAttribute("value");
-        }        
-        else
-        {
-          $transportHash{$nemId}{'instance'}{"$param_name"} = $param_value;
-        }
-      }
-    }
-    
-    # Now load the default data into the specific hash spot.
-    &parse_file_for_transport($def, $transportHash{$nemId}{'transport'});
-
-    # Get the transport tree.
-    my $transportTree = $nemNode->findnodes('transport');
-    
-    # If we found the nodes, iterate through kids, but first get the transport node.
-    if ($transportTree) 
-    {
-      for my $transportNode ($transportTree->get_nodelist())
-      {
-        
-        my $definition = $transportNode->getAttribute("definition");
-        
-        print "---TRANSPORT definition: ", $definition, "\n" if $debug;
-        
-        my $group = $transportNode->getAttribute("group");
-
-        print "---TRANSPORT group: ", $group ? $group : '<undefined>', "\n" if $debug;
-
-        $group = "__xxx__$nemId"
-          unless($group);
-
-        push @{$groupHash{$group}},$nemId;
-
-        # Setting type
-        $transportHash{$nemId}{'transport'}{'definition'} = $definition if ($definition);
-        
-        # Now iterate...
-        foreach my $tNode ($transportNode->getChildrenByTagName("param")) 
-        {
-          $transportHash{$nemId}{'transport'}{'param'}{$tNode->getAttribute("name")} = $tNode->getAttribute("value");
-          
-        }# end foreach child param node
-      }# end for each transport node within this nem
-
-    }# end if transportTree is valid
-
-  }# end for each nem node
-  
-}# end for my $platform
-
-# Dumping the hash to the screen (if $debug is ON)
-if ($debug)
-{
-  &dump_to_screen;
-}
-
-# Finally, generating the xml corresponding to transport hash entries
-&generate_transport_xml;
-
-print "Done.\n";
-
-#---main sequence of execution ends here---
-
-#---SUBS start here---
-
-#
-# Prints usage information
-#
-sub usage
-{
-    print "Usage: $0 [OPTIONs] PLATFORM_FILEs \n";
-    print "\nWhere: \n";
-    print "PLATFORM_FILEs    Specifies one or more xml files with platform\n";
-    print "                  definition(s)\n";
-    print "\t\t\t\tREQUIRED\n";    
-    print "\nAnd OPTION is one or more of: \n";
-    print "--outpath PATH    Specifies output location for generated xml files\n";
-    print "\t\t\t\tDEFAULT: current working directory\n";
-    print "--dtdpath PATH    Specifies the location of the directory containing DTDs\n";
-    print "\t\t\t\tDEFAULT: directory in the SYSTEM declaration in platform.xml\n";
-    print "--dtd  DTD_FILE   Specifies the DTD file to validate against\n";
-    print "\t\t\t\tDEFAULT: ", DEFAULT_DTD_FILE, "\n";
-    print "--debug           Prints output to the screen during execution\n";
-    print "--help            Prints this dialog and exits\n";
-}
-
-#
-# Parses a file from inside another file (for validation purposes only).
-# 
-# Param: filename to parse (base-path is added, see globals at top of file).
-#
-sub parse_file
-{
-    # Get name and check if it contains path
-    my $name = shift;
-
-    # Full local filename 
-    my $filePath;
-
-    # If the name contains path separators, use it, otherwise add basepath
-    if (($name =~ /\//) || ($name =~ /\\/)) 
-    {
-      $filePath = $name;
-    }
-    else 
-    {
-      $filePath = $basePath . $name;
-    }
-    print "MAIN::parse_file($filePath)\n" if $debug;
-
-    # Local version of the SAX parser.
-    # Necessary not to disturb the flow of parsing the main
-    # platform file.
-    # The regular parser should be OK to use as it has finished its role,
-    # (the SAX parser works on regular parser's output)
-    my $saxParser = XML::LibXML::SAX::Parser->new(Handler => $handler);
-
-    $parser->validation(1);
-
-    my $localD  = undef;
-
-    eval { $localD = $parser->parse_file($filePath); };
-    if ($@)
-    {
-      my $error = "Make sure server with XML and DTD data is available and accessible.\n";
-    
-      $error = "Make sure $filePath exists and is available for parsing.\n" 
-        if ($@ =~ /^Could not create file parser context.*/);
-    
-      print "$@";
-      print $error;
-      exit(-1);
-    }
-
-    # The call below will generate SAX events from the parsed document.
-    # This is done to go through whatever files this file might be including.
-    $saxParser->generate($localD);
-}
+if options.outpath:
+    if not os.path.isdir(options.outpath):
+        print >>sys.stderr, "error output directory does not exist:",options.outpath
+        exit(1)
 
 
-#
-# Parses a file from inside another file (to extract valid transport data).
-# 
-# Param 1: filename to parse (base-path is added, see globals at top of file).
-# Param 2: reference to the transport hash
-#
-sub parse_file_for_transport
-{
-    # Get name and Transport hash reference
-    my ($name, $transportHashRef) = @_;
+metas = {}
+instances = {}
+groups = {}
 
-    # Full local filename 
-    my $transportFile;
+try:
+    # process all platform XML files present on the command line
+    for platform in args:
+        if options.verbose:
+            print "processing XML:",platform
 
-    # If the name contains path separators, use it, otherwise add basepath
-    if (($name =~ /\//) || ($name =~ /\\/)) 
-    {
-      $transportFile = $name;
-    }
-    else 
-    {
-      $transportFile = $basePath . $name;
-    }
-    print "MAIN::parse_file_for_transport($transportFile)\n" if $debug;
-    
-    # Parse the definition file for this NEM
-    my $localDoc  = $parser->parse_file($transportFile);
+        parser = etree.XMLParser(dtd_validation=True)
 
-    # Now extract the transport-specific data from this file.
-    # If any is data is present, it'll be under the NEM section.
+        # parse and validate
+        try:
+            tree = etree.parse(platform, parser)
+        except etree.XMLSyntaxError, exp:
+            print >>sys.stderr, "error %s:" %platform,exp
+            exit(1)
 
-    # Get the nem node(s) from the current file
-    my $nTree = $localDoc->findnodes('//nem');
-    foreach my $nNode ($nTree->get_nodelist()) 
-    {
-      print "NEM is ", $nNode->getAttribute("name"), "\n" if $debug;
-      
-      # Get the transport tree.
-      my $trTree = $nNode->findnodes('transport');
-      
-      # If we found the nodes, iterate through kids, but first get the transport node.
-      if ($trTree) 
-      {
-        # For each transport inside an nem file
-        for my $trNode ($trTree->get_nodelist())
-        {
-          # Set the definition value
-          $$transportHashRef{'definition'} = $trNode->getAttribute("definition");
+        root = tree.getroot()
 
-          # Now iterate and set specific data...
-          foreach my $tNode ($trNode->getChildrenByTagName("param")) 
-          {
-            my $param_name  = $tNode->getAttribute("name");
-            my $param_value = $tNode->getAttribute("value");
-            $$transportHashRef{'param'}{"$param_name"} = $param_value;
+        # verify the XML is platform file
+        if root.tag != 'platform':
+            print >>sys.stderr,  "error %s:" % platform,"wrong document type"
+
+        for nem in root.xpath('nem'):
+            nemId = int(nem.get('id'))
+            nemDefinition = nem.get('definition')
+
+            if nemId not in instances:
+                instances[nemId] = {}
+
+            platformendpoint = nem.find("param/[@name='platformendpoint']")
+            transportendpoint = nem.find("param/[@name='transportendpoint']")
+
+            if platformendpoint is None:
+                print >>sys.stderr, "error %s:" % platform," missing 'platformendpoint' for NEM",nemId
+                exit(1) 
+
+            if transportendpoint is None:
+                print >>sys.stderr, "error %s:" % platform," missing 'transportendpoint' for NEM",nemId
+                exit(1) 
             
-          }# end for each param child node
+            # store platform and transport endpoints
+            metas[nemId] = {
+                'platformendpoint' : platformendpoint.get('value'),
+                'transportendpoint' : transportendpoint.get('value')
+            }
+            
+            # load nem XML
+            try:
+                if options.verbose:
+                    print "processing XML:",nemDefinition
+
+                nemTree = etree.parse(urljoin(platform,nemDefinition),parser)
+
+                for transport in nemTree.xpath('/nem/transport'):
+                    transportDefinition = transport.get('definition')
+
+                    if 'definition' not in metas[nemId]:
+                        metas[nemId]['definition'] = transportDefinition
+                    elif metas[nemId]['definition'] != transportDefinition:
+                        print >>sys.stderr, "error %s:" % nemDefinition," inconsistent transport selected for NEM",nemId
+                        exit(1) 
+
+                    # load transport XML
+                    try:
+                        if options.verbose:
+                            print "processing XML:",transportDefinition
+
+                        transportTree = etree.parse(urljoin(platform,transportDefinition),parser)
+
+                        # process transport XML parameters
+                        for param in transportTree.xpath('/transport/param'):
+                            instances[nemId][param.get('name')] = [param.get('value')]
+
+                        # process transport XML parameter lists
+                        for paramlist in transportTree.xpath('/transport/paramlist'):
+
+                            instances[nemId][paramlist.get('name')] = []
+                            
+                            for item in paramlist.xpath('item'):
+                                instances[nemId][paramlist.get('name')].append(item.get('value'))
+
+                    except etree.XMLSyntaxError, exp:
+                        print >>sys.stderr, "error %s:" % transportDefinition,exp
+                        exit(1)        
+                    
+                    # process nem XML parameters
+                    for param in nemTree.xpath('/nem/transport/param'):
+                        instances[nemId][param.get('name')] = [param.get('value')]
+
+                    # process nem XML parameter lists
+                    for paramlist in nemTree.xpath('/nem/transport/paramlist'):
+
+                        instances[nemId][paramlist.get('name')] = []
+                            
+                        for item in paramlist.xpath('item'):
+                            instances[nemId][paramlist.get('name')].append(item.get('value'))
+
+            except etree.XMLSyntaxError, exp:
+                print >>sys.stderr, "error %s:" % nemDefinition,exp
+                exit(1)
+
+            transport = nem.find('transport')
+
+            # unless specified use the nemId as the group tag
+            group = str(nemId)
+
+            if transport is not None:
+                transportDefinition = transport.get('definition')
+
+                group = transport.get("group")
+                
+                if group is None:
+                    group = str(nemId)
+
+                if 'definition' not in metas[nemId]:
+                    metas[nemId]['definition'] = transportDefinition
+                elif metas[nemId]['definition'] != transportDefinition:
+                    print >>sys.stderr, "error %s:" % platform," inconsistent transport selected for NEM",nemId
+                    exit(1) 
+
+                # process platform XML nem element transport parameters
+                for param in transport.xpath('param'):
+                    instances[nemId][param.get('name')] = [param.get('value')]
+
+                # process nem XML parameter lists
+                for paramlist in transport.xpath('paramlist'):
+                    
+                    instances[nemId][paramlist.get('name')] = []
+                            
+                    for item in paramlist.xpath('item'):
+                        instances[nemId][paramlist.get('name')].append(item.get('value'))
+
+            if group not in groups:
+                groups[group] = []
+
+            # add the nem to a group
+            groups[group].append(nemId)
+                    
+
+except IOError,exp:
+    print >>sys.stderr, "error:",exp
+    exit(1)
+    
+# create the transport daemon files
+for members in sorted(groups.values()):
+    output="transportdaemon%d.xml" % min(members)
+
+    root = etree.Element('transportdaemon')
+
+    for nemId in members:
+        params = instances[nemId]
+
+        instanceElement = etree.SubElement(root,'instance', nemid=str(nemId))
+
+        etree.SubElement(instanceElement,
+                         'param',
+                         name='platformendpoint',
+                         value=metas[nemId]['platformendpoint'])
+
+        etree.SubElement(instanceElement,
+                         'param',
+                         name='transportendpoint',
+                         value=metas[nemId]['transportendpoint'])
+
+        transportElement = etree.SubElement(instanceElement,'transport', definition=metas[nemId]['definition'])
+
+
+        for name,value in params.items():
+            if len(value) == 1:
+                etree.SubElement(transportElement,'param', name=name,value=value[0])
+            else:
+                paramlist = etree.SubElement(transportElement,'paramlist', name=name) 
+
+                for item in value:
+                    etree.SubElement(paramlist,'item', value=item) 
+
+
+    target = "transportdaemon%d.xml" % min(members)
+
+    try:
+        xml = etree.tostring(root,
+                             pretty_print=True,
+                            encoding="UTF-8",
+                             xml_declaration=True,
+                             doctype="<!DOCTYPE transportdaemon SYSTEM \"%s\">" % options.dtd)
+
+        # kludge DTD validation with external entity loading
+        etree.XML(xml,parser)
+
+        if options.verbose:
+            print "generating XML:",target
         
-        }# end for each transport element
-
-      }# end if transport tree exists
-      
-    }# end foreach NEM node
-    
-  }
-
-#
-# Prints out contents of the transport hash to the screen
-#
-sub dump_to_screen
-{
-  foreach my $key (keys(%transportHash)) 
-  {
-    print "MAJOR: Key: $key, Values are:\n";
-    
-    foreach my $subkey (keys (%{$transportHash{$key}{'instance'}})) 
-    {
-      print "MINOR: Key: $subkey, Val: $transportHash{$key}{'instance'}{$subkey}\n";
-      
-      my $val = $transportHash{$key}{'instance'}{$subkey};
-
-      print "Val: Key: $subkey, Val: $val\n";
-
-    }
-
-    foreach my $subkey (keys (%{$transportHash{$key}{'transport'}})) 
-    {
-      #        print "MIN2: Key: $subkey, Val: $transportHash{$key}{'transport'}{$subkey}\n";
-      
-      if ($subkey eq "param")
-      {
-        my $href = $transportHash{$key}{'transport'}{$subkey};
+        output=open(os.path.join(options.outpath,target),'w')
         
-        foreach (keys %{$href})
-        {
-          print "Val2: Key: $_, Val: $href->{$_}\n";
-        }
-      }
-      else
-      {
-        print "Val3: Key: $subkey, Val: $transportHash{$key}{'transport'}{$subkey}\n";
-      }
-      
-    }
-    
-  }
-}
+        print >>output,xml
 
-#
-# Generates transport xml files based on the contents of the transport hash
-#
-sub generate_transport_xml
-{
-  for my $groupref (values %groupHash)
-  {
-    # Create a new document xml ver=1.0 encoding=UTF-8
-    my $document = XML::LibXML::Document->new("1.0", "UTF-8");
-    
-    # Create the root node
-    my $root = $document->createElement("transportdaemon");
-    
-    # Add root node to the document
-    $document->setDocumentElement($root);
+        output.close()
 
-    # sort the nem ids in the trasport group
-    my @group = sort(@$groupref);
+    except etree.XMLSyntaxError, exp:
+        print >>sys.stderr, "error %s:" % target, "unable to validate target xml"
+        print >>sys.stderr, exp
+        exit(1)
 
-    # transportdaemon file id is the lowest NEM id in the grouping
-    my $transportId = $group[0];
 
-    # Need to generate an instance element for every NEMId in the hash
-    for my $nemId (sort {$a <=> $b } @group) 
-    {
-      # Create the instance node
-      my $instance = $document->createElement("instance");
-    
-      # Set nemId attribute
-      $instance->setAttribute("nemid", "$nemId");
-      
-      # First, the instance parameters
-      foreach (keys (%{$transportHash{$nemId}{'instance'}})) 
-      {        
-        # Create the 'entry' node
-        my $entry = $document->createElement("param");
-        
-        # Now create and add all the attributes for the entry
-        $entry->setAttribute("name", $_);
-        
-        $entry->setAttribute("value", $transportHash{$nemId}{'instance'}->{$_});
-        
-        # Add the entry as the child of instance
-        $instance->addChild($entry);
-      }
-    
-      # Create the transport node
-      my $transport = $document->createElement("transport");
-    
-      # Set nemId attribute
-      $transport->setAttribute("definition", $transportHash{$nemId}{'transport'}{'definition'});
-      
-      # Second, the transport parameters
-      foreach (keys (%{$transportHash{$nemId}{'transport'}{'param'}})) 
-      {        
-        # Create the 'entry' node
-        my $entry = $document->createElement("param");
-        
-        # Now create and add all the attributes for the entry
-        $entry->setAttribute("name", $_);
-        
-        $entry->setAttribute("value", $transportHash{$nemId}{'transport'}{'param'}->{$_});
-        
-        # Add the entry as the child of instance
-        $transport->addChild($entry);
-      }
-      
-      # Add transport to instance
-      $instance->addChild($transport);
-      
-      # Add instance to root
-      $root->addChild($instance);
-    }
-
-    # Create external subset (DTD) entry with a valid dtd path
-    my $dtd = $document->createInternalSubset("transportdaemon", undef, "$dtdPath"."$dtdFile");
-    
-    # Validate
-    my $dtdY = XML::LibXML::Dtd->new("", "$dtdPath"."$dtdFile");
-    $document->validate($dtdY);
-    
-    # If validation fails, no file will be written.
-    print "--> Generated file will be placed in: $outputPath\n";
-    print "--> DTDs for validation are from: $dtdPath\n";
-    print "--> Name of DTD to validate generated file: $dtdFile\n\n";
-
-    # Save the document to file
-    $document->toFile("$outputPath"."transportdaemon$transportId.xml", 1);
-  }
-}
-
-package EMANE::SAXHandler;
-use base qw(XML::LibXML::SAX::Builder);
-no strict;
-
-sub new
-{
-  my $invocant = shift;
-  my $class = ref($invocant) || $invocant;
-  return bless {}, $class;
-}
-
-#
-# Checks each element to see if there is an attribute with
-# another xml file to parse ...and issues the call to parse 
-# the file. The call to main::parse_file will create another
-# instance of a SAX parser (and another instance of this 
-# handler).
-#
-sub start_element
-{
-    #parameters are: packageName, elementHash
-    my $self = shift;
-    my $element = shift;
-
-    foreach (keys(%{$element})) 
-    {
-      my $thash = ${$element}{$_};
-      foreach my $key (keys(%$thash)) 
-      {
-        if($$thash{$key}{"LocalName"} eq "definition")
-        {
-          if ($$thash{$key}{"Value"} =~ /(\S+\.xml)/) 
-          {
-            &main::parse_file($1);
-          }# end if nested xml file is found
-        }
-      }# end foreach key in attribute hash
-      
-    }# end foreach key in DOMElement hash
-}
-
-1;
 
