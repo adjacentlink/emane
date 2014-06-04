@@ -353,7 +353,7 @@ void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
                      tv.usec(),
                      level >= 0 && level < TOTAL_LEVELS ? LEVELSTRING[level] : "?");
 
-  if(iLen < 0)
+  if(iLen < 0 || iLen > iBuffSize)
     {
       // silently discard
       return;
