@@ -335,23 +335,41 @@ void EMANE::LogService::log_i(LogLevel level, const Strings & strings)
 void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
 {
   ACE_Time_Value tv = ACE_OS::gettimeofday();
-      
-  char buff[1024] = {0};
+  
+  // buffer size is MAX_LOG_LENGTH + timestamp + level
+  const int iBuffSize{MAX_LOG_LENGTH + 22};
+  char buff[iBuffSize] = {0};
 
   struct tm ltm;
-      
+     
   time_t t = tv.sec();
-      
+     
   ACE_OS::localtime_r(&t, &ltm);
+
+  int iLen = snprintf(buff, sizeof(buff),"%02d:%02d:%02d.%06lu %5s ",
+                     ltm.tm_hour,
+                     ltm.tm_min,
+                     ltm.tm_sec,
+                     tv.usec(),
+                     level >= 0 && level < TOTAL_LEVELS ? LEVELSTRING[level] : "?");
+
+  if(iLen < 0 || iLen > iBuffSize)
+    {
+      // silently discard
+      return;
+    }
+
+  int iAppended = vsnprintf(buff + iLen, iBuffSize - iLen, fmt, ap);
+
+  if(iAppended > 0)
+    {
+      iLen += iAppended;
       
-  std::uint16_t len = snprintf(buff, sizeof(buff),"%02d:%02d:%02d.%06lu %5s ",
-                               ltm.tm_hour,
-                               ltm.tm_min,
-                               ltm.tm_sec,
-                               tv.usec(),
-                               level >= 0 && level < TOTAL_LEVELS ? LEVELSTRING[level] : "?");
-      
-  len += vsnprintf(buff + len, sizeof(buff) - len, fmt, ap);
+      if(iLen > iBuffSize)
+        {
+          iLen = iBuffSize;
+        }
+    }
 
   if(bDecoupleLogging_ == false)
     {
@@ -362,7 +380,10 @@ void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
       Utils::VectorIO outputVector(2);
 
       // set buff, len, level and seq num in msg hdr, len does not include terminationg byte
-      EMANE::Messages::LoggerRecordMessage msg {buff, len, level, u32LogSequenceNumber_++};
+      EMANE::Messages::LoggerRecordMessage msg {buff,
+          static_cast<size_t>(iLen),
+          level,
+          u32LogSequenceNumber_++};
 
       Serialization serialization{msg.serialize()};
 

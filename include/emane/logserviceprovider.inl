@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ void  EMANE::LogServiceProvider::logfn(LogLevel level, Function fn,const char *f
 {
   if(isLogAllowed(level))
     {
-      char buff[1024];
+      char buff[MAX_LOG_LENGTH];
       
       vsnprintf(buff,sizeof(buff),fmt,ap);
   
@@ -65,7 +65,7 @@ void  EMANE::LogServiceProvider::logfn(LogLevel level, Function fn,const char *f
 {
   if(isLogAllowed(level))
     {
-      char buff[1024];
+      char buff[MAX_LOG_LENGTH];
 
       va_list ap;
   
