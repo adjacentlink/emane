@@ -5,6 +5,9 @@ config.status
 libtool
 autom4te.cache
 
+# version
+include/emane/version.h
+
 # protocol buffers output
 *.pb.cc
 *.pb.h

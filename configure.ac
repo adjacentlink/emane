@@ -224,6 +224,9 @@ AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
 AC_SUBST(DEBIAN_VERSION)
 
+AC_SUBST(PACKAGE_VERSION_CODE,
+ [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])
+
 AC_OUTPUT(
  Makefile 
  include/emane/Makefile
@@ -233,6 +236,7 @@ AC_OUTPUT(
  include/emane/generators/Makefile
  include/emane/generators/eel/Makefile
  include/emane/events/Makefile
+ include/emane/version.h
  src/Makefile
  src/libemanexmlparser/Makefile 
  src/libemane/Makefile
