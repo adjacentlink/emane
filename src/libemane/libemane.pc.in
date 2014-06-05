@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+acelibs=@ACE_LIBS@
+acecflags=@ACE_CFLAGS@
+
+Name: libemane
+Description: Extendable Mobile Ad-hoc Network Emultor
+URL: https://github.com/adjacentlink/emane
+Version: @VERSION@
+Requires: libxml-2.0 protobuf libpcre uuid
+Cflags: -I${includedir} ${acecflags}
+Libs: -L${libdir} ${acelibs} -lACE -lrt -ldl -lemane
