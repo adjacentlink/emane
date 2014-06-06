@@ -283,6 +283,7 @@ AC_OUTPUT(
  test/testcases/phyupstreamscenario002/Makefile
  test/testcases/phyupstreamscenario003/Makefile
  test/testcases/phyupstreamscenario004/Makefile
+ test/testcases/phyupstreamscenario005/Makefile
  scripts/Makefile
  scripts/doc/Makefile
  dtd/Makefile

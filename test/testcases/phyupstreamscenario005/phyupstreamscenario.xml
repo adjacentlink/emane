@@ -1,0 +1,244 @@
+<phyupstreamscenario nem="1">
+
+  <!-- action 1 -->
+  <action>
+    <configure>
+      <paramlist name='propagationmodel'>
+        <item value='precomputed'/>
+      </paramlist>
+      <paramlist name='fixedantennagainenable'>
+        <item value='off'/>
+      </paramlist>
+      <paramlist name='systemnoisefigure'>
+        <item value='4'/>
+      </paramlist>
+      <paramlist name='noisemode'>
+        <item value='all'/>
+      </paramlist>
+      <paramlist name='bandwidth'>
+        <item value='1.2M'/>
+      </paramlist>
+      <paramlist name='frequency'>
+        <item value='250M'/>
+      </paramlist>
+      <paramlist name='frequencyofinterest'>
+        <item value='250M'/>
+        <item value='2G'/>
+        <item value='3G'/>
+      </paramlist>
+      <paramlist name='subid'>
+        <item value='1'/>
+      </paramlist>
+      <paramlist name='noisemaxclampenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='timesyncthreshold'>
+        <item value='1000'/>
+      </paramlist>
+    </configure>
+  </action>
+
+  <!-- action 2 -->
+  <action>
+    <pathloss>
+      <entry nem='2' pathloss='90'/>
+      <entry nem='3' pathloss='100'/>
+      <entry nem='4' pathloss='100'/>
+    </pathloss>
+  </action>
+
+  <!-- action 3 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <orientation pitch="0" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="0" magnitude="10"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+      <pov nem="3">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+      <pov nem="4">
+        <position latitude="40.023235" longitude="-74.312889" altitude="3.0"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 4 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="1" id="3" azimuth="45" elevation="-8"/>
+      <profile nem="4" id="4" azimuth="330" elevation="0"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 5 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <orientation pitch="32" roll="0" yaw="30"/>
+        <velocity azimuth="60" elevation="-20" magnitude="10"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 6 -->
+  <action>                        
+    <packet now='30000065' txtime='30000060' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 7 -->
+  <action>
+    <window now="30000360" time="30000160" duration="200" frequency="250000000"/>
+  </action>
+
+  <!-- action 8 -->
+  <action>
+    <frequencyofinterest bandwidth="2000000">
+      <frequency value="250000000"/>
+      <frequency value="2000000000"/>
+      <frequency value="3000000000"/>
+    </frequencyofinterest>
+  </action>
+
+  <!-- action 9 -->
+  <action>
+    <window now="30000360" time="30000160" duration="200" frequency="250000000"/>
+  </action>
+
+  <!-- action 10 -->
+  <action>                        
+    <packet now='30000365' txtime='30000360' bandwidth='2000000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 11 -->
+  <action>                        
+    <packet now='30000365' txtime='30000360' bandwidth='2000000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="2000000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='2'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 12 -->
+  <action>
+    <frequencyofinterest bandwidth="2000000">
+      <frequency value="250000000"/>
+    </frequencyofinterest>
+  </action>
+
+  <!-- action 13 -->
+  <action>
+    <window now="30000560" time="30000360" duration="200" frequency="250000000"/>
+  </action>
+
+  <!-- action 14 -->
+  <action>
+    <window now="30000560" time="30000360" duration="200" frequency="2000000000"/>
+  </action>
+
+  <!-- action 15 -->
+  <action>
+    <frequencyofinterest bandwidth="1200000">
+      <frequency value="250000000"/>
+      <frequency value="2000000000"/>
+      <frequency value="3000000000"/>
+    </frequencyofinterest>
+  </action>
+
+  <!-- action 16 -->
+  <action>                        
+    <packet now='30002005' txtime='30002000' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='2'>
+      <segments>
+        <segment frequency="250000000" offset="200" duration="100"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+        <transmitter nem='3' power='5'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 17 -->
+  <action>                        
+    <packet now='30002010' txtime='30002000' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="500"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='12'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 18 -->
+  <action>
+    <window now="30002500" time="30002000" duration="500" frequency="250000000"/>
+  </action>
+
+  <!-- action 19 -->
+  <action>                        
+    <packet now='30005005' txtime='30005000' bandwidth='1200000'
+            size='1024' source='2' destination='65535' fixedgain='0' subid='2'>
+      <segments>
+        <segment frequency="250000000" offset="200" duration="100"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+        <transmitter nem='3' power='5'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 20 -->
+  <action>
+    <frequencyofinterest bandwidth="1200000">
+      <frequency value="250000000"/>
+    </frequencyofinterest>
+  </action>
+
+  <!-- action 21 -->
+  <action>                        
+    <packet now='30005010' txtime='30005000' bandwidth='1200000'
+            size='1024' source='4' destination='65535' subid='1'>
+      <segments>
+        <segment frequency="250000000" offset="0" duration="500"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='4' power='12'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 22 -->
+  <action>
+    <window now="40005500" time="40005000" duration="500" frequency="250000000"/>
+  </action>
+
+</phyupstreamscenario>
