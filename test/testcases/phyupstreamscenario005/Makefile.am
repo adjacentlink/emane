@@ -1,17 +1,15 @@
-harness_dir=$(top_srcdir)/test/harness/gainscenario
-harness_cmd=gainscenario
+harness_dir=$(top_srcdir)/test/harness/phyupstreamscenario
+harness_cmd=phyupstreamscenario
 harness_exe=$(harness_dir)/$(harness_cmd)
 harness_bin_deps=$(harness_exe) $(top_srcdir)/src/libemane/.libs/libemane.so
-harness_schema=gainscenario.xsd
+harness_schema=phyupstreamscenario.xsd
 
-testcase_inputs=      \
- antenna30dsector.xml \
- antennaomni.xml      \
- antennahole.xml      \
- antennaprofiles.xml  \
- blockageaft.xml      \
- blockagehole.xml     \
- gainscenario.xml
+testcase_inputs=        \
+ antenna30dsector.xml   \
+ antennaomni.xml        \
+ antennaprofiles.xml    \
+ blockageaft.xml        \
+ phyupstreamscenario.xml     
 
 EXTRA_DIST=           \
  $(testcase_inputs)   \
@@ -23,7 +21,8 @@ all-local: testcase-output.txt
 testcase-output.txt: $(testcase_inputs) $(harness_bin_deps)
 	$(harness_exe) \
     --schema $(harness_dir)/$(harness_schema) \
-    antennaprofiles.xml gainscenario.xml &> testcase-output.txt
+    --profiles antennaprofiles.xml \
+    phyupstreamscenario.xml &> testcase-output.txt
 
 clean-local:
 	rm -f testcase-output.txt

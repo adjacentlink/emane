@@ -159,6 +159,8 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-flowcontrolmanager.lo libemane_la-frameworkphy.lo \
 	libemane_la-frequencycontrolmessage.lo \
 	libemane_la-frequencycontrolmessageformatter.lo \
+	libemane_la-frequencyofinterestcontrolmessage.lo \
+	libemane_la-frequencyofinterestcontrolmessageformatter.lo \
 	libemane_la-gainmanager.lo libemane_la-layerfactorymanager.lo \
 	libemane_la-libemane.lo libemane_la-locationevent.lo \
 	libemane_la-locationeventformatter.lo \
@@ -530,6 +532,8 @@ libemane_la_SOURCES = \
  frameworkphy.cc                              \
  frequencycontrolmessage.cc                   \
  frequencycontrolmessageformatter.cc          \
+ frequencyofinterestcontrolmessage.cc         \
+ frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
@@ -879,6 +883,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frameworkphy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencycontrolmessage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencycontrolmessageformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-gainmanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-layerfactorymanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-libemane.Plo@am__quote@
@@ -1273,6 +1279,20 @@ libemane_la-frequencycontrolmessageformatter.lo: frequencycontrolmessageformatte
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencycontrolmessageformatter.cc' object='libemane_la-frequencycontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencycontrolmessageformatter.lo `test -f 'frequencycontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencycontrolmessageformatter.cc
+
+libemane_la-frequencyofinterestcontrolmessage.lo: frequencyofinterestcontrolmessage.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-frequencyofinterestcontrolmessage.lo -MD -MP -MF $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Tpo -c -o libemane_la-frequencyofinterestcontrolmessage.lo `test -f 'frequencyofinterestcontrolmessage.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessage.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Tpo $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencyofinterestcontrolmessage.cc' object='libemane_la-frequencyofinterestcontrolmessage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencyofinterestcontrolmessage.lo `test -f 'frequencyofinterestcontrolmessage.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessage.cc
+
+libemane_la-frequencyofinterestcontrolmessageformatter.lo: frequencyofinterestcontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-frequencyofinterestcontrolmessageformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Tpo -c -o libemane_la-frequencyofinterestcontrolmessageformatter.lo `test -f 'frequencyofinterestcontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Tpo $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencyofinterestcontrolmessageformatter.cc' object='libemane_la-frequencyofinterestcontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencyofinterestcontrolmessageformatter.lo `test -f 'frequencyofinterestcontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessageformatter.cc
 
 libemane_la-gainmanager.lo: gainmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-gainmanager.lo -MD -MP -MF $(DEPDIR)/libemane_la-gainmanager.Tpo -c -o libemane_la-gainmanager.lo `test -f 'gainmanager.cc' || echo '$(srcdir)/'`gainmanager.cc

@@ -1,0 +1,320 @@
+[1] configure 
+[1]  bandwidth:
+[1]    1200000
+[1]  fixedantennagain:
+[1]    0.000000
+[1]  fixedantennagainenable:
+[1]    0
+[1]  frequency:
+[1]    250000000
+[1]  frequencyofinterest:
+[1]    250000000
+[1]    2000000000
+[1]    3000000000
+[1]  noisebinsize:
+[1]    20
+[1]  noisemaxclampenable:
+[1]    1
+[1]  noisemaxmessagepropagation:
+[1]    200000
+[1]  noisemaxsegmentduration:
+[1]    1000000
+[1]  noisemaxsegmentoffset:
+[1]    300000
+[1]  noisemode:
+[1]    all
+[1]  propagationmodel:
+[1]    precomputed
+[1]  subid:
+[1]    1
+[1]  systemnoisefigure:
+[1]    4.000000
+[1]  timesyncthreshold:
+[1]    1000
+[1]  txpower:
+[1]    0.000000
+
+[2] pathloss 2 Forward Pathloss: 90 Reverse Pathloss: 90
+[2] pathloss 3 Forward Pathloss: 100 Reverse Pathloss: 100
+[2] pathloss 4 Forward Pathloss: 100 Reverse Pathloss: 100
+
+[3] location 1 P:[40.025495,-74.315441,3] O:[0,0,30] V:[60,0,10]
+[3] location 2 P:[40.023235,-74.312889,3]
+[3] location 3 P:[40.023235,-74.312889,3]
+[3] location 4 P:[40.023235,-74.312889,3]
+
+[4] profile 1 profileId: 3 azimuth: 45 elevation: -8
+[4] profile 4 profileId: 4 azimuth: 330 elevation: 0
+
+[5] location 1 P:[40.025495,-74.315441,3] O:[32,0,30] V:[60,-20,10]
+
+[6] packet
+[6]  Common PHY Header data:
+[6]   regid: 7
+[6]   seq: 1
+[6]   bandwidth: 1200000
+[6]   fixed antenna gain: off
+[6]   fixed antenna gain: 0.000000
+[6]   tx time: 30.000060
+[6]   freq: 250000000
+[6]   duration: 200
+[6]   offset: 100
+[6]   src: 4
+[6]   power: 2.000000
+
+[6]  Packet forwarded to next layer
+
+[6]  MAC FrequencyControlMessage data:
+[6]   bandwidth: 1200000
+[6]   freq: 250000000
+[6]   duration: 200
+[6]   offset: 100
+[6]   power: -100.000000
+
+[6]  MAC ReceivePropertiesControlMessage data:
+[6]   sot: 30.000060
+[6]   span: 200
+[6]   prop delay: 1
+[6]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[7] window
+[7]  request window time: 30000160
+[7]  frequency: 250000000
+[7]  window response timepoint: 30000160
+[7]  bin size: 20
+[7]  rx sensitivity: 1.2e-11
+[7]  signal in noise: yes
+[7]    0:1.000000013e-10
+
+[8] frequencyofinterest 
+[8]    bandwidth: 2000000
+[8]    frequency: 250000000
+[8]    frequency: 2000000000
+[8]    frequency: 3000000000
+
+[9] window
+[9]  request window time: 30000160
+[9]  frequency: 250000000
+[9]  window response timepoint: 30000160
+[9]  bin size: 20
+[9]  rx sensitivity: 2e-11
+[9]  signal in noise: yes
+
+[10] packet
+[10]  Common PHY Header data:
+[10]   regid: 7
+[10]   seq: 2
+[10]   bandwidth: 2000000
+[10]   fixed antenna gain: off
+[10]   fixed antenna gain: 0.000000
+[10]   tx time: 30.000360
+[10]   freq: 250000000
+[10]   duration: 200
+[10]   offset: 100
+[10]   src: 4
+[10]   power: 2.000000
+
+[10]  Packet forwarded to next layer
+
+[10]  MAC FrequencyControlMessage data:
+[10]   bandwidth: 2000000
+[10]   freq: 250000000
+[10]   duration: 200
+[10]   offset: 100
+[10]   power: -100.000000
+
+[10]  MAC ReceivePropertiesControlMessage data:
+[10]   sot: 30.000360
+[10]   span: 200
+[10]   prop delay: 1
+[10]   receiver sensativity: -106.989700
+
+Processing upstream packet...
+[11] packet
+[11]  Common PHY Header data:
+[11]   regid: 7
+[11]   seq: 3
+[11]   bandwidth: 2000000
+[11]   fixed antenna gain: off
+[11]   fixed antenna gain: 0.000000
+[11]   tx time: 30.000360
+[11]   freq: 2000000000
+[11]   duration: 200
+[11]   offset: 100
+[11]   src: 4
+[11]   power: 2.000000
+
+[11]  Packet forwarded to next layer
+
+[11]  MAC FrequencyControlMessage data:
+[11]   bandwidth: 2000000
+[11]   freq: 2000000000
+[11]   duration: 200
+[11]   offset: 100
+[11]   power: -100.000000
+
+[11]  MAC ReceivePropertiesControlMessage data:
+[11]   sot: 30.000360
+[11]   span: 200
+[11]   prop delay: 1
+[11]   receiver sensativity: -106.989700
+
+Processing upstream packet...
+[12] frequencyofinterest 
+[12]    bandwidth: 2000000
+[12]    frequency: 250000000
+
+[13] window
+[13]  request window time: 30000360
+[13]  frequency: 250000000
+[13]  window response timepoint: 30000360
+[13]  bin size: 20
+[13]  rx sensitivity: 2e-11
+[13]  signal in noise: yes
+
+[14] window
+[14]  request window time: 30000360
+[14]  frequency: 2000000000
+[14]  window response timepoint: 0
+[14]  bin size: 0
+[14]  rx sensitivity: 0
+[14]  signal in noise: no
+
+[15] frequencyofinterest 
+[15]    bandwidth: 1200000
+[15]    frequency: 250000000
+[15]    frequency: 2000000000
+[15]    frequency: 3000000000
+
+[16] packet
+[16]  Common PHY Header data:
+[16]   regid: 7
+[16]   seq: 4
+[16]   bandwidth: 1200000
+[16]   fixed antenna gain: on
+[16]   fixed antenna gain: 0.000000
+[16]   tx time: 30.002000
+[16]   freq: 250000000
+[16]   duration: 100
+[16]   offset: 200
+[16]   src: 2
+[16]   power: 0.000000
+[16]   src: 3
+[16]   power: 5.000000
+
+[16]  Packet dropped
+
+[16] BroadcastPacketDropTable0
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[16] |2  |1          |0             |0                |0            |0           |0           |0      |0             |
+[16] UnicastPacketDropTable0
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[17] packet
+[17]  Common PHY Header data:
+[17]   regid: 7
+[17]   seq: 5
+[17]   bandwidth: 1200000
+[17]   fixed antenna gain: off
+[17]   fixed antenna gain: 0.000000
+[17]   tx time: 30.002000
+[17]   freq: 250000000
+[17]   duration: 500
+[17]   offset: 0
+[17]   src: 4
+[17]   power: 12.000000
+
+[17]  Packet forwarded to next layer
+
+[17]  MAC FrequencyControlMessage data:
+[17]   bandwidth: 1200000
+[17]   freq: 250000000
+[17]   duration: 500
+[17]   offset: 0
+[17]   power: -90.000000
+
+[17]  MAC ReceivePropertiesControlMessage data:
+[17]   sot: 30.002000
+[17]   span: 500
+[17]   prop delay: 1
+[17]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[18] window
+[18]  request window time: 30002000
+[18]  frequency: 250000000
+[18]  window response timepoint: 30002000
+[18]  bin size: 20
+[18]  rx sensitivity: 1.2e-11
+[18]  signal in noise: yes
+[18]    0:9.999999717e-10
+[18]    10:1.830483543e-09
+[18]    16:9.999999717e-10
+
+[19] packet
+[19]  Common PHY Header data:
+[19]   regid: 7
+[19]   seq: 6
+[19]   bandwidth: 1200000
+[19]   fixed antenna gain: on
+[19]   fixed antenna gain: 0.000000
+[19]   tx time: 30.005000
+[19]   freq: 250000000
+[19]   duration: 100
+[19]   offset: 200
+[19]   src: 2
+[19]   power: 0.000000
+[19]   src: 3
+[19]   power: 5.000000
+
+[19]  Packet dropped
+
+[19] BroadcastPacketDropTable0
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[19] |2  |2          |0             |0                |0            |0           |0           |0      |0             |
+[19] UnicastPacketDropTable0
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+
+[20] frequencyofinterest 
+[20]    bandwidth: 1200000
+[20]    frequency: 250000000
+
+[21] packet
+[21]  Common PHY Header data:
+[21]   regid: 7
+[21]   seq: 7
+[21]   bandwidth: 1200000
+[21]   fixed antenna gain: off
+[21]   fixed antenna gain: 0.000000
+[21]   tx time: 30.005000
+[21]   freq: 250000000
+[21]   duration: 500
+[21]   offset: 0
+[21]   src: 4
+[21]   power: 12.000000
+
+[21]  Packet forwarded to next layer
+
+[21]  MAC FrequencyControlMessage data:
+[21]   bandwidth: 1200000
+[21]   freq: 250000000
+[21]   duration: 500
+[21]   offset: 0
+[21]   power: -90.000000
+
+[21]  MAC ReceivePropertiesControlMessage data:
+[21]   sot: 30.005000
+[21]   span: 500
+[21]   prop delay: 1
+[21]   receiver sensativity: -109.208188
+
+Processing upstream packet...
+[22] window
+[22]  request window time: 40005000
+[22]  frequency: 250000000
+[22]  window response timepoint: 40005000
+[22]  bin size: 20
+[22]  rx sensitivity: 1.2e-11
+[22]  signal in noise: yes
+

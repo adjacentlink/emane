@@ -96,7 +96,6 @@ namespace EMANE
     GainManager gainManager_;
     LocationManager locationManager_;
     std::uint64_t u64BandwidthHz_;
-    std::set<std::uint64_t> foi_;
     double dTxPowerdBm_;
     std::uint64_t u64TxFrequencyHz_;
     double dReceiverSensitivitydBm_;
@@ -107,6 +106,13 @@ namespace EMANE
     std::unique_ptr<PropagationModelAlgorithm> pPropagationModelAlgorithm_;
     Utils::CommonLayerStatistics commonLayerStatistics_;
     EventTablePublisher eventTablePublisher_;
+    Microseconds noiseBinSize_;
+    Microseconds maxSegmentOffset_;
+    Microseconds maxMessagePropagation_;
+    Microseconds maxSegmentDuration_;
+    Microseconds timeSyncThreshold_;
+    bool bNoiseMaxClamp_;
+    double dSystemNoiseFiguredB_;
   };
 }
 

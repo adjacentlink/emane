@@ -86,16 +86,14 @@ void EMANE::SpectrumMonitor::initialize(const FrequencySet & foi,
 
   dReceiverSensitivityMilliWatt_ = dReceiverSensitivityMilliWatt;
 
-  if(u64ReceiverBandwidthHz_ != u64BandwidthHz)
-    {
-      u64ReceiverBandwidthHz_ = u64BandwidthHz;
+  u64ReceiverBandwidthHz_ = u64BandwidthHz;
 
-      transmitterBandwidthCache_.clear();
+  // (re-)initialize transmitter bandwidth cache
+  transmitterBandwidthCache_.clear();
 
-      TransmitterBandwidthCache transmitterBandwidthCache_;
+  TransmitterBandwidthCache transmitterBandwidthCache_;
   
-      transmitterBandwidthCache_.insert(std::make_pair(u64BandwidthHz,std::unique_ptr<Cache>(new Cache{})));
-    }
+  transmitterBandwidthCache_.insert(std::make_pair(u64BandwidthHz,std::unique_ptr<Cache>(new Cache{})));
   
   noiseRecorderMap_.clear();
   

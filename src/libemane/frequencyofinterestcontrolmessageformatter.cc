@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,31 +30,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
-#define EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
+#include "emane/controls/frequencyofinterestcontrolmessageformatter.h"
 
-#define EMANE_CONTROL_MEASSGE_SERIALIZED 100
+EMANE::Controls::FrequencyOfInterestControlMessageFormatter::
+FrequencyOfInterestControlMessageFormatter(const FrequencyOfInterestControlMessage * pMsg):
+  pMsg_{pMsg}{}
 
-#define EMANE_CONTROL_MEASSGE_TRANSMITTER 101
-
-#define EMANE_CONTROL_MEASSGE_FREQUENCY   102
-
-#define EMANE_CONTROL_MEASSGE_ANTENNA_PROFILE 103
-
-#define EMANE_CONTROL_MEASSGE_FLOW_CONTROL 104
-
-#define EMANE_CONTROL_MEASSGE_R2RI_NEIGHBOR_METRIC 105
-
-#define EMANE_CONTROL_MEASSGE_R2RI_QUEUE_METRIC 106
-
-#define EMANE_CONTROL_MEASSGE_R2RI_SELF_METRIC 107
-
-#define EMANE_CONTROL_MEASSGE_OTA_TRANSMITTER 108
-
-#define EMANE_CONTROL_MEASSGE_RECEIVE_PROPERTIES 109
-
-#define EMANE_CONTROL_MEASSGE_TIME_STAMP 110
-
-#define EMANE_CONTROL_MEASSGE_FREQUENCY_OF_INTEREST 111
-
-#endif // EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
+EMANE::Strings EMANE::Controls::FrequencyOfInterestControlMessageFormatter::operator()() const
+{
+  Strings strings{"bandwidth: " + std::to_string(pMsg_->getBandwidthHz())};
+  
+  for(const auto & frequencyHz : pMsg_->getFrequencySet())
+    {
+      strings.push_back("freq: " + std::to_string(frequencyHz));;
+    }
+  
+  return strings;
+}
