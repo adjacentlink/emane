@@ -531,6 +531,7 @@ class EMANEShell(cmd.Cmd):
             component = args[index].lower()
             if component != 'phy' and \
                     component != 'mac' and \
+                    component != 'transport' and \
                     component != 'all' and \
                     not (re.match('^shim\d+$', component) and component in self._shims):
                 print "error: invalid component layer:",args[index]
@@ -728,6 +729,7 @@ class EMANEShell(cmd.Cmd):
             component = args[index].lower()
             if component != 'phy' and \
                     component != 'mac' and \
+                    component != 'transport' and \
                     component != 'all' and \
                     not (re.match('^shim\d+$', component) and component in self._shims):
                 print "error: invalid component layer:",args[index]
@@ -851,6 +853,7 @@ class EMANEShell(cmd.Cmd):
                             skip = True
                         elif arg == 'phy' or \
                                 arg == 'mac' or \
+                                arg == 'transport' or \
                                 arg == 'all' or \
                                 (re.match('^shim\d+$', arg) and arg in self._shims):
                             layer = arg

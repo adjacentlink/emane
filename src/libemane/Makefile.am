@@ -159,6 +159,7 @@ libemane_la_SOURCES =                         \
  transportbuilder.cc                          \
  transportfactory.cc                          \
  transportfactorymanager.cc                   \
+ transportlayer.cc                            \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
@@ -279,6 +280,7 @@ EXTRA_DIST=                                   \
  transportfactory.h                           \
  transportfactorymanager.h                    \
  transportmanagerimpl.h                       \
+ transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
  wheel.inl                                    \

@@ -402,7 +402,21 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                });
 
     }
-
+  else
+    {
+      if(!parameters.empty())
+        {
+          std::string sUnexpected{};
+          
+          for(const auto & parameter : parameters)
+            {
+              sUnexpected.append(parameter.first + " ");
+            }
+          
+          throw makeException<ConfigurationException>("Parameter(s) not registered: %s",
+                                                      sUnexpected.c_str());
+        }
+    }
   return updates;
 }
 

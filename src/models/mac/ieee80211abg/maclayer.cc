@@ -1966,14 +1966,17 @@ EMANE::Models::IEEE80211ABG::MACLayer::addToken()
 {
   if(macConfig_.getFlowControlEnable())
     {
-      if(!flowControlManager_.addToken())
+      auto status = flowControlManager_.addToken();
+      
+      if(!status.second)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   ERROR_LEVEL,
-                                  "MACI %03hu %s::%s: failed to add token",
+                                  "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
                                   id_,
                                   pzLayerName,
-                                  __func__);
+                                  __func__,
+                                  status.first);
           
           // failed
           return false;
@@ -1991,14 +1994,17 @@ EMANE::Models::IEEE80211ABG::MACLayer::removeToken()
 {
   if(macConfig_.getFlowControlEnable())
     {
-      if(!flowControlManager_.removeToken())
+      auto status = flowControlManager_.removeToken();
+      
+      if(!status.second)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   ERROR_LEVEL,
-                                  "MACI %03hu %s::%s: failed to remove token",
+                                  "MACI %03hu %s::%s: failed to remove token (tokens:%hu)",
                                   id_,
                                   pzLayerName,
-                                  __func__);
+                                  __func__,
+                                  status.first);
 
 
           // failed

@@ -74,16 +74,18 @@ namespace EMANE
     /**
      * Removes a flow control token
      *
-     * @return @a true of success
+     * @return Total number of tokens available and a flag indicating success
      */
-    bool removeToken();
+    std::pair<std::uint16_t,bool> removeToken();
 
     /**
      * Add one or more flow control token(s)
      *
      * @param u16Tokens number of tokens
+     *
+     * @return Total number of tokens available and a flag indicating success
      */
-    bool addToken(std::uint16_t u16Tokens = 1);
+    std::pair<std::uint16_t,bool> addToken(std::uint16_t u16Tokens = 1);
 
     /**
      * Handles a flow control update message

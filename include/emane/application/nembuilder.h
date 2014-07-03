@@ -134,11 +134,37 @@ namespace EMANE
                      bool bSkipConfigure = false);
 
       /**
+       * Builds a Transport layer
+       *
+       * @param id id of the NEM that will contain the transport
+       * @param sLibraryFile Name of the dll containing the layer
+       * @param request Configuration update request
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
+       *
+       * @return Unique pointer to an initialized and configured Transport
+       *
+       * @throw Utils::FactoryException when a DLL load error occurs.
+       * @throw InitializeException when an error occurs during
+       * initialization.
+       * @throw ConfigureException when an error occurs during
+       * configure.
+       */
+      std::unique_ptr<NEMLayer>
+      buildTransportLayer(NEMId id,
+                          const std::string & sLibraryFile,
+                          const ConfigurationUpdateRequest & request,
+                          bool bSkipConfigure = false);
+
+
+      /**
        * Builds an NEM
        *
        * @param id NEM id
        * @param layers The NEMLayers comprising the NEM
        * @param request Configuration update request
+       * @param bHasExternalTransport Flag indicating whether transport is
+       * external
        *
        * @return Unique pointer to an initialized NEM
        *
@@ -151,7 +177,8 @@ namespace EMANE
        */
       std::unique_ptr<NEM> buildNEM(NEMId id,
                                     NEMLayers & layers,
-                                    const ConfigurationUpdateRequest & request);
+                                    const ConfigurationUpdateRequest & request,
+                                    bool bHasExternalTransport);
 
       /**
        * Builds an NEM Manager

@@ -1007,14 +1007,17 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
   // check flow control
   if(bFlowControlEnable_)
     {
-      if(flowControlManager_.removeToken() == false)
+      auto status = flowControlManager_.removeToken();
+      
+      if(status.second == false)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   ERROR_LEVEL,
-                                  "MACI %03hu %s::%s: failed to remove token, drop packet",
+                                  "MACI %03hu %s::%s: failed to remove token, drop packet (tokens:%hu)",
                                   id_,
                                   pzLayerName,
-                                  __func__);
+                                  __func__,
+                                  status.first);
           
           commonLayerStatistics_.processOutbound(pkt, 
                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
@@ -1050,7 +1053,18 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
           // drop, replace token
           if(bFlowControlEnable_)
             {
-              flowControlManager_.addToken();
+              auto status = flowControlManager_.addToken();
+
+              if(!status.second)
+                {
+                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  status.first);
+                }
             }
         }
     }
@@ -1096,7 +1110,19 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
     {
       if(bFlowControlEnable_)
         {
-          flowControlManager_.addToken();
+          auto status = flowControlManager_.addToken();
+
+          if(!status.second)
+            {
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      ERROR_LEVEL,
+                                      "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
+                                      id_,
+                                      pzLayerName,
+                                      __func__,
+                                      status.first);
+
+            }
         }
       
       MACHeaderMessage rfpipeMACHeader{pendingDownstreamQueueEntry_.u64DataRatebps_}; 

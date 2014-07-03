@@ -99,10 +99,12 @@ EMANE::Application::NEMDirector::createNEM(EMANE::NEMConfiguration *pNEMConfig)
                                    (*layerIter)->getLibrary(),
                                    (*layerIter)->getConfigurationUpdateRequest()));
             }
-          else 
+           else if ((*layerIter)->getType() == "transport" && !pNEMConfig->isExternalTransport()) 
             {
-              /* Transport layer, do not build, but may be useful to 
-               * configure other subsytems based on transport's config */
+              layers.push_back(rNEMBuilder_.buildTransportLayer(
+                                   pNEMConfig->getNEMId(),
+                                   (*layerIter)->getLibrary(),
+                                   (*layerIter)->getConfigurationUpdateRequest()));
             }
         }// end for layers    
     }// end if valid
@@ -128,5 +130,6 @@ EMANE::Application::NEMDirector::createNEM(EMANE::NEMConfiguration *pNEMConfig)
 
   return rNEMBuilder_.buildNEM(pNEMConfig->getNEMId(), 
                                layers,
-                               pNEMConfig->getConfigurationUpdateRequest());
+                               pNEMConfig->getConfigurationUpdateRequest(),
+                               pNEMConfig->isExternalTransport());
 }

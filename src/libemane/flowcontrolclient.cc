@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -69,7 +69,7 @@ public:
     mutex_.release();
   }
 
-  bool removeToken()
+  std::pair<std::uint16_t,bool> removeToken()
   {
     ACE_Guard<ACE_Thread_Mutex> m(mutex_);
     
@@ -97,7 +97,7 @@ public:
         --u16TokensAvailable_;
       }
     
-    return bStatus;
+    return {u16TokensAvailable_,bStatus};
   }
 
   void processFlowControlMessage(const Controls::FlowControlControlMessage * pMessage)
@@ -147,7 +147,7 @@ void EMANE::FlowControlClient::stop()
 
 
 
-bool EMANE::FlowControlClient::removeToken()
+std::pair<std::uint16_t,bool> EMANE::FlowControlClient::removeToken()
 {
   return pImpl_->removeToken();
 }

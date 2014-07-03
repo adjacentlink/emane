@@ -220,6 +220,7 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-transportbuilder.lo \
 	libemane_la-transportfactory.lo \
 	libemane_la-transportfactorymanager.lo \
+	libemane_la-transportlayer.lo \
 	libemane_la-transportmanagerimpl.lo \
 	libemane_la-upstreampacket.lo libemane_la-upstreamtransport.lo \
 	libemane_la-velocityformatter.lo \
@@ -609,6 +610,7 @@ libemane_la_SOURCES = \
  transportbuilder.cc                          \
  transportfactory.cc                          \
  transportfactorymanager.cc                   \
+ transportlayer.cc                            \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
@@ -727,6 +729,7 @@ EXTRA_DIST = \
  transportfactory.h                           \
  transportfactorymanager.h                    \
  transportmanagerimpl.h                       \
+ transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
  wheel.inl                                    \
@@ -967,6 +970,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportbuilder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportfactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportfactorymanager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportlayer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportmanagerimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreampacket.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreamtransport.Plo@am__quote@
@@ -1818,6 +1822,13 @@ libemane_la-transportfactorymanager.lo: transportfactorymanager.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='transportfactorymanager.cc' object='libemane_la-transportfactorymanager.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-transportfactorymanager.lo `test -f 'transportfactorymanager.cc' || echo '$(srcdir)/'`transportfactorymanager.cc
+
+libemane_la-transportlayer.lo: transportlayer.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-transportlayer.lo -MD -MP -MF $(DEPDIR)/libemane_la-transportlayer.Tpo -c -o libemane_la-transportlayer.lo `test -f 'transportlayer.cc' || echo '$(srcdir)/'`transportlayer.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-transportlayer.Tpo $(DEPDIR)/libemane_la-transportlayer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='transportlayer.cc' object='libemane_la-transportlayer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-transportlayer.lo `test -f 'transportlayer.cc' || echo '$(srcdir)/'`transportlayer.cc
 
 libemane_la-transportmanagerimpl.lo: transportmanagerimpl.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-transportmanagerimpl.lo -MD -MP -MF $(DEPDIR)/libemane_la-transportmanagerimpl.Tpo -c -o libemane_la-transportmanagerimpl.lo `test -f 'transportmanagerimpl.cc' || echo '$(srcdir)/'`transportmanagerimpl.cc

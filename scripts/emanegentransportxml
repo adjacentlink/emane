@@ -99,7 +99,11 @@ try:
         for nem in root.xpath('nem'):
             nemId = int(nem.get('id'))
             nemDefinition = nem.get('definition')
+            nemTransportLocation = nem.get('transport')
 
+            if nemTransportLocation == "internal":
+                continue
+            
             if nemId not in instances:
                 instances[nemId] = {}
 

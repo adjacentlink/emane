@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -49,6 +49,8 @@ EMANE::NEMConfiguration::NEMConfiguration(xmlNodePtr pNEMNode,
 
   u16Id_ = getAttrValNumeric(pNEMNode, "id");
 
+  bExternalTransport_ = getAttrVal(pNEMNode, "transport") == "external" ? true : false;
+
   // overlay these param values on previously parsed
   overlayParams(pNEMNode);
 }
@@ -73,6 +75,13 @@ const EMANE::LayerConfigurations
 &EMANE::NEMConfiguration::getLayers()
 {
   return layers_;
+}
+
+
+bool
+EMANE::NEMConfiguration::isExternalTransport()
+{
+  return bExternalTransport_;
 }
 
 
