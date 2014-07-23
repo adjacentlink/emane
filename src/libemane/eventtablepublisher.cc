@@ -100,8 +100,8 @@ void EMANE::EventTablePublisher::update(const Events::Locations & locations)
           if(optionalOrientation.second)
             {
               pLocationTable_->setCell(targetNEM,4,Any{optionalOrientation.first.getPitchDegrees()});
-              pLocationTable_->setCell(targetNEM,5,Any{optionalOrientation.first.getYawDegrees()});
-              pLocationTable_->setCell(targetNEM,6,Any{optionalVelocity.first.getAzimuthDegrees()});
+              pLocationTable_->setCell(targetNEM,5,Any{optionalOrientation.first.getRollDegrees()});
+              pLocationTable_->setCell(targetNEM,6,Any{optionalOrientation.first.getYawDegrees()});
             }
 
           if(optionalVelocity.second)
