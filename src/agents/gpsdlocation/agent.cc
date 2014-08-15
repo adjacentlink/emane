@@ -60,9 +60,12 @@ EMANE::Agents::GPSDLocation::Agent::Agent(NEMId nemId,
   masterPTY_{},
   slavePTY_{},
   bHaveInitialPosition_{false},
+  bHaveInitialVelocity_{false},
   dLatitudeDegrees_{},
   dLongitudeDegrees_{},
   dAltitudeMeters_{},
+  dAzimuthDegrees_{},
+  dMagnitudeMetersPerSecond_{},
   timerId_{}{}
 
 EMANE::Agents::GPSDLocation::Agent::~Agent(){}
@@ -287,6 +290,15 @@ void EMANE::Agents::GPSDLocation::Agent::processEvent(const EventId & eventId,
           dLongitudeDegrees_ = position.getLongitudeDegrees();
           dAltitudeMeters_ = position.getAltitudeMeters();
           bHaveInitialPosition_ = true;
+
+          auto velocity = iter->getVelocity();
+
+          if(velocity.second)
+            {
+              dAzimuthDegrees_ = velocity.first.getAzimuthDegrees();
+              dMagnitudeMetersPerSecond_ = velocity.first.getMagnitudeMetersPerSecond();
+              bHaveInitialVelocity_ = true;
+            }
         }
     }      
 }
@@ -308,6 +320,18 @@ void  EMANE::Agents::GPSDLocation::Agent::processTimedEvent(TimerEventId,
                               dLatitudeDegrees_,
                               dLongitudeDegrees_,
                               dAltitudeMeters_);
+
+      if(bHaveInitialVelocity_)
+        {
+          sendSpoofedGPVTG(dAzimuthDegrees_,dMagnitudeMetersPerSecond_);
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  DEBUG_LEVEL,
+                                  "gpsdlocationagent NEM: %hu azm: %lf mag: %lf",
+                                  nemId_,
+                                  dAzimuthDegrees_,
+                                  dMagnitudeMetersPerSecond_);
+        }
     }
 }
 
@@ -441,6 +465,28 @@ void  EMANE::Agents::GPSDLocation::Agent::sendSpoofedNMEA(double dLatitude, doub
     }
 }
 
+void  EMANE::Agents::GPSDLocation::Agent::sendSpoofedGPVTG(double dAzimuth, double dMagnitude)
+{
+  char buf[1024];
+
+  double dMagnitudeKnots = dMagnitude * 1.94384;
+  double dMagnitudeKilometerPerHour = (dMagnitude * 3600.0) / 1000.0;
+
+  /* NMEA GPVTG */
+  snprintf(buf,sizeof(buf),"$GPVTG,%.1f,%C,%.1f,%C,%.1f,%C,%.1f,%C",
+           dAzimuth,
+           'T',
+           dAzimuth,
+           'M',
+           dMagnitudeKnots,
+           'N',
+           dMagnitudeKilometerPerHour,
+           'K'
+           );
+
+  doCheckSumNMEA(buf,sizeof(buf));
+  write(masterPTY_,buf,strlen(buf));
+}
 
 void  EMANE::Agents::GPSDLocation::Agent::doCheckSumNMEA(char *buf, size_t len)
 {
