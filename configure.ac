@@ -32,7 +32,7 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.1,[emane at adjacent link dot com])
+AC_INIT([emane],0.9.2,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -224,6 +224,9 @@ AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
 AC_SUBST(DEBIAN_VERSION)
 
+AC_SUBST(PACKAGE_VERSION_CODE,
+ [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])
+
 AC_OUTPUT(
  Makefile 
  include/emane/Makefile
@@ -233,9 +236,11 @@ AC_OUTPUT(
  include/emane/generators/Makefile
  include/emane/generators/eel/Makefile
  include/emane/events/Makefile
+ include/emane/version.h
  src/Makefile
  src/libemanexmlparser/Makefile 
  src/libemane/Makefile
+ src/libemane/libemane.pc
  src/applications/Makefile
  src/applications/emane/Makefile
  src/applications/emaneinfo/Makefile
@@ -283,6 +288,7 @@ AC_OUTPUT(
  test/testcases/phyupstreamscenario002/Makefile
  test/testcases/phyupstreamscenario003/Makefile
  test/testcases/phyupstreamscenario004/Makefile
+ test/testcases/phyupstreamscenario005/Makefile
  scripts/Makefile
  scripts/doc/Makefile
  dtd/Makefile

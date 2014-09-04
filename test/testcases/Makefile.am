@@ -9,6 +9,7 @@ SUBDIRS=                \
  phyupstreamscenario001 \
  phyupstreamscenario002 \
  phyupstreamscenario003 \
- phyupstreamscenario004 
+ phyupstreamscenario004 \
+ phyupstreamscenario005 
 
 endif

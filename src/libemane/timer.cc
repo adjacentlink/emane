@@ -42,8 +42,8 @@ EMANE::Utils::Timer::Timer():
   timerId_{},
   iFd_{}
 {
-  // create an interval timer with CLOCK_MONOTONIC
-  if((iFd_ = timerfd_create(CLOCK_MONOTONIC,0)) < 0)
+  // create an interval timer with CLOCK_REALTIME
+  if((iFd_ = timerfd_create(CLOCK_REALTIME,0)) < 0)
     {
       throw TimerException{};
     }
@@ -166,38 +166,15 @@ void EMANE::Utils::Timer::schedule_i()
   // only schedule the earliest time if one is present
   if(!timePointMap_.empty())
     {
-      // we are using a CLOCK_MONOTONIC interval timer and the
-      //  the caller is using the realtime clock so we must determine
-      //  the duration of the timer using the realtime clock and then
-      //  apply that duration to the current CLOCK_MONOTONIC time
-      auto now = std::chrono::high_resolution_clock::now();
-      
       auto timeout = timePointMap_.begin()->first.first;
-      
-      // protect against negative durations by making them 0 which
-      //  will cause an immediate expire, having the same effect
-      if(now > timeout)
-        {
-          timeout = now;
-        }
       
       timespec ts;
 
-      Microseconds duration{std::chrono::duration_cast<Microseconds>(timeout-now)};
+      Microseconds timeusec{std::chrono::duration_cast<Microseconds>(timeout.time_since_epoch())};
       
-      clock_gettime(CLOCK_MONOTONIC,&ts);
+      ts.tv_sec = timeusec.count() / 1000000;
       
-      // apply the duration to the CLOCK_MONOTONIC time reference
-      //  and normalize
-      ts.tv_sec += duration.count() / 1000000;
-      
-      ts.tv_nsec += (duration.count() % 1000000) * 1000;
-
-      if(ts.tv_nsec >= 1000000000)
-        {
-          ts.tv_nsec -= 1000000000;
-          ts.tv_sec += 1;
-        }
+      ts.tv_nsec = (timeusec.count() % 1000000) * 1000;
       
       // schedule the interval timer
       itimerspec spec{{0,0},ts};

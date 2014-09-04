@@ -65,7 +65,8 @@ namespace EMANE
        *
        */
       NEMImpl(NEMId id, 
-              std::unique_ptr<NEMLayerStack> & pNEMLayerStack);
+              std::unique_ptr<NEMLayerStack> & pNEMLayerStack,
+              bool bExternalTransport);
     
       ~NEMImpl();
 
@@ -92,7 +93,8 @@ namespace EMANE
     private:
       std::unique_ptr<NEMLayerStack> pNEMLayerStack_;
       NEMId id_;
-    
+      bool bExternalTransport_;
+      
       NEMOTAAdapter     NEMOTAAdapter_;
       NEMNetworkAdapter NEMNetworkAdapter_;
 

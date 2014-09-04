@@ -1,4 +1,4 @@
-emaneincdir = $(includedir)/emane/controls/
+emaneincdir = $(includedir)/emane/controls
 
 emaneinc_HEADERS =                           \
  antennaprofilecontrolmessage.h              \
@@ -6,6 +6,8 @@ emaneinc_HEADERS =                           \
  flowcontrolcontrolmessage.h                 \
  frequencycontrolmessageformatter.h          \
  frequencycontrolmessage.h                   \
+ frequencyofinterestcontrolmessage.h         \
+ frequencyofinterestcontrolmessageformatter.h\
  otatransmittercontrolmessage.h              \
  r2rineighbormetriccontrolmessage.h          \
  r2rineighbormetriccontrolmessageformatter.h \

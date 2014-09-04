@@ -82,9 +82,9 @@ namespace EMANE
     * Removes a flow control token, blocking until a token is available
     * when flow control is enabled
     *
-    * @return @a true on success
+    * @return Total number of tokens available and a flag indicating success
     */
-    bool removeToken();
+    std::pair<std::uint16_t,bool>  removeToken();
 
    /**
     * Handles a flow control update message

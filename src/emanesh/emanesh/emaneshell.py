@@ -531,6 +531,7 @@ class EMANEShell(cmd.Cmd):
             component = args[index].lower()
             if component != 'phy' and \
                     component != 'mac' and \
+                    component != 'transport' and \
                     component != 'all' and \
                     not (re.match('^shim\d+$', component) and component in self._shims):
                 print "error: invalid component layer:",args[index]
@@ -728,6 +729,7 @@ class EMANEShell(cmd.Cmd):
             component = args[index].lower()
             if component != 'phy' and \
                     component != 'mac' and \
+                    component != 'transport' and \
                     component != 'all' and \
                     not (re.match('^shim\d+$', component) and component in self._shims):
                 print "error: invalid component layer:",args[index]
@@ -750,6 +752,17 @@ class EMANEShell(cmd.Cmd):
             if len(args) > index:
                 for expression in args[index:]:
                     m = re.match('^([0-9A-Za-z]+)=(.+)', expression)
+
+                    def toBool(val):
+                        val = val.lower()
+
+                        if val in ('yes','on','enable','true','1'):
+                            return True
+                        elif  val in ('no','off','disable','false','0'):
+                            return False
+                        else:
+                            raise ValueError()
+                        
                     convert = {'uint64' : (ControlPortClient.TYPE_UINT64,long),
                                'uint32' : (ControlPortClient.TYPE_UINT32,long),
                                'uint16' : (ControlPortClient.TYPE_UINT16,long),
@@ -758,7 +771,7 @@ class EMANEShell(cmd.Cmd):
                                'int32' : (ControlPortClient.TYPE_INT32,long),
                                'int16' : (ControlPortClient.TYPE_INT16,long),
                                'int8' : (ControlPortClient.TYPE_INT8,long),
-                               'bool' : (ControlPortClient.TYPE_BOOLEAN,bool),
+                               'bool' : (ControlPortClient.TYPE_BOOLEAN,toBool),
                                'string': (ControlPortClient.TYPE_STRING,str),
                                'inetaddr' : (ControlPortClient.TYPE_INETADDR,str),
                                'float' : (ControlPortClient.TYPE_FLOAT,float),
@@ -851,6 +864,7 @@ class EMANEShell(cmd.Cmd):
                             skip = True
                         elif arg == 'phy' or \
                                 arg == 'mac' or \
+                                arg == 'transport' or \
                                 arg == 'all' or \
                                 (re.match('^shim\d+$', arg) and arg in self._shims):
                             layer = arg

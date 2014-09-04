@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -44,6 +44,7 @@ Implementation(EMANE::DownstreamTransport & transport):
   u16TokensAvailable_{},
   u16TotalTokensAvailable_{},
   u16ShadowTokenCount_{},
+  u16LastTokensUpdate_{},
   bAckPending_{true}{}
   
   ~Implementation(){}
@@ -67,7 +68,7 @@ Implementation(EMANE::DownstreamTransport & transport):
     u16ShadowTokenCount_     = 0;
   }
 
-  bool addToken(std::uint16_t u16Tokens)
+  std::pair<std::uint16_t,bool> addToken(std::uint16_t u16Tokens)
   {
   ACE_Guard<ACE_Thread_Mutex> m(mutex_);
 
@@ -84,14 +85,13 @@ Implementation(EMANE::DownstreamTransport & transport):
   // check shadow count, send update if tokens are available
   if((u16ShadowTokenCount_ == 0) && (u16TokensAvailable_ > 0))
     {
-
       sendFlowControlResponseMessage();
     }
 
-  return bStatus;
+  return {u16TokensAvailable_,bStatus};
   }
 
-  bool removeToken()
+  std::pair<std::uint16_t,bool> removeToken()
   {
     ACE_Guard<ACE_Thread_Mutex> m(mutex_);
     
@@ -104,8 +104,6 @@ Implementation(EMANE::DownstreamTransport & transport):
       }
     else 
       {
-        --u16ShadowTokenCount_;
-        
         // no tokens available
         if(u16TokensAvailable_ == 0)
           {
@@ -115,12 +113,13 @@ Implementation(EMANE::DownstreamTransport & transport):
           {
             // decrement tokens available
             --u16TokensAvailable_;
+            --u16ShadowTokenCount_;
             
             bStatus = true;
           }
       }
 
-    return bStatus;
+    return {u16TokensAvailable_,bStatus};
   }
 
   void processFlowControlMessage(const Controls::FlowControlControlMessage * pMsg)
@@ -137,7 +136,7 @@ Implementation(EMANE::DownstreamTransport & transport):
       {
         // a proper acknowledgment echos the token account will allow
         // traffic to flow
-        if(pMsg->getTokens() == u16TokensAvailable_)
+        if(pMsg->getTokens() == u16LastTokensUpdate_)
           {
             bAckPending_ = false;
           }
@@ -162,6 +161,8 @@ private:
   std::uint16_t u16TotalTokensAvailable_;
   
   std::uint16_t u16ShadowTokenCount_;
+
+  std::uint16_t u16LastTokensUpdate_;
   
   bool bAckPending_;
 
@@ -172,6 +173,8 @@ private:
                                     
     u16ShadowTokenCount_ = u16TokensAvailable_;
     
+    u16LastTokensUpdate_ = u16TokensAvailable_;
+
     bAckPending_ = true;
   }
 };
@@ -193,12 +196,12 @@ void EMANE::FlowControlManager::stop()
   pImpl_->stop();
 }
 
-bool EMANE::FlowControlManager::addToken(std::uint16_t u16Tokens)
+std::pair<std::uint16_t,bool> EMANE::FlowControlManager::addToken(std::uint16_t u16Tokens)
 {
   return pImpl_->addToken(u16Tokens);
 }
 
-bool EMANE::FlowControlManager::removeToken()
+std::pair<std::uint16_t,bool> EMANE::FlowControlManager::removeToken()
 {
   return pImpl_->removeToken();
 }

@@ -37,10 +37,12 @@
 #include "maclayer.h"
 #include "phylayer.h"
 #include "shimlayer.h"
+#include "transportlayer.h"
 #include "nemstatefullayer.h"
 #include "nemimpl.h"
 #include "buildidservice.h"
 #include "layerfactorymanager.h"
+#include "transportfactorymanager.h"
 #include "logservice.h"
 #include "eventservice.h"
 #include "platformservice.h"
@@ -278,7 +280,8 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
 std::unique_ptr<EMANE::Application::NEM>
 EMANE::Application::NEMBuilder::buildNEM(NEMId id, 
                                          NEMLayers & layers,
-                                         const ConfigurationUpdateRequest & request)
+                                         const ConfigurationUpdateRequest & request,
+                                         bool bExternalTransport)
 {
   std::unique_ptr<NEMLayerStack> pLayerStack{new NEMLayerStack};
 
@@ -301,7 +304,7 @@ EMANE::Application::NEMBuilder::buildNEM(NEMId id,
       pLayerStack->addLayer(pLayer);
     }
 
-  std::unique_ptr<NEM> pNEM{new NEMImpl{id, pLayerStack}};
+  std::unique_ptr<NEM> pNEM{new NEMImpl{id,pLayerStack,bExternalTransport}};
   
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEM.get())};
@@ -346,4 +349,61 @@ EMANE::Application::NEMBuilder::buildNEMManager(const uuid_t & uuid,
                 });
 
   return pPlatform;
+}
+
+std::unique_ptr<EMANE::NEMLayer>
+EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
+                                                    const std::string & sLibraryFile,
+                                                    const ConfigurationUpdateRequest & request,
+                                                    bool bSkipConfigure)
+{
+  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
+    sLibraryFile + 
+    ACE_DLL_SUFFIX;
+
+  const TransportFactory & transportLayerFactory = 
+    TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
+      
+  // new platform service
+  PlatformService *
+    pPlatformService{new PlatformService{}};
+
+  // create plugin
+  Transport * impl = 
+    transportLayerFactory.createTransport(id, pPlatformService); 
+     
+  // new concreate layer 
+  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id, 
+        new TransportLayer{id, impl, pPlatformService}, 
+        pPlatformService}};
+
+
+  // register to the component map
+  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
+                                                                         COMPONENT_TRANSPORTILAYER,
+                                                                         sLibraryFile)};
+
+  ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
+                                                                         pNEMLayer.get());
+
+  // pass nem to platform service
+  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+  
+  // register event service handler with event service
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pNEMLayer.get(),
+                                                              id);
+  
+  RegistrarProxy registrarProxy{buildId};
+  
+  // initialize 
+  pNEMLayer->initialize(registrarProxy);
+  
+  if(!bSkipConfigure)
+    {
+      pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
+                                                                                   request));
+    }
+  
+  return pNEMLayer;
 }

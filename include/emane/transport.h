@@ -34,11 +34,7 @@
 #ifndef EMANETRANSPORT_HEADER_
 #define EMANETRANSPORT_HEADER_
 
-#include "emane/component.h"
-#include "emane/upstreamtransport.h"
-#include "emane/platformserviceuser.h"
-#include "emane/buildable.h"
-#include "emane/runningstatemutable.h"
+#include "emane/nemlayer.h"
 
 #include <string>
 #include <list>
@@ -50,11 +46,7 @@ namespace EMANE
    *
    * @brief Base class for all transports
    */
-  class Transport : public Component,
-                    public UpstreamTransport,
-                    public PlatformServiceUser,
-                    public Buildable,
-                    public RunningStateMutable
+  class Transport : public NEMLayer
   {
   public:
     /**
@@ -70,15 +62,21 @@ namespace EMANE
     NEMId getNEMId() const { return id_; }
     
   protected:
-    Transport(NEMId id, PlatformServiceProvider *pPlatformService):
-      PlatformServiceUser(pPlatformService),
-      id_(id)
-     { }
+    Transport(NEMId id, PlatformServiceProvider * pPlatformService):
+      NEMLayer(id, pPlatformService)
+     {}
 
-    /**
-     * Holds the NEM identifier.
-     */
-    const NEMId id_;
+private:
+    // method meaningless for a Transport layer
+    void processDownstreamPacket(DownstreamPacket &, 
+                                 const ControlMessages &){};
+
+    void processDownstreamControl(const ControlMessages &){};
+    
+    void setUpstreamTransport(UpstreamTransport *){};
+    
+    void sendUpstreamPacket(UpstreamPacket &, 
+                            const ControlMessages &){};
   };
 }
 

@@ -11,7 +11,8 @@
 <!ATTLIST nem 
           name CDATA #IMPLIED
           id CDATA #REQUIRED
-          definition NMTOKEN #REQUIRED>
+          definition NMTOKEN #REQUIRED
+          transport (external | internal) "internal">
 
 <!ENTITY % param SYSTEM "param.dtd">
 %param;

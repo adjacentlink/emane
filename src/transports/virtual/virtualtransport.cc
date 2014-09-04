@@ -482,7 +482,7 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
               if(bFlowControlEnable_)
                 {
                   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                                 ERROR_LEVEL,
+                                                 DEBUG_LEVEL,
                                                  "TRANSPORTI %03hu VirtualTransport::%s received a flow control"
                                                  " token update %hu tokens",
                                                  id_,
@@ -502,6 +502,51 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
                 }
             }
           break;
+
+        case Controls::R2RINeighborMetricControlMessage::IDENTIFIER:
+          {
+             const auto pR2RINeighborMetricControlMessage =
+                static_cast<const Controls::R2RINeighborMetricControlMessage *>(pMessage);
+             
+
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL, 
+                                            Controls::R2RINeighborMetricControlMessageFormatter(pR2RINeighborMetricControlMessage),
+                                            "TRANSPORTI %03hu VirtualTransport::%s R2RINeighborMetricControlMessage",
+                                            id_, 
+                                            __func__);
+          }
+          break;
+
+        case Controls::R2RIQueueMetricControlMessage::IDENTIFIER:
+          {
+            const auto pR2RIQueueMetricControlMessage =
+              static_cast<const Controls::R2RIQueueMetricControlMessage *>(pMessage);
+            
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL, 
+                                            Controls::R2RIQueueMetricControlMessageFormatter(pR2RIQueueMetricControlMessage),
+                                            "TRANSPORTI %03hu VirtualTransport::%s R2RIQueueMetricControlMessage",
+                                            id_, 
+                                            __func__);
+          }
+          break;
+
+        case Controls::R2RISelfMetricControlMessage::IDENTIFIER:
+          {
+            const auto pR2RISelfMetricControlMessage =
+              static_cast<const Controls::R2RISelfMetricControlMessage *>(pMessage);
+              
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL, 
+                                            Controls::R2RISelfMetricControlMessageFormatter(pR2RISelfMetricControlMessage),
+                                            "TRANSPORTI %03hu VirtualTransport::%s R2RISelfMetricControlMessage",
+                                            id_, 
+                                            __func__);
+          }
+          break;
+
+
 
           case Controls::SerializedControlMessage::IDENTIFIER:
             {
@@ -696,14 +741,17 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Virtual::VirtualTransport::readDevice()
                   // check flow control 
                   if(bFlowControlEnable_)
                     {
+                      auto status = flowControlClient_.removeToken();
+                      
                       // block and wait for an available flow control token
-                      if(!flowControlClient_.removeToken())
+                      if(!status.second)
                         {
                           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                                  ERROR_LEVEL,
-                                                 "TRANSPORTI %03hu VirtualTransport::%s failed to remove token", 
+                                                 "TRANSPORTI %03hu VirtualTransport::%s failed to remove token (tokens:%hu)", 
                                                  id_, 
-                                                 __func__);
+                                                 __func__,
+                                                 status.first);
                           // done
                           break;
                         }
@@ -711,9 +759,10 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Virtual::VirtualTransport::readDevice()
                         {
                           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                                  DEBUG_LEVEL, 
-                                                 "TRANSPORTI %03hu VirtualTransport::%s removed token", 
+                                                 "TRANSPORTI %03hu VirtualTransport::%s removed token (tokens:%hu)", 
                                                  id_,
-                                                 __func__);
+                                                 __func__,
+                                                 status.first);
                         }
                     }
  

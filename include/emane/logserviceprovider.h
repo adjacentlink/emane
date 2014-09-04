@@ -122,6 +122,7 @@ namespace EMANE
     void logfn(LogLevel level, Function fn,const char *fmt, ...)
       __attribute__ ((format (printf, 4, 5)));
 
+    enum {MAX_LOG_LENGTH = 1024};
 
   protected:
     LogServiceProvider(){}

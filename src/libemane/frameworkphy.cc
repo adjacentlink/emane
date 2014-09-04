@@ -46,6 +46,7 @@
 #include "emane/events/pathlosseventformatter.h"
 
 #include "emane/controls/frequencycontrolmessage.h"
+#include "emane/controls/frequencyofinterestcontrolmessage.h"
 #include "emane/controls/otatransmittercontrolmessage.h"
 #include "emane/controls/transmittercontrolmessage.h"
 #include "emane/controls/receivepropertiescontrolmessage.h"
@@ -54,6 +55,7 @@
 
 #include "emane/controls/frequencycontrolmessageformatter.h"
 #include "emane/controls/transmittercontrolmessageformatter.h"
+#include "emane/controls/frequencyofinterestcontrolmessageformatter.h"
 
 #include "freespacepropagationmodelalgorithm.h"
 #include "tworaypropagationmodelalgorithm.h"
@@ -95,7 +97,14 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   u16SubId_{},
   u16TxSequenceNumber_{},
   commonLayerStatistics_{STATISTIC_TABLE_LABELS,{},"0"},
-  eventTablePublisher_{id}{}
+  eventTablePublisher_{id},
+  noiseBinSize_{},
+  maxSegmentOffset_{},
+  maxMessagePropagation_{},
+  maxSegmentDuration_{},
+  timeSyncThreshold_{},
+  bNoiseMaxClamp_{},
+  dSystemNoiseFiguredB_{}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -252,13 +261,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
 
 void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
 {
-  Microseconds noiseBinSize{};
-  double dSystemNoiseFiguredB{};
-  Microseconds maxSegmentOffset{};
-  Microseconds maxMessagePropagation{};
-  Microseconds maxSegmentDuration{};
-  Microseconds timeSyncThreshold{};
-  bool bNoiseMaxClamp{};
+  FrequencySet foi{};
 
   for(const auto & item : update)
     {
@@ -353,7 +356,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
         }
       else if(item.first == "noisebinsize")
         {
-          noiseBinSize = Microseconds{item.second[0].asUINT64()};
+          noiseBinSize_ = Microseconds{item.second[0].asUINT64()};
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -361,11 +364,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  noiseBinSize.count());
+                                  noiseBinSize_.count());
         }
       else if(item.first == "noisemaxclampenable")
         {
-          bNoiseMaxClamp= item.second[0].asBool();
+          bNoiseMaxClamp_ = item.second[0].asBool();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -373,11 +376,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  bNoiseMaxClamp ? "on" : "off");
+                                  bNoiseMaxClamp_ ? "on" : "off");
         }
       else if(item.first == "noisemaxsegmentoffset")
         {
-          maxSegmentOffset = Microseconds{item.second[0].asUINT64()};
+          maxSegmentOffset_ = Microseconds{item.second[0].asUINT64()};
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -385,11 +388,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  maxSegmentOffset.count());
+                                  maxSegmentOffset_.count());
         }
       else if(item.first == "noisemaxmessagepropagation")
         {
-          maxMessagePropagation = Microseconds{item.second[0].asUINT64()};
+          maxMessagePropagation_ = Microseconds{item.second[0].asUINT64()};
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -397,11 +400,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  maxMessagePropagation.count());
+                                  maxMessagePropagation_.count());
         }
       else if(item.first == "noisemaxsegmentduration")
         {
-          maxSegmentDuration = Microseconds{item.second[0].asUINT64()};
+          maxSegmentDuration_ = Microseconds{item.second[0].asUINT64()};
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -409,11 +412,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  maxSegmentDuration.count());
+                                  maxSegmentDuration_.count());
         }
       else if(item.first == "timesyncthreshold")
         {
-          timeSyncThreshold = Microseconds{item.second[0].asUINT64()};
+          timeSyncThreshold_ = Microseconds{item.second[0].asUINT64()};
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -421,11 +424,11 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  timeSyncThreshold.count());
+                                  timeSyncThreshold_.count());
         }
       else if(item.first == "systemnoisefigure")
         {
-          dSystemNoiseFiguredB = item.second[0].asDouble();
+          dSystemNoiseFiguredB_ = item.second[0].asDouble();
           
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
@@ -433,7 +436,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  dSystemNoiseFiguredB);
+                                  dSystemNoiseFiguredB_);
         }
       /** [configurationregistrar-processmultiplicity-snippet] */
       else if(item.first == "frequencyofinterest")
@@ -443,7 +446,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
               std::uint64_t u64Value{any.asUINT64()};
 
               // try to add value to foi set
-              if(foi_.insert(u64Value).second)
+              if(foi.insert(u64Value).second)
                 {
                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                           INFO_LEVEL,
@@ -507,9 +510,9 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
         }
     }
 
-  dReceiverSensitivitydBm_ = THERMAL_NOISE_DB + dSystemNoiseFiguredB + 10.0 * log10(u64BandwidthHz_);
+  dReceiverSensitivitydBm_ = THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
 
-  if((maxSegmentOffset + maxMessagePropagation + 2 * maxSegmentDuration) % noiseBinSize !=
+  if((maxSegmentOffset_ + maxMessagePropagation_ + 2 * maxSegmentDuration_) % noiseBinSize_ !=
      Microseconds::zero())
     {
       throw makeException<ConfigureException>("noisemaxsegmentoffset + noisemaxmessagepropagation"
@@ -517,16 +520,16 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                               " noisebinsize");
     }
 
-  pSpectrumMonitor_->initialize(foi_,
+  pSpectrumMonitor_->initialize(foi,
                                 u64BandwidthHz_,
                                 Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
                                 noiseMode_,
-                                noiseBinSize,
-                                maxSegmentOffset,
-                                maxMessagePropagation,
-                                maxSegmentDuration,
-                                timeSyncThreshold,
-                                bNoiseMaxClamp);
+                                noiseBinSize_,
+                                maxSegmentOffset_,
+                                maxMessagePropagation_,
+                                maxSegmentDuration_,
+                                timeSyncThreshold_,
+                                bNoiseMaxClamp_);
 }
 
 void EMANE::FrameworkPHY::start()
@@ -599,27 +602,62 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 
   for(const auto & pMessage : msgs)
     {
-      if(pMessage->getId() == Controls::AntennaProfileControlMessage::IDENTIFIER)
+      switch(pMessage->getId())
         {
-          const auto pAntennaProfileControlMessage =
-            reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
+        case Controls::AntennaProfileControlMessage::IDENTIFIER:
+          {
+            const auto pAntennaProfileControlMessage =
+              reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
+            
+            /** [eventservice-sendevent-snippet] */ 
+            AntennaProfiles profiles{{id_,
+                  pAntennaProfileControlMessage->getAntennaProfileId(),
+                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+            
+            gainManager_.update(profiles);
+            
+            pPlatformService_->eventService().sendEvent(0,Events::AntennaProfileEvent{profiles});
+            /** [eventservice-sendevent-snippet] */ 
+          }
+          break;
+        
+        case Controls::FrequencyOfInterestControlMessage::IDENTIFIER:
+          {
+            const auto pFrequencyOfInterestControlMessage =
+              reinterpret_cast<const Controls::FrequencyOfInterestControlMessage *>(pMessage);
 
-          /** [eventservice-sendevent-snippet] */ 
-          AntennaProfiles profiles{{id_,
-                pAntennaProfileControlMessage->getAntennaProfileId(),
-                pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL,
+                                            Controls::FrequencyOfInterestControlMessageFormatter(pFrequencyOfInterestControlMessage),
+                                            "PHYI %03hu FrameworkPHY::%s Frequency of Interest Control Message",
+                                            id_,
+                                            __func__);
+
+            u64BandwidthHz_ = pFrequencyOfInterestControlMessage->getBandwidthHz();
+              
+            dReceiverSensitivitydBm_ = 
+              THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
+            
+            pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
+                                          u64BandwidthHz_,
+                                          Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
+                                          noiseMode_,
+                                          noiseBinSize_,
+                                          maxSegmentOffset_,
+                                          maxMessagePropagation_,
+                                          maxSegmentDuration_,
+                                          timeSyncThreshold_,
+                                          bNoiseMaxClamp_);
+
+          }
           
-          gainManager_.update(profiles);
-          
-          pPlatformService_->eventService().sendEvent(0,Events::AntennaProfileEvent{profiles});
-          /** [eventservice-sendevent-snippet] */ 
-        }
-      else
-        {
+          break;
+     
+        default:
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                  DEBUG_LEVEL,
-                                 "PHYI %03hu FrameworkPHY::%s, not in antenna profile mode, ignore", 
+                                 "PHYI %03hu FrameworkPHY::%s, unexpected contoll message, ignore", 
                                  id_,
                                  __func__);
         }
@@ -773,6 +811,39 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                    std::chrono::duration_cast<DoubleSeconds>(txTimeStamp.time_since_epoch()).count());
           }
 
+          break;
+
+        case Controls::FrequencyOfInterestControlMessage::IDENTIFIER:
+          {
+            const auto pFrequencyOfInterestControlMessage =
+              reinterpret_cast<const Controls::FrequencyOfInterestControlMessage *>(pMessage);
+            
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL,
+                                            Controls::FrequencyOfInterestControlMessageFormatter(pFrequencyOfInterestControlMessage),
+                                            "PHYI %03hu FrameworkPHY::%s Frequency of Interest Control Message",
+                                            id_,
+                                            __func__);
+
+            u64BandwidthHz_ = pFrequencyOfInterestControlMessage->getBandwidthHz();
+              
+            dReceiverSensitivitydBm_ = 
+              THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
+            
+            pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
+                                          u64BandwidthHz_,
+                                          Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
+                                          noiseMode_,
+                                          noiseBinSize_,
+                                          maxSegmentOffset_,
+                                          maxMessagePropagation_,
+                                          maxSegmentDuration_,
+                                          timeSyncThreshold_,
+                                          bNoiseMaxClamp_);
+
+            
+          }
+          
           break;
         }
     }

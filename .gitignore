@@ -5,6 +5,12 @@ config.status
 libtool
 autom4te.cache
 
+# version
+include/emane/version.h
+
+# pkg-config
+src/libemane/libemane.pc
+
 # protocol buffers output
 *.pb.cc
 *.pb.h

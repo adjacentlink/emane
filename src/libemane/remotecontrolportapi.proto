@@ -267,6 +267,7 @@ message Response
             TYPE_COMPONENT_MAC = 1;
             TYPE_COMPONENT_PHY = 2;
             TYPE_COMPONENT_SHIM = 3;
+            TYPE_COMPONENT_TRANSPORT = 4;
           }
           // component build id
           required uint32 buildId = 1;

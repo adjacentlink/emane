@@ -262,6 +262,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PACKAGE_VERSION_CODE = @PACKAGE_VERSION_CODE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
@@ -362,6 +363,7 @@ EXTRA_DIST = \
  emane.spec.in       \
  PROBLEM-REPORT-FORM \
  SPONSOR             \
+ README.md           \
  debian
 
 DISTCLEANFILES = .rpmbuild
@@ -832,6 +834,7 @@ uninstall-am: uninstall-local
 
 dist-hook:
 	find $(distdir) -name "*.pb.*" -delete
+	rm -f $(distdir)/include/emane/version.h
 
 cleantar:
 	@(rm -f emane*.tar.gz)

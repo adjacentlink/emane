@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -80,7 +81,7 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = src/libemane
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/depcomp
+	$(srcdir)/libemane.pc.in $(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -90,7 +91,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = libemane.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -119,7 +120,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libemane_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -158,6 +159,8 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-flowcontrolmanager.lo libemane_la-frameworkphy.lo \
 	libemane_la-frequencycontrolmessage.lo \
 	libemane_la-frequencycontrolmessageformatter.lo \
+	libemane_la-frequencyofinterestcontrolmessage.lo \
+	libemane_la-frequencyofinterestcontrolmessageformatter.lo \
 	libemane_la-gainmanager.lo libemane_la-layerfactorymanager.lo \
 	libemane_la-libemane.lo libemane_la-locationevent.lo \
 	libemane_la-locationeventformatter.lo \
@@ -217,6 +220,7 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-transportbuilder.lo \
 	libemane_la-transportfactory.lo \
 	libemane_la-transportfactorymanager.lo \
+	libemane_la-transportlayer.lo \
 	libemane_la-transportmanagerimpl.lo \
 	libemane_la-upstreampacket.lo libemane_la-upstreamtransport.lo \
 	libemane_la-velocityformatter.lo \
@@ -279,6 +283,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+DATA = $(pkgconfig_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -368,6 +373,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PACKAGE_VERSION_CODE = @PACKAGE_VERSION_CODE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
@@ -446,6 +452,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libemane.la
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libemane.pc
 libemane_la_CPPFLAGS = \
  -I@top_srcdir@/include
 
@@ -525,6 +533,8 @@ libemane_la_SOURCES = \
  frameworkphy.cc                              \
  frequencycontrolmessage.cc                   \
  frequencycontrolmessageformatter.cc          \
+ frequencyofinterestcontrolmessage.cc         \
+ frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
@@ -600,6 +610,7 @@ libemane_la_SOURCES = \
  transportbuilder.cc                          \
  transportfactory.cc                          \
  transportfactorymanager.cc                   \
+ transportlayer.cc                            \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
@@ -718,6 +729,7 @@ EXTRA_DIST = \
  transportfactory.h                           \
  transportfactorymanager.h                    \
  transportmanagerimpl.h                       \
+ transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
  wheel.inl                                    \
@@ -780,6 +792,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+libemane.pc: $(top_builddir)/config.status $(srcdir)/libemane.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -872,6 +886,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frameworkphy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencycontrolmessage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencycontrolmessageformatter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-gainmanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-layerfactorymanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-libemane.Plo@am__quote@
@@ -954,6 +970,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportbuilder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportfactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportfactorymanager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportlayer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-transportmanagerimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreampacket.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-upstreamtransport.Plo@am__quote@
@@ -1266,6 +1283,20 @@ libemane_la-frequencycontrolmessageformatter.lo: frequencycontrolmessageformatte
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencycontrolmessageformatter.cc' object='libemane_la-frequencycontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencycontrolmessageformatter.lo `test -f 'frequencycontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencycontrolmessageformatter.cc
+
+libemane_la-frequencyofinterestcontrolmessage.lo: frequencyofinterestcontrolmessage.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-frequencyofinterestcontrolmessage.lo -MD -MP -MF $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Tpo -c -o libemane_la-frequencyofinterestcontrolmessage.lo `test -f 'frequencyofinterestcontrolmessage.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessage.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Tpo $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessage.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencyofinterestcontrolmessage.cc' object='libemane_la-frequencyofinterestcontrolmessage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencyofinterestcontrolmessage.lo `test -f 'frequencyofinterestcontrolmessage.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessage.cc
+
+libemane_la-frequencyofinterestcontrolmessageformatter.lo: frequencyofinterestcontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-frequencyofinterestcontrolmessageformatter.lo -MD -MP -MF $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Tpo -c -o libemane_la-frequencyofinterestcontrolmessageformatter.lo `test -f 'frequencyofinterestcontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessageformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Tpo $(DEPDIR)/libemane_la-frequencyofinterestcontrolmessageformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='frequencyofinterestcontrolmessageformatter.cc' object='libemane_la-frequencyofinterestcontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-frequencyofinterestcontrolmessageformatter.lo `test -f 'frequencyofinterestcontrolmessageformatter.cc' || echo '$(srcdir)/'`frequencyofinterestcontrolmessageformatter.cc
 
 libemane_la-gainmanager.lo: gainmanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-gainmanager.lo -MD -MP -MF $(DEPDIR)/libemane_la-gainmanager.Tpo -c -o libemane_la-gainmanager.lo `test -f 'gainmanager.cc' || echo '$(srcdir)/'`gainmanager.cc
@@ -1792,6 +1823,13 @@ libemane_la-transportfactorymanager.lo: transportfactorymanager.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-transportfactorymanager.lo `test -f 'transportfactorymanager.cc' || echo '$(srcdir)/'`transportfactorymanager.cc
 
+libemane_la-transportlayer.lo: transportlayer.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-transportlayer.lo -MD -MP -MF $(DEPDIR)/libemane_la-transportlayer.Tpo -c -o libemane_la-transportlayer.lo `test -f 'transportlayer.cc' || echo '$(srcdir)/'`transportlayer.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-transportlayer.Tpo $(DEPDIR)/libemane_la-transportlayer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='transportlayer.cc' object='libemane_la-transportlayer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-transportlayer.lo `test -f 'transportlayer.cc' || echo '$(srcdir)/'`transportlayer.cc
+
 libemane_la-transportmanagerimpl.lo: transportmanagerimpl.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-transportmanagerimpl.lo -MD -MP -MF $(DEPDIR)/libemane_la-transportmanagerimpl.Tpo -c -o libemane_la-transportmanagerimpl.lo `test -f 'transportmanagerimpl.cc' || echo '$(srcdir)/'`transportmanagerimpl.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-transportmanagerimpl.Tpo $(DEPDIR)/libemane_la-transportmanagerimpl.Plo
@@ -1916,6 +1954,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-pkgconfigDATA: $(pkgconfig_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgconfigdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkgconfigdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgconfigdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgconfigdir)" || exit $$?; \
+	done
+
+uninstall-pkgconfigDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(pkgconfigdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -2002,9 +2061,9 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -2062,7 +2121,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pkgconfigDATA
 
 install-dvi: install-dvi-am
 
@@ -2108,7 +2167,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgconfigDATA
 
 .MAKE: all check install install-am install-strip
 
@@ -2120,11 +2179,12 @@ uninstall-am: uninstall-libLTLIBRARIES
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-libLTLIBRARIES install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES
+	install-pdf-am install-pkgconfigDATA install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-libLTLIBRARIES uninstall-pkgconfigDATA
 
 
 flowcontrol.pb.cc flowcontrol.pb.h: flowcontrol.proto

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -100,6 +100,14 @@ namespace EMANE
      */
     bool isValid();
 
+
+    /**
+     * Returns whether-or-not this NEM transport is external
+     *
+     * @return True if external, false otherwise
+     */
+    bool isExternalTransport();
+
   protected:
     /**
      * Does processing of the root node as if it was an 'nem'
@@ -134,6 +142,11 @@ namespace EMANE
      * NEM type
      */
     NEMType type_;
+
+    /**
+     * Transport external flag
+     */
+    bool bExternalTransport_;
 
     /**
      * Process a layer element

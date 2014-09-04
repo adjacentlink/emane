@@ -1,5 +1,8 @@
 lib_LTLIBRARIES = libemane.la
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libemane.pc
+
 libemane_la_CPPFLAGS =  \
  -I@top_srcdir@/include
 
@@ -79,6 +82,8 @@ libemane_la_SOURCES =                         \
  frameworkphy.cc                              \
  frequencycontrolmessage.cc                   \
  frequencycontrolmessageformatter.cc          \
+ frequencyofinterestcontrolmessage.cc         \
+ frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
@@ -154,6 +159,7 @@ libemane_la_SOURCES =                         \
  transportbuilder.cc                          \
  transportfactory.cc                          \
  transportfactorymanager.cc                   \
+ transportlayer.cc                            \
  transportmanagerimpl.cc                      \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
@@ -274,6 +280,7 @@ EXTRA_DIST=                                   \
  transportfactory.h                           \
  transportfactorymanager.h                    \
  transportmanagerimpl.h                       \
+ transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
  wheel.inl                                    \

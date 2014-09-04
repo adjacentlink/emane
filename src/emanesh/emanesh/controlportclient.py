@@ -182,8 +182,10 @@ class ControlPortClient:
                             name = 'PHY'
                         elif component.type == remotecontrolportapi_pb2.Response.Query.Manifest.NEM.Component.TYPE_COMPONENT_MAC:
                             name = 'MAC'
-                        else:
+                        elif component.type == remotecontrolportapi_pb2.Response.Query.Manifest.NEM.Component.TYPE_COMPONENT_SHIM:
                             name = 'SHIM'
+                        else:
+                            name = 'TRANSPORT'
 
                         layers.append((component.buildId,name,component.plugin))
 

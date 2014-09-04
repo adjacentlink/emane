@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,9 @@ EMANE::ControlPort::ManifestQueryHandler::process(std::uint32_t u32Sequence,
                                Component::TYPE_COMPONENT_PHY : 
                                componentType == ComponentType::COMPONENT_MACILAYER ?
                                Component::TYPE_COMPONENT_MAC : 
-                               Component::TYPE_COMPONENT_SHIM);
+                               componentType == ComponentType::COMPONENT_SHIMILAYER ?
+                               Component::TYPE_COMPONENT_SHIM:
+                               Component::TYPE_COMPONENT_TRANSPORT);
 
           pComponent->set_plugin(std::get<2>(component));
         }

@@ -14,6 +14,7 @@ edit = sed                                \
 
 dist-hook:
 	find $(distdir) -name "*.pb.*" -delete
+	rm -f $(distdir)/include/emane/version.h
 
 cleantar:
 	@(rm -f emane*.tar.gz)
@@ -83,6 +84,7 @@ EXTRA_DIST =         \
  emane.spec.in       \
  PROBLEM-REPORT-FORM \
  SPONSOR             \
+ README.md           \
  debian
 
 DISTCLEANFILES = .rpmbuild

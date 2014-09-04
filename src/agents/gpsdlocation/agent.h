@@ -92,9 +92,12 @@ namespace EMANE
         bool bGPSDConnectionEnabled_;
         ACE_FILE_IO pseudoTerminalNameFile_;
         bool bHaveInitialPosition_;
+        bool bHaveInitialVelocity_;
         double dLatitudeDegrees_;
         double dLongitudeDegrees_;
         double dAltitudeMeters_;
+        double dAzimuthDegrees_;
+        double dMagnitudeMetersPerSecond_;
         TimerEventId timerId_;
   
         /**
@@ -106,6 +109,15 @@ namespace EMANE
          *
          */
         void sendSpoofedNMEA(double dLatitude, double dLongitude, double dAltitude);
+
+        /**
+         * Convert attitude in to NMEA strings and send to gpsd via pseudo  terminal
+         *
+         * @param dAzimuth   Azimuth in degrees
+         * @param dMagnitude Magnitude in meters per second
+         *
+         */
+        void sendSpoofedGPVTG(double dAzimuth, double dMagnitude);
       
         void doCheckSumNMEA(char *buf, size_t len);
       };

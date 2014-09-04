@@ -1,2 +1,4 @@
 /usr/lib/libemanexmlparser.so
 /usr/lib/libemane.so
+/usr/lib/pkgconfig/libemane.pc
+

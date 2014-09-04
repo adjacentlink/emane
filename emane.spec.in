@@ -1,4 +1,4 @@
-Summary: EMANE - Extendable Mobile Ad-hoc Network Emultor 
+Summary: EMANE - Extendable Mobile Ad-hoc Network Emulator 
 Name: emane
 Version: @VERSION@
 Release: 1%{?dist}
@@ -32,8 +32,8 @@ Group: Applications/System
 EMANE DTDs required for EMANE XML.
 
 %package utils
-Requires: emane-dtds  >= %{version} perl-XML-LibXML perl-XML-Simple
-Summary: EMANE utilites
+Requires: emane-dtds  >= %{version} python-lxml
+Summary: EMANE utilities
 Group:  Applications/System
 
 %description  utils
@@ -57,11 +57,11 @@ EMANE transport daemon.  Creates and manages one or more transports.
 
 %package eventdaemon
 Requires: emane-libs >= %{version} emane-dtds >= %{version}
-Summary: EMANE event deamon
+Summary: EMANE event daemon
 Group: Applications/System
 
 %description  eventdaemon
-EMANE event deamon forwards events to registered agents.
+EMANE event daemon forwards events to registered agents.
 
 %package eventservice
 Requires: emane-libs  >= %{version} emane-dtds >= %{version}
@@ -155,7 +155,7 @@ Group: Libraries
 EMANE Emulation Event Log Generator
 
 %package manifest
-Summary: EMANE PLugin Manifests
+Summary: EMANE Plugin Manifests
 Group: Applications/System
 
 %description manifest
@@ -243,6 +243,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{_libdir}/libemanexmlparser.*
 %{_libdir}/libemane.*
+%{_libdir}/pkgconfig/*
 
 %doc AUTHORS
 %doc COPYING

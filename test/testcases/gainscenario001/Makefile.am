@@ -4,12 +4,14 @@ harness_exe=$(harness_dir)/$(harness_cmd)
 harness_bin_deps=$(harness_exe) $(top_srcdir)/src/libemane/.libs/libemane.so
 harness_schema=gainscenario.xsd
 
-testcase_inputs=     \
+testcase_inputs=      \
  antenna30dsector.xml \
  antennaomni.xml      \
+ antennahole.xml      \
  antennaprofiles.xml  \
  blockageaft.xml      \
- gainscenario.xml     
+ blockagehole.xml     \
+ gainscenario.xml
 
 EXTRA_DIST=           \
  $(testcase_inputs)   \
