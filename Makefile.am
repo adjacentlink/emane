@@ -84,6 +84,7 @@ EXTRA_DIST =         \
  emane.spec.in       \
  PROBLEM-REPORT-FORM \
  SPONSOR             \
+ README.md           \
  debian
 
 DISTCLEANFILES = .rpmbuild
