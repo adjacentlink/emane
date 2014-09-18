@@ -200,6 +200,7 @@ am_libemane_la_OBJECTS = libemane_la-antennapattern.lo \
 	libemane_la-radioservice.lo \
 	libemane_la-receivepropertiescontrolmessage.lo \
 	libemane_la-receivepropertiescontrolmessageformatter.lo \
+	libemane_la-receivepowertablepublisher.lo \
 	libemane_la-registrarproxy.lo \
 	libemane_la-requestmessagehandler.lo \
 	libemane_la-serializedcontrolmessage.lo \
@@ -587,6 +588,7 @@ libemane_la_SOURCES = \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
+ receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
  serializedcontrolmessage.cc                  \
@@ -714,6 +716,7 @@ EXTRA_DIST = \
  radioservice.h                               \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
+ receivepowertablepublisher.h                 \
  shimlayer.h                                  \
  spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
@@ -944,6 +947,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-r2riselfmetriccontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-radioservice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-radiotorouter.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-receivepowertablepublisher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-receivepropertiescontrolmessage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-receivepropertiescontrolmessageformatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemane_la-registrarproxy.Plo@am__quote@
@@ -1661,6 +1665,13 @@ libemane_la-receivepropertiescontrolmessageformatter.lo: receivepropertiescontro
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='receivepropertiescontrolmessageformatter.cc' object='libemane_la-receivepropertiescontrolmessageformatter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-receivepropertiescontrolmessageformatter.lo `test -f 'receivepropertiescontrolmessageformatter.cc' || echo '$(srcdir)/'`receivepropertiescontrolmessageformatter.cc
+
+libemane_la-receivepowertablepublisher.lo: receivepowertablepublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-receivepowertablepublisher.lo -MD -MP -MF $(DEPDIR)/libemane_la-receivepowertablepublisher.Tpo -c -o libemane_la-receivepowertablepublisher.lo `test -f 'receivepowertablepublisher.cc' || echo '$(srcdir)/'`receivepowertablepublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemane_la-receivepowertablepublisher.Tpo $(DEPDIR)/libemane_la-receivepowertablepublisher.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='receivepowertablepublisher.cc' object='libemane_la-receivepowertablepublisher.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -c -o libemane_la-receivepowertablepublisher.lo `test -f 'receivepowertablepublisher.cc' || echo '$(srcdir)/'`receivepowertablepublisher.cc
 
 libemane_la-registrarproxy.lo: registrarproxy.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libemane_la_CPPFLAGS) $(CPPFLAGS) $(libemane_la_CXXFLAGS) $(CXXFLAGS) -MT libemane_la-registrarproxy.lo -MD -MP -MF $(DEPDIR)/libemane_la-registrarproxy.Tpo -c -o libemane_la-registrarproxy.lo `test -f 'registrarproxy.cc' || echo '$(srcdir)/'`registrarproxy.cc

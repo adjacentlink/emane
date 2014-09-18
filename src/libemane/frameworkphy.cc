@@ -257,6 +257,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   commonLayerStatistics_.registerStatistics(statisticRegistrar);
 
   eventTablePublisher_.registerStatistics(statisticRegistrar);
+
+  receivePowerTablePublisher_.registerStatistics(statisticRegistrar);
 }
 
 void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
@@ -849,7 +851,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
     }
 
 
-  // verify the transitters list include this nem
+  // verify the transmitters list include this nem
   if(std::find_if(transmitters.begin(),
                   transmitters.end(),
                   [this](const Transmitter & transmitter)
@@ -920,7 +922,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
       u16SubId_ == commonPHYHeader.getSubId()};
 
   // unless this is an in-band packet, it will only be processed if
-  // noise proceccing is on
+  // noise processing is on
   if(bInBand || noiseMode_ != SpectrumMonitor::NoiseMode::NONE)
     {
       bool bDrop{};
@@ -961,15 +963,43 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               // if gain is available
               if(gainInfodBi.second == EMANE::GainManager::GainStatus::SUCCESS)
                 {
+                  using ReceivePowerPubisherUpdate = std::tuple<NEMId,std::uint64_t,double>;
+                  
+                  // set to prevent multiple ReceivePowerTablePublisher updates
+                  // for the same NEM frequency pair in a frequency segment list
+                  std::set<ReceivePowerPubisherUpdate> receivePowerTableUpdate{};
+
+                  // frequency segment iterator to map pathloss per segment to
+                  // the associated segment
+                  FrequencySegments::const_iterator freqIter{frequencySegments.begin()};
+
                   std::size_t i{};
-              
+
                   // sum up the rx power for each segment
                   for(const auto & dPathlossdB : pathlossInfo.first)
                     {
-                      rxPowerSegments[i++] += Utils::DB_TO_MILLIWATT(transmitter.getPowerdBm() +
-                                                                     gainInfodBi.first -
-                                                                     dPathlossdB);
+                      double powerdBm{transmitter.getPowerdBm() +
+                          gainInfodBi.first -
+                          dPathlossdB};
+                      
+                      receivePowerTableUpdate.insert(ReceivePowerPubisherUpdate{transmitter.getNEMId(),
+                            freqIter->getFrequencyHz(),
+                            powerdBm});
+
+                      ++freqIter;
+                      
+                      rxPowerSegments[i++] += Utils::DB_TO_MILLIWATT(powerdBm);
                     }
+
+
+                  for(const auto & entry : receivePowerTableUpdate)
+                    {
+                      receivePowerTablePublisher_.update(std::get<0>(entry),
+                                                         std::get<1>(entry),
+                                                         std::get<2>(entry),
+                                                         commonPHYHeader.getTxTime());
+                    }
+
 
                   // calculate propagation delay from 1 of the transmitters
                   //  note: these are collaborative (constructive) transmissions, all 
@@ -1133,7 +1163,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                 }
               else
                 {
-                  // was this packet actuall in-band, if so at least 1 freq was not in the foi
+                  // was this packet actually in-band, if so at least 1 freq was not in the foi
                   if(bInBand)
                     {
                       commonLayerStatistics_.processOutbound(pkt, 

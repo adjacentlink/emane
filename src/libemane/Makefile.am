@@ -136,6 +136,7 @@ libemane_la_SOURCES =                         \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
+ receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
  serializedcontrolmessage.cc                  \
@@ -265,6 +266,7 @@ EXTRA_DIST=                                   \
  radioservice.h                               \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
+ receivepowertablepublisher.h                 \
  shimlayer.h                                  \
  spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
