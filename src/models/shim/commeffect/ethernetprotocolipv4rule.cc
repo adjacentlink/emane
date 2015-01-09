@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,6 +35,8 @@
 #include "ethernetprotocolipv4rule.h"
 #include "emane/net.h"
 #include "emane/utils/netutils.h"
+
+#include <functional>
 
 
 EMANE::Models::CommEffect::EthernetProtocolIPv4Rule::EthernetProtocolIPv4Rule(std::uint32_t u32Src,
