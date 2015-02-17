@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,29 +33,28 @@
 
 #include "phylayerfactory.h"
 #include "emane/utils/factoryexception.h"
-
-#include <ace/OS_NS_dlfcn.h>
+#include <dlfcn.h>
 
 EMANE::PHYLayerFactory::PHYLayerFactory(const std::string & sLibraryName):
-  shlibHandle_(0),
-  createLayerFunc_(0),
-  destroyLayerFunc_(0)
+  pLibHandle_{},
+  createLayerFunc_{},
+  destroyLayerFunc_{}
 {
-  if((shlibHandle_ = ACE_OS::dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
+  if((pLibHandle_ = dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
     {
-      throw Utils::FactoryException(ACE_OS::dlerror());
+      throw Utils::FactoryException(dlerror());
     }
   
-  if((createLayerFunc_ = reinterpret_cast<createLayerFunc>((void (*)())(ACE_OS::dlsym(shlibHandle_,"create")))) == 0)
+  if((createLayerFunc_ = reinterpret_cast<CreateLayerFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s  missing create symbol. (Missing DECLARE_PHY_LAYER()?)",
                                                    sLibraryName.c_str());
     }
 
-  if((destroyLayerFunc_ = reinterpret_cast<destroyLayerFunc>((void (*)())ACE_OS::dlsym(shlibHandle_,"destroy"))) == 0)
+  if((destroyLayerFunc_ = reinterpret_cast<DestroyLayerFunc>((void (*)())dlsym(pLibHandle_,"destroy"))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s missing destroy symbol. (Missing DECLARE_PHY_LAYER()?)",
                                                    sLibraryName.c_str());
     }
@@ -63,7 +62,7 @@ EMANE::PHYLayerFactory::PHYLayerFactory(const std::string & sLibraryName):
 
 EMANE::PHYLayerFactory::~PHYLayerFactory()
 {
-  ACE_OS::dlclose(shlibHandle_);
+  dlclose(pLibHandle_);
 }
 
 EMANE::PHYLayerImplementor * EMANE::PHYLayerFactory::createLayer(NEMId id, PlatformServiceProvider * pPlatformServiceProvider) const

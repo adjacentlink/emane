@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,28 +33,29 @@
 
 #include "eventagentfactory.h"
 #include "emane/utils/factoryexception.h"
+#include <dlfcn.h>
 
 EMANE::EventAgentFactory::EventAgentFactory(const std::string & sLibraryName):
-  shlibHandle_(0),
-  createEventAgentFunc_(0),
-  destroyEventAgentFunc_(0)
+  pLibHandle_{},
+  createEventAgentFunc_{},
+  destroyEventAgentFunc_{}
 {
-   if((shlibHandle_ = ACE_OS::dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
+   if((pLibHandle_ = dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
     {
-      throw Utils::FactoryException(ACE_OS::dlerror());
+      throw Utils::FactoryException(dlerror());
     }
   
-  if((createEventAgentFunc_ = reinterpret_cast<CreateEventAgentFunc>((void (*)())(ACE_OS::dlsym(shlibHandle_,"create")))) == 0)
+  if((createEventAgentFunc_ = reinterpret_cast<CreateEventAgentFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
 
       throw makeException<Utils::FactoryException>("%s missing create symbol. (Missing DECLARE_EVENT_AGENT()?)",
                                                    sLibraryName.c_str());
     }
 
-  if((destroyEventAgentFunc_ = reinterpret_cast<DestroyEventAgentFunc>((void (*)())ACE_OS::dlsym(shlibHandle_,"destroy"))) == 0)
+  if((destroyEventAgentFunc_ = reinterpret_cast<DestroyEventAgentFunc>((void (*)())dlsym(pLibHandle_,"destroy"))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
 
       throw makeException<Utils::FactoryException>("%s missing destroy symbol. (Missing DECLARE_EVENT_AGENT()?)",
                                                    sLibraryName.c_str());
@@ -63,7 +64,7 @@ EMANE::EventAgentFactory::EventAgentFactory(const std::string & sLibraryName):
 
 EMANE::EventAgentFactory::~EventAgentFactory()
 {
-  ACE_OS::dlclose(shlibHandle_);
+  dlclose(pLibHandle_);
 }
 
 EMANE::EventAgent * EMANE::EventAgentFactory::createEventAgent(EMANE::NEMId nemId, EMANE::PlatformServiceProvider *pPlatformService) const

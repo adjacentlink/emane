@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,8 +37,6 @@
 #include "emane/types.h"
 #include "emane/platformserviceprovider.h"
 #include "emane/radioserviceprovider.h"
-
-#include <ace/OS_NS_dlfcn.h>
 
 namespace EMANE
 {
@@ -88,12 +86,15 @@ namespace EMANE
     void destoryLayer(T * layer) const;
     
   private:
-    typedef T * (*createLayerFunc)(NEMId, PlatformServiceProvider *,RadioServiceProvider *); 
-    typedef void (*destroyLayerFunc)(T*); 
+    using CreateLayerFunc = T * (*)(NEMId,
+                                    PlatformServiceProvider *,
+                                    RadioServiceProvider *);
+    
+    using DestroyLayerFunc = void (*)(T*); 
 
-    ACE_SHLIB_HANDLE shlibHandle_;
-    createLayerFunc  createLayerFunc_;
-    destroyLayerFunc destroyLayerFunc_;
+    void * pLibHandle_;
+    CreateLayerFunc  createLayerFunc_;
+    DestroyLayerFunc destroyLayerFunc_;
   };
 }
 

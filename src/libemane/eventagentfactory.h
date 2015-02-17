@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,8 +38,6 @@
 
 #include "emane/utils/factoryexception.h"
 
-#include <ace/OS_NS_dlfcn.h>
-
 namespace EMANE
 {
   /**
@@ -73,7 +71,8 @@ namespace EMANE
      *
      * @returns EventAgent reference
      */
-    EventAgent * createEventAgent(EMANE::NEMId nemId, EMANE::PlatformServiceProvider *pPlatformService) const;
+    EventAgent * createEventAgent(NEMId nemId,
+                                  PlatformServiceProvider * pPlatformService) const;
 
     /**
      * Destory an EventAgent
@@ -83,10 +82,11 @@ namespace EMANE
     void destoryEventAgent(EventAgent * pAgent) const;
     
   private:
-    typedef EventAgent * (*CreateEventAgentFunc)(EMANE::NEMId nemId, EMANE::PlatformServiceProvider *pPlatformService); 
-    typedef void (*DestroyEventAgentFunc)(EventAgent*); 
+    using CreateEventAgentFunc =  EventAgent * (*)(NEMId nemId,
+                                                   PlatformServiceProvider * pPlatformService); 
+    using DestroyEventAgentFunc = void (*)(EventAgent*); 
 
-    ACE_SHLIB_HANDLE shlibHandle_;
+    void * pLibHandle_;
     CreateEventAgentFunc createEventAgentFunc_;
     DestroyEventAgentFunc destroyEventAgentFunc_;
   };
