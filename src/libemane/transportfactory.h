@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,8 +37,6 @@
 #include "emane/transport.h"
 
 #include "emane/utils/factoryexception.h"
-
-#include <ace/OS_NS_dlfcn.h>
 
 namespace EMANE
 {
@@ -85,10 +83,10 @@ namespace EMANE
     void destoryTransport(Transport * pTransport) const;
     
   private:
-    typedef Transport * (*CreateTransportFunc)(NEMId, PlatformServiceProvider *);
-    typedef void (*DestroyTransportFunc)(Transport*); 
+    using CreateTransportFunc = Transport * (*)(NEMId, PlatformServiceProvider *);
+    using DestroyTransportFunc = void (*)(Transport*); 
 
-    ACE_SHLIB_HANDLE shlibHandle_;
+    void * pLibHandle_;
     CreateTransportFunc createTransportFunc_;
     DestroyTransportFunc destroyTransportFunc_;
   };

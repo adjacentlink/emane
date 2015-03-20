@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,27 +33,28 @@
 
 #include "eventgeneratorfactory.h"
 #include "emane/utils/factoryexception.h"
+#include <dlfcn.h>
 
 EMANE::EventGeneratorFactory::EventGeneratorFactory(const std::string & sLibraryName):
-  shlibHandle_(0),
-  createEventGeneratorFunc_(0),
-  destroyEventGeneratorFunc_(0)
+  pLibHandle_{},
+  createEventGeneratorFunc_{},
+  destroyEventGeneratorFunc_{}
 {
-   if((shlibHandle_ = ACE_OS::dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
+   if((pLibHandle_ = dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
     {
-      throw Utils::FactoryException(ACE_OS::dlerror());
+      throw Utils::FactoryException(dlerror());
     }
   
-  if((createEventGeneratorFunc_ = reinterpret_cast<CreateEventGeneratorFunc>((void (*)())(ACE_OS::dlsym(shlibHandle_,"create")))) == 0)
+  if((createEventGeneratorFunc_ = reinterpret_cast<CreateEventGeneratorFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s  missing create symbol. (Missing DECLARE_EVENT_GENERATOR()?)",
                                                    sLibraryName.c_str());
     }
 
-  if((destroyEventGeneratorFunc_ = reinterpret_cast<DestroyEventGeneratorFunc>((void (*)())ACE_OS::dlsym(shlibHandle_,"destroy"))) == 0)
+  if((destroyEventGeneratorFunc_ = reinterpret_cast<DestroyEventGeneratorFunc>((void (*)())dlsym(pLibHandle_,"destroy"))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s missing destory symbol. (Missing DECLARE_EVENT_GENERATOR()?)",
                                                    sLibraryName.c_str());
 
@@ -62,7 +63,7 @@ EMANE::EventGeneratorFactory::EventGeneratorFactory(const std::string & sLibrary
 
 EMANE::EventGeneratorFactory::~EventGeneratorFactory()
 {
-  ACE_OS::dlclose(shlibHandle_);
+  dlclose(pLibHandle_);
 }
 
 EMANE::EventGenerator * EMANE::EventGeneratorFactory::createEventGenerator(EMANE::PlatformServiceProvider *pPlatformService) const

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,8 +36,6 @@
 
 #include "emane/eventgenerator.h"
 
-#include <ace/OS_NS_dlfcn.h>
-
 namespace EMANE
 {
   /**
@@ -68,7 +66,7 @@ namespace EMANE
      *
      * @returns EventGenerator reference
      */
-    EventGenerator * createEventGenerator(PlatformServiceProvider *pPlatformService) const;
+    EventGenerator * createEventGenerator(PlatformServiceProvider * pPlatformService) const;
 
     /**
      * Destory an EventGenerator
@@ -78,10 +76,10 @@ namespace EMANE
     void destoryEventGenerator(EventGenerator * pGen) const;
     
   private:
-    typedef EventGenerator * (*CreateEventGeneratorFunc)(PlatformServiceProvider *pPlatformService); 
-    typedef void (*DestroyEventGeneratorFunc)(EventGenerator*); 
+    using CreateEventGeneratorFunc = EventGenerator * (*)(PlatformServiceProvider * pPlatformService); 
+    using DestroyEventGeneratorFunc =  void (*)(EventGenerator*); 
 
-    ACE_SHLIB_HANDLE shlibHandle_;
+    void * pLibHandle_;
     CreateEventGeneratorFunc createEventGeneratorFunc_;
     DestroyEventGeneratorFunc destroyEventGeneratorFunc_;
   };

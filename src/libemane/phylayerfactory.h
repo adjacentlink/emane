@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,8 +37,6 @@
 #include "emane/types.h"
 #include "emane/phylayerimpl.h"
 
-#include <ace/OS_NS_dlfcn.h>
-
 namespace EMANE
 {
   /**
@@ -72,7 +70,8 @@ namespace EMANE
      *
      * @returns PHYLayerImplementor reference to newly created layer
      */
-    PHYLayerImplementor * createLayer(NEMId nemId, PlatformServiceProvider * pPlatformServiceProvider) const;
+    PHYLayerImplementor * createLayer(NEMId nemId,
+                                      PlatformServiceProvider * pPlatformServiceProvider) const;
 
     /**
      * Destory a PHYLayerImplementor layer
@@ -83,12 +82,13 @@ namespace EMANE
     void destoryLayer(PHYLayerImplementor * layer) const;
     
   private:
-    typedef PHYLayerImplementor * (*createLayerFunc)(NEMId, PlatformServiceProvider *); 
-    typedef void (*destroyLayerFunc)(PHYLayerImplementor*); 
+    using CreateLayerFunc = PHYLayerImplementor * (*)(NEMId,
+                                                      PlatformServiceProvider *); 
+    using DestroyLayerFunc = void (*)(PHYLayerImplementor*); 
 
-    ACE_SHLIB_HANDLE shlibHandle_;
-    createLayerFunc  createLayerFunc_;
-    destroyLayerFunc destroyLayerFunc_;
+    void * pLibHandle_;
+    CreateLayerFunc  createLayerFunc_;
+    DestroyLayerFunc destroyLayerFunc_;
   };
 }
 
