@@ -267,8 +267,21 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
                               __func__, 
                               u16ethProtocol);
 
-       // use broadcast mac addr
-       rNemDestination = NEM_BROADCAST_MAC_ADDRESS;
+       // broadcast always mode
+       if(bBroadcastMode_)
+         {
+           rNemDestination = NEM_BROADCAST_MAC_ADDRESS;
+         }
+       // check arp cache
+       else if (bArpCacheMode_)
+         {
+           rNemDestination = lookupArpCache(&pEthHeader->dst);
+         }
+       // use the last 2 bytes of the ethernet destination
+       else
+         {
+           rNemDestination = ACE_NTOHS(pEthHeader->dst.words.word3);
+         }
 
        // set dscp to 0
        rDspc = 0;
