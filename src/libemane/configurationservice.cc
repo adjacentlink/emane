@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,7 @@ void EMANE::ConfigurationService::registerAny(BuildId buildId,
 {
   std::lock_guard<std::mutex> m(mutex_);
 
-  if(std::find_if_not(sName.begin(),sName.end(),isalnum) != sName.end())
+  if(std::find_if_not(sName.begin(),sName.end(),[](int ch){return isalnum(ch) || ch == '.';}) != sName.end())
     {
       throw makeException<RegistrarException>("Invalid charater in the configuration name: %s",
                                               sName.c_str());
