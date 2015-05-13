@@ -323,7 +323,12 @@ emaneinc_HEADERS = \
  pathlossevent.h                         \
  pathlosseventformatter.h                \
  pathloss.h                              \
- pathloss.inl                            
+ pathloss.inl                            \
+ slotinfo.h                              \
+ slotinfo.inl                            \
+ slotstructure.h                         \
+ slotstructure.inl                       \
+ tdmascheduleevent.h
 
 all: all-am
 

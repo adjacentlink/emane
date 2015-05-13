@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ import struct
 import select
 import time
 import uuid
+import pprint
 
 def get_ip_address(ifname):
     # http://code.activestate.com/recipes/439094/
@@ -171,7 +172,7 @@ class EventService:
                                             serialization.eventId,
                                             serialization.data,
                                             uuid.UUID(bytes=event.uuid),
-                                            msg.sequenceNumber)                              
+                                            event.sequenceNumber)                              
                             finally:
                                 self._lock.release()  
 
@@ -325,6 +326,7 @@ if __name__ == "__main__":
     from emanesh.events import CommEffectEvent
     from emanesh.events import AntennaProfileEvent
     from emanesh.events import OneHopNeighborsEvent
+    from emanesh.events import TDMAScheduleEvent
 
     usage = "emaneeventdump [OPTION]..."
 
@@ -404,7 +406,7 @@ if __name__ == "__main__":
 
         print " UUID:",uuid
 
-    def default(nemId,eventId,data):
+    def default(nemId,eventId,data,uuid,sequence):
         header(nemId,eventId,data,'unknown',uuid,sequence)
 
     def handleLocation(nemId,eventId,data,uuid,sequence):
@@ -442,11 +444,22 @@ if __name__ == "__main__":
         print "source:",e.getSource(),[x for x in e]
 
 
+    def handleTDMASchedule(nemId,eventId,data,uuid,sequence):
+        e = TDMAScheduleEvent()
+        e.restore(data)
+        header(nemId,eventId,data,'TDMASchedule',uuid,sequence)
+        print e.structure()
+        for i in e:
+            pprint.pprint(i)
+            
+
+
     service.subscribe(PathlossEvent.IDENTIFIER,handlePathloss)
     service.subscribe(LocationEvent.IDENTIFIER,handleLocation)
     service.subscribe(CommEffectEvent.IDENTIFIER,handleCommEffect)
     service.subscribe(AntennaProfileEvent.IDENTIFIER,handleAntennaProfile)
     service.subscribe(OneHopNeighborsEvent.IDENTIFIER,handleOneHopNeighbors)
+    service.subscribe(TDMAScheduleEvent.IDENTIFIER,handleTDMASchedule)
 
     if options.next_only:
         data = service.nextEvent()

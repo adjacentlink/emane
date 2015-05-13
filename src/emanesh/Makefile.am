@@ -13,6 +13,8 @@ EXTRA_DIST=                      \
  emanesh/events/locationevent.py \
  emanesh/events/onehopneighborsevent.py \
  emanesh/events/pathlossevent.py \
+ emanesh/events/tdmascheduleevent.py \
+ emanesh/events/tdmaschedule.py \
  emanesh/controlportclient.py    \
  emanesh/controlportexception.py \
  emanesh/ota/__init__.py         \
@@ -24,12 +26,14 @@ EXTRA_DIST=                      \
  emanesh/manifest.py             \
  emanesh/manifestexception.py    \
  emanesh/schema/otapublisherscenario.xsd \
+ emanesh/schema/tdmaschedule.xsd \
  scripts/emanesh                 \
  scripts/emaneevent-dump         \
  scripts/emaneevent-pathloss     \
  scripts/emaneevent-commeffect   \
  scripts/emaneevent-location     \
  scripts/emaneevent-antennaprofile \
+ scripts/emaneevent-tdmaschedule \
  scripts/emaneota-publisher      \
  scripts/emanecommand-eel        \
  setup.py.in                     \
@@ -41,6 +45,7 @@ BUILT_SOURCES =                  \
  emanesh/events/event_pb2.py            \
  emanesh/events/locationevent_pb2.py    \
  emanesh/events/pathlossevent_pb2.py    \
+ emanesh/events/tdmascheduleevent_pb2.py \
  emanesh/remotecontrolportapi_pb2.py \
  emanesh/events/onehopneighborsevent_pb2.py \
  emanesh/ota/otaheader_pb2.py \
@@ -60,6 +65,7 @@ clean-local: setup.py
 	-rm -f emanesh/events/event_pb2.py
 	-rm -f emanesh/events/locationevent_pb2.py
 	-rm -f emanesh/events/pathlossevent_pb2.py
+	-rm -f emanesh/events/tdmascheduleevent_pb2.py
 	-rm -f emanesh/remotecontrolportapi_pb2.py
 	-rm -f emanesh/events/onehopneighborsevent_pb2.py
 	-rm -f emanesh/ota/otaheader_pb2.py
@@ -106,6 +112,9 @@ emanesh/events/antennaprofileevent_pb2.py: ../libemane/antennaprofileevent.proto
 
 emanesh/events/onehopneighborsevent_pb2.py: ../models/mac/ieee80211abg/onehopneighborsevent.proto
 	protoc -I../models/mac/ieee80211abg --python_out=emanesh/events  $<
+
+emanesh/events/tdmascheduleevent_pb2.py: ../libemane/tdmascheduleevent.proto
+	protoc -I../libemane --python_out=emanesh/events  $<
 
 emanesh/schema/manifest.xsd: @top_srcdir@/schema/manifest.xsd	emanesh/schema
 	cp $< $@

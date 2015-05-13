@@ -1,3 +1,6 @@
-SUBDIRS= bypass \
-         rfpipe \
-         ieee80211abg
+SUBDIRS= \
+ bypass \
+ rfpipe \
+ ieee80211abg \
+ tdma
+

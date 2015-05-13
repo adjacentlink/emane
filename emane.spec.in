@@ -103,6 +103,14 @@ Group: Libraries
 %description model-commeffect
 EMANE commeffect model replacement for commercial network emulators.
 
+%package model-tdmaeventscheduler
+Summary: EMANE TDMA Event Scheduler radio model.
+Requires: emane-dtds >= %{version}
+Group: Libraries
+
+%description model-tdmaeventscheduler
+EMANE TDMA event scheduler model.
+
 %package agent-gpsdlocation
 Requires: emane-eventdaemon >= %{version}
 Summary: EMANE gpsd location agent 
@@ -238,6 +246,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{_datadir}/emane/dtd/antennaprofile.dtd
 %doc %{_datadir}/emane/dtd/commeffectfilters.dtd
 %doc %{_datadir}/emane/schema/manifest.xsd
+%doc %{_datadir}/emane/schema/tdmabasemodelpcr.xsd
 
 %files libs
 %defattr(-, root, root)
@@ -424,6 +433,18 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectshim.xml
 %doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectnem.xml
 %doc %{_datadir}/emane/xml/models/shim/commeffect/commeffectfilters.xml
+
+%files model-tdmaeventscheduler
+%defattr(-,root,root,-)
+%{_libdir}/libtdmabase.*
+%{_libdir}/libtdmaeventschedulerradiomodel.*
+
+%doc AUTHORS
+%doc COPYING
+%doc ChangeLog
+%doc NEWS
+%doc README
+%doc SPONSOR
 
 %files gen-eel
 %defattr(-,root,root,-)

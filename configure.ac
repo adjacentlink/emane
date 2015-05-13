@@ -1,5 +1,5 @@
 %AC_COPYRIGHT([
- Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -236,6 +236,8 @@ AC_OUTPUT(
  include/emane/generators/Makefile
  include/emane/generators/eel/Makefile
  include/emane/events/Makefile
+ include/emane/models/Makefile
+ include/emane/models/tdma/Makefile
  include/emane/version.h
  src/Makefile
  src/libemanexmlparser/Makefile 
@@ -258,6 +260,8 @@ AC_OUTPUT(
  src/models/phy/bypass/Makefile
  src/models/mac/rfpipe/Makefile
  src/models/mac/ieee80211abg/Makefile
+ src/models/mac/tdma/Makefile
+ src/models/mac/tdma/eventscheduler/Makefile
  src/models/shim/Makefile
  src/models/shim/timinganalysis/Makefile
  src/models/shim/phyapitest/Makefile
