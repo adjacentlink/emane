@@ -16871,7 +16871,7 @@ $as_echo "#define __BIG_ENDIAN 4321" >>confdefs.h
 
 
 # compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -g0 -O3"
+CXXFLAGS="$CXXFLAGS -W -Wall -O3"
 
 # options for use with gprof
 if test "$with_profile" = "yes"
