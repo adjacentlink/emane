@@ -45,7 +45,7 @@ namespace EMANE
       {
       public:
         BasicQueueManager(NEMId id,
-                         PlatformServiceProvider * pPlatformServiceProvider);
+                          PlatformServiceProvider * pPlatformServiceProvider);
           
         ~BasicQueueManager();
         
@@ -62,9 +62,13 @@ namespace EMANE
         void destroy() throw() override;
         
         void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) override;
+
+        std::tuple<EMANE::Models::TDMA::MessageComponents,
+                   size_t>
+          dequeue(std::uint8_t u8QueueIndex,
+                  size_t length,
+                  NEMId destination) override;
         
-        std::pair<DownstreamPacket,bool> dequeue(std::uint8_t u8QueueIndex,
-                                                 NEMId destination) override;
       private:
         class Implementation;
         std::unique_ptr<Implementation> pImpl_;

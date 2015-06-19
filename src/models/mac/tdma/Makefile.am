@@ -15,28 +15,33 @@ libtdmabase_la_SOURCES =             \
  basemodel.cc                        \
  basemodelimpl.cc                    \
  basicqueuemanager.cc                \
+ packetstatuspublisherimpl.cc        \
  pormanager.cc                       \
+ queue.cc                            \
+ queuestatuspublisher.cc             \
  receivemanager.cc                   \
  slotstatustablepublisher.cc         \
- txslotinfosformatter.cc             \
- tdmabasemodelheader.pb.cc 
+ tdmabasemodelheader.pb.cc           \
+ txslotinfosformatter.cc 
 
 BUILT_SOURCES =                      \
  tdmabasemodelheader.pb.cc           \
  tdmabasemodelheader.pb.h
 
 EXTRA_DIST=                          \
- basemodelheader.h                   \
- basemodelheader.inl                 \
  basemodelimpl.h                     \
+ basemodelmessage.h                  \
+ basemodelmessage.inl                \
+ packetstatuspublisherimpl.h         \
  pormanager.h                        \
+ priority.h                          \
  queue.h                             \
+ queuestatuspublisher.h              \
  receivemanager.h                    \
  slotstatustablepublisher.h          \
  tdmabasemodelheader.proto           \
  tdmabasemodelpcr.xml                \
- txslotinfosformatter.h              
-
+ txslotinfosformatter.h
 
 libtdmabase_la_LDFLAGS=              \
  $(ACE_LIBS)                         \

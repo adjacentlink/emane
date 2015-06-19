@@ -30,17 +30,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMODELSTDMAQUEUEMANAGER_HEADER_
-#define EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#ifndef EMAENMODELSTDMABSAEMODELMESSAGE_HEADER_
+#define EMAENMODELSTDMABSAEMODELMESSAGE_HEADER_
 
-#include "emane/component.h"
-#include "emane/platformserviceuser.h"
-#include "emane/runningstatemutable.h"
-#include "emane/downstreampacket.h"
+#include "emane/serializable.h"
+#include "emane/types.h"
+#include "tdmabasemodelheader.pb.h"
 #include "emane/models/tdma/messagecomponent.h"
-#include "emane/models/tdma/packetstatuspublisheruser.h"
-
-#include <tuple>
+#include "emane/utils/vectorio.h"
 
 namespace EMANE
 {
@@ -48,49 +45,34 @@ namespace EMANE
   {
     namespace TDMA
     {
-      class QueueManager : public Component,
-                           public PlatformServiceUser,
-                           public RunningStateMutable,
-                           public PacketStatusPublisherUser
+      class BaseModelMessage : public Serializable
       {
       public:
-         /**
-         * Destroys an instance.
-         */
-        virtual ~QueueManager(){};
-        
-        virtual
-        void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
+        BaseModelMessage();
 
-        virtual std::tuple<EMANE::Models::TDMA::MessageComponents,
-                           size_t>
-        dequeue(std::uint8_t u8QueueIndex,
-                size_t length,
-                NEMId destination) = 0;
+        BaseModelMessage(std::uint64_t u64AbsoluteSlotIndex,
+                         std::uint64_t u64DataRatebps,
+                         MessageComponents && messages);
 
-      protected:
-        NEMId id_;
-        
-        /**
-         * Creates an instance.
-         */
-        QueueManager(NEMId id,
-                     PlatformServiceProvider * pPlatformServiceProvider):
-          PlatformServiceUser{pPlatformServiceProvider},
-          id_{id}{}
-        
+        BaseModelMessage(const void * p, size_t len);
+
+        const MessageComponents & getMessages() const;
+
+        std::uint64_t getAbsoluteSlotIndex() const;
+
+        std::uint64_t getDataRate() const;
+
+        Serialization serialize() const override;
+
       private:
-        void processEvent(const EventId &, const Serialization &) final{};
-
-        void processTimedEvent(TimerEventId,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const void *) final {};
-        
+        std::uint64_t u64AbsoluteSlotIndex_;
+        std::uint64_t u64DataRatebps_;
+        MessageComponents messages_;
       };
     }
   }
 }
 
-#endif // EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#include "basemodelmessage.inl"
+
+#endif //EMAENMODELSTDMABSAEMODELMESSAGE_HEADER_

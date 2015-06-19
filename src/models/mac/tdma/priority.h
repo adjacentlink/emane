@@ -30,17 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMODELSTDMAQUEUEMANAGER_HEADER_
-#define EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#ifndef EMANEMODELSTDMAPRIORITY_HEADER_
+#define EMANEMODELSTDMAPRIORITY_HEADER_
 
-#include "emane/component.h"
-#include "emane/platformserviceuser.h"
-#include "emane/runningstatemutable.h"
-#include "emane/downstreampacket.h"
-#include "emane/models/tdma/messagecomponent.h"
-#include "emane/models/tdma/packetstatuspublisheruser.h"
-
-#include <tuple>
+#include "emane/types.h"
 
 namespace EMANE
 {
@@ -48,49 +41,28 @@ namespace EMANE
   {
     namespace TDMA
     {
-      class QueueManager : public Component,
-                           public PlatformServiceUser,
-                           public RunningStateMutable,
-                           public PacketStatusPublisherUser
+      inline
+      std::uint8_t priorityToQueue(Priority priority)
       {
-      public:
-         /**
-         * Destroys an instance.
-         */
-        virtual ~QueueManager(){};
-        
-        virtual
-        void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
+        std::uint8_t u8Queue{0}; // default
 
-        virtual std::tuple<EMANE::Models::TDMA::MessageComponents,
-                           size_t>
-        dequeue(std::uint8_t u8QueueIndex,
-                size_t length,
-                NEMId destination) = 0;
+        if(priority >= 8 && priority <= 23)
+          {
+            u8Queue = 1;
+          }
+        else if(priority >= 32 && priority <= 47)
+          {
+            u8Queue = 2;
+          }
+        else if(priority >= 48 && priority <= 63)
+          {
+            u8Queue = 3;
+          }
 
-      protected:
-        NEMId id_;
-        
-        /**
-         * Creates an instance.
-         */
-        QueueManager(NEMId id,
-                     PlatformServiceProvider * pPlatformServiceProvider):
-          PlatformServiceUser{pPlatformServiceProvider},
-          id_{id}{}
-        
-      private:
-        void processEvent(const EventId &, const Serialization &) final{};
-
-        void processTimedEvent(TimerEventId,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const void *) final {};
-        
-      };
+        return u8Queue;
+      }
     }
   }
 }
 
-#endif // EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#endif // EMANEMODELSTDMAPRIORITY_HEADER_

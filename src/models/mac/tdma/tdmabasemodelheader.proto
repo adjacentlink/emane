@@ -34,16 +34,32 @@ package EMANEMessage;
 
 option optimize_for = SPEED;
 
-message TDMABaseModelHeader
+message TDMABaseModelMessage
 {
-  enum MessageType 
-   {
-     DATA = 1;
-     CONTROL = 2;
+  message Message
+  {
+    enum MessageType 
+    {
+      DATA = 1;
+      CONTROL = 2;
+    }
+    
+    message Fragment
+    {
+      required bool more = 1;
+      required uint32 index = 2;
+      required uint32 offset = 3;
+      required uint64 sequence = 4;
+    }
+
+    required MessageType type = 1;
+    required uint32 destination = 2;
+    required uint32 priority = 3;
+    required bytes data = 4;
+    optional Fragment fragment = 5;
   }
 
-  required MessageType type = 1;
-  required uint64 absSlotIndex = 2;
-  required uint64 dataRatebps = 3; 
+  required uint64 absSlotIndex = 1;
+  required uint64 dataRatebps = 2;
+  repeated Message messages = 3;
 }
-

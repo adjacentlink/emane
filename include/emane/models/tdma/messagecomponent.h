@@ -30,17 +30,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMODELSTDMAQUEUEMANAGER_HEADER_
-#define EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#ifndef EMANEMODELTDMAMESSAGECOMPONENT_HEADER_
+#define EMANEMODELTDMAMESSAGECOMPONENT_HEADER_
 
-#include "emane/component.h"
-#include "emane/platformserviceuser.h"
-#include "emane/runningstatemutable.h"
-#include "emane/downstreampacket.h"
-#include "emane/models/tdma/messagecomponent.h"
-#include "emane/models/tdma/packetstatuspublisheruser.h"
+#include "emane/types.h"
+#include "emane/utils/vectorio.h"
 
-#include <tuple>
+#include <list>
+#include <vector>
 
 namespace EMANE
 {
@@ -48,49 +45,65 @@ namespace EMANE
   {
     namespace TDMA
     {
-      class QueueManager : public Component,
-                           public PlatformServiceUser,
-                           public RunningStateMutable,
-                           public PacketStatusPublisherUser
+      class MessageComponent
       {
       public:
-         /**
-         * Destroys an instance.
-         */
-        virtual ~QueueManager(){};
-        
-        virtual
-        void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
+        enum class Type
+        {
+          DATA,
+          CONTROL,
+         };
 
-        virtual std::tuple<EMANE::Models::TDMA::MessageComponents,
-                           size_t>
-        dequeue(std::uint8_t u8QueueIndex,
-                size_t length,
-                NEMId destination) = 0;
+        using Data = std::vector<uint8_t>;
 
-      protected:
-        NEMId id_;
-        
-        /**
-         * Creates an instance.
-         */
-        QueueManager(NEMId id,
-                     PlatformServiceProvider * pPlatformServiceProvider):
-          PlatformServiceUser{pPlatformServiceProvider},
-          id_{id}{}
-        
+        MessageComponent(Type type,
+                         NEMId destination,
+                         Priority priority,
+                         const Utils::VectorIO & vectorIO);
+
+        MessageComponent(Type type,
+                         NEMId destination,
+                         Priority priority,
+                         const Utils::VectorIO & vectorIO,
+                         size_t fragmentIndex,
+                         size_t fragmentOffset,
+                         std::uint64_t u64FragmentSequence,
+                         bool bMore);
+
+        const Data & getData() const;
+
+        NEMId getDestination() const;
+
+        Type getType() const;
+
+        bool isFragment() const;
+
+        size_t getFragmentIndex() const;
+
+        size_t getFragmentOffset() const;
+
+        std::uint64_t getFragmentSequence() const;
+
+        bool isMoreFragments() const;
+
+        Priority getPriority() const;
+
       private:
-        void processEvent(const EventId &, const Serialization &) final{};
-
-        void processTimedEvent(TimerEventId,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const void *) final {};
-        
+        Type type_;
+        NEMId destination_;
+        Priority priority_;
+        Data data_;
+        size_t fragmentIndex_;
+        size_t fragmentOffset_;
+        bool bMoreFragments_;
+        std::uint64_t u64FragmentSequence_;
       };
+
+      using MessageComponents = std::list<MessageComponent>;
     }
   }
+
+  #include "emane/models/tdma/messagecomponent.inl"
 }
 
-#endif // EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#endif // EMANEMODELTDMAMESSAGECOMPONENT_HEADER_

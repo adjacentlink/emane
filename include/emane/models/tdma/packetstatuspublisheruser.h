@@ -30,17 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMODELSTDMAQUEUEMANAGER_HEADER_
-#define EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#ifndef EMANEMODELSTDMAPACKETSTATUSPUBLISHERUSER_HEADER_
+#define EMANEMODELSTDMAPACKETSTATUSPUBLISHERUSER_HEADER_
 
-#include "emane/component.h"
-#include "emane/platformserviceuser.h"
-#include "emane/runningstatemutable.h"
-#include "emane/downstreampacket.h"
-#include "emane/models/tdma/messagecomponent.h"
-#include "emane/models/tdma/packetstatuspublisheruser.h"
-
-#include <tuple>
+#include "emane/models/tdma/packetstatuspublisher.h"
 
 namespace EMANE
 {
@@ -48,49 +41,24 @@ namespace EMANE
   {
     namespace TDMA
     {
-      class QueueManager : public Component,
-                           public PlatformServiceUser,
-                           public RunningStateMutable,
-                           public PacketStatusPublisherUser
+      class PacketStatusPublisherUser
       {
       public:
-         /**
-         * Destroys an instance.
-         */
-        virtual ~QueueManager(){};
-        
-        virtual
-        void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
+        virtual ~PacketStatusPublisherUser(){}
 
-        virtual std::tuple<EMANE::Models::TDMA::MessageComponents,
-                           size_t>
-        dequeue(std::uint8_t u8QueueIndex,
-                size_t length,
-                NEMId destination) = 0;
+        void setPacketStatusPublisher(PacketStatusPublisher * pPacketStatusPublisher)
+        {
+          pPacketStatusPublisher_ = pPacketStatusPublisher;
+        }
 
       protected:
-        NEMId id_;
-        
-        /**
-         * Creates an instance.
-         */
-        QueueManager(NEMId id,
-                     PlatformServiceProvider * pPlatformServiceProvider):
-          PlatformServiceUser{pPlatformServiceProvider},
-          id_{id}{}
-        
-      private:
-        void processEvent(const EventId &, const Serialization &) final{};
+        PacketStatusPublisher * pPacketStatusPublisher_;
 
-        void processTimedEvent(TimerEventId,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const TimePoint &,
-                               const void *) final {};
-        
+        PacketStatusPublisherUser():
+          pPacketStatusPublisher_{}{}
       };
     }
   }
 }
 
-#endif // EMANEMODELSTDMAQUEUEMANAGER_HEADER_
+#endif // EMANEMODELSTDMAPACKETSTATUSPUBLISHERUSER_HEADER_

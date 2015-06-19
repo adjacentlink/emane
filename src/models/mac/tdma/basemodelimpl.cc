@@ -45,11 +45,12 @@
 
 
 #include "txslotinfosformatter.h"
-#include "basemodelheader.h"
+#include "basemodelmessage.h"
+#include "priority.h"
 
 namespace
 {
-  const std::string QUEUEMANAGER_PREFIX{"queuemanager."};
+  const std::string QUEUEMANAGER_PREFIX{"queue."};
   const std::string SCHEDULER_PREFIX{"scheduler."};
 }
 
@@ -77,7 +78,13 @@ Implementation(NEMId id,
   u64SequenceNumber_{},
   frequencies_{},
   u64BandwidthHz_{},
-  receiveManager_{id,pRadioModel,&pPlatformServiceProvider->logService(),pRadioServiceProvider,pScheduler}{}
+  packetStatusPublisher_{},
+  receiveManager_{id,
+      pRadioModel,
+      &pPlatformServiceProvider->logService(),
+      pRadioServiceProvider,
+      pScheduler,
+      &packetStatusPublisher_}{}
 
 
 EMANE::Models::TDMA::BaseModel::Implementation::~Implementation()
@@ -98,7 +105,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
   configRegistrar.registerNumeric<bool>("enablepromiscuousmode",
                                         ConfigurationProperties::DEFAULT |
                                         ConfigurationProperties::MODIFIABLE,
-    {false},
+                                        {false},
                                         "Defines whether promiscuous mode is enabled or not."
                                         " If promiscuous mode is enabled, all received packets"
                                         " (intended for the given node or not) that pass the"
@@ -108,14 +115,14 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
 
   configRegistrar.registerNumeric<bool>("flowcontrolenable",
                                         ConfigurationProperties::DEFAULT,
-    {false},
+                                        {false},
                                         "Defines whether flow control is enabled. Flow control only works"
                                         " with the virtual transport and the setting must match the setting"
                                         " within the virtual transport configuration.");
 
   configRegistrar.registerNumeric<std::uint16_t>("flowcontroltokens",
                                                  ConfigurationProperties::DEFAULT,
-    {30},
+                                                 {30},
                                                  "Defines the maximum number of flow control tokens"
                                                  " (packet transmission units) that can be processed from the"
                                                  " virtual transport without being refreshed. The number of"
@@ -126,14 +133,14 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
 
   configRegistrar.registerNumeric<bool>("radiometricenable",
                                         ConfigurationProperties::DEFAULT,
-    {false},
+                                        {false},
                                         "Defines if radio metrics will be reported up via the Radio to Router Interface"
                                         " (R2RI).");
 
 
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
                                          ConfigurationProperties::DEFAULT,
-    {1.0f},
+                                         {1.0f},
                                          "Defines the metric report interval in seconds in support of the R2RI feature.",
                                          0.1f,
                                          60.0f);
@@ -141,17 +148,34 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
 
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
-    {},
+                                                  {},
                                                   "Defines the absolute URI of the Packet Completion Rate (PCR) curve"
                                                   " file. The PCR curve file contains probability of reception curves"
                                                   " as a function of Signal to Interference plus Noise Ratio (SINR).");
 
 
+  configRegistrar.registerNumeric<std::uint16_t>("fragmentcheckthreshold",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {2},
+                                                 "Defines the rate in seconds a check is performed see if any packet"
+                                                 " fragment reassembly efforts should be abandoned.");
+
+  configRegistrar.registerNumeric<std::uint16_t>("fragmenttimeoutthreshold",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {5},
+                                                 "Defines the threshold in seconds to wait for another packet fragment"
+                                                 " for an existing reassembly effort before abandoning the effort.");
+
+  
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
+  packetStatusPublisher_.registerStatistics(statisticRegistrar);
+  
   slotStatusTablePublisher_.registerStatistics(statisticRegistrar);
 
+  pQueueManager_->setPacketStatusPublisher(&packetStatusPublisher_);
+  
   pQueueManager_->initialize(registrar);
 
   pScheduler_->initialize(registrar);
@@ -249,6 +273,34 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
                                   sPCRCurveURI_.c_str());
 
           receiveManager_.loadCurves(sPCRCurveURI_);
+        }
+      else if(item.first == "fragmentcheckthreshold")
+        {
+          std::chrono::seconds fragmentCheckThreshold{item.second[0].asUINT16()};
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s: %s = %lu",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  fragmentCheckThreshold.count());
+
+          receiveManager_.setFragmentCheckThreshold(fragmentCheckThreshold);
+        }
+      else if(item.first == "fragmenttimeoutthreshold")
+        {
+          std::chrono::seconds fragmentTimeoutThreshold{item.second[0].asUINT16()};
+          
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s: %s = %lu",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  fragmentTimeoutThreshold.count());
+
+          receiveManager_.setFragmentTimeoutThreshold(fragmentTimeoutThreshold);
         }
       else
         {
@@ -358,19 +410,41 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                           id_,
                           __func__);
 
-  size_t len{pkt.stripLengthPrefixFraming()};
 
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
+  
+  if(hdr.getRegistrationId() != REGISTERED_EMANE_MAC_TDMA)
+    {
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              ERROR_LEVEL, 
+                              "MACI %03hu TDMA::BaseModel::%s: MAC Registration Id %hu does not match our Id %hu, drop.",
+                              id_, 
+                              __func__, 
+                              hdr.getRegistrationId(),
+                              REGISTERED_EMANE_MAC_TDMA);
 
+      
+      packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                     pktInfo.getSource(),
+                                     pktInfo.getPriority(),
+                                     pkt.length(),
+                                     PacketStatusPublisher::InboundAction::DROP_REGISTRATION_ID);
+
+      // drop
+      return;
+    }
+  
+  size_t len{pkt.stripLengthPrefixFraming()};
+
+  std::uint8_t u8QueueId{priorityToQueue(pktInfo.getPriority())};
+  
   if(len && pkt.length() >= len)
     {
-      BaseModelHeader baseModelHeader{pkt.get(), len};
-
-      pkt.strip(len);
+      BaseModelMessage baseModelMessage{pkt.get(), len};
 
       auto entry = pScheduler_->getRxSlotInfo(now);
 
-      if(entry.first.u64AbsoluteSlotIndex_ == baseModelHeader.getAbsoluteSlotIndex())
+      if(entry.first.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
         {
           Microseconds timeRemainingInSlot{slotDuration_ -
               std::chrono::duration_cast<Microseconds>(now -
@@ -432,6 +506,10 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                           __func__,
                                           pktInfo.getSource());
 
+                  packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                                 baseModelMessage.getMessages(),
+                                                 PacketStatusPublisher::InboundAction::DROP_BAD_CONTROL);
+                  
                   // drop
                   return;
                 }
@@ -457,9 +535,9 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
 
               Microseconds span{pReceivePropertiesControlMessage->getSpan()};
 
-              if(receiveManager_.enqueue(std::move(pkt),
-                                         entry.first.u64AbsoluteSlotIndex_,
-                                         baseModelHeader,
+              if(receiveManager_.enqueue(std::move(baseModelMessage),
+                                         pktInfo,
+                                         pkt.length(),
                                          startOfReception,
                                          frequencySegments,
                                          span,
@@ -467,18 +545,19 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                 {
                   pPlatformService_->timerService().
                     scheduleTimedEvent(entry.first.timePoint_+ slotDuration_,
-                                       new std::function<bool()>{std::bind([](ReceiveManager & receiveManager,
+                                       new std::function<bool()>{std::bind([](ReceiveManager  & receiveManager,
                                                                               std::uint64_t u64AbsoluteSlotIndex)
                                                                            {
                                                                              receiveManager.process(u64AbsoluteSlotIndex);
                                                                              return true;
-                                                                           },receiveManager_,entry.first.u64AbsoluteSlotIndex_+1)});
+                                                                           },std::ref(receiveManager_),
+                                                                           entry.first.u64AbsoluteSlotIndex_+1)});
                 }
             }
           else
             {
               // not an rx slot but it is the correct abs slot
-              auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelHeader.getAbsoluteSlotIndex());
+              auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelMessage.getAbsoluteSlotIndex());
 
               slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
                                                entry.first.u32RelativeFrameIndex_,
@@ -488,6 +567,11 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                                SlotStatusTablePublisher::Status::RX_TX,
                                                dSlotRemainingRatio);
 
+              packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                             baseModelMessage.getMessages(),
+                                             PacketStatusPublisher::InboundAction::DROP_SLOT_NOT_RX);
+              
+              
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       "MACI %03hu TDMA::BaseModel::%s drop reason rx slot correct but %s rframe: %u rslot: %u",
@@ -501,7 +585,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
         }
       else
         {
-          auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelHeader.getAbsoluteSlotIndex());
+          auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelMessage.getAbsoluteSlotIndex());
 
           Microseconds timeRemainingInSlot{slotDuration_ -
               std::chrono::duration_cast<Microseconds>(now -
@@ -519,12 +603,16 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                                SlotStatusTablePublisher::Status::RX_MISSED,
                                                dSlotRemainingRatio);
 
+              packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                             baseModelMessage.getMessages(),
+                                             PacketStatusPublisher::InboundAction::DROP_SLOT_MISSED_RX);
+
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       "MACI %03hu TDMA::BaseModel::%s drop reason slot mismatch pkt: %zu now: %zu ",
                                       id_,
                                       __func__,
-                                      baseModelHeader.getAbsoluteSlotIndex(),
+                                      baseModelMessage.getAbsoluteSlotIndex(),
                                       entry.first.u64AbsoluteSlotIndex_);
             }
           else
@@ -537,6 +625,11 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                                SlotStatusTablePublisher::Status::RX_TX,
                                                dSlotRemainingRatio);
 
+              packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                             baseModelMessage.getMessages(),
+                                             PacketStatusPublisher::InboundAction::DROP_SLOT_NOT_RX);
+
+
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       "MACI %03hu TDMA::BaseModel::%s drop reason slot mismatch but %s pkt: %zu now: %zu ",
@@ -544,10 +637,20 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       __func__,
                                       pktSlotInfo.type_ == SlotInfo::Type::IDLE ?
                                       "in idle" : "in tx",
-                                      baseModelHeader.getAbsoluteSlotIndex(),
+                                      baseModelMessage.getAbsoluteSlotIndex(),
                                       entry.first.u64AbsoluteSlotIndex_);
             }
         }
+    }
+  else
+    {
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              ERROR_LEVEL,
+                              "MACI %03hu TDMA::BaseModel::%s Packet payload length %zu does not match length prefix %zu",
+                              id_,
+                              __func__,
+                              pkt.length(),
+                              len);
     }
 }
 
@@ -571,22 +674,9 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processDownstreamPacket(Dow
                           id_,
                           __func__);
 
-  Priority priority = pkt.getPacketInfo().getPriority();
-
-  std::uint8_t u8Queue{0}; // default
-
-  if(priority >= 8 and priority <= 23)
-    {
-      u8Queue = 1;
-    }
-  else if(priority >= 32 and priority <= 47)
-    {
-      u8Queue = 2;
-    }
-  else if(priority >= 48 and priority <= 63)
-    {
-      u8Queue = 3;
-    }
+  NEMId destination = pkt.getPacketInfo().getDestination();
+  
+  std::uint8_t u8Queue{priorityToQueue(pkt.getPacketInfo().getPriority())};
 
   pQueueManager_->enqueue(u8Queue,std::move(pkt));
 }
@@ -751,51 +841,69 @@ EMANE::Models::TDMA::QueueInfos EMANE::Models::TDMA::BaseModel::Implementation::
 
 void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double dSlotRemainingRatio)
 {
-  auto entry = pQueueManager_->dequeue(pendingTxSlotInfo_.u8QueueId_,pendingTxSlotInfo_.destination_);
+  // calculate the number of bytes allowed in the slot
+  size_t bytesAvailable =
+    (slotDuration_.count() - slotOverhead_.count()) / 1000000.0 * pendingTxSlotInfo_.u64DataRatebps_ / 8.0;
+  
+  auto entry = pQueueManager_->dequeue(pendingTxSlotInfo_.u8QueueId_,
+                                       bytesAvailable,
+                                       pendingTxSlotInfo_.destination_);
 
-  if(entry.second)
+  MessageComponents & components{std::get<0>(entry)};
+  size_t totalSize{std::get<1>(entry)};
+  
+  if(totalSize)
     {
-      float fSeconds{entry.first.length() * 8.0f / pendingTxSlotInfo_.u64DataRatebps_};
-
-      Microseconds duration{std::chrono::duration_cast<Microseconds>(DoubleSeconds{fSeconds})};
-
-      BaseModelHeader baseModelHeader{BaseModelHeader::Type::DATA,
-          pendingTxSlotInfo_.u64AbsoluteSlotIndex_,
-          pendingTxSlotInfo_.u64DataRatebps_};
-
-      Serialization serialization{baseModelHeader.serialize()};
-
-      // prepend mac header to outgoing packet
-      entry.first.prepend(serialization.c_str(), serialization.size());
-
-      // next prepend the serialization length
-      entry.first.prependLengthPrefixFraming(serialization.size());
-
-      if(duration + slotOverhead_ <= slotDuration_)
+      if(totalSize <= bytesAvailable)
         {
-          pRadioModel_->sendDownstreamPacket(CommonMACHeader{REGISTERED_EMANE_MAC_TDMA, u64SequenceNumber_++},
-                                             entry.first,
+          float fSeconds{totalSize * 8.0f / pendingTxSlotInfo_.u64DataRatebps_};
+          
+          Microseconds duration{std::chrono::duration_cast<Microseconds>(DoubleSeconds{fSeconds})};
+          
+          NEMId dst{components.size() == 1 ? components.begin()->getDestination() :
+              NEM_BROADCAST_MAC_ADDRESS};
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  DEBUG_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s sending downstream returning %zu components",
+                                  id_,
+                                  __func__,
+                                  components.size());
+
+          BaseModelMessage baseModelMessage{pendingTxSlotInfo_.u64AbsoluteSlotIndex_,
+              pendingTxSlotInfo_.u64DataRatebps_,
+              std::move(components)};
+          
+          Serialization serialization{baseModelMessage.serialize()};
+          
+          DownstreamPacket pkt({id_,dst,0,Clock::now()},serialization.c_str(),serialization.size());
+          
+          pkt.prependLengthPrefixFraming(serialization.size());
+
+          pRadioModel_->sendDownstreamPacket(CommonMACHeader{REGISTERED_EMANE_MAC_TDMA,u64SequenceNumber_++},
+                                             pkt,
                                              {Controls::FrequencyControlMessage::create(
                                                                                         u64BandwidthHz_,
                                                                                         {{pendingTxSlotInfo_.u64FrequencyHz_,duration}}),
                                                  Controls::TimeStampControlMessage::create(pendingTxSlotInfo_.timePoint_)});
-
-
+          
+         
+          
           slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
                                            pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                            pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                            SlotStatusTablePublisher::Status::TX_GOOD,
                                            dSlotRemainingRatio);
-
-
         }
       else
         {
-          slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
-                                           pendingTxSlotInfo_.u32RelativeFrameIndex_,
-                                           pendingTxSlotInfo_.u32RelativeSlotIndex_,
-                                           SlotStatusTablePublisher::Status::TX_TOOBIG,
-                                           dSlotRemainingRatio);
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s queue dequeue returning %zu bytes than slot has available %zu",
+                                  id_,
+                                  __func__,
+                                  totalSize,
+                                  bytesAvailable);
         }
     }
 }

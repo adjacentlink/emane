@@ -30,10 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMODELSTDMABASEMODELHEADER_HEADER_
-#define EMANEMODELSTDMABASEMODELHEADER_HEADER_
+#ifndef EMANEMODELSTDMAPACKETSTATUSPUBLISHER_HEADER_
+#define EMANEMODELSTDMAPACKETSTATUSPUBLISHER_HEADER_
 
-#include "emane/serializable.h"
+#include "emane/models/tdma/messagecomponent.h"
 
 namespace EMANE
 {
@@ -41,41 +41,60 @@ namespace EMANE
   {
     namespace TDMA
     {
-      class BaseModelHeader : public Serializable
+      class PacketStatusPublisher
       {
       public:
-        enum class Type
+        virtual ~PacketStatusPublisher(){}
+
+        enum class InboundAction
         {
-          DATA,
-          CONTROL,
+          ACCEPT_GOOD,
+          DROP_BAD_CONTROL,
+          DROP_SLOT_NOT_RX,
+          DROP_SLOT_MISSED_RX,
+          DROP_MISS_FRAGMENT,
+          DROP_SPECTRUM_SERVICE,
+          DROP_SINR,
+          DROP_REGISTRATION_ID,
+          DROP_DESTINATION_MAC
         };
 
-        BaseModelHeader();
-        
-        BaseModelHeader(Type type,
-                        std::uint64_t u64AbsoluteSlotIndex,
-                        std::uint64_t u64DataRatebps);
+        enum class OutboundAction
+        {
+          ACCEPT_GOOD,
+          DROP_TOO_BIG,
+          DROP_OVERFLOW
+         };
 
-        
-        BaseModelHeader(const void * p, size_t len);
-                
-        Type getType() const;
+        virtual void inbound(NEMId src,
+                             const MessageComponent & component,
+                             InboundAction action) = 0;
 
-        std::uint64_t getAbsoluteSlotIndex() const;
+        virtual void inbound(NEMId src,
+                             const MessageComponents & components,
+                             InboundAction action) = 0;
 
-        std::uint64_t getDataRate() const;
+        virtual void inbound(NEMId src,
+                             NEMId dst,
+                             Priority priority,
+                             size_t size,
+                             InboundAction action) = 0;
 
-        Serialization serialize() const override;
+        virtual void outbound(NEMId src,
+                              NEMId dst,
+                              Priority priority,
+                              size_t size,
+                              OutboundAction action) = 0;
 
-      private:
-        Type type_;
-        std::uint64_t u64AbsoluteSlotIndex_;
-        std::uint64_t u64DataRatebps_;
+        virtual void outbound(NEMId src,
+                              const MessageComponents & components,
+                              OutboundAction action) = 0;
+
+      protected:
+        PacketStatusPublisher(){}
       };
     }
   }
 }
 
-#include "basemodelheader.inl"
-
-#endif // EMANEMODELSTDMABASEMODELHEADER_HEADER_
+#endif // EMANEMODELSTDMAPACKETSTATUSPUBLISHER_HEADER_

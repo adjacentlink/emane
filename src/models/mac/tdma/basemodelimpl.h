@@ -39,6 +39,7 @@
 #include "emane/models/tdma/queuemanager.h"
 #include "slotstatustablepublisher.h"
 #include "receivemanager.h"
+#include "packetstatuspublisherimpl.h"
 
 namespace EMANE
 {
@@ -129,6 +130,7 @@ namespace EMANE
         std::uint64_t u64SequenceNumber_;
         Frequencies frequencies_;
         std::uint64_t u64BandwidthHz_;
+        PacketStatusPublisherImpl packetStatusPublisher_;
         ReceiveManager receiveManager_;
         
         void sendDownstreamPacket(double dSlotRemainingRatio);

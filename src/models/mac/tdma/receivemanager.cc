@@ -37,16 +37,20 @@ EMANE::Models::TDMA::ReceiveManager::ReceiveManager(NEMId id,
                                                     DownstreamTransport * pDownstreamTransport,
                                                     LogServiceProvider * pLogService,
                                                     RadioServiceProvider * pRadioService,
-                                                    Scheduler * pScheduler):
+                                                    Scheduler * pScheduler,
+                                                    PacketStatusPublisher * pPacketStatusPublisher):
   id_{id},
   pDownstreamTransport_{pDownstreamTransport},
   pLogService_{pLogService},
   pRadioService_{pRadioService},
   pScheduler_{pScheduler},
-  pendingInfo_{{{0,0,0,{}},nullptr,0},{},{},{},{},{}},
+  pPacketStatusPublisher_{pPacketStatusPublisher},
+  pendingInfo_{{},{{},{},{},{}},{},{},{},{},{}},
   u64PendingAbsoluteSlotIndex_{},
   distribution_{0.0, 1.0},
-  bPromiscuousMode_{}{}
+  bPromiscuousMode_{},
+  fragmentCheckThreshold_{2},
+  fragmentTimeoutThreshold_{5}{}
 
 void EMANE::Models::TDMA::ReceiveManager::setPromiscuousMode(bool bEnable)
 {
@@ -57,24 +61,37 @@ void EMANE::Models::TDMA::ReceiveManager::loadCurves(const std::string & sPCRFil
 {
   porManager_.load(sPCRFileName);
 }
-  
+
+void EMANE::Models::TDMA::ReceiveManager::setFragmentCheckThreshold(const std::chrono::seconds & threshold)
+{
+  fragmentCheckThreshold_ = threshold;
+}
+
+void EMANE::Models::TDMA::ReceiveManager::setFragmentTimeoutThreshold(const std::chrono::seconds & threshold)
+{
+  fragmentTimeoutThreshold_ = threshold;
+}
+
+
 bool
-EMANE::Models::TDMA::ReceiveManager::enqueue(UpstreamPacket && pkt,
-                                             std::uint64_t u64AbsoluteSlotIndex,
-                                             const BaseModelHeader & baseModelHeader,
+EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessage,
+                                             const PacketInfo & pktInfo,
+                                             size_t length,
                                              const TimePoint & startOfReception,
                                              const FrequencySegments & frequencySegments,
                                              const Microseconds & span,
                                              const TimePoint & beginTime)
 {
   bool bReturn{};
-
+  std::uint64_t u64AbsoluteSlotIndex{baseModelMessage.getAbsoluteSlotIndex()};
+  
   if(!u64PendingAbsoluteSlotIndex_) 
     {
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
           
-      pendingInfo_ = std::make_tuple(std::move(pkt),
-                                     baseModelHeader,
+      pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
+                                     pktInfo,
+                                     length,
                                      startOfReception,
                                      frequencySegments,
                                      span,
@@ -87,8 +104,9 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(UpstreamPacket && pkt,
       
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
       
-      pendingInfo_ = std::make_tuple(std::move(pkt),
-                                     baseModelHeader,
+      pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
+                                     pktInfo,
+                                     length,
                                      startOfReception,
                                      frequencySegments,
                                      span,
@@ -106,8 +124,9 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(UpstreamPacket && pkt,
 
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
           
-      pendingInfo_ = std::make_tuple(std::move(pkt),
-                                     baseModelHeader,
+      pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
+                                     pktInfo,
+                                     length,
                                      startOfReception,
                                      frequencySegments,
                                      span,
@@ -117,10 +136,11 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(UpstreamPacket && pkt,
     }
   else
     {
-      if(std::get<2>(pendingInfo_)  < startOfReception)
+      if(std::get<3>(pendingInfo_)  < startOfReception)
         {
-          pendingInfo_ = std::make_tuple(std::move(pkt),
-                                         baseModelHeader,
+          pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
+                                         pktInfo,
+                                         length,
                                          startOfReception,
                                          frequencySegments,
                                          span,
@@ -134,6 +154,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(UpstreamPacket && pkt,
 void
 EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 {
+  auto now = Clock::now();
+    
   if(u64PendingAbsoluteSlotIndex_ + 1 == u64AbsoluteSlotIndex)
     {
       u64PendingAbsoluteSlotIndex_ = 0;
@@ -141,13 +163,14 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
       double dSINR{};
       double dNoiseFloordB{};
 
-      UpstreamPacket & pkt{std::get<0>(pendingInfo_)};
-      BaseModelHeader & baseModelHeader{std::get<1>(pendingInfo_)};
-      TimePoint & startOfReception{std::get<2>(pendingInfo_)};
-      FrequencySegments & frequencySegments{std::get<3>(pendingInfo_)};
-      Microseconds & span{std::get<4>(pendingInfo_)};
+      BaseModelMessage & baseModelMessage{std::get<0>(pendingInfo_)};
+      PacketInfo pktInfo{std::get<1>(pendingInfo_)};
+      size_t length{std::get<2>(pendingInfo_)};
+      TimePoint & startOfReception{std::get<3>(pendingInfo_)};
+      FrequencySegments & frequencySegments{std::get<4>(pendingInfo_)};
+      Microseconds & span{std::get<5>(pendingInfo_)};
 
-      auto & pktInfo = pkt.getPacketInfo();
+      
       auto & frequencySegment = *frequencySegments.begin();
       
       try
@@ -166,7 +189,8 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
           
           LOGGER_VERBOSE_LOGGING(*pLogService_,
                                  DEBUG_LEVEL,
-                                 "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu, dst %hu, max noise %f, signal in noise %s, SINR %f",
+                                 "MACI %03hu TDMA::ReceiveManager upstream EOR processing:"
+                                 " src %hu, dst %hu, max noise %lf, signal in noise %s, SINR %lf",
                                  id_,
                                  pktInfo.getSource(),
                                  pktInfo.getDestination(),
@@ -176,9 +200,15 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
         }
       catch(SpectrumServiceException & exp)
         {
+          pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                           baseModelMessage.getMessages(),
+                                           PacketStatusPublisher::InboundAction::DROP_SPECTRUM_SERVICE);
+
+          
           LOGGER_VERBOSE_LOGGING(*pLogService_,
                                  ERROR_LEVEL,
-                                 "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu, dst %hu, sor %ju, span %ju spectrum service request error: %s",
+                                 "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu,"
+                                 " dst %hu, sor %ju, span %ju spectrum service request error: %s",
                                  id_,
                                  pktInfo.getSource(),
                                  pktInfo.getDestination(),
@@ -191,13 +221,17 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
 
       // check sinr
-      float fPOR = porManager_.getPOR(baseModelHeader.getDataRate(),dSINR, pkt.length());
+      float fPOR = porManager_.getPOR(baseModelMessage.getDataRate(),dSINR,length);
 
       // get random value [0.0, 1.0]
       float fRandom{distribution_()};
 
       if(fPOR < fRandom)
         {
+          pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                           baseModelMessage.getMessages(),
+                                           PacketStatusPublisher::InboundAction::DROP_SINR);
+
           LOGGER_VERBOSE_LOGGING(*pLogService_,
                                  DEBUG_LEVEL,
                                  "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu, dst %hu, "
@@ -210,21 +244,189 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
           return;
         }
 
-     
-      if(bPromiscuousMode_ ||
-         (pktInfo.getDestination() == id_) ||
-         (pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS))
+      for(const auto & message : baseModelMessage.getMessages())
         {
-          LOGGER_VERBOSE_LOGGING(*pLogService_,
-                                 DEBUG_LEVEL,
-                                 "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu, dst %hu, forward upstream",
-                                 id_,
-                                 pktInfo.getSource(),
-                                 pktInfo.getDestination());
-          
-          
-          pDownstreamTransport_->sendUpstreamPacket(pkt);
+          NEMId dst{message.getDestination()};
+          Priority priority{message.getPriority()};
+            
+          if(bPromiscuousMode_ ||
+             (dst == id_) ||
+             (dst == NEM_BROADCAST_MAC_ADDRESS))
+            {
+              const auto & data = message.getData();
+              
+              if(message.isFragment())
+                {
+                  LOGGER_VERBOSE_LOGGING(*pLogService_,
+                                         DEBUG_LEVEL,
+                                         "MACI %03hu TDMA::ReceiveManager upstream EOR processing:"
+                                         " src %hu, dst %hu, findex: %zu foffset: %zu fbytes: %zu"
+                                         " fmore: %s",
+                                         id_,
+                                         pktInfo.getSource(),
+                                         pktInfo.getDestination(),
+                                         message.getFragmentIndex(),
+                                         message.getFragmentOffset(),
+                                         data.size(),
+                                         message.isMoreFragments() ? "yes" : "no");
+
+
+                  auto key = std::make_pair(pktInfo.getSource(), message.getFragmentSequence());
+                  
+                  auto iter = fragmentStore_.find(key);
+
+                  if(iter !=  fragmentStore_.end())
+                    {
+                      auto & indexSet = std::get<0>(iter->second);
+                      auto & parts = std::get<1>(iter->second);
+                      auto & lastFragmentTime = std::get<2>(iter->second);
+
+                      if(indexSet.insert(message.getFragmentIndex()).second)
+                        {
+                          parts.insert(std::make_pair(message.getFragmentOffset(),message.getData()));
+
+                          lastFragmentTime = now;
+                            
+                          if(indexSet.size() == message.getFragmentIndex() + 1)
+                            {
+                              if(!message.isMoreFragments())
+                                {
+                                  Utils::VectorIO vectorIO{};
+                                  
+                                  for(const auto & part : parts)
+                                    {
+                                      vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(&part.second[0]),
+                                                                           part.second.size()));
+                                    }
+                                  
+                                  UpstreamPacket pkt{{pktInfo.getSource(),
+                                        dst,
+                                        priority,
+                                        pktInfo.getCreationTime(),
+                                        pktInfo.getUUID()},vectorIO};
+
+                                  
+                                  pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                                                   dst,
+                                                                   priority,
+                                                                   pkt.length(),
+                                                                   PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
+                                 
+                                  pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+                                  fragmentStore_.erase(iter);
+                                }
+                            }
+                          else
+                            {
+                              size_t totalBytes{message.getData().size()};
+                              
+                               for(const auto & part : parts)
+                                 {
+                                   totalBytes += part.second.size();
+                                 }
+                               
+                              pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                                               dst,
+                                                               priority,
+                                                               totalBytes,
+                                                               PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
+
+                              // fragment was not received, abandon reassembly
+                              fragmentStore_.erase(iter);
+                            }
+                        }
+                    }
+                  else
+                    {
+                      // if the first fragment receieved is not index 0, fragments
+                      // were lost, so don't bother trying to reassemble
+                      if(!message.getFragmentIndex())
+                        {
+                          fragmentStore_.insert(std::make_pair(key,
+                                                               std::make_tuple(std::set<size_t>{message.getFragmentIndex()},
+                                                                               FragmentParts{{message.getFragmentOffset(),
+                                                                                     message.getData()}},
+                                                                               now,
+                                                                               dst,
+                                                                               priority)));
+                        }
+                      else
+                        {
+                          pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                                           message,
+                                                           PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
+                          
+                        }
+                    }
+                }
+              else
+                {
+                  LOGGER_VERBOSE_LOGGING(*pLogService_,
+                                         DEBUG_LEVEL,
+                                         "MACI %03hu TDMA::ReceiveManager upstream EOR processing:"
+                                         " src %hu, dst %hu, forward upstream",
+                                         id_,
+                                         pktInfo.getSource(),
+                                         pktInfo.getDestination());
+
+                  
+                  auto data = message.getData();
+                  
+                  UpstreamPacket pkt{{pktInfo.getSource(),
+                        dst,
+                        priority,
+                        pktInfo.getCreationTime(),
+                        pktInfo.getUUID()},&data[0],data.size()};
+
+                  
+                  pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                                   message,
+                                                   PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
+                  
+                  pDownstreamTransport_->sendUpstreamPacket(pkt);
+                }
+            }
+          else
+            {
+              pPacketStatusPublisher_->inbound(pktInfo.getSource(),
+                                               message,
+                                               PacketStatusPublisher::InboundAction::DROP_DESTINATION_MAC);
+            }
         }
-      
+    }
+
+  // check to see if there are fragment assemblies to abandon
+  if(lastFragmentCheckTime_ + fragmentCheckThreshold_ <= now)
+    {
+      for(auto iter = fragmentStore_.begin(); iter != fragmentStore_.end();)
+        {
+          auto & parts = std::get<1>(iter->second);
+          auto & lastFragmentTime  = std::get<2>(iter->second);
+          auto & dst  = std::get<3>(iter->second);
+          auto & priority = std::get<4>(iter->second);
+          
+          if(lastFragmentTime + fragmentTimeoutThreshold_ <= now)
+            {
+              size_t totalBytes{};
+              
+              for(const auto & part : parts)
+                {
+                  totalBytes += part.second.size();
+                }
+              
+              pPacketStatusPublisher_->inbound(iter->first.first,
+                                               dst,
+                                               priority,
+                                               totalBytes,
+                                               PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
+              
+              fragmentStore_.erase(iter++);
+            }
+          else
+            {
+              ++iter;
+            }
+        }
     }
 }

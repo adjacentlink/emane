@@ -125,10 +125,13 @@ libtdmabase_la_LIBADD =
 am_libtdmabase_la_OBJECTS = libtdmabase_la-basemodel.lo \
 	libtdmabase_la-basemodelimpl.lo \
 	libtdmabase_la-basicqueuemanager.lo \
-	libtdmabase_la-pormanager.lo libtdmabase_la-receivemanager.lo \
+	libtdmabase_la-packetstatuspublisherimpl.lo \
+	libtdmabase_la-pormanager.lo libtdmabase_la-queue.lo \
+	libtdmabase_la-queuestatuspublisher.lo \
+	libtdmabase_la-receivemanager.lo \
 	libtdmabase_la-slotstatustablepublisher.lo \
-	libtdmabase_la-txslotinfosformatter.lo \
-	libtdmabase_la-tdmabasemodelheader.pb.lo
+	libtdmabase_la-tdmabasemodelheader.pb.lo \
+	libtdmabase_la-txslotinfosformatter.lo
 libtdmabase_la_OBJECTS = $(am_libtdmabase_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -404,27 +407,33 @@ libtdmabase_la_SOURCES = \
  basemodel.cc                        \
  basemodelimpl.cc                    \
  basicqueuemanager.cc                \
+ packetstatuspublisherimpl.cc        \
  pormanager.cc                       \
+ queue.cc                            \
+ queuestatuspublisher.cc             \
  receivemanager.cc                   \
  slotstatustablepublisher.cc         \
- txslotinfosformatter.cc             \
- tdmabasemodelheader.pb.cc 
+ tdmabasemodelheader.pb.cc           \
+ txslotinfosformatter.cc 
 
 BUILT_SOURCES = \
  tdmabasemodelheader.pb.cc           \
  tdmabasemodelheader.pb.h
 
 EXTRA_DIST = \
- basemodelheader.h                   \
- basemodelheader.inl                 \
  basemodelimpl.h                     \
+ basemodelmessage.h                  \
+ basemodelmessage.inl                \
+ packetstatuspublisherimpl.h         \
  pormanager.h                        \
+ priority.h                          \
  queue.h                             \
+ queuestatuspublisher.h              \
  receivemanager.h                    \
  slotstatustablepublisher.h          \
  tdmabasemodelheader.proto           \
  tdmabasemodelpcr.xml                \
- txslotinfosformatter.h              
+ txslotinfosformatter.h
 
 libtdmabase_la_LDFLAGS = \
  $(ACE_LIBS)                         \
@@ -514,7 +523,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basemodel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basemodelimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basicqueuemanager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-packetstatuspublisherimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-pormanager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-queue.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-queuestatuspublisher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-receivemanager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-slotstatustablepublisher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-tdmabasemodelheader.pb.Plo@am__quote@
@@ -562,12 +574,33 @@ libtdmabase_la-basicqueuemanager.lo: basicqueuemanager.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-basicqueuemanager.lo `test -f 'basicqueuemanager.cc' || echo '$(srcdir)/'`basicqueuemanager.cc
 
+libtdmabase_la-packetstatuspublisherimpl.lo: packetstatuspublisherimpl.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-packetstatuspublisherimpl.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-packetstatuspublisherimpl.Tpo -c -o libtdmabase_la-packetstatuspublisherimpl.lo `test -f 'packetstatuspublisherimpl.cc' || echo '$(srcdir)/'`packetstatuspublisherimpl.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-packetstatuspublisherimpl.Tpo $(DEPDIR)/libtdmabase_la-packetstatuspublisherimpl.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='packetstatuspublisherimpl.cc' object='libtdmabase_la-packetstatuspublisherimpl.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-packetstatuspublisherimpl.lo `test -f 'packetstatuspublisherimpl.cc' || echo '$(srcdir)/'`packetstatuspublisherimpl.cc
+
 libtdmabase_la-pormanager.lo: pormanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-pormanager.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-pormanager.Tpo -c -o libtdmabase_la-pormanager.lo `test -f 'pormanager.cc' || echo '$(srcdir)/'`pormanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-pormanager.Tpo $(DEPDIR)/libtdmabase_la-pormanager.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='pormanager.cc' object='libtdmabase_la-pormanager.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-pormanager.lo `test -f 'pormanager.cc' || echo '$(srcdir)/'`pormanager.cc
+
+libtdmabase_la-queue.lo: queue.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-queue.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-queue.Tpo -c -o libtdmabase_la-queue.lo `test -f 'queue.cc' || echo '$(srcdir)/'`queue.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-queue.Tpo $(DEPDIR)/libtdmabase_la-queue.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='queue.cc' object='libtdmabase_la-queue.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-queue.lo `test -f 'queue.cc' || echo '$(srcdir)/'`queue.cc
+
+libtdmabase_la-queuestatuspublisher.lo: queuestatuspublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-queuestatuspublisher.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-queuestatuspublisher.Tpo -c -o libtdmabase_la-queuestatuspublisher.lo `test -f 'queuestatuspublisher.cc' || echo '$(srcdir)/'`queuestatuspublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-queuestatuspublisher.Tpo $(DEPDIR)/libtdmabase_la-queuestatuspublisher.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='queuestatuspublisher.cc' object='libtdmabase_la-queuestatuspublisher.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-queuestatuspublisher.lo `test -f 'queuestatuspublisher.cc' || echo '$(srcdir)/'`queuestatuspublisher.cc
 
 libtdmabase_la-receivemanager.lo: receivemanager.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-receivemanager.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-receivemanager.Tpo -c -o libtdmabase_la-receivemanager.lo `test -f 'receivemanager.cc' || echo '$(srcdir)/'`receivemanager.cc
@@ -583,19 +616,19 @@ libtdmabase_la-slotstatustablepublisher.lo: slotstatustablepublisher.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-slotstatustablepublisher.lo `test -f 'slotstatustablepublisher.cc' || echo '$(srcdir)/'`slotstatustablepublisher.cc
 
-libtdmabase_la-txslotinfosformatter.lo: txslotinfosformatter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-txslotinfosformatter.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Tpo -c -o libtdmabase_la-txslotinfosformatter.lo `test -f 'txslotinfosformatter.cc' || echo '$(srcdir)/'`txslotinfosformatter.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Tpo $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='txslotinfosformatter.cc' object='libtdmabase_la-txslotinfosformatter.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-txslotinfosformatter.lo `test -f 'txslotinfosformatter.cc' || echo '$(srcdir)/'`txslotinfosformatter.cc
-
 libtdmabase_la-tdmabasemodelheader.pb.lo: tdmabasemodelheader.pb.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-tdmabasemodelheader.pb.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-tdmabasemodelheader.pb.Tpo -c -o libtdmabase_la-tdmabasemodelheader.pb.lo `test -f 'tdmabasemodelheader.pb.cc' || echo '$(srcdir)/'`tdmabasemodelheader.pb.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-tdmabasemodelheader.pb.Tpo $(DEPDIR)/libtdmabase_la-tdmabasemodelheader.pb.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tdmabasemodelheader.pb.cc' object='libtdmabase_la-tdmabasemodelheader.pb.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-tdmabasemodelheader.pb.lo `test -f 'tdmabasemodelheader.pb.cc' || echo '$(srcdir)/'`tdmabasemodelheader.pb.cc
+
+libtdmabase_la-txslotinfosformatter.lo: txslotinfosformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-txslotinfosformatter.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Tpo -c -o libtdmabase_la-txslotinfosformatter.lo `test -f 'txslotinfosformatter.cc' || echo '$(srcdir)/'`txslotinfosformatter.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Tpo $(DEPDIR)/libtdmabase_la-txslotinfosformatter.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='txslotinfosformatter.cc' object='libtdmabase_la-txslotinfosformatter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-txslotinfosformatter.lo `test -f 'txslotinfosformatter.cc' || echo '$(srcdir)/'`txslotinfosformatter.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo

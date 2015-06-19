@@ -43,7 +43,8 @@
 #include "emane/utils/randomnumberdistribution.h"
 
 #include "pormanager.h"
-#include "basemodelheader.h"
+#include "basemodelmessage.h"
+#include "emane/models/tdma/packetstatuspublisher.h"
 
 #include <tuple>
 
@@ -60,15 +61,20 @@ namespace EMANE
                        DownstreamTransport * pDownstreamTransport,
                        LogServiceProvider * pLogService,
                        RadioServiceProvider * pRadioService,
-                       Scheduler * pScheduler);
+                       Scheduler * pScheduler,
+                       PacketStatusPublisher * pPacketStatusPublisher);
 
+        void setFragmentCheckThreshold(const std::chrono::seconds & threshold);
+
+        void setFragmentTimeoutThreshold(const std::chrono::seconds & threshold);
+        
         void setPromiscuousMode(bool bEnable);
         
         void loadCurves(const std::string & sPCRFileName);
         
-        bool enqueue(UpstreamPacket && pkt,
-                     std::uint64_t u64AbsoluteSlotIndex,
-                     const BaseModelHeader & baseModelHeader,
+        bool enqueue(BaseModelMessage && baseModelMessage,
+                     const PacketInfo & pktInfo,
+                     size_t length,
                      const TimePoint & startOfReception,
                      const FrequencySegments & frequencySegments,
                      const Microseconds & span,
@@ -82,18 +88,42 @@ namespace EMANE
         LogServiceProvider * pLogService_;
         RadioServiceProvider * pRadioService_;
         Scheduler * pScheduler_;
-        using PendingInfo = std::tuple<UpstreamPacket,
-                                       BaseModelHeader,
-                                       TimePoint,
+        PacketStatusPublisher * pPacketStatusPublisher_;
+        
+        using PendingInfo = std::tuple<BaseModelMessage,
+                                       PacketInfo,
+                                       size_t,
+                                       TimePoint, //sor
                                        FrequencySegments,
-                                       Microseconds,
-                                       TimePoint>;
+                                       Microseconds, // span
+                                       TimePoint>; 
         PendingInfo pendingInfo_;
         std::uint64_t u64PendingAbsoluteSlotIndex_;
         PORManager porManager_;
         Utils::RandomNumberDistribution<std::mt19937, 
                                         std::uniform_real_distribution<float>> distribution_;
+
         bool bPromiscuousMode_;
+        std::chrono::seconds fragmentCheckThreshold_;
+        std::chrono::seconds fragmentTimeoutThreshold_;
+
+        using FragmentKey = std::pair<NEMId,std::uint64_t>;
+        using FragmentParts = std::map<size_t,std::vector<std::uint8_t>>;
+        using FragmentInfo = std::tuple<std::set<size_t>,
+                                        FragmentParts,
+                                        TimePoint, // last fragment time
+                                        NEMId, // destination
+                                        Priority>;
+        using FragmentStore = std::map<FragmentKey,FragmentInfo>;
+        using FragmentTimeStore = std::map<TimePoint,FragmentKey>;
+        
+        FragmentStore fragmentStore_;
+        FragmentTimeStore fragmentTimeStore_;
+        TimePoint lastFragmentCheckTime_;
+        
+        ReceiveManager(const ReceiveManager &) = delete;
+
+        ReceiveManager & operator=(const ReceiveManager &) = delete;
       };
     }
   }

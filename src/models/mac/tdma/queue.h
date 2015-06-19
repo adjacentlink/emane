@@ -33,6 +33,10 @@
 #ifndef EMANEMODELSTDMAQUEUE_HEADER_
 #define EMANEMODELSTDMAQUEUE_HEADER_
 
+#include "emane/types.h"
+#include "emane/downstreampacket.h"
+#include "emane/models/tdma/messagecomponent.h"
+
 #include <cstdint>
 #include <map>
 
@@ -45,93 +49,38 @@ namespace EMANE
       class Queue
       {
       public:
-        Queue():
-          u16QueueDepth_{},
-          u64Counter_{}{}
+        Queue();
+
+        void initialize(std::uint16_t u16QueueDepth,bool bFragment);
+
         
-        void initialize(std::uint16_t u16QueueDepth)
-        {
-          u16QueueDepth_ = u16QueueDepth;
-        }
-        
-        void enqueue(DownstreamPacket && pkt)
-        {
-          DownstreamPacket * pPkt{new DownstreamPacket{std::move(pkt)}};
-          NEMId dest{pPkt->getPacketInfo().getDestination()};
+        std::pair<std::unique_ptr<DownstreamPacket>,bool>
+        enqueue(DownstreamPacket && pkt);
 
-          if(queue_.size() == u16QueueDepth_)
-            {
-              auto const & entry = queue_.begin();
-
-              NEMId dest{entry->second->getPacketInfo().getDestination()};        
-
-              delete entry->second;
-
-              destQueue_[dest].erase(entry->first);
-
-              queue_.erase(entry->first);
-            }
-            
-          queue_.insert(std::make_pair(u64Counter_,pPkt));
-            
-          auto iter = destQueue_.find(dest);
-
-          if(iter == destQueue_.end())
-            {
-              iter = destQueue_.insert({dest,PacketQueue{}}).first;
-            }
-
-          iter->second.insert(std::make_pair(u64Counter_,pPkt));
-
-          ++u64Counter_;
-        }
-
-        std::pair<DownstreamPacket,bool> dequeue(NEMId destination)
-        {
-          if(destination)
-            {
-              auto iter = destQueue_.find(destination);
-                
-              if(iter != destQueue_.end())
-                {
-                  auto const & entry = iter->second.begin();
-                    
-                  auto retVal = std::make_pair(DownstreamPacket{std::move(*entry->second)},true);
-                    
-                  delete entry->second;
-                    
-                  queue_.erase(entry->first);
-                    
-                  destQueue_.erase(iter);
-                    
-                  return retVal;
-                }
-            }
-          else if(!queue_.empty())
-            {
-              auto const & entry = queue_.begin();
-
-              auto retVal = std::make_pair(DownstreamPacket{std::move(*entry->second)},true);
-
-              delete entry->second;
-
-              destQueue_.erase(entry->first);
-                
-              queue_.erase(entry);
-
-              return retVal;
-            }
-
-          return {{{0,0,0,{}},nullptr,0},false};
-        }
-
+        std::tuple<MessageComponents,
+                   size_t,
+                   std::list<std::unique_ptr<DownstreamPacket>>>
+          dequeue(size_t requestedBytes,NEMId destination,bool bDrop);
           
       private:
-        using PacketQueue = std::map<std::uint64_t,DownstreamPacket *>;
+        class MetaInfo
+        {
+        public:
+          size_t index_{};
+          size_t offset_{};
+        };
+        using PacketQueue = std::map<std::uint64_t,
+                                     std::pair<DownstreamPacket *,MetaInfo *>>;
         PacketQueue queue_;
         std::map<NEMId,PacketQueue> destQueue_;
         std::uint16_t u16QueueDepth_;
+        bool bFragment_;
         std::uint64_t u64Counter_;
+
+        std::pair<MessageComponent,size_t> fragmentPacket(DownstreamPacket * pPacket,
+                                                          MetaInfo * pMetaInfo,
+                                                          std::uint64_t u64Sequence,
+                                                          size_t bytes);
       };
     }
   }
