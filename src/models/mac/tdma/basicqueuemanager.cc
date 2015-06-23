@@ -56,19 +56,19 @@ EMANE::Models::TDMA::BasicQueueManager::BasicQueueManager(NEMId id,
                                                           PlatformServiceProvider * pPlatformServiceProvider):
   QueueManager{id,pPlatformServiceProvider},
   pImpl_{new Implementation{}}{}
-          
+
 EMANE::Models::TDMA::BasicQueueManager::~BasicQueueManager(){}
 
 void EMANE::Models::TDMA::BasicQueueManager::initialize(Registrar & registrar)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNumeric<std::uint16_t>("queue.depth",
                                                  ConfigurationProperties::DEFAULT,
                                                  {256},
@@ -112,17 +112,17 @@ void EMANE::Models::TDMA::BasicQueueManager::initialize(Registrar & registrar)
   pImpl_->queueStatusPublisher_.registerStatistics(statisticRegistrar);
 
 }
-        
+
 void EMANE::Models::TDMA::BasicQueueManager::configure(const ConfigurationUpdate & update)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 
   std::uint16_t u16QueueDepth{};
-  
+
   for(const auto & item : update)
     {
       if(item.first == "queue.depth")
@@ -185,7 +185,7 @@ void EMANE::Models::TDMA::BasicQueueManager::configure(const ConfigurationUpdate
                                   item.first.c_str(),
                                   pImpl_->dAggregationSlotThreshold_);
         }
-      
+
       else
         {
           throw makeException<ConfigureException>("TDMA::BasicQueueManager: "
@@ -205,8 +205,8 @@ void EMANE::Models::TDMA::BasicQueueManager::configure(const ConfigurationUpdate
 void EMANE::Models::TDMA::BasicQueueManager::start()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 }
@@ -214,8 +214,8 @@ void EMANE::Models::TDMA::BasicQueueManager::start()
 void EMANE::Models::TDMA::BasicQueueManager::postStart()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 }
@@ -223,8 +223,8 @@ void EMANE::Models::TDMA::BasicQueueManager::postStart()
 void EMANE::Models::TDMA::BasicQueueManager::stop()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 }
@@ -232,29 +232,33 @@ void EMANE::Models::TDMA::BasicQueueManager::stop()
 void EMANE::Models::TDMA::BasicQueueManager::destroy() throw()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu TDMA::BasicQueueManager::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu TDMA::BasicQueueManager::%s",
                           id_,
                           __func__);
 }
 
-void EMANE::Models::TDMA::BasicQueueManager::enqueue(std::uint8_t u8QueueIndex,
+size_t EMANE::Models::TDMA::BasicQueueManager::enqueue(std::uint8_t u8QueueIndex,
                                                      DownstreamPacket && pkt)
 {
+  size_t packetsDropped{};
+
   if(u8QueueIndex < MAX_QUEUES)
     {
       auto ret = pImpl_->queues_[u8QueueIndex].enqueue(std::move(pkt));
 
       pImpl_->queueStatusPublisher_.enqueue(u8QueueIndex);
-      
+
       if(ret.second)
         {
+          packetsDropped = 1;
+
           pImpl_->queueStatusPublisher_.drop(u8QueueIndex,
                                              QueueStatusPublisher::DropReason::DROP_OVERFLOW,
                                              1);
 
           const auto & pktInfo = ret.first->getPacketInfo();
-          
+
           pPacketStatusPublisher_->outbound(pktInfo.getSource(),
                                             pktInfo.getDestination(),
                                             pktInfo.getPriority(),
@@ -262,6 +266,8 @@ void EMANE::Models::TDMA::BasicQueueManager::enqueue(std::uint8_t u8QueueIndex,
                                             PacketStatusPublisher::OutboundAction::DROP_OVERFLOW);
         }
     }
+
+  return packetsDropped;
 }
 
 std::tuple<EMANE::Models::TDMA::MessageComponents,size_t>
@@ -271,7 +277,7 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
 {
   MessageComponents components{};
   size_t totalLength{};
-  
+
   if(u8QueueIndex < MAX_QUEUES)
     {
       auto ret = pImpl_->queues_[u8QueueIndex].dequeue(requestedBytes,
@@ -289,13 +295,13 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
           pImpl_->queueStatusPublisher_.dequeue(u8QueueIndex,
                                                 u8QueueIndex,
                                                 parts);
-          
+
           components.splice(components.end(),parts);
 
           for(const auto & pPkt : std::get<2>(ret))
             {
               const auto & pktInfo = pPkt->getPacketInfo();
-              
+
               pPacketStatusPublisher_->outbound(pktInfo.getSource(),
                                                 pktInfo.getDestination(),
                                                 pktInfo.getPriority(),
@@ -303,7 +309,7 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
                                                 PacketStatusPublisher::OutboundAction::DROP_TOO_BIG);
             }
         }
-      
+
       size_t aggregationThreshold{static_cast<size_t>(requestedBytes *
                                                       pImpl_->dAggregationSlotThreshold_)};
 
@@ -313,7 +319,7 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
       if(!pImpl_->bStrictDequeueEnable_)
         {
           std::uint8_t i{MAX_QUEUES};
-          
+
           while((!totalLength || (totalLength && pImpl_->bAggregationEnable_)) &&
                 totalLength <= aggregationThreshold &&
                 i > 0)
@@ -331,13 +337,13 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
                   if(length)
                     {
                       auto & parts = std::get<0>(ret);
-                      
+
                       totalLength += length;
 
                       pImpl_->queueStatusPublisher_.dequeue(u8QueueIndex,
                                                             i-1,
                                                             parts);
-                      
+
                       components.splice(components.end(),parts);
                     }
                 }
@@ -350,6 +356,6 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
   pPacketStatusPublisher_->outbound(id_,
                                     components,
                                     PacketStatusPublisher::OutboundAction::ACCEPT_GOOD);
-  
+
   return std::make_tuple(std::move(components),totalLength);
 }

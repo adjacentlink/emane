@@ -35,6 +35,8 @@
 
 #include "emane/configureexception.h"
 #include "emane/controls/frequencyofinterestcontrolmessage.h"
+#include "emane/controls/flowcontrolcontrolmessage.h"
+#include "emane/controls/serializedcontrolmessage.h"
 #include "emane/mactypes.h"
 
 #include "emane/controls/frequencycontrolmessage.h"
@@ -84,7 +86,8 @@ Implementation(NEMId id,
       &pPlatformServiceProvider->logService(),
       pRadioServiceProvider,
       pScheduler,
-      &packetStatusPublisher_}{}
+      &packetStatusPublisher_},
+  flowControlManager_{*pRadioModel}{}
 
 
 EMANE::Models::TDMA::BaseModel::Implementation::~Implementation()
@@ -122,7 +125,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
 
   configRegistrar.registerNumeric<std::uint16_t>("flowcontroltokens",
                                                  ConfigurationProperties::DEFAULT,
-                                                 {30},
+                                                 {10},
                                                  "Defines the maximum number of flow control tokens"
                                                  " (packet transmission units) that can be processed from the"
                                                  " virtual transport without being refreshed. The number of"
@@ -166,16 +169,16 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
                                                  "Defines the threshold in seconds to wait for another packet fragment"
                                                  " for an existing reassembly effort before abandoning the effort.");
 
-  
+
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
   packetStatusPublisher_.registerStatistics(statisticRegistrar);
-  
+
   slotStatusTablePublisher_.registerStatistics(statisticRegistrar);
 
   pQueueManager_->setPacketStatusPublisher(&packetStatusPublisher_);
-  
+
   pQueueManager_->initialize(registrar);
 
   pScheduler_->initialize(registrar);
@@ -277,7 +280,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
       else if(item.first == "fragmentcheckthreshold")
         {
           std::chrono::seconds fragmentCheckThreshold{item.second[0].asUINT16()};
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "MACI %03hu TDMA::BaseModel::%s: %s = %lu",
@@ -291,7 +294,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
       else if(item.first == "fragmenttimeoutthreshold")
         {
           std::chrono::seconds fragmentTimeoutThreshold{item.second[0].asUINT16()};
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "MACI %03hu TDMA::BaseModel::%s: %s = %lu",
@@ -314,7 +317,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
             }
           else
             {
-              throw makeException<ConfigureException>("TDMA::BasicQueueManager: "
+              throw makeException<ConfigureException>("TDMA::BaseModel: "
                                                       "Ambiguous configuration item %s.",
                                                       item.first.c_str());
             }
@@ -353,6 +356,21 @@ EMANE::Models::TDMA::BaseModel::Implementation::postStart()
   pQueueManager_->postStart();
 
   pScheduler_->postStart();
+
+  // check flow control enabled
+  if(bFlowControlEnable_)
+    {
+      // start flow control
+      flowControlManager_.start(u16FlowControlTokens_);
+
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "MACI %03hu TDMA::BaseModel::%s sent a flow control token update,"
+                              " a handshake response is required to process packets",
+                              id_,
+                              __func__);
+    }
+
 }
 
 
@@ -364,6 +382,13 @@ EMANE::Models::TDMA::BaseModel::Implementation::stop()
                           "MACI %03hu TDMA::BaseModel::%s",
                           id_,
                           __func__);
+
+  // check flow control enabled
+  if(bFlowControlEnable_)
+    {
+      // stop the flow control manager
+      flowControlManager_.stop();
+    }
 
   pQueueManager_->stop();
 
@@ -387,7 +412,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::destroy()
   pScheduler_->destroy();
 }
 
-void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamControl(const ControlMessages & msgs)
+void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamControl(const ControlMessages &)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
@@ -412,18 +437,18 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
 
 
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
-  
+
   if(hdr.getRegistrationId() != REGISTERED_EMANE_MAC_TDMA)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              ERROR_LEVEL, 
+                              ERROR_LEVEL,
                               "MACI %03hu TDMA::BaseModel::%s: MAC Registration Id %hu does not match our Id %hu, drop.",
-                              id_, 
-                              __func__, 
+                              id_,
+                              __func__,
                               hdr.getRegistrationId(),
                               REGISTERED_EMANE_MAC_TDMA);
 
-      
+
       packetStatusPublisher_.inbound(pktInfo.getSource(),
                                      pktInfo.getSource(),
                                      pktInfo.getPriority(),
@@ -433,11 +458,9 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
       // drop
       return;
     }
-  
+
   size_t len{pkt.stripLengthPrefixFraming()};
 
-  std::uint8_t u8QueueId{priorityToQueue(pktInfo.getPriority())};
-  
   if(len && pkt.length() >= len)
     {
       BaseModelMessage baseModelMessage{pkt.get(), len};
@@ -509,7 +532,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                   packetStatusPublisher_.inbound(pktInfo.getSource(),
                                                  baseModelMessage.getMessages(),
                                                  PacketStatusPublisher::InboundAction::DROP_BAD_CONTROL);
-                  
+
                   // drop
                   return;
                 }
@@ -570,8 +593,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
               packetStatusPublisher_.inbound(pktInfo.getSource(),
                                              baseModelMessage.getMessages(),
                                              PacketStatusPublisher::InboundAction::DROP_SLOT_NOT_RX);
-              
-              
+
+
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       "MACI %03hu TDMA::BaseModel::%s drop reason rx slot correct but %s rframe: %u rslot: %u",
@@ -662,11 +685,81 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processDownstreamControl(co
                           id_,
                           __func__);
 
+  for(const auto & pMessage : msgs)
+    {
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              DEBUG_LEVEL,
+                              "MACI %03hu TDMA::BaseModel::%s downstream control message id %hu",
+                              id_,
+                              __func__,
+                              pMessage->getId());
+
+      switch(pMessage->getId())
+        {
+        case Controls::FlowControlControlMessage::IDENTIFIER:
+          {
+            const auto pFlowControlControlMessage =
+              static_cast<const Controls::FlowControlControlMessage *>(pMessage);
+
+            if(bFlowControlEnable_)
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                        DEBUG_LEVEL,
+                                        "MACI %03hu TDMA::BaseModel::%s received a flow control token request/response",
+                                        id_,
+                                        __func__);
+
+                flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
+              }
+            else
+              {
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                        ERROR_LEVEL,
+                                        "MACI %03hu TDMA::BaseModel::%s received a flow control token request but"
+                                        " flow control is not enabled",
+                                        id_,
+                                        __func__);
+              }
+          }
+          break;
+
+        case Controls::SerializedControlMessage::IDENTIFIER:
+          {
+            const auto pSerializedControlMessage =
+              static_cast<const Controls::SerializedControlMessage *>(pMessage);
+
+            switch(pSerializedControlMessage->getSerializedId())
+              {
+              case Controls::FlowControlControlMessage::IDENTIFIER:
+                {
+                  std::unique_ptr<Controls::FlowControlControlMessage>
+                    pFlowControlControlMessage{
+                    Controls::FlowControlControlMessage::create(pSerializedControlMessage->getSerialization())};
+
+                  if(bFlowControlEnable_)
+                    {
+                      flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
+                    }
+                  else
+                    {
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                              ERROR_LEVEL,
+                                              "MACI %03hu TDMA::BaseModel::%s received a flow control token request but"
+                                              " flow control is not enabled",
+                                              id_,
+                                              __func__);
+                    }
+                }
+                break;
+              }
+          }
+        }
+    }
 }
 
 
 void EMANE::Models::TDMA::BaseModel::Implementation::processDownstreamPacket(DownstreamPacket & pkt,
-                                                                             const ControlMessages & msgs)
+                                                                             const ControlMessages &)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
@@ -674,11 +767,56 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processDownstreamPacket(Dow
                           id_,
                           __func__);
 
-  NEMId destination = pkt.getPacketInfo().getDestination();
-  
+
+  // check flow control
+  if(bFlowControlEnable_)
+    {
+      auto status = flowControlManager_.removeToken();
+
+      if(status.second == false)
+        {
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s: failed to remove token, drop packet (tokens:%hu)",
+                                  id_,
+                                  __func__,
+                                  status.first);
+
+          const auto & pktInfo = pkt.getPacketInfo();
+
+          packetStatusPublisher_.outbound(pktInfo.getSource(),
+                                          pktInfo.getSource(),
+                                          pktInfo.getPriority(),
+                                          pkt.length(),
+                                          PacketStatusPublisher::OutboundAction::DROP_FLOW_CONTROL);
+
+          // drop
+          return;
+        }
+    }
+
   std::uint8_t u8Queue{priorityToQueue(pkt.getPacketInfo().getPriority())};
 
-  pQueueManager_->enqueue(u8Queue,std::move(pkt));
+  size_t packetsDropped{pQueueManager_->enqueue(u8Queue,std::move(pkt))};
+
+  // drop, replace token
+  if(bFlowControlEnable_)
+    {
+      for(size_t i = 0; i < packetsDropped; ++i)
+        {
+          auto status = flowControlManager_.addToken();
+
+          if(!status.second)
+            {
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      ERROR_LEVEL,
+                                      "MACI %03hu TDMA::BaseModel:::%s: failed to add token (tokens:%hu)",
+                                      id_,
+                                      __func__,
+                                      status.first);
+            }
+        }
+    }
 }
 
 
@@ -844,40 +982,83 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
   // calculate the number of bytes allowed in the slot
   size_t bytesAvailable =
     (slotDuration_.count() - slotOverhead_.count()) / 1000000.0 * pendingTxSlotInfo_.u64DataRatebps_ / 8.0;
-  
+
   auto entry = pQueueManager_->dequeue(pendingTxSlotInfo_.u8QueueId_,
                                        bytesAvailable,
                                        pendingTxSlotInfo_.destination_);
 
   MessageComponents & components{std::get<0>(entry)};
   size_t totalSize{std::get<1>(entry)};
-  
+
   if(totalSize)
     {
       if(totalSize <= bytesAvailable)
         {
           float fSeconds{totalSize * 8.0f / pendingTxSlotInfo_.u64DataRatebps_};
-          
+
           Microseconds duration{std::chrono::duration_cast<Microseconds>(DoubleSeconds{fSeconds})};
-          
-          NEMId dst{components.size() == 1 ? components.begin()->getDestination() :
-              NEM_BROADCAST_MAC_ADDRESS};
+
+          NEMId dst{};
+          size_t completedPackets{};
+
+          // determine how many components represent completed packets (no fragments remain) and
+          // whether to use a unicast or broadcast nem address
+          for(const auto & component : components)
+            {
+              completedPackets += !component.isMoreFragments();
+
+              // if not set, set a destination
+              if(!dst)
+                {
+                  dst = component.getDestination();
+                }
+              else if(dst != NEM_BROADCAST_MAC_ADDRESS)
+                {
+                  // if the destination is not broadcast, check to see if it matches
+                  // the destination of the current component - if not, set the NEM
+                  // broadcast address as the dst
+                  if(dst != component.getDestination())
+                    {
+                      dst = NEM_BROADCAST_MAC_ADDRESS;
+                    }
+                }
+            }
+
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
-                                  "MACI %03hu TDMA::BaseModel::%s sending downstream returning %zu components",
+                                  "MACI %03hu TDMA::BaseModel::%s sending downstream to %03hu components: %zu",
                                   id_,
                                   __func__,
+                                  dst,
                                   components.size());
+
+
+          if(bFlowControlEnable_ && completedPackets)
+            {
+              auto status = flowControlManager_.addToken(completedPackets);
+
+              if(!status.second)
+                {
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          ERROR_LEVEL,
+                                          "MACI %03hu TDMA::BaseModel::%s: failed to add token (tokens:%hu)",
+                                          id_,
+                                          __func__,
+                                          status.first);
+
+                }
+            }
+
 
           BaseModelMessage baseModelMessage{pendingTxSlotInfo_.u64AbsoluteSlotIndex_,
               pendingTxSlotInfo_.u64DataRatebps_,
               std::move(components)};
-          
+
           Serialization serialization{baseModelMessage.serialize()};
-          
+
           DownstreamPacket pkt({id_,dst,0,Clock::now()},serialization.c_str(),serialization.size());
-          
+
           pkt.prependLengthPrefixFraming(serialization.size());
 
           pRadioModel_->sendDownstreamPacket(CommonMACHeader{REGISTERED_EMANE_MAC_TDMA,u64SequenceNumber_++},
@@ -886,9 +1067,9 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                                                                         u64BandwidthHz_,
                                                                                         {{pendingTxSlotInfo_.u64FrequencyHz_,duration}}),
                                                  Controls::TimeStampControlMessage::create(pendingTxSlotInfo_.timePoint_)});
-          
-         
-          
+
+
+
           slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
                                            pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                            pendingTxSlotInfo_.u32RelativeSlotIndex_,

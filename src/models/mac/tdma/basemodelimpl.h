@@ -34,9 +34,11 @@
 #define EMANETDMABASEMODELIMPL_HEADER_
 
 #include "emane/maclayerimpl.h"
+#include "emane/flowcontrolmanager.h"
 #include "emane/models/tdma/basemodel.h"
 #include "emane/models/tdma/scheduler.h"
 #include "emane/models/tdma/queuemanager.h"
+
 #include "slotstatustablepublisher.h"
 #include "receivemanager.h"
 #include "packetstatuspublisherimpl.h"
@@ -57,30 +59,30 @@ namespace EMANE
                        Scheduler * pScheduler,
                        QueueManager * pQueueManager,
                        MACLayerImplementor * pRadioModel);
-        
+
         ~Implementation();
 
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & update) override;
-  
+
         void start() override;
-  
+
         void postStart() override;
 
         void stop() override;
-  
+
         void destroy() throw() override;
 
         void processUpstreamControl(const ControlMessages & msgs) override;
-   
+
 
         void processUpstreamPacket(const CommonMACHeader & hdr,
                                    UpstreamPacket & pkt,
-                                   const ControlMessages & msgs) override;  
-   
+                                   const ControlMessages & msgs) override;
+
         void processDownstreamControl(const ControlMessages & msgs) override;
- 
+
 
         void processDownstreamPacket(DownstreamPacket & pkt,
                                      const ControlMessages & msgs) override;
@@ -101,20 +103,20 @@ namespace EMANE
                                   const Microseconds & slotDuration,
                                   const Microseconds & slotOverhead) override;
 
-        
+
         void processSchedulerPacket(DownstreamPacket & pkt,
                                     const ControlMessages & msgs) override;
-        
+
 
         void processSchedulerControl(const ControlMessages & msgs) override;
-        
+
         QueueInfos getPacketQueueInfo() const override;
-                
+
       private:
         std::unique_ptr<Scheduler> pScheduler_;
         std::unique_ptr<QueueManager> pQueueManager_;
         MACLayerImplementor * pRadioModel_;
-        
+
         bool bFlowControlEnable_;
         std::uint16_t u16FlowControlTokens_;
         bool bRadioMetricEnable_;
@@ -132,7 +134,7 @@ namespace EMANE
         std::uint64_t u64BandwidthHz_;
         PacketStatusPublisherImpl packetStatusPublisher_;
         ReceiveManager receiveManager_;
-        
+        FlowControlManager flowControlManager_;
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
         bool processTxOpportunity();

@@ -58,9 +58,9 @@ namespace EMANE
          * Destroys an instance.
          */
         virtual ~QueueManager(){};
-        
+
         virtual
-        void enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
+        size_t enqueue(std::uint8_t u8QueueIndex, DownstreamPacket && pkt) = 0;
 
         virtual std::tuple<EMANE::Models::TDMA::MessageComponents,
                            size_t>
@@ -70,7 +70,7 @@ namespace EMANE
 
       protected:
         NEMId id_;
-        
+
         /**
          * Creates an instance.
          */
@@ -78,7 +78,7 @@ namespace EMANE
                      PlatformServiceProvider * pPlatformServiceProvider):
           PlatformServiceUser{pPlatformServiceProvider},
           id_{id}{}
-        
+
       private:
         void processEvent(const EventId &, const Serialization &) final{};
 
@@ -87,7 +87,7 @@ namespace EMANE
                                const TimePoint &,
                                const TimePoint &,
                                const void *) final {};
-        
+
       };
     }
   }

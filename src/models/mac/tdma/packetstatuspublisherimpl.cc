@@ -433,6 +433,18 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
                                                   Any{bytes});
           }
           break;
+        case OutboundAction::DROP_FLOW_CONTROL:
+          {
+            auto & bytes = std::get<DROP_COLUMN_FLOW_CONTROL-1>(iter->second);
+
+            bytes += size;
+
+            (*pDropTables)[u8QueueIndex]->setCell(src,
+                                                  DROP_COLUMN_FLOW_CONTROL,
+                                                  Any{bytes});
+          }
+          break;
+
         default:
           break;
         }

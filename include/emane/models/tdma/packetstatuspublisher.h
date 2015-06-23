@@ -63,7 +63,8 @@ namespace EMANE
         {
           ACCEPT_GOOD,
           DROP_TOO_BIG,
-          DROP_OVERFLOW
+          DROP_OVERFLOW,
+          DROP_FLOW_CONTROL
          };
 
         virtual void inbound(NEMId src,
