@@ -44,7 +44,7 @@
 #include "emane/controls/receivepropertiescontrolmessage.h"
 #include "emane/controls/receivepropertiescontrolmessageformatter.h"
 #include "emane/controls/timestampcontrolmessage.h"
-
+#include "emane/controls/transmittercontrolmessage.h"
 
 #include "txslotinfosformatter.h"
 #include "basemodelmessage.h"
@@ -1071,9 +1071,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                              {Controls::FrequencyControlMessage::create(
                                                                                         u64BandwidthHz_,
                                                                                         {{pendingTxSlotInfo_.u64FrequencyHz_,duration}}),
-                                                 Controls::TimeStampControlMessage::create(pendingTxSlotInfo_.timePoint_)});
-
-
+                                                 Controls::TimeStampControlMessage::create(pendingTxSlotInfo_.timePoint_),
+                                                 Controls::TransmitterControlMessage::create({{id_,pendingTxSlotInfo_.dPowerdBm_}})});
 
           slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
                                            pendingTxSlotInfo_.u32RelativeFrameIndex_,
