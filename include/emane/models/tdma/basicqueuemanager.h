@@ -69,6 +69,8 @@ namespace EMANE
                   size_t length,
                   NEMId destination) override;
 
+        QueueInfos getPacketQueueInfo() const override;
+
       private:
         class Implementation;
         std::unique_ptr<Implementation> pImpl_;

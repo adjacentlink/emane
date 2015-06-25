@@ -194,11 +194,15 @@ void EMANE::Models::TDMA::BasicQueueManager::configure(const ConfigurationUpdate
         }
     }
 
-  for(auto & queue : pImpl_->queues_)
-    {
-      queue.initialize(u16QueueDepth,
-                       pImpl_->bFragmentationEnable_);
-    }
+  // queue for user traffic mapped by dhcp
+  pImpl_->queues_[0].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
+  pImpl_->queues_[1].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
+  pImpl_->queues_[2].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
+  pImpl_->queues_[3].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
+
+  // control queue for scheduler-to-scheduler OTA messages
+  pImpl_->queues_[4].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,true);
+
 
 }
 
@@ -358,4 +362,21 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
                                     PacketStatusPublisher::OutboundAction::ACCEPT_GOOD);
 
   return std::make_tuple(std::move(components),totalLength);
+}
+
+EMANE::Models::TDMA::QueueInfos
+EMANE::Models::TDMA::BasicQueueManager::getPacketQueueInfo() const
+{
+  QueueInfos queueInfos{};
+
+  for(int i = 0; i < MAX_QUEUES; ++i)
+    {
+      auto status = pImpl_->queues_[i].getStatus();
+
+      queueInfos.push_back({static_cast<std::uint8_t>(i), //queue id
+            std::get<0>(status), // packets
+            std::get<1>(status)}); //bytes
+    }
+
+  return queueInfos;
 }

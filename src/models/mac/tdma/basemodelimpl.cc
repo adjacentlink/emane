@@ -946,14 +946,16 @@ void EMANE::Models::TDMA::BaseModel::Implementation::notifyScheduleChange(const 
 }
 
 
-void EMANE::Models::TDMA::BaseModel::Implementation::processSchedulerPacket(DownstreamPacket & pkt,
-                                                                            const ControlMessages & msgs)
+void EMANE::Models::TDMA::BaseModel::Implementation::processSchedulerPacket(DownstreamPacket & pkt)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "MACI %03hu TDMA::BaseModel::%s",
                           id_,
                           __func__);
+
+  // enqueue into max priority queue
+  pQueueManager_->enqueue(4,std::move(pkt));
 }
 
 
@@ -964,6 +966,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processSchedulerControl(con
                           "MACI %03hu TDMA::BaseModel::%s",
                           id_,
                           __func__);
+
+  pRadioModel_->sendDownstreamControl(msgs);
 }
 
 
@@ -974,7 +978,8 @@ EMANE::Models::TDMA::QueueInfos EMANE::Models::TDMA::BaseModel::Implementation::
                           "MACI %03hu TDMA::BaseModel::%s",
                           id_,
                           __func__);
-  return {};
+
+  return pQueueManager_->getPacketQueueInfo();
 }
 
 void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double dSlotRemainingRatio)

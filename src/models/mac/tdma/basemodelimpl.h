@@ -104,9 +104,7 @@ namespace EMANE
                                   const Microseconds & slotOverhead) override;
 
 
-        void processSchedulerPacket(DownstreamPacket & pkt,
-                                    const ControlMessages & msgs) override;
-
+        void processSchedulerPacket(DownstreamPacket & pkt) override;
 
         void processSchedulerControl(const ControlMessages & msgs) override;
 

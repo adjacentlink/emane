@@ -52,30 +52,30 @@ namespace EMANE
                   RadioServiceProvider * pRadioServiceProvider,
                   Scheduler * pScheduler,
                   QueueManager * pQueueManager);
-        
+
         ~BaseModel();
 
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & update) override;
-  
+
         void start() override;
-  
+
         void postStart() override;
 
         void stop() override;
-  
+
         void destroy() throw() override;
 
         void processUpstreamControl(const ControlMessages & msgs) override;
-   
+
 
         void processUpstreamPacket(const CommonMACHeader & hdr,
                                    UpstreamPacket & pkt,
-                                   const ControlMessages & msgs) override;  
-   
+                                   const ControlMessages & msgs) override;
+
         void processDownstreamControl(const ControlMessages & msgs) override;
- 
+
 
         void processDownstreamPacket(DownstreamPacket & pkt,
                                      const ControlMessages & msgs) override;
@@ -96,15 +96,12 @@ namespace EMANE
                                   const Microseconds & slotDuration,
                                   const Microseconds & slotOverhead) override;
 
-        
-        void processSchedulerPacket(DownstreamPacket & pkt,
-                                     const ControlMessages & msgs) override;
-        
+        void processSchedulerPacket(DownstreamPacket & pkt) override;
 
         void processSchedulerControl(const ControlMessages & msgs) override;
-        
+
         QueueInfos getPacketQueueInfo() const override;
-                
+
       private:
         class Implementation;
         std::unique_ptr<Implementation> pImpl_;

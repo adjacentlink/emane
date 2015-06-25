@@ -37,6 +37,7 @@
 #include "emane/platformserviceuser.h"
 #include "emane/runningstatemutable.h"
 #include "emane/downstreampacket.h"
+#include "emane/models/tdma/types.h"
 #include "emane/models/tdma/messagecomponent.h"
 #include "emane/models/tdma/packetstatuspublisheruser.h"
 
@@ -67,6 +68,8 @@ namespace EMANE
         dequeue(std::uint8_t u8QueueIndex,
                 size_t length,
                 NEMId destination) = 0;
+
+        virtual QueueInfos getPacketQueueInfo() const = 0;
 
       protected:
         NEMId id_;

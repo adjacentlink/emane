@@ -47,23 +47,21 @@ namespace EMANE
       {
       public:
         virtual ~SchedulerUser(){};
-          
+
         virtual void notifyScheduleChange(const Frequencies & frequencies,
                                           std::uint64_t u64BandwidthHz,
                                           const Microseconds & slotDuration,
                                           const Microseconds & slotOverhead) = 0;
-        
-        virtual void processSchedulerPacket(DownstreamPacket & pkt,
-                                            const ControlMessages & msgs = empty) = 0;
-        
+
+        virtual void processSchedulerPacket(DownstreamPacket & pkt) = 0;
 
         virtual void processSchedulerControl(const ControlMessages & msgs) = 0;
-        
+
         virtual QueueInfos getPacketQueueInfo() const = 0;
 
 
         static const ControlMessages empty;
-        
+
       protected:
         SchedulerUser(){}
       };

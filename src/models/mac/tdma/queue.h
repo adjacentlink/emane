@@ -51,9 +51,9 @@ namespace EMANE
       public:
         Queue();
 
-        void initialize(std::uint16_t u16QueueDepth,bool bFragment);
+        void initialize(std::uint16_t u16QueueDepth,bool bFragment,bool bIsControl);
 
-        
+
         std::pair<std::unique_ptr<DownstreamPacket>,bool>
         enqueue(DownstreamPacket && pkt);
 
@@ -61,7 +61,10 @@ namespace EMANE
                    size_t,
                    std::list<std::unique_ptr<DownstreamPacket>>>
           dequeue(size_t requestedBytes,NEMId destination,bool bDrop);
-          
+
+        // packets, bytes
+        std::tuple<size_t,size_t> getStatus() const;
+
       private:
         class MetaInfo
         {
@@ -76,6 +79,8 @@ namespace EMANE
         std::uint16_t u16QueueDepth_;
         bool bFragment_;
         std::uint64_t u64Counter_;
+        size_t currentBytes_;
+        bool bIsControl_;
 
         std::pair<MessageComponent,size_t> fragmentPacket(DownstreamPacket * pPacket,
                                                           MetaInfo * pMetaInfo,

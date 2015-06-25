@@ -98,7 +98,6 @@ EMANE::Models::TDMA::BaseModel::destroy()
 
 void EMANE::Models::TDMA::BaseModel::processUpstreamControl(const ControlMessages & msgs)
 {
-  
   pImpl_->processUpstreamControl(msgs);
 }
 
@@ -157,10 +156,9 @@ void EMANE::Models::TDMA::BaseModel::notifyScheduleChange(const Frequencies & fr
 }
 
 
-void EMANE::Models::TDMA::BaseModel::processSchedulerPacket(DownstreamPacket & pkt,
-                                                            const ControlMessages & msgs)
+void EMANE::Models::TDMA::BaseModel::processSchedulerPacket(DownstreamPacket & pkt)
 {
-  pImpl_->processSchedulerPacket(pkt,msgs);
+  pImpl_->processSchedulerPacket(pkt);
 }
 
 

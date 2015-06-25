@@ -35,13 +35,18 @@
 EMANE::Models::TDMA::Queue::Queue():
   u16QueueDepth_{},
   bFragment_{},
-  u64Counter_{}{}
+  u64Counter_{},
+  currentBytes_{},
+  bIsControl_{}{}
+
 
 void EMANE::Models::TDMA::Queue::initialize(std::uint16_t u16QueueDepth,
-                                            bool bFragment)
+                                            bool bFragment,
+                                            bool bIsControl)
 {
   u16QueueDepth_ = u16QueueDepth;
   bFragment_ = bFragment;
+  bIsControl_ = bIsControl;
 }
 
 std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
@@ -61,6 +66,9 @@ std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
       // ownership transfer
       pDroppedPacket.reset(entry->second.first);
 
+      // ownership transfer
+      std::unique_ptr<MetaInfo> pDroppedMetaInfo{entry->second.second};
+
       bDroppedPacket = true;
 
       auto dst = pDroppedPacket->getPacketInfo().getDestination();
@@ -68,6 +76,10 @@ std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
       destQueue_[dst].erase(entry->first);
 
       queue_.erase(entry->first);
+
+      // update current bytes in queue by subtracting off amount
+      // remaining in dropped packet
+      currentBytes_ -= pDroppedPacket->length() - pDroppedMetaInfo->offset_;
     }
 
   MetaInfo * pMetaInfo = new MetaInfo;
@@ -80,6 +92,8 @@ std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
     {
       iter = destQueue_.insert({dest,PacketQueue{}}).first;
     }
+
+  currentBytes_ += pPkt->length();
 
   iter->second.insert(std::make_pair(u64Counter_,std::make_pair(pPkt,pMetaInfo)));
 
@@ -125,7 +139,9 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                     }
                   else
                     {
-                      components.push_back({MessageComponent::Type::DATA,
+                      components.push_back({bIsControl_ ?
+                            MessageComponent::Type::CONTROL :
+                            MessageComponent::Type::DATA,
                             pPacket->getPacketInfo().getDestination(),
                             pPacket->getPacketInfo().getPriority(),
                             pPacket->getVectorIO(),
@@ -139,7 +155,6 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                     }
 
                   delete pPacket;
-
                   delete pMetaInfo;
 
                   queue_.erase(entry->first);
@@ -148,16 +163,41 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                 }
               else
                 {
-                  auto ret = fragmentPacket(pPacket,
-                                            pMetaInfo,
-                                            entry->first,
-                                            requestedBytes - totalBytes);
+                  if(bFragment_)
+                    {
+                      auto ret = fragmentPacket(pPacket,
+                                                pMetaInfo,
+                                                entry->first,
+                                                requestedBytes - totalBytes);
 
-                  totalBytes += ret.second;
+                      totalBytes += ret.second;
 
-                  components.push_back(std::move(ret.first));
+                      components.push_back(std::move(ret.first));
 
-                  break;
+                      break;
+                    }
+                  else
+                    {
+                      if(bDrop)
+                        {
+                          // drop packet - too large and fragmentation
+                          // is disabled
+                          currentBytes_ -= pPacket->length();
+
+                          // transfer ownership to std::unique_ptr
+                          dropped.push_back(std::unique_ptr<DownstreamPacket>{pPacket});
+
+                          delete pMetaInfo;
+
+                          destQueue_.erase(entry->first);
+
+                          queue_.erase(entry);
+                        }
+                      else
+                        {
+                          break;
+                        }
+                    }
                 }
             }
           else
@@ -187,7 +227,9 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                 }
               else
                 {
-                  components.push_back({MessageComponent::Type::DATA,
+                  components.push_back({bIsControl_ ?
+                        MessageComponent::Type::CONTROL :
+                        MessageComponent::Type::DATA,
                         pPacket->getPacketInfo().getDestination(),
                         pPacket->getPacketInfo().getPriority(),
                         pPacket->getVectorIO(),
@@ -227,6 +269,7 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                     {
                       // drop packet - too large and fragmentation
                       // is disabled
+                      currentBytes_ -= pPacket->length();
 
                       // transfer ownership to std::unique_ptr
                       dropped.push_back(std::unique_ptr<DownstreamPacket>{pPacket});
@@ -249,6 +292,10 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
           break;
         }
     }
+
+  // reduce bytes in queue by the total being returned, dropped bytes
+  // already accounted for
+  currentBytes_ -= totalBytes;
 
   return std::make_tuple(components,totalBytes,std::move(dropped));
 }
@@ -310,7 +357,9 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
         }
     }
 
-  MessageComponent component{MessageComponent::Type::DATA,
+  MessageComponent component{bIsControl_ ?
+      MessageComponent::Type::CONTROL :
+      MessageComponent::Type::DATA,
       pPacket->getPacketInfo().getDestination(),
       pPacket->getPacketInfo().getPriority(),
       vectorIOs,
@@ -322,4 +371,10 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
   ++pMetaInfo->index_;
 
   return {component,totalBytesCopied};
+}
+
+// packets, bytes
+std::tuple<size_t,size_t> EMANE::Models::TDMA::Queue::getStatus() const
+{
+  return std::make_tuple(queue_.size(),currentBytes_);
 }
