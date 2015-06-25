@@ -1193,5 +1193,5 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity()
         }
     }
 
-  return false;
+  return true;
 }
