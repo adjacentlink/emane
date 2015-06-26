@@ -84,11 +84,11 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
 {
   bool bReturn{};
   std::uint64_t u64AbsoluteSlotIndex{baseModelMessage.getAbsoluteSlotIndex()};
-  
-  if(!u64PendingAbsoluteSlotIndex_) 
+
+  if(!u64PendingAbsoluteSlotIndex_)
     {
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
-          
+
       pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
                                      pktInfo,
                                      length,
@@ -101,9 +101,9 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
   else if(u64PendingAbsoluteSlotIndex_ < u64AbsoluteSlotIndex)
     {
       process(u64AbsoluteSlotIndex);
-      
+
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
-      
+
       pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
                                      pktInfo,
                                      length,
@@ -123,7 +123,7 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                              u64AbsoluteSlotIndex);
 
       u64PendingAbsoluteSlotIndex_ = u64AbsoluteSlotIndex;
-          
+
       pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
                                      pktInfo,
                                      length,
@@ -132,7 +132,7 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                      span,
                                      beginTime);
       bReturn = true;
-      
+
     }
   else
     {
@@ -147,7 +147,7 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                          beginTime);
         }
     }
-  
+
   return bReturn;
 }
 
@@ -155,7 +155,7 @@ void
 EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 {
   auto now = Clock::now();
-    
+
   if(u64PendingAbsoluteSlotIndex_ + 1 == u64AbsoluteSlotIndex)
     {
       u64PendingAbsoluteSlotIndex_ = 0;
@@ -170,23 +170,23 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
       FrequencySegments & frequencySegments{std::get<4>(pendingInfo_)};
       Microseconds & span{std::get<5>(pendingInfo_)};
 
-      
+
       auto & frequencySegment = *frequencySegments.begin();
-      
+
       try
         {
           auto window = pRadioService_->spectrumService().request(frequencySegment.getFrequencyHz(),
                                                                   span,
                                                                   startOfReception);
 
-          
+
           bool bSignalInNoise{};
 
           std::tie(dNoiseFloordB,bSignalInNoise) =
             Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
-                  
+
           dSINR = frequencySegment.getRxPowerdBm() - dNoiseFloordB;
-          
+
           LOGGER_VERBOSE_LOGGING(*pLogService_,
                                  DEBUG_LEVEL,
                                  "MACI %03hu TDMA::ReceiveManager upstream EOR processing:"
@@ -204,7 +204,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                                            baseModelMessage.getMessages(),
                                            PacketStatusPublisher::InboundAction::DROP_SPECTRUM_SERVICE);
 
-          
+
           LOGGER_VERBOSE_LOGGING(*pLogService_,
                                  ERROR_LEVEL,
                                  "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu,"
@@ -215,7 +215,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                                  std::chrono::duration_cast<Microseconds>(startOfReception.time_since_epoch()).count(),
                                  span.count(),
                                  exp.what());
-          
+
           return;
         }
 
@@ -248,13 +248,13 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
         {
           NEMId dst{message.getDestination()};
           Priority priority{message.getPriority()};
-            
+
           if(bPromiscuousMode_ ||
              (dst == id_) ||
              (dst == NEM_BROADCAST_MAC_ADDRESS))
             {
               const auto & data = message.getData();
-              
+
               if(message.isFragment())
                 {
                   LOGGER_VERBOSE_LOGGING(*pLogService_,
@@ -272,7 +272,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
 
                   auto key = std::make_pair(pktInfo.getSource(), message.getFragmentSequence());
-                  
+
                   auto iter = fragmentStore_.find(key);
 
                   if(iter !=  fragmentStore_.end())
@@ -286,33 +286,50 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                           parts.insert(std::make_pair(message.getFragmentOffset(),message.getData()));
 
                           lastFragmentTime = now;
-                            
+
                           if(indexSet.size() == message.getFragmentIndex() + 1)
                             {
                               if(!message.isMoreFragments())
                                 {
                                   Utils::VectorIO vectorIO{};
-                                  
+
                                   for(const auto & part : parts)
                                     {
                                       vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(&part.second[0]),
                                                                            part.second.size()));
                                     }
-                                  
+
                                   UpstreamPacket pkt{{pktInfo.getSource(),
                                         dst,
                                         priority,
                                         pktInfo.getCreationTime(),
                                         pktInfo.getUUID()},vectorIO};
 
-                                  
+
                                   pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                                    dst,
                                                                    priority,
                                                                    pkt.length(),
                                                                    PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
-                                 
-                                  pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+
+                                  PacketMetaInfo packetMetaInfo{pktInfo.getSource(),
+                                      u64AbsoluteSlotIndex-1,
+                                      frequencySegment.getRxPowerdBm(),
+                                      dSINR,
+                                      baseModelMessage.getDataRate()};
+
+                                  if(message.getType() == MessageComponent::Type::DATA)
+                                    {
+                                      pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+                                      pScheduler_->processPacketMetaInfo(packetMetaInfo);
+                                    }
+                                  else
+                                    {
+                                      pScheduler_->processSchedulerPacket(pkt,packetMetaInfo);
+                                    }
+
 
                                   fragmentStore_.erase(iter);
                                 }
@@ -320,12 +337,12 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                           else
                             {
                               size_t totalBytes{message.getData().size()};
-                              
+
                                for(const auto & part : parts)
                                  {
                                    totalBytes += part.second.size();
                                  }
-                               
+
                               pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                                dst,
                                                                priority,
@@ -356,7 +373,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                           pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                            message,
                                                            PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
-                          
+
                         }
                     }
                 }
@@ -370,21 +387,36 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                                          pktInfo.getSource(),
                                          pktInfo.getDestination());
 
-                  
+
                   auto data = message.getData();
-                  
+
                   UpstreamPacket pkt{{pktInfo.getSource(),
                         dst,
                         priority,
                         pktInfo.getCreationTime(),
                         pktInfo.getUUID()},&data[0],data.size()};
 
-                  
+
                   pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                    message,
                                                    PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
-                  
-                  pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+                  PacketMetaInfo packetMetaInfo{pktInfo.getSource(),
+                      u64AbsoluteSlotIndex-1,
+                      frequencySegment.getRxPowerdBm(),
+                      dSINR,
+                      baseModelMessage.getDataRate()};
+
+                  if(message.getType() == MessageComponent::Type::DATA)
+                    {
+                      pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+                      pScheduler_->processPacketMetaInfo(packetMetaInfo);
+                    }
+                  else
+                    {
+                      pScheduler_->processSchedulerPacket(pkt,packetMetaInfo);
+                    }
                 }
             }
           else
@@ -405,22 +437,22 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
           auto & lastFragmentTime  = std::get<2>(iter->second);
           auto & dst  = std::get<3>(iter->second);
           auto & priority = std::get<4>(iter->second);
-          
+
           if(lastFragmentTime + fragmentTimeoutThreshold_ <= now)
             {
               size_t totalBytes{};
-              
+
               for(const auto & part : parts)
                 {
                   totalBytes += part.second.size();
                 }
-              
+
               pPacketStatusPublisher_->inbound(iter->first.first,
                                                dst,
                                                priority,
                                                totalBytes,
                                                PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
-              
+
               fragmentStore_.erase(iter++);
             }
           else

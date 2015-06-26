@@ -47,13 +47,14 @@ namespace EMANE
     {
       using SlotIndex = uint64_t;
       using FrameIndex = uint64_t;
-      
+
       struct PacketMetaInfo
       {
         NEMId source_;
         SlotIndex slot_;
         double dRxPowerdBm_;
         double dSINR_;
+        std::uint64_t u64DataRatebps_;
       };
 
       struct QueueInfo
@@ -97,7 +98,7 @@ namespace EMANE
         TimePoint timePoint_;
         Type type_;
       };
-         
+
       using QueueInfos = std::vector<QueueInfo>;
 
       using TxSlotInfos = std::list<TxSlotInfo>;
