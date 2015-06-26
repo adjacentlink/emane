@@ -37,7 +37,12 @@ EMANE::Models::TDMA::EventScheduler::EventScheduler(NEMId id,
                                                     PlatformServiceProvider * pPlatformServiceProvider,
                                                     SchedulerUser * pSchedulerUser):
   Scheduler{id,pPlatformServiceProvider,pSchedulerUser},
-  bWaitingFirstTxSlotInfoRequest_{}
+  bWaitingFirstTxSlotInfoRequest_{},
+  pNumScheduleRejectSlotIndexOutOfRange_{},
+  pNumScheduleRejectFrameIndexOutOfRange_{},
+  pNumScheduleRejectUpdateBeforeFull_{},
+  pNumScheduleFullAccept_{},
+  pNumScheduleUpdateAccept_{}
 {}
 
 EMANE::Models::TDMA::EventScheduler::~EventScheduler()
@@ -54,6 +59,34 @@ void EMANE::Models::TDMA::EventScheduler::initialize(Registrar & registrar)
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
   eventTablePublisher_.registerStatistics(statisticRegistrar);
+
+  pNumScheduleRejectSlotIndexOutOfRange_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleRejectSlotIndexRange",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of schedules rejected"
+                                                      " due to out of range slot index.");
+
+  pNumScheduleRejectFrameIndexOutOfRange_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleRejectFrameIndexRange",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of schedules rejected"
+                                                      " due to out of range frame index.");
+
+  pNumScheduleRejectUpdateBeforeFull_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleRejectUpdateBeforeFull",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of schedules rejected"
+                                                      " due to an update before full schedule.");
+
+  pNumScheduleFullAccept_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleAcceptFull",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of full schedules accepted.");
+
+  pNumScheduleUpdateAccept_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleAcceptUpdate",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of update schedules accepted.");
 
   auto & eventRegistrar = registrar.eventRegistrar();
 
@@ -155,6 +188,8 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                       " rejected update received before full schedule",
                                       id_,
                                       __func__);
+
+              ++*pNumScheduleRejectUpdateBeforeFull_;
             }
           else
             {
@@ -186,7 +221,8 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                                   __func__,
                                                   slotInfo.getSlotIndex());
 
-#warning "Add reject stats"
+                          ++*pNumScheduleRejectSlotIndexOutOfRange_;
+
                           break;
                         }
                     }
@@ -200,8 +236,7 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                               __func__,
                                               slotInfo.getFrameIndex());
 
-
-#warning "add reject stats"
+                      ++*pNumScheduleRejectFrameIndexOutOfRange_;
 
                       break;
                     }
@@ -227,10 +262,14 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
             {
               if(bHasStructure)
                 {
+                  ++*pNumScheduleFullAccept_;
+
                   eventTablePublisher_.replace(event.getSlotInfos(),structure_);
                 }
               else
                 {
+                  ++*pNumScheduleUpdateAccept_;
+
                   eventTablePublisher_.update(event.getSlotInfos());
                 }
 

@@ -36,6 +36,7 @@
 #include "emane/models/tdma/scheduler.h"
 #include "emane/events/slotinfo.h"
 #include "emane/events/slotstructure.h"
+#include "emane/statisticnumeric.h"
 #include "eventtablepublisher.h"
 #include "slotter.h"
 
@@ -87,6 +88,11 @@ namespace EMANE
         EventTablePublisher eventTablePublisher_;
         Slotter slotter_;
         mutable bool bWaitingFirstTxSlotInfoRequest_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleRejectSlotIndexOutOfRange_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleRejectFrameIndexOutOfRange_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleRejectUpdateBeforeFull_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleFullAccept_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleUpdateAccept_;
       };
     }
   }
