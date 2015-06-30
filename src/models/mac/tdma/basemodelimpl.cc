@@ -69,8 +69,6 @@ Implementation(NEMId id,
   pRadioModel_{pRadioModel},
   bFlowControlEnable_{},
   u16FlowControlTokens_{},
-  bRadioMetricEnable_{},
-  radioMetricReportIntervalMicroseconds_{},
   sPCRCurveURI_{},
   transmitTimedEventId_{},
   nextMultiFrameTime_{},
@@ -133,21 +131,6 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
                                                  " virtual transport and when the token count reaches zero, no"
                                                  " further packets are transmitted causing application socket"
                                                  " queues to backup.");
-
-  configRegistrar.registerNumeric<bool>("radiometricenable",
-                                        ConfigurationProperties::DEFAULT,
-                                        {false},
-                                        "Defines if radio metrics will be reported up via the Radio to Router Interface"
-                                        " (R2RI).");
-
-
-  configRegistrar.registerNumeric<float>("radiometricreportinterval",
-                                         ConfigurationProperties::DEFAULT,
-                                         {1.0f},
-                                         "Defines the metric report interval in seconds in support of the R2RI feature.",
-                                         0.1f,
-                                         60.0f);
-
 
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
@@ -237,31 +220,6 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
                                   __func__,
                                   item.first.c_str(),
                                   u16FlowControlTokens_);
-        }
-      else if(item.first == "radiometricenable")
-        {
-          bRadioMetricEnable_ = item.second[0].asBool();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "MACI %03hu TDMA::BaseModel::%s: %s = %s",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  bRadioMetricEnable_ ? "on" : "off");
-        }
-      else if(item.first == "radiometricreportinterval")
-        {
-          radioMetricReportIntervalMicroseconds_ =
-            std::chrono::duration_cast<Microseconds>(DoubleSeconds{item.second[0].asFloat()});
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "MACI %03hu TDMA::BaseModel::%s: %s = %lf usec",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  std::chrono::duration_cast<DoubleSeconds>(radioMetricReportIntervalMicroseconds_).count());
         }
       else if(item.first == "pcrcurveuri")
         {

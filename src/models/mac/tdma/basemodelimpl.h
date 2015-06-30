@@ -122,8 +122,6 @@ namespace EMANE
 
         bool bFlowControlEnable_;
         std::uint16_t u16FlowControlTokens_;
-        bool bRadioMetricEnable_;
-        Microseconds radioMetricReportIntervalMicroseconds_;
         std::string sPCRCurveURI_;
         TimerEventId transmitTimedEventId_;
         TxSlotInfo pendingTxSlotInfo_;
