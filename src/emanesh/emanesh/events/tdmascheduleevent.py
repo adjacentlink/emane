@@ -34,6 +34,7 @@ from . import Event
 
 import tdmascheduleevent_pb2
 from collections import namedtuple
+import os
 
 class TDMAScheduleEvent(Event):
     IDENTIFIER = 105
@@ -431,8 +432,13 @@ if __name__ == "__main__":
     import copy
     from . import TDMASchedule
 
-    usage="%prog [OPTION]... NEMID..."
-    description=""
+    usage="""%prog [OPTION]... TDMASCHEDULEXML
+
+  TDMASCHEDULEXML       TDMA schedule XML file"""
+
+    description="Publish TDMA schedule events to all nodes referenced within the \
+schedule XML. Each node only receives their own schedule information."
+    
     epilog=""
 
     class LocalParser(OptionParser):
@@ -466,19 +472,16 @@ if __name__ == "__main__":
                             dest="device",
                             help="Event channel multicast device")
 
-    optionParser.add_option("-f",
-                            "--file",
-                            action="store",
-                            type="string",
-                            dest="file",
-                            help="Schedule XML file")
-
     (options, args) = optionParser.parse_args()
 
-    if options.file:
-        schedule = TDMASchedule(options.file)
+    if len(args) == 1:
+        if os.path.isfile(args[0]):
+            schedule = TDMASchedule(args[0])
+        else:
+            print >>sys.stderr, "unable to open:",args[0]
+            exit(1)
     else:
-        print >>sys.stderr, "currently only --file supported"
+        print >>sys.stderr, "invalid number of arguments"
         exit(1)
 
     eventService = EventService((options.group,options.port,options.device))
