@@ -48,7 +48,10 @@ namespace EMANE
     namespace TDMA
     {
       /**
-       * 
+       * @class Scheduler
+       *
+       * @brief Scheduler interface used by BaseModel to communicate
+       * with a scheduler module
        */
       class Scheduler : public Component,
                         public PlatformServiceUser,
@@ -62,36 +65,66 @@ namespace EMANE
 
         /**
          * Gets the RxSlotInfo for a specified time.
+         *
+         * @param timePoint Current time
+         *
+         * @return A pair holding the RxSlotInfo and a bool set to
+         * true if the slot is a valid receive slot.
          */
         virtual std::pair<RxSlotInfo,bool>
         getRxSlotInfo(const TimePoint & timePoint) const = 0;
 
         /**
-         * Gets the TxSlotInfo for a specified number of multiframes
-         * occuring on or after a specified time.
+         * Gets the transmit slot info for a specified number of
+         * multiframes occurring on or after a specified time.
+         *
+         * @param timePoint Start time of transmit opportunity search
+         * @param multiframes Number of mulitframes worth of transmit
+         * opportunities to return
+         *
+         * @return A pair holding a list of TxSlotInfo entries and the
+         * next time to use when requesting more transmit
+         * opportunities.
+         *
+         * @note Using the returned time value during the next request
+         * allows you to determine the number of missed opportunities
+         * due to system timing/resource issues.
          */
         virtual std::pair<TxSlotInfos,TimePoint>
         getTxSlotInfo(const TimePoint & timePoint, int multiframes) const = 0;
 
-                  
+
         /**
-         * Gets the lotInfo for a specified absoulte slot index
+         * Gets the slot info for a specified absolute slot index
+         *
+         * @param u64AbsoluteSlotIndex Absolute slot index
+         *
+         * @return Slot information
          */
         virtual SlotInfo getSlotInfo(std::uint64_t u64AbsoluteSlotIndex) const = 0;
 
 
         /**
-         * Processes a Scheduler message received over-the-air.
+         * Process a %Scheduler message received over-the-air.
+         *
+         * @param pkt Received UpstreamPacket
+         * @param packetMetaInfo Meta information associated with
+         * received packet
+         *
          */
         virtual void processSchedulerPacket(UpstreamPacket & pkt,
                                             const PacketMetaInfo & packetMetaInfo) = 0;
 
         /**
-         * Processes packet information for a received UpstreamPacket.
+         * Process packet information for a received over-the-air data
+         * packet.
+         *
+         * @param packetMetaInfo Meta information associated with
+         * received packet
          */
         virtual void processPacketMetaInfo(const PacketMetaInfo & packetMetaInfo) = 0;
 
-        
+
       protected:
         SchedulerUser * pSchedulerUser_;
         NEMId id_;

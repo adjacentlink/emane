@@ -49,6 +49,11 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class BaseModel::Implementation
+       *
+       * @brief Implementation of BaseModel
+       */
       class BaseModel::Implementation : public MACLayerImplementor,
                                         public SchedulerUser
       {

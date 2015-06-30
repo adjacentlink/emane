@@ -43,6 +43,12 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class EventTablePublisher
+       *
+       * @brief Publishes information about received %TDMA schedule
+       * events
+       */
       class EventTablePublisher
       {
       public:

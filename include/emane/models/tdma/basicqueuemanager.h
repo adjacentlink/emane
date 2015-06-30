@@ -41,6 +41,11 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class BasicQueueManager
+       *
+       * @brief Reference QueueManager implementation
+       */
       class BasicQueueManager : public QueueManager
       {
       public:

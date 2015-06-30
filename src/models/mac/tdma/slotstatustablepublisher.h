@@ -43,6 +43,15 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class SlotStatusTablePublisher
+       *
+       * @brief Slot statistic and statistic table status publisher.
+       *
+       * Slot statistic tables can be used to determine how well the
+       * emulator is keeping up with the configured slotting
+       * structure.
+       */
       class SlotStatusTablePublisher
       {
       public:
@@ -56,7 +65,7 @@ namespace EMANE
             RX_TX};
 
         void registerStatistics(StatisticRegistrar & registrar);
-       
+
         void update(std::uint32_t u32RelativeIndex,
                     std::uint32_t u32RelativeFrameIndex,
                     std::uint32_t u32RelativeSlotIndex,
@@ -64,13 +73,13 @@ namespace EMANE
                     double dSlotRemainingRatio);
 
         void clear();
-        
+
       private:
         StatisticTable<std::uint32_t> * pTxSlotStatusTable_;
         StatisticTable<std::uint32_t> * pRxSlotStatusTable_;
 
         using TxSlotCounterMap = std::map<std::uint32_t,
-                                          std::tuple<std::uint64_t, // valid              
+                                          std::tuple<std::uint64_t, // valid
                                                      std::uint64_t, // missed
                                                      std::uint64_t, // too big for slot
                                                      std::array<std::uint64_t,8> // quantile

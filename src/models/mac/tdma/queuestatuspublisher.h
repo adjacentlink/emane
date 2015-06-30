@@ -46,6 +46,11 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class QueueStatusPublisher
+       *
+       * @brief %Queue statistic and statistic table status publisher.
+       */
       class QueueStatusPublisher
       {
       public:

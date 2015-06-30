@@ -46,6 +46,12 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class Queue
+       *
+       * @brief Downstream packet queue with both FIFO and
+       * By-Destination FIFO dequeue mechanisms.
+       */
       class Queue
       {
       public:

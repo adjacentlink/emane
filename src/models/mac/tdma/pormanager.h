@@ -43,6 +43,16 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class PORManager
+       *
+       * @brief POR Manager responsible for loading PCR curves from
+       * file and determining POR.
+       *
+       * PCR curves are defined per data rate, with the first curve
+       * defined also serving as the default curve used when a POR is
+       * requested for an undefined data rate.
+       */
       class PORManager
       {
       public:

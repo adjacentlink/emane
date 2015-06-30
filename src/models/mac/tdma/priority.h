@@ -41,6 +41,14 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * Converts a packet/message priority, usually originating as a
+       * dscp code point, to a %TDMA queue index.
+       *
+       * @param priority Message priority
+       *
+       * @return %Queue index
+       */
       inline
       std::uint8_t priorityToQueue(Priority priority)
       {

@@ -43,6 +43,13 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class BaseModel
+       *
+       * @brief %TDMA radio module implementation that uses
+       * specialized scheduler and queue manager modules to allow
+       * variant model development.
+       */
       class BaseModel : public MACLayerImplementor,
                         public SchedulerUser
       {

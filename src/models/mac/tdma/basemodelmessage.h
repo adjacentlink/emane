@@ -45,6 +45,12 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class BaseModelMessage
+       *
+       * @brief Message class used to serialize and deserialize %TDMA
+       * radio model messages.
+       */
       class BaseModelMessage : public Serializable
       {
       public:

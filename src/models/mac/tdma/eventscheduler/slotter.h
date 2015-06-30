@@ -41,6 +41,11 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class Slotter
+       *
+       * @brief Helper class used to manipulate slot structure elements.
+       */
       class Slotter
       {
       public:

@@ -41,20 +41,41 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class RadioModel
+       *
+       * @brief Radio Model template used to create variant %TDMA
+       * models.
+       *
+       * @tparam SCHEDULER Scheduler specialization used for radio
+       * model variant
+       * @tparam QUEUEMANAGER QueueManager specialization used for
+       * radio model variant
+       */
       template<typename SCHEDULER, typename QUEUEMANAGER>
       class RadioModel :  public BaseModel
       {
       public:
+        /**
+         * Creates an instance
+         *
+         * @param id NEM id
+         * @param pPlatformServiceProvider Platform Service reference
+         * @param pRadioServiceProvider Radio Service reference
+         */
         RadioModel(NEMId id,
                    PlatformServiceProvider * pPlatformServiceProvider,
                    RadioServiceProvider * pRadioServiceProvider):
-          
+
           BaseModel{id,
                     pPlatformServiceProvider,
                     pRadioServiceProvider,
             new SCHEDULER{id,pPlatformServiceProvider,this},
             new QUEUEMANAGER{id,pPlatformServiceProvider}}{}
-        
+
+        /**
+         * Destroys an instance
+         */
         ~RadioModel(){}
       };
     }

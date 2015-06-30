@@ -46,6 +46,13 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class EventScheduler
+       *
+       * @brief Reference Scheduler implementation
+       *
+       * Implementation receives a %TDMA schdule via an event.
+       */
       class EventScheduler : public Scheduler
       {
       public:

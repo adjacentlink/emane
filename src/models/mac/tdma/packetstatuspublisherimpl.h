@@ -46,6 +46,11 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class PacketStatusPublisherImpl
+       *
+       * @brief Implementation of PacketStatusPublisher
+       */
       class PacketStatusPublisherImpl : public PacketStatusPublisher
       {
       public:

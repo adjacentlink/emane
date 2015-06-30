@@ -41,11 +41,26 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class PacketStatusPublisherUser
+       *
+       * @brief Interface used to provided access to the
+       * PacketStatusPublisher
+       */
       class PacketStatusPublisherUser
       {
       public:
+        /**
+         * Destroys an instance
+         */
         virtual ~PacketStatusPublisherUser(){}
 
+
+        /**
+         * Sets the PacketStatusPublisher
+         *
+         * @param pPacketStatusPublisher PacketStatusPublisher reference
+         */
         void setPacketStatusPublisher(PacketStatusPublisher * pPacketStatusPublisher)
         {
           pPacketStatusPublisher_ = pPacketStatusPublisher;
@@ -54,6 +69,9 @@ namespace EMANE
       protected:
         PacketStatusPublisher * pPacketStatusPublisher_;
 
+        /**
+         * Creates an instance
+         */
         PacketStatusPublisherUser():
           pPacketStatusPublisher_{}{}
       };

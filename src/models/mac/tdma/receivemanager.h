@@ -54,6 +54,16 @@ namespace EMANE
   {
     namespace TDMA
     {
+      /**
+       * @class ReceiveManager
+       *
+       * @brief Manages all receive side message processing
+       *
+       * Support aggregate message components and fragmentation
+       * reassembly. Handles aggregation and fragmentation of inbound
+       * messages even when the radio model is configured to not
+       * aggregate or fragment transmissions.
+       */
       class ReceiveManager
       {
       public:
@@ -67,11 +77,11 @@ namespace EMANE
         void setFragmentCheckThreshold(const std::chrono::seconds & threshold);
 
         void setFragmentTimeoutThreshold(const std::chrono::seconds & threshold);
-        
+
         void setPromiscuousMode(bool bEnable);
-        
+
         void loadCurves(const std::string & sPCRFileName);
-        
+
         bool enqueue(BaseModelMessage && baseModelMessage,
                      const PacketInfo & pktInfo,
                      size_t length,
@@ -81,7 +91,7 @@ namespace EMANE
                      const TimePoint & beginTime);
 
         void process(std::uint64_t u64AbsoluteSlotIndex);
-        
+
       private:
         NEMId id_;
         DownstreamTransport * pDownstreamTransport_;
@@ -89,18 +99,18 @@ namespace EMANE
         RadioServiceProvider * pRadioService_;
         Scheduler * pScheduler_;
         PacketStatusPublisher * pPacketStatusPublisher_;
-        
+
         using PendingInfo = std::tuple<BaseModelMessage,
                                        PacketInfo,
                                        size_t,
                                        TimePoint, //sor
                                        FrequencySegments,
                                        Microseconds, // span
-                                       TimePoint>; 
+                                       TimePoint>;
         PendingInfo pendingInfo_;
         std::uint64_t u64PendingAbsoluteSlotIndex_;
         PORManager porManager_;
-        Utils::RandomNumberDistribution<std::mt19937, 
+        Utils::RandomNumberDistribution<std::mt19937,
                                         std::uniform_real_distribution<float>> distribution_;
 
         bool bPromiscuousMode_;
@@ -116,11 +126,11 @@ namespace EMANE
                                         Priority>;
         using FragmentStore = std::map<FragmentKey,FragmentInfo>;
         using FragmentTimeStore = std::map<TimePoint,FragmentKey>;
-        
+
         FragmentStore fragmentStore_;
         FragmentTimeStore fragmentTimeStore_;
         TimePoint lastFragmentCheckTime_;
-        
+
         ReceiveManager(const ReceiveManager &) = delete;
 
         ReceiveManager & operator=(const ReceiveManager &) = delete;
