@@ -35,20 +35,20 @@
 void EMANE::Models::TDMA::SlotStatusTablePublisher::registerStatistics(StatisticRegistrar & statisticRegistrar)
 {
   pTxSlotStatusTable_ =
-    statisticRegistrar.registerTable<std::uint32_t>("TxSlotStatusTable", 
+    statisticRegistrar.registerTable<std::uint32_t>("TxSlotStatusTable",
       {"Index","Frame","Slot","Valid","Missed","Too Big",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
       StatisticProperties::NONE,
-      "Shows the number of Tx slot opportunties that were valid or missed based on slot timing deadlines");
+      "Shows the number of Tx slot opportunities that were valid or missed based on slot timing deadlines");
 
   pRxSlotStatusTable_ =
-    statisticRegistrar.registerTable<std::uint32_t>("RxSlotStatusTable", 
+    statisticRegistrar.registerTable<std::uint32_t>("RxSlotStatusTable",
       {"Index","Frame","Slot","Valid","Missed","Idle","Tx",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
       StatisticProperties::NONE,
       "Shows the number of Rx slot receptions that were valid or missed based on slot timing deadlines");
 }
 
 void EMANE::Models::TDMA::SlotStatusTablePublisher::clear()
-  
+
 {
   pTxSlotStatusTable_->clear();
   pRxSlotStatusTable_->clear();
@@ -74,7 +74,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::update(std::uint32_t u32Rela
                status,
                dSlotRemainingRatio);
       break;
-      
+
     case Status::RX_GOOD:
     case Status::RX_MISSED:
     case Status::RX_IDLE:
@@ -95,7 +95,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
                                                              double dSlotRemainingRatio)
 {
   auto iter = txSlotCounterMap_.find(u32RelativeIndex);
-  
+
   if(iter == txSlotCounterMap_.end())
     {
       iter = txSlotCounterMap_.insert({u32RelativeIndex,std::make_tuple(0ULL,0ULL,0ULL,std::array<std::uint64_t,8>())}).first;
@@ -115,14 +115,14 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
                                                        Any{0L},
                                                          Any{0L},
                                                            Any{0L}});
-      
+
     }
 
   auto & valid = std::get<0>(iter->second);
   auto & missed = std::get<1>(iter->second);
   auto & toobig = std::get<2>(iter->second);
   auto & quantile = std::get<3>(iter->second);
-  
+
   switch(status)
     {
     case Status::TX_GOOD:
@@ -184,7 +184,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
                                                              double dSlotRemainingRatio)
 {
   auto iter = rxSlotCounterMap_.find(u32RelativeIndex);
-  
+
   if(iter == rxSlotCounterMap_.end())
     {
       iter = rxSlotCounterMap_.insert({u32RelativeIndex,std::make_tuple(0ULL,0ULL,0ULL,0ULL,std::array<std::uint64_t,8>())}).first;
@@ -205,7 +205,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
                                                             Any{0L},
                                                               Any{0L},
                                                                 Any{0L}});
-      
+
     }
 
   auto & valid = std::get<0>(iter->second);
@@ -213,7 +213,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
   auto & rxidle = std::get<2>(iter->second);
   auto & rxtx = std::get<3>(iter->second);
   auto & quantile = std::get<4>(iter->second);
-  
+
   switch(status)
     {
     case Status::RX_GOOD:

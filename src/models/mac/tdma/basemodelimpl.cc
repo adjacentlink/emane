@@ -143,7 +143,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
   configRegistrar.registerNumeric<std::uint16_t>("fragmentcheckthreshold",
                                                  ConfigurationProperties::DEFAULT,
                                                  {2},
-                                                 "Defines the rate in seconds a check is performed see if any packet"
+                                                 "Defines the rate in seconds a check is performed to see if any packet"
                                                  " fragment reassembly efforts should be abandoned.");
 
   configRegistrar.registerNumeric<std::uint16_t>("fragmenttimeoutthreshold",

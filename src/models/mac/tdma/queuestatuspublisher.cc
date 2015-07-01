@@ -45,8 +45,8 @@ void EMANE::Models::TDMA::QueueStatusPublisher::registerStatistics(StatisticRegi
       {"Queue","Enqueued","Dequeued","Overflow","Too Big","0","1","2","3","4"},
       StatisticProperties::NONE,
       "Shows for each queue the number of packets enqueued, dequeued,"
-      " dropped due queue overflow (enque), dropped due to too big"
-      " (dequeue) and which slot classes fragements are being transmitted.");
+      " dropped due to queue overflow (enqueue), dropped due to too big"
+      " (dequeue) and which slot classes fragments are being transmitted.");
 
   for(const auto & entry : statusTableInfo_)
     {
@@ -71,7 +71,7 @@ void EMANE::Models::TDMA::QueueStatusPublisher::registerStatistics(StatisticRegi
     statisticRegistrar.registerTable<std::uint8_t>("QueueFragmentHistogram",
       {"Queue","1","2","3","4","5","6","7","8","9",">9"},
       StatisticProperties::NONE,
-      "Shows...");
+      "Shows a per queue histogram of the number of message components required to transmit packets.");
 
   for(const auto & entry : fragmentHistogram_)
     {

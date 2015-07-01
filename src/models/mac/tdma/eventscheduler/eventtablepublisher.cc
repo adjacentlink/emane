@@ -41,13 +41,14 @@ void EMANE::Models::TDMA::EventTablePublisher::registerStatistics(StatisticRegis
     statisticRegistrar.registerTable<std::uint32_t>("scheduler.ScheduleInfoTable",
       {"Index","Frame","Slot","Type","Frequency","Data Rate","Power","Class","Destination"},
       StatisticProperties::NONE,
-      "Shows the current TDMA schedule");
+      "Shows the current TDMA schedule.");
 
   pStrutureTable_ =
     statisticRegistrar.registerTable<std::string>("scheduler.StructureInfoTable",
       {"Name","Value"},
       StatisticProperties::NONE,
-      "Shows the current TDMA schedule structure");
+      "Shows the current TDMA structure: slot size, slot overhead, number of slots"
+      " per frame, number of frames per multiframe and transceiver bandwidth.");
 }
 
 void  EMANE::Models::TDMA::EventTablePublisher::replace(const Events::SlotInfos & slotInfos,

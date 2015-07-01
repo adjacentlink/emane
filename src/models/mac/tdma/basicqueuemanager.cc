@@ -73,8 +73,8 @@ void EMANE::Models::TDMA::BasicQueueManager::initialize(Registrar & registrar)
                                                  ConfigurationProperties::DEFAULT,
                                                  {256},
                                                  "Defines the size of the per service class downstream packet"
-                                                 " queues. Each of the 5 queues (control + 4 service classes) will be"
-                                                 " 'queuedepth' size.");
+                                                 " queues (in packets). Each of the 5 queues (control + 4"
+                                                 " service classes) will be 'queuedepth' size.");
 
   configRegistrar.registerNumeric<bool>("queue.aggregationenable",
                                         ConfigurationProperties::DEFAULT,
@@ -87,10 +87,12 @@ void EMANE::Models::TDMA::BasicQueueManager::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<bool>("queue.fragmentationenable",
                                         ConfigurationProperties::DEFAULT,
                                         {true},
-                                        "Defines whether packet fragmentation is enabled. When enabled, a"
-                                        " single packet will be fragmented into multiple packets to be sent"
-                                        " over multiple transmissions when the slot is too small. Note:"
-                                        " Fragmentation will not occur within an aggregated transmission");
+                                        "Defines whether packet fragmentation is enabled. When enabled, a single"
+                                        " packet will be fragmented into multiple message components to be sent"
+                                        " over multiple transmissions when the slot is too small.  When disabled"
+                                        " and the packet matches the traffic class for the transmit slot as"
+                                        " defined in the TDMA schedule, the packet will be discarded.");
+
 
   configRegistrar.registerNumeric<bool>("queue.strictdequeueenable",
                                         ConfigurationProperties::DEFAULT,
