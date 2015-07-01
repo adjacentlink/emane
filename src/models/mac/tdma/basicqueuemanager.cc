@@ -303,17 +303,22 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
                                                 parts);
 
           components.splice(components.end(),parts);
+        }
 
-          for(const auto & pPkt : std::get<2>(ret))
-            {
-              const auto & pktInfo = pPkt->getPacketInfo();
+      // update drop info
+      for(const auto & pPkt : std::get<2>(ret))
+        {
+          const auto & pktInfo = pPkt->getPacketInfo();
 
-              pPacketStatusPublisher_->outbound(pktInfo.getSource(),
-                                                pktInfo.getDestination(),
-                                                pktInfo.getPriority(),
-                                                pPkt->length(),
-                                                PacketStatusPublisher::OutboundAction::DROP_TOO_BIG);
-            }
+          pPacketStatusPublisher_->outbound(pktInfo.getSource(),
+                                            pktInfo.getDestination(),
+                                            pktInfo.getPriority(),
+                                            pPkt->length(),
+                                            PacketStatusPublisher::OutboundAction::DROP_TOO_BIG);
+
+          pImpl_->queueStatusPublisher_.drop(u8QueueIndex,
+                                             QueueStatusPublisher::DropReason::DROP_TOOBIG,
+                                             1);
         }
 
       size_t aggregationThreshold{static_cast<size_t>(requestedBytes *
