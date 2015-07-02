@@ -197,13 +197,30 @@ void EMANE::Models::TDMA::BasicQueueManager::configure(const ConfigurationUpdate
     }
 
   // queue for user traffic mapped by dhcp
-  pImpl_->queues_[0].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
-  pImpl_->queues_[1].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
-  pImpl_->queues_[2].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
-  pImpl_->queues_[3].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,false);
+  pImpl_->queues_[0].initialize(u16QueueDepth,
+                                pImpl_->bFragmentationEnable_,
+                                pImpl_->bAggregationEnable_,
+                                false);
+
+  pImpl_->queues_[1].initialize(u16QueueDepth,
+                                pImpl_->bFragmentationEnable_,
+                                pImpl_->bAggregationEnable_,
+                                false);
+
+  pImpl_->queues_[2].initialize(u16QueueDepth,
+                                pImpl_->bFragmentationEnable_,
+                                pImpl_->bAggregationEnable_,
+                                false);
+  pImpl_->queues_[3].initialize(u16QueueDepth,
+                                pImpl_->bFragmentationEnable_,
+                                pImpl_->bAggregationEnable_,
+                                false);
 
   // control queue for scheduler-to-scheduler OTA messages
-  pImpl_->queues_[4].initialize(u16QueueDepth, pImpl_->bFragmentationEnable_,true);
+  pImpl_->queues_[4].initialize(u16QueueDepth,
+                                pImpl_->bFragmentationEnable_,
+                                pImpl_->bAggregationEnable_,
+                                true);
 
 
 }

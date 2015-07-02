@@ -57,8 +57,10 @@ namespace EMANE
       public:
         Queue();
 
-        void initialize(std::uint16_t u16QueueDepth,bool bFragment,bool bIsControl);
-
+        void initialize(std::uint16_t u16QueueDepth,
+                        bool bFragment,
+                        bool bAggregate,
+                        bool bIsControl);
 
         std::pair<std::unique_ptr<DownstreamPacket>,bool>
         enqueue(DownstreamPacket && pkt);
@@ -87,6 +89,7 @@ namespace EMANE
         std::uint64_t u64Counter_;
         size_t currentBytes_;
         bool bIsControl_;
+        bool bAggregate_;
 
         std::pair<MessageComponent,size_t> fragmentPacket(DownstreamPacket * pPacket,
                                                           MetaInfo * pMetaInfo,

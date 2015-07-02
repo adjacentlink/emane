@@ -42,11 +42,13 @@ EMANE::Models::TDMA::Queue::Queue():
 
 void EMANE::Models::TDMA::Queue::initialize(std::uint16_t u16QueueDepth,
                                             bool bFragment,
+                                            bool bAggregate,
                                             bool bIsControl)
 {
   u16QueueDepth_ = u16QueueDepth;
   bFragment_ = bFragment;
   bIsControl_ = bIsControl;
+  bAggregate_ = bAggregate;
 }
 
 std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
@@ -160,6 +162,12 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                   queue_.erase(entry->first);
 
                   destQueue_.erase(iter);
+
+                  // if aggregation is disabled don't look further
+                  if(!bAggregate_)
+                    {
+                      break;
+                    }
                 }
               else
                 {
@@ -178,7 +186,7 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                     }
                   else
                     {
-                      if(bDrop)
+                      if(bDrop && components.empty())
                         {
                           // drop packet - too large and fragmentation
                           // is disabled
@@ -247,6 +255,12 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
               destQueue_.erase(entry->first);
 
               queue_.erase(entry);
+
+              // if aggregation is disabled don't look further
+              if(!bAggregate_)
+                {
+                  break;
+                }
             }
           else
             {
@@ -265,7 +279,7 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                 }
               else
                 {
-                  if(bDrop)
+                  if(bDrop && components.empty())
                     {
                       // drop packet - too large and fragmentation
                       // is disabled
