@@ -39,6 +39,7 @@
 #include "emane/radioserviceprovider.h"
 #include "emane/logserviceprovider.h"
 #include "emane/frequencysegment.h"
+#include "emane/neighbormetricmanager.h"
 #include "emane/models/tdma/scheduler.h"
 #include "emane/utils/randomnumberdistribution.h"
 
@@ -72,7 +73,8 @@ namespace EMANE
                        LogServiceProvider * pLogService,
                        RadioServiceProvider * pRadioService,
                        Scheduler * pScheduler,
-                       PacketStatusPublisher * pPacketStatusPublisher);
+                       PacketStatusPublisher * pPacketStatusPublisher,
+                       NeighborMetricManager *pNeighborMetricManager);
 
         void setFragmentCheckThreshold(const std::chrono::seconds & threshold);
 
@@ -88,7 +90,8 @@ namespace EMANE
                      const TimePoint & startOfReception,
                      const FrequencySegments & frequencySegments,
                      const Microseconds & span,
-                     const TimePoint & beginTime);
+                     const TimePoint & beginTime,
+                     std::uint64_t u64PacketSequence);
 
         void process(std::uint64_t u64AbsoluteSlotIndex);
 
@@ -99,6 +102,7 @@ namespace EMANE
         RadioServiceProvider * pRadioService_;
         Scheduler * pScheduler_;
         PacketStatusPublisher * pPacketStatusPublisher_;
+        NeighborMetricManager * pNeighborMetricManager_;
 
         using PendingInfo = std::tuple<BaseModelMessage,
                                        PacketInfo,
@@ -106,7 +110,8 @@ namespace EMANE
                                        TimePoint, //sor
                                        FrequencySegments,
                                        Microseconds, // span
-                                       TimePoint>;
+                                       TimePoint,
+                                       std::uint64_t>; // sequence number
         PendingInfo pendingInfo_;
         std::uint64_t u64PendingAbsoluteSlotIndex_;
         PORManager porManager_;

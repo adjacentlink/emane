@@ -35,6 +35,7 @@
 
 #include "emane/maclayerimpl.h"
 #include "emane/flowcontrolmanager.h"
+#include "emane/neighbormetricmanager.h"
 #include "emane/models/tdma/basemodel.h"
 #include "emane/models/tdma/scheduler.h"
 #include "emane/models/tdma/queuemanager.h"
@@ -133,9 +134,12 @@ namespace EMANE
         std::uint64_t u64SequenceNumber_;
         Frequencies frequencies_;
         std::uint64_t u64BandwidthHz_;
+        Microseconds neighborMetricUpdateInterval_;
         PacketStatusPublisherImpl packetStatusPublisher_;
+        NeighborMetricManager neighborMetricManager_;
         ReceiveManager receiveManager_;
         FlowControlManager flowControlManager_;
+
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
         bool processTxOpportunity();

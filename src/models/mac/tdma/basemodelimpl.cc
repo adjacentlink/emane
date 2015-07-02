@@ -79,12 +79,14 @@ Implementation(NEMId id,
   frequencies_{},
   u64BandwidthHz_{},
   packetStatusPublisher_{},
+  neighborMetricManager_{id},
   receiveManager_{id,
       pRadioModel,
       &pPlatformServiceProvider->logService(),
       pRadioServiceProvider,
       pScheduler,
-      &packetStatusPublisher_},
+      &packetStatusPublisher_,
+      &neighborMetricManager_},
   flowControlManager_{*pRadioModel}{}
 
 
@@ -152,13 +154,30 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
                                                  "Defines the threshold in seconds to wait for another packet fragment"
                                                  " for an existing reassembly effort before abandoning the effort.");
 
+  configRegistrar.registerNumeric<float>("neighbormetricdeletetime",
+                                         ConfigurationProperties::DEFAULT |
+                                         ConfigurationProperties::MODIFIABLE,
+                                         {60.0f},
+                                         "Defines the time in seconds of no RF receptions from a given neighbor"
+                                         " before it is removed from the neighbor table.",
+                                         1.0f,
+                                         3660.0f);
 
+
+  configRegistrar.registerNumeric<float>("neighbormetricupdateinterval",
+                                         ConfigurationProperties::DEFAULT,
+                                         {1.0f},
+                                         "Defines the neighbor table update interval in seconds.",
+                                         0.1f,
+                                         60.0f);
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
   packetStatusPublisher_.registerStatistics(statisticRegistrar);
 
   slotStatusTablePublisher_.registerStatistics(statisticRegistrar);
+
+  neighborMetricManager_.registerStatistics(statisticRegistrar);
 
   pQueueManager_->setPacketStatusPublisher(&packetStatusPublisher_);
 
@@ -263,6 +282,35 @@ EMANE::Models::TDMA::BaseModel::Implementation::configure(const ConfigurationUpd
 
           receiveManager_.setFragmentTimeoutThreshold(fragmentTimeoutThreshold);
         }
+      else if(item.first == "neighbormetricdeletetime")
+        {
+          Microseconds neighborMetricDeleteTimeMicroseconds =
+            std::chrono::duration_cast<Microseconds>(DoubleSeconds{item.second[0].asFloat()});
+
+          // set the neighbor delete time
+          neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds);
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  DEBUG_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s %s = %lf",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  std::chrono::duration_cast<DoubleSeconds>(neighborMetricDeleteTimeMicroseconds).count());
+        }
+      else if(item.first == "neighbormetricupdateinterval")
+        {
+          neighborMetricUpdateInterval_ =
+            std::chrono::duration_cast<Microseconds>(DoubleSeconds{item.second[0].asFloat()});
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s %s = %lf",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  std::chrono::duration_cast<DoubleSeconds>(neighborMetricUpdateInterval_).count());
+        }
       else
         {
           if(!item.first.compare(0,SCHEDULER_PREFIX.size(),SCHEDULER_PREFIX))
@@ -329,6 +377,14 @@ EMANE::Models::TDMA::BaseModel::Implementation::postStart()
                               __func__);
     }
 
+  pPlatformService_->timerService().
+    scheduleTimedEvent(Clock::now() + neighborMetricUpdateInterval_,
+                       new std::function<bool()>{[this]()
+                           {
+                             neighborMetricManager_.updateNeighborStatus();
+                             return false;
+                           }},
+                       neighborMetricUpdateInterval_);
 }
 
 
@@ -522,7 +578,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                          startOfReception,
                                          frequencySegments,
                                          span,
-                                         now))
+                                         now,
+                                         hdr.getSequenceNumber()))
                 {
                   pPlatformService_->timerService().
                     scheduleTimedEvent(entry.first.timePoint_+ slotDuration_,
@@ -1013,14 +1070,15 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                 }
             }
 
-
           BaseModelMessage baseModelMessage{pendingTxSlotInfo_.u64AbsoluteSlotIndex_,
               pendingTxSlotInfo_.u64DataRatebps_,
               std::move(components)};
 
           Serialization serialization{baseModelMessage.serialize()};
 
-          DownstreamPacket pkt({id_,dst,0,Clock::now()},serialization.c_str(),serialization.size());
+          auto now = Clock::now();
+
+          DownstreamPacket pkt({id_,dst,0,now},serialization.c_str(),serialization.size());
 
           pkt.prependLengthPrefixFraming(serialization.size());
 
@@ -1037,6 +1095,10 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                            pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                            SlotStatusTablePublisher::Status::TX_GOOD,
                                            dSlotRemainingRatio);
+
+          neighborMetricManager_.updateNeighborTxMetric(dst,
+                                                        pendingTxSlotInfo_.u64DataRatebps_,
+                                                        now);
         }
       else
         {

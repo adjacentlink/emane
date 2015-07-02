@@ -38,14 +38,16 @@ EMANE::Models::TDMA::ReceiveManager::ReceiveManager(NEMId id,
                                                     LogServiceProvider * pLogService,
                                                     RadioServiceProvider * pRadioService,
                                                     Scheduler * pScheduler,
-                                                    PacketStatusPublisher * pPacketStatusPublisher):
+                                                    PacketStatusPublisher * pPacketStatusPublisher,
+                                                    NeighborMetricManager * pNeighborMetricManager):
   id_{id},
   pDownstreamTransport_{pDownstreamTransport},
   pLogService_{pLogService},
   pRadioService_{pRadioService},
   pScheduler_{pScheduler},
   pPacketStatusPublisher_{pPacketStatusPublisher},
-  pendingInfo_{{},{{},{},{},{}},{},{},{},{},{}},
+  pNeighborMetricManager_{pNeighborMetricManager},
+  pendingInfo_{{},{{},{},{},{}},{},{},{},{},{},{}},
   u64PendingAbsoluteSlotIndex_{},
   distribution_{0.0, 1.0},
   bPromiscuousMode_{},
@@ -80,7 +82,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                              const TimePoint & startOfReception,
                                              const FrequencySegments & frequencySegments,
                                              const Microseconds & span,
-                                             const TimePoint & beginTime)
+                                             const TimePoint & beginTime,
+                                             std::uint64_t u64PacketSequence)
 {
   bool bReturn{};
   std::uint64_t u64AbsoluteSlotIndex{baseModelMessage.getAbsoluteSlotIndex()};
@@ -95,7 +98,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                      startOfReception,
                                      frequencySegments,
                                      span,
-                                     beginTime);
+                                     beginTime,
+                                     u64PacketSequence);
       bReturn = true;
     }
   else if(u64PendingAbsoluteSlotIndex_ < u64AbsoluteSlotIndex)
@@ -110,7 +114,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                      startOfReception,
                                      frequencySegments,
                                      span,
-                                     beginTime);
+                                     beginTime,
+                                     u64PacketSequence);
       bReturn = true;
     }
   else if(u64PendingAbsoluteSlotIndex_ > u64AbsoluteSlotIndex)
@@ -130,7 +135,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                      startOfReception,
                                      frequencySegments,
                                      span,
-                                     beginTime);
+                                     beginTime,
+                                     u64PacketSequence);
       bReturn = true;
 
     }
@@ -144,7 +150,8 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
                                          startOfReception,
                                          frequencySegments,
                                          span,
-                                         beginTime);
+                                         beginTime,
+                                         u64PacketSequence);
         }
     }
 
@@ -169,7 +176,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
       TimePoint & startOfReception{std::get<3>(pendingInfo_)};
       FrequencySegments & frequencySegments{std::get<4>(pendingInfo_)};
       Microseconds & span{std::get<5>(pendingInfo_)};
-
+      std::uint64_t u64SequenceNumber{std::get<7>(pendingInfo_)};
 
       auto & frequencySegment = *frequencySegments.begin();
 
@@ -223,6 +230,18 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
       // check sinr
       float fPOR = porManager_.getPOR(baseModelMessage.getDataRate(),dSINR,length);
 
+      LOGGER_VERBOSE_LOGGING(*pLogService_,
+                             DEBUG_LEVEL,
+                             "MACI %03hu TDMA::ReceiveManager upstream EOR processing: src %hu,"
+                             " dst %hu, datarate: %ju sinr: %lf length: %lu, por: %f",
+                             id_,
+                             pktInfo.getSource(),
+                             pktInfo.getDestination(),
+                             baseModelMessage.getDataRate(),
+                             dSINR,
+                             length,
+                             fPOR);
+
       // get random value [0.0, 1.0]
       float fRandom{distribution_()};
 
@@ -243,6 +262,17 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
           return;
         }
+
+
+      // update neighbor metrics
+      pNeighborMetricManager_->updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
+                                                      u64SequenceNumber,      // sequence number
+                                                      pktInfo.getUUID(),
+                                                      dSINR,                  // sinr in dBm
+                                                      dNoiseFloordB,          // noise floor in dB
+                                                      startOfReception,       // rx time
+                                                      frequencySegment.getDuration(), // duration
+                                                      baseModelMessage.getDataRate()); // data rate bps
 
       for(const auto & message : baseModelMessage.getMessages())
         {
