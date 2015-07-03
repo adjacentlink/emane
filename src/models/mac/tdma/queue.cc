@@ -119,7 +119,8 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
         {
           auto iter = destQueue_.find(destination);
 
-          if(iter != destQueue_.end())
+          // check for a destination queue that is not empty
+          if(iter != destQueue_.end() && !iter->second.empty())
             {
               auto const & entry = iter->second.begin();
 
@@ -159,9 +160,11 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                   delete pPacket;
                   delete pMetaInfo;
 
+                  // remove from packet queue using queue sequence
                   queue_.erase(entry->first);
 
-                  destQueue_.erase(iter);
+                  // remove from destination queue using iterator
+                  iter->second.erase(entry);
 
                   // if aggregation is disabled don't look further
                   if(!bAggregate_)
@@ -197,9 +200,11 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
 
                           delete pMetaInfo;
 
-                          destQueue_.erase(entry->first);
+                          // remove from packet queue using queue sequence
+                          queue_.erase(entry->first);
 
-                          queue_.erase(entry);
+                          // remove from destination queue using iterator
+                          iter->second.erase(entry);
                         }
                       else
                         {
@@ -220,6 +225,8 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
           auto & pPacket = std::get<0>(entry->second);
           auto & pMetaInfo = std::get<1>(entry->second);
 
+          NEMId dst{pPacket->getPacketInfo().getDestination()};
+
           if(pPacket->length() - pMetaInfo->offset_ <= requestedBytes - totalBytes)
             {
               if(pMetaInfo->offset_)
@@ -238,7 +245,7 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
                   components.push_back({bIsControl_ ?
                         MessageComponent::Type::CONTROL :
                         MessageComponent::Type::DATA,
-                        pPacket->getPacketInfo().getDestination(),
+                        dst,
                         pPacket->getPacketInfo().getPriority(),
                         pPacket->getVectorIO(),
                         pMetaInfo->index_,
@@ -252,8 +259,10 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
               delete pPacket;
               delete pMetaInfo;
 
-              destQueue_.erase(entry->first);
+              // remove from destination queue using queue sequence
+              destQueue_[dst].erase(entry->first);
 
+              // remove for packet queue using iterator
               queue_.erase(entry);
 
               // if aggregation is disabled don't look further
@@ -290,8 +299,10 @@ std::tuple<EMANE::Models::TDMA::MessageComponents,
 
                       delete pMetaInfo;
 
-                      destQueue_.erase(entry->first);
+                      // remove from destination queue using queue sequence
+                      destQueue_[dst].erase(entry->first);
 
+                      // remove for packet queue using iterator
                       queue_.erase(entry);
                     }
                   else
