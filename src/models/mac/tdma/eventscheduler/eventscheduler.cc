@@ -166,11 +166,16 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                       " schdule received",
                                       id_,
                                       __func__);
+
               // clear out existing schedule
               slotInfos_.clear();
 
               // store new structure info
               structure_ = structure;
+
+
+              // clear frequencies
+              frequencies_.clear();
 
               // store new schedule
               slotInfos_ = event.getSlotInfos();
@@ -279,8 +284,12 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                              structure_.getSlotsPerFrame(),
                              structure_.getFramesPerMultiFrame());
 
+              const auto & eventFrequencies = event.getFrequencies();
 
-              pSchedulerUser_->notifyScheduleChange(event.getFrequencies(),
+              frequencies_.insert(eventFrequencies.begin(),
+                                  eventFrequencies.end());
+
+              pSchedulerUser_->notifyScheduleChange(frequencies_,
                                                     structure_.getBandwidth(),
                                                     structure_.getSlotDuration(),
                                                     structure_.getSlotOverhead());

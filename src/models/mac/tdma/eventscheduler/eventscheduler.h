@@ -95,6 +95,7 @@ namespace EMANE
         EventTablePublisher eventTablePublisher_;
         Slotter slotter_;
         mutable bool bWaitingFirstTxSlotInfoRequest_;
+        Frequencies frequencies_;
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectSlotIndexOutOfRange_;
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectFrameIndexOutOfRange_;
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectUpdateBeforeFull_;
