@@ -213,7 +213,7 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                       if(slotInfo.getSlotIndex() < slotsPerFrame)
                         {
                           indexes.push_back(slotInfo.getFrameIndex() *
-                                            framesPerMultiFrame +
+                                            slotsPerFrame +
                                             slotInfo.getSlotIndex());
                         }
                       else
