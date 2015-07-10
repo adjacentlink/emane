@@ -139,10 +139,11 @@ namespace EMANE
         NeighborMetricManager neighborMetricManager_;
         ReceiveManager receiveManager_;
         FlowControlManager flowControlManager_;
+        std::uint64_t u64ScheduleIndex_;
 
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
-        bool processTxOpportunity();
+        bool processTxOpportunity(std::uint64_t u64ScheduleIndex);
       };
     }
   }

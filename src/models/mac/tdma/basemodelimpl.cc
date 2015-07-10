@@ -87,7 +87,8 @@ Implementation(NEMId id,
       pScheduler,
       &packetStatusPublisher_,
       &neighborMetricManager_},
-  flowControlManager_{*pRadioModel}{}
+  flowControlManager_{*pRadioModel},
+  u64ScheduleIndex_{}{}
 
 
 EMANE::Models::TDMA::BaseModel::Implementation::~Implementation()
@@ -595,12 +596,12 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
           else
             {
               // not an rx slot but it is the correct abs slot
-              auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelMessage.getAbsoluteSlotIndex());
+              auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
 
               slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
                                                entry.first.u32RelativeFrameIndex_,
                                                entry.first.u32RelativeSlotIndex_,
-                                               pktSlotInfo.type_ == SlotInfo::Type::IDLE ?
+                                               slotInfo.type_ == SlotInfo::Type::IDLE ?
                                                SlotStatusTablePublisher::Status::RX_IDLE :
                                                SlotStatusTablePublisher::Status::RX_TX,
                                                dSlotRemainingRatio);
@@ -615,25 +616,29 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       "MACI %03hu TDMA::BaseModel::%s drop reason rx slot correct but %s rframe: %u rslot: %u",
                                       id_,
                                       __func__,
-                                      pktSlotInfo.type_ == SlotInfo::Type::IDLE ?
+                                      slotInfo.type_ == SlotInfo::Type::IDLE ?
                                       "in idle" : "in tx",
                                       entry.first.u32RelativeFrameIndex_,
                                       entry.first.u32RelativeSlotIndex_);
+
+
+              // drop
+              return;
             }
         }
       else
         {
-          auto pktSlotInfo = pScheduler_->getSlotInfo(baseModelMessage.getAbsoluteSlotIndex());
+          auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
 
           Microseconds timeRemainingInSlot{slotDuration_ -
               std::chrono::duration_cast<Microseconds>(now -
-                                                       pktSlotInfo.timePoint_)};
+                                                       slotInfo.timePoint_)};
           double dSlotRemainingRatio =
             timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
 
 
           // were we supposed to be in rx on the pkt abs slot
-          if(pktSlotInfo.type_ == SlotInfo::Type::RX)
+          if(slotInfo.type_ == SlotInfo::Type::RX)
             {
               slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
                                                entry.first.u32RelativeFrameIndex_,
@@ -652,13 +657,16 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       __func__,
                                       baseModelMessage.getAbsoluteSlotIndex(),
                                       entry.first.u64AbsoluteSlotIndex_);
+
+              // drop
+              return;
             }
           else
             {
               slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
                                                entry.first.u32RelativeFrameIndex_,
                                                entry.first.u32RelativeSlotIndex_,
-                                               pktSlotInfo.type_ == SlotInfo::Type::IDLE ?
+                                               slotInfo.type_ == SlotInfo::Type::IDLE ?
                                                SlotStatusTablePublisher::Status::RX_IDLE :
                                                SlotStatusTablePublisher::Status::RX_TX,
                                                dSlotRemainingRatio);
@@ -673,10 +681,13 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       "MACI %03hu TDMA::BaseModel::%s drop reason slot mismatch but %s pkt: %zu now: %zu ",
                                       id_,
                                       __func__,
-                                      pktSlotInfo.type_ == SlotInfo::Type::IDLE ?
+                                      slotInfo.type_ == SlotInfo::Type::IDLE ?
                                       "in idle" : "in tx",
                                       baseModelMessage.getAbsoluteSlotIndex(),
                                       entry.first.u64AbsoluteSlotIndex_);
+
+              // drop
+              return;
             }
         }
     }
@@ -910,6 +921,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::notifyScheduleChange(const 
                           id_,
                           __func__);
 
+  // increment index to indicate a schedule change
+  ++u64ScheduleIndex_;
 
   if(transmitTimedEventId_)
     {
@@ -956,7 +969,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::notifyScheduleChange(const 
         pPlatformService_->timerService().
         scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
                            new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                               this)});
+                                                               this,
+                                                               u64ScheduleIndex_)});
     }
 }
 
@@ -1113,18 +1127,33 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
     }
 }
 
-bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity()
+bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::uint64_t u64ScheduleIndex)
 {
+  // check for scheduled timer functor after new schedule, if so disregard
+  if(u64ScheduleIndex != u64ScheduleIndex_)
+    {
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                              ERROR_LEVEL,
+                              "MACI %03hu TDMA::BaseModel::%s old schedule tx opportunity found"
+                              " scheduled index: %zu current index: %zu",
+                              id_,
+                              __func__,
+                              u64ScheduleIndex,
+                              u64ScheduleIndex_);
+      return true;
+    }
+
   auto now = Clock::now();
+
+  auto nowSlotInfo = pScheduler_->getSlotInfo(now);
 
   Microseconds timeRemainingInSlot{slotDuration_ -
       std::chrono::duration_cast<Microseconds>(now -
                                                pendingTxSlotInfo_.timePoint_)};
-
   double dSlotRemainingRatio =
     timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
 
-  if(timeRemainingInSlot > Microseconds::zero())
+  if(nowSlotInfo.u64AbsoluteSlotIndex_ == pendingTxSlotInfo_.u64AbsoluteSlotIndex_)
     {
       // transmit in this slot
       sendDownstreamPacket(dSlotRemainingRatio);
@@ -1161,20 +1190,24 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity()
 
           txSlotInfos_.pop_front();
 
-          if(pendingTxSlotInfo_.timePoint_ > now)
+          if(pendingTxSlotInfo_.u64AbsoluteSlotIndex_ > nowSlotInfo.u64AbsoluteSlotIndex_)
             {
+              // need to schedule processing in the future
+
               transmitTimedEventId_ =
                 pPlatformService_->timerService().
                 scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
                                    new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                                       this)});
+                                                                       this,
+                                                                       u64ScheduleIndex_)});
 
 
               bFoundTXSlot = true;
               break;
             }
-          else if(pendingTxSlotInfo_.timePoint_ + slotDuration_ <= now)
+          else if(pendingTxSlotInfo_.u64AbsoluteSlotIndex_ < nowSlotInfo.u64AbsoluteSlotIndex_)
             {
+              // missed opportunity
               double dSlotRemainingRatio = \
                 std::chrono::duration_cast<Microseconds>(pendingTxSlotInfo_.timePoint_ - now).count() /
                 static_cast<double>(slotDuration_.count());

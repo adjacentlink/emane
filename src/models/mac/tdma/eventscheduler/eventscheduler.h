@@ -84,6 +84,8 @@ namespace EMANE
 
         SlotInfo getSlotInfo(std::uint64_t u64AbsoluteSlotIndex) const override;
 
+        SlotInfo getSlotInfo(const TimePoint & timePoint) const override;
+
         void processSchedulerPacket(UpstreamPacket & pkt,
                                     const PacketMetaInfo & packetMetaInfo) override;
 

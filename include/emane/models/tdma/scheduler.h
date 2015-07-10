@@ -105,6 +105,16 @@ namespace EMANE
 
 
         /**
+         * Gets the slot info for a specified time
+         *
+         * @param timePoint Time of desired slot info
+         *
+         * @return Slot information
+         */
+        virtual SlotInfo getSlotInfo(const TimePoint & timePoint) const = 0;
+
+
+       /**
          * Process a %Scheduler message received over-the-air.
          *
          * @param pkt Received UpstreamPacket

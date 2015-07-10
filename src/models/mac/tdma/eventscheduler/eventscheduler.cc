@@ -331,7 +331,21 @@ EMANE::Models::TDMA::EventScheduler::getSlotInfo(std::uint64_t u64AbsoluteSlotIn
       info.getType() == Events::SlotInfo::Type::RX ? SlotInfo::Type::RX :
       info.getType() == Events::SlotInfo::Type::TX ?
       SlotInfo::Type::TX : SlotInfo::Type::IDLE};
-  }
+}
+
+EMANE::Models::TDMA::SlotInfo
+EMANE::Models::TDMA::EventScheduler::getSlotInfo(const TimePoint & timePoint) const
+{
+  std::uint64_t u64AbsoluteSlotIndex{};
+  std::uint64_t u64AbsoluteFrameIndex{};
+  std::uint64_t u64AbsoluteMultiFrameIndex{};
+
+  std::tie(u64AbsoluteSlotIndex,
+           u64AbsoluteFrameIndex,
+           u64AbsoluteMultiFrameIndex) = slotter_.getAbsoluteIndex(timePoint);
+
+  return getSlotInfo(u64AbsoluteSlotIndex);
+}
 
 std::pair<EMANE::Models::TDMA::RxSlotInfo,bool>
 EMANE::Models::TDMA::EventScheduler::getRxSlotInfo(const TimePoint & timePoint) const
