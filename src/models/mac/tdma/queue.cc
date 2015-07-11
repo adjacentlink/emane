@@ -63,7 +63,24 @@ std::pair<std::unique_ptr<EMANE::DownstreamPacket>,bool>
 
   if(queue_.size() == u16QueueDepth_)
     {
-      auto const & entry = queue_.begin();
+      // first candidate for overflow discard, oldest packet
+      auto entry = queue_.begin();
+
+      // search the queue for a packet that is not in process of
+      // fragmentation, if all packets are undergoing fragmentation
+      // the oldest packet will be discarded
+      for(auto iter = queue_.begin();
+          iter != queue_.end();
+          ++iter)
+        {
+          // a packet undergoing fragmentation will have a non-zero
+          // fragment index
+          if(!iter->second.second->index_)
+            {
+              entry = iter;
+              break;
+            }
+        }
 
       // ownership transfer
       pDroppedPacket.reset(entry->second.first);
