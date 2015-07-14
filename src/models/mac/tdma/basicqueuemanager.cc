@@ -339,7 +339,7 @@ EMANE::Models::TDMA::BasicQueueManager::dequeue(std::uint8_t u8QueueIndex,
         }
 
       size_t aggregationThreshold{static_cast<size_t>(requestedBytes *
-                                                      pImpl_->dAggregationSlotThreshold_)};
+                                                      pImpl_->dAggregationSlotThreshold_ / 100.0)};
 
 
       // if allowed, check the other queues to see if they have components that will
