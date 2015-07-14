@@ -301,7 +301,9 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                                          message.isMoreFragments() ? "yes" : "no");
 
 
-                  auto key = std::make_pair(pktInfo.getSource(), message.getFragmentSequence());
+                  auto key = std::make_tuple(pktInfo.getSource(),
+                                             priority,
+                                             message.getFragmentSequence());
 
                   auto iter = fragmentStore_.find(key);
 
@@ -317,6 +319,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
                           lastFragmentTime = now;
 
+                          // check that all previous fragments have been received
                           if(indexSet.size() == message.getFragmentIndex() + 1)
                             {
                               if(!message.isMoreFragments())
@@ -366,6 +369,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                             }
                           else
                             {
+                              // missing a fragment - record all bytes received and discontinue assembly
                               size_t totalBytes{message.getData().size()};
 
                                for(const auto & part : parts)
@@ -477,7 +481,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                   totalBytes += part.second.size();
                 }
 
-              pPacketStatusPublisher_->inbound(iter->first.first,
+              pPacketStatusPublisher_->inbound(std::get<0>(iter->first),
                                                dst,
                                                priority,
                                                totalBytes,

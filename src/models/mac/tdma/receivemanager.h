@@ -122,7 +122,7 @@ namespace EMANE
         std::chrono::seconds fragmentCheckThreshold_;
         std::chrono::seconds fragmentTimeoutThreshold_;
 
-        using FragmentKey = std::pair<NEMId,std::uint64_t>;
+        using FragmentKey = std::tuple<NEMId,Priority,std::uint64_t>;
         using FragmentParts = std::map<size_t,std::vector<std::uint8_t>>;
         using FragmentInfo = std::tuple<std::set<size_t>,
                                         FragmentParts,
