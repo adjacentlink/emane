@@ -1161,6 +1161,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
   std::uint8_t u8Retries{isBroadcast(pktInfo.getDestination()) ?
       std::uint8_t{} : macConfig_.getRetryLimit(u8Category)};
 
+  // this moves pkt, making it invalid, use entry.pkt_ from now on
   DownstreamQueueEntry entry{pkt, 
       timeNow, 
       macConfig_.getTxOpMicroseconds(u8Category), 
@@ -1168,7 +1169,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
       u8Retries};
 
   // check rts cts enable
-  if((macConfig_.getRtsThreshold() != 0) &&(macConfig_.getRtsThreshold() <= pkt.length()))
+  if((macConfig_.getRtsThreshold() != 0) &&(macConfig_.getRtsThreshold() <= entry.pkt_.length()))
     {
       // set rts cts flag
       entry.bRtsCtsEnable_ = true;
