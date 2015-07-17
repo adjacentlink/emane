@@ -228,6 +228,8 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
 
                           ++*pNumScheduleRejectSlotIndexOutOfRange_;
 
+                          flushSchedule();
+
                           break;
                         }
                     }
@@ -242,6 +244,8 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                               slotInfo.getFrameIndex());
 
                       ++*pNumScheduleRejectFrameIndexOutOfRange_;
+
+                      flushSchedule();
 
                       break;
                     }
@@ -297,21 +301,50 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
         }
       catch(SerializationException & exp)
         {
-           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                   ERROR_LEVEL,
-                                   "MACI %03hu TDMA::EventScheduler::%s schedule"
-                                   " rejected %s",
-                                   id_,
-                                   __func__,
-                                   exp.what());
+          flushSchedule();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "MACI %03hu TDMA::EventScheduler::%s schedule"
+                                  " rejected %s",
+                                  id_,
+                                  __func__,
+                                  exp.what());
         }
 
     }
 }
 
+void EMANE::Models::TDMA::EventScheduler::flushSchedule()
+{
+  // clear out existing schedule
+  slotInfos_.clear();
+
+  // clear structure
+  structure_ = {};
+
+  // clear frequencies
+  frequencies_.clear();
+
+  // clear slot and structure stat tables
+  eventTablePublisher_.clear();
+
+  // reset the slotter
+  slotter_.reset(Microseconds::zero(),0,0);
+
+  // notify the schedule user of a change
+  pSchedulerUser_->notifyScheduleChange({},0,Microseconds::zero(),Microseconds::zero());
+}
+
 EMANE::Models::TDMA::SlotInfo
 EMANE::Models::TDMA::EventScheduler::getSlotInfo(std::uint64_t u64AbsoluteSlotIndex) const
 {
+  // no schedule available
+  if(slotInfos_.empty())
+    {
+      return {0,0,0,0,EMANE::TimePoint::min(),SlotInfo::Type::IDLE};
+    }
+
   std::uint32_t u32RelativeSlotIndex{};
   std::uint32_t u32RelativeFrameIndex{};
 
@@ -336,6 +369,12 @@ EMANE::Models::TDMA::EventScheduler::getSlotInfo(std::uint64_t u64AbsoluteSlotIn
 EMANE::Models::TDMA::SlotInfo
 EMANE::Models::TDMA::EventScheduler::getSlotInfo(const TimePoint & timePoint) const
 {
+  // no schedule available
+  if(slotInfos_.empty())
+    {
+      return {0,0,0,0,EMANE::TimePoint::min(),SlotInfo::Type::IDLE};
+    }
+
   std::uint64_t u64AbsoluteSlotIndex{};
   std::uint64_t u64AbsoluteFrameIndex{};
   std::uint64_t u64AbsoluteMultiFrameIndex{};
@@ -355,6 +394,12 @@ EMANE::Models::TDMA::EventScheduler::getRxSlotInfo(const TimePoint & timePoint) 
                           "MACI %03hu TDMA::EventScheduler::%s",
                           id_,
                           __func__);
+
+  // no schedule available
+  if(slotInfos_.empty())
+    {
+      return {{0,0,0,0,EMANE::TimePoint::min(),0},false};
+    }
 
   std::uint64_t u64AbsoluteSlotIndex{};
   std::uint64_t u64AbsoluteFrameIndex{};
@@ -390,6 +435,12 @@ std::pair<EMANE::Models::TDMA::TxSlotInfos,EMANE::TimePoint>
 EMANE::Models::TDMA::EventScheduler::getTxSlotInfo(const TimePoint & timePoint,
                                                    int multiframes) const
 {
+  // no scedule available
+  if(slotInfos_.empty())
+    {
+      return {{},EMANE::TimePoint::min()};
+    }
+
   TimePoint requestTime{timePoint};
 
   if(bWaitingFirstTxSlotInfoRequest_)

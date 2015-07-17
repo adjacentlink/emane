@@ -103,6 +103,8 @@ namespace EMANE
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectUpdateBeforeFull_;
         StatisticNumeric<std::uint64_t> * pNumScheduleFullAccept_;
         StatisticNumeric<std::uint64_t> * pNumScheduleUpdateAccept_;
+
+        void flushSchedule();
       };
     }
   }

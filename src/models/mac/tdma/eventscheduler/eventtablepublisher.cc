@@ -51,8 +51,17 @@ void EMANE::Models::TDMA::EventTablePublisher::registerStatistics(StatisticRegis
       " per frame, number of frames per multiframe and transceiver bandwidth.");
 }
 
-void  EMANE::Models::TDMA::EventTablePublisher::replace(const Events::SlotInfos & slotInfos,
-                                                        const Events::SlotStructure & structure)
+void EMANE::Models::TDMA::EventTablePublisher::clear()
+{
+  pStrutureTable_->clear();
+  pScheduleTable_->clear();
+  scheduleIndexSet_.clear();
+  structure_ = {};
+  bHasStructure_ = false;
+}
+
+void EMANE::Models::TDMA::EventTablePublisher::replace(const Events::SlotInfos & slotInfos,
+                                                       const Events::SlotStructure & structure)
 {
   pScheduleTable_->clear();
   scheduleIndexSet_.clear();
