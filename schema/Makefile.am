@@ -1,5 +1,6 @@
-SCHEMAS=      \
-manifest.xsd
+SCHEMAS=              \
+ manifest.xsd         \
+ tdmabasemodelpcr.xsd
 
 EXTRA_DIST  = \
  $(SCHEMAS)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ void EMANE::StatisticService::registerStatistic(BuildId buildId,
                                                 const std::string & sDescription,
                                                 Statistic * pStatistic)
 {
-  if(std::find_if_not(sName.begin(),sName.end(),isalnum) != sName.end())
+  if(std::find_if_not(sName.begin(),sName.end(),[](int ch){return isalnum(ch) || ch == '.';}) != sName.end())
     {
       throw makeException<RegistrarException>("Invalid charater in the statistic name: %s",
                                               sName.c_str());
@@ -82,7 +82,7 @@ void EMANE::StatisticService::registerTable(BuildId buildId,
                                             StatisticTablePublisher * pStatisticTablePublisher,
                                             std::function<void(StatisticTablePublisher *)> clearFunc)
 {
-  if(std::find_if_not(sName.begin(),sName.end(),isalnum) != sName.end())
+  if(std::find_if_not(sName.begin(),sName.end(),[](int ch){return isalnum(ch) || ch == '.';}) != sName.end())
     {
       throw makeException<RegistrarException>("Invalid charater in the statistic table name: %s",
                                               sName.c_str());

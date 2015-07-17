@@ -3,6 +3,7 @@ SUBDIRS=     \
  controls    \
  events      \
  generators  \
+ models      \
  utils
 
 emaneincdir = $(includedir)/emane/

@@ -15,7 +15,12 @@ emaneinc_HEADERS =                       \
  pathlossevent.h                         \
  pathlosseventformatter.h                \
  pathloss.h                              \
- pathloss.inl                            
+ pathloss.inl                            \
+ slotinfo.h                              \
+ slotinfo.inl                            \
+ slotstructure.h                         \
+ slotstructure.inl                       \
+ tdmascheduleevent.h
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(emaneincdir)

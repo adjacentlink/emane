@@ -1,0 +1,132 @@
+<tdmabasemodel-pcr packetsize="128">
+  <datarate bps="1M">
+    <entry sinr="-9.0"  por="0.0"/>
+    <entry sinr="-8.0"  por="1.4"/>
+    <entry sinr="-7.0"  por="21.0"/>
+    <entry sinr="-6.0"  por="63.5"/>
+    <entry sinr="-5.0"  por="90.7"/>
+    <entry sinr="-4.0"  por="98.6"/>
+    <entry sinr="-3.0"  por="99.9"/>
+    <entry sinr="-2.0"  por="100.0"/>
+  </datarate>
+
+  <datarate bps="2M">
+    <entry sinr="-6.0"  por="0"/>
+    <entry sinr="-5.0"  por="1.4"/>
+    <entry sinr="-4.0"  por="20.6"/>
+    <entry sinr="-3.0"  por="63.1"/>
+    <entry sinr="-2.0"  por="90.5"/>
+    <entry sinr="-1.0"  por="98.5"/>
+	<entry sinr="0.0"   por="99.9"/>
+    <entry sinr="1.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="5.5M">
+    <entry sinr="-2.0"  por="0.0"/>
+    <entry sinr="-1.0"  por="0.2"/>
+    <entry sinr="0.0"   por="9.1"/>
+    <entry sinr="1.0"   por="46.2"/>
+    <entry sinr="2.0"   por="82.8"/>
+    <entry sinr="3.0"   por="96.7"/>
+    <entry sinr="4.0"   por="99.6"/>
+    <entry sinr="5.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="11M">
+    <entry sinr="1.0"   por="0.0"/>
+    <entry sinr="2.0"   por="0.2"/>
+    <entry sinr="3.0"   por="8.9"/>
+    <entry sinr="4.0"   por="45.8"/>
+    <entry sinr="5.0"   por="82.5"/>
+    <entry sinr="6.0"   por="96.7"/>
+    <entry sinr="7.0"   por="99.6"/>
+    <entry sinr="8.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="6M">
+    <entry sinr="-2.0"  por="0.0"/>
+    <entry sinr="-1.0"  por="5.5"/>
+    <entry sinr="0.0"   por="39.8"/>
+    <entry sinr="1.0"   por="79.0"/>
+    <entry sinr="2.0"   por="96.0"/>
+    <entry sinr="3.0"   por="99.5"/>
+    <entry sinr="4.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="9M">
+    <entry sinr="-1.0"  por="0.0"/>
+    <entry sinr="0.0"   por="0.3"/>
+    <entry sinr="1.0"   por="10.5"/>
+    <entry sinr="2.0"   por="50.3"/>
+    <entry sinr="3.0"   por="84.9"/>
+    <entry sinr="4.0"   por="97.5"/>
+    <entry sinr="5.0"   por="99.7"/>
+    <entry sinr="6.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="12M">
+    <entry sinr="3.0"   por="0.0"/>
+    <entry sinr="4.0"   por="14.3"/>
+    <entry sinr="5.0"   por="55.2"/>
+    <entry sinr="6.0"   por="87.5"/>
+    <entry sinr="7.0"   por="97.8"/>
+    <entry sinr="8.0"   por="99.8"/>
+    <entry sinr="9.0"   por="100.0"/>
+  </datarate>
+
+  <datarate bps="18M">
+    <entry sinr="4.0"   por="0.0"/>
+    <entry sinr="5.0"   por="1.7"/>
+    <entry sinr="6.0"   por="21.5"/>
+    <entry sinr="7.0"   por="65.0"/>
+    <entry sinr="8.0"   por="91.2"/>
+    <entry sinr="9.0"   por="98.7"/>
+    <entry sinr="10.0"  por="99.9"/>
+    <entry sinr="11.0"  por="100.0"/>
+  </datarate>
+
+  <datarate bps="24M">
+    <entry sinr="9.0"   por="0.0"/>
+    <entry sinr="10.0"  por="2.2"/>
+    <entry sinr="11.0"  por="23.8"/>
+    <entry sinr="12.0"  por="64.4"/>
+    <entry sinr="13.0"  por="90.4"/>
+    <entry sinr="14.0"  por="98.4"/>
+    <entry sinr="15.0"  por="99.8"/>
+    <entry sinr="16.0"  por="100.0"/>
+  </datarate>
+
+  <datarate bps="36M">
+    <entry sinr="10.0"  por="0.0"/>
+    <entry sinr="11.0"  por="0.1"/>
+    <entry sinr="12.0"  por="4.6"/>
+    <entry sinr="13.0"  por="32.4"/>
+    <entry sinr="14.0"  por="72.8"/>
+    <entry sinr="15.0"  por="93.4"/>
+    <entry sinr="16.0"  por="99.0"/>
+    <entry sinr="17.0"  por="99.9"/>
+    <entry sinr="18.0"  por="100.0"/>
+  </datarate>
+
+  <datarate bps="48M">
+    <entry sinr="16.0"  por="0.0"/>
+    <entry sinr="17.0"  por="1.3"/>
+    <entry sinr="18.0"  por="15.8"/>
+    <entry sinr="19.0"  por="53.5"/>
+    <entry sinr="20.0"  por="84.9"/>
+    <entry sinr="21.0"  por="96.8"/>
+    <entry sinr="22.0"  por="99.6"/>
+    <entry sinr="23.0"  por="100.0"/>
+  </datarate>
+
+  <datarate bps="54M">
+    <entry sinr="17.0"  por="0.0"/>
+    <entry sinr="18.0"  por="0.2"/>
+    <entry sinr="19.0"  por="5.7"/>
+    <entry sinr="20.0"  por="32.4"/>
+    <entry sinr="21.0"  por="71.3"/>
+    <entry sinr="22.0"  por="92.4"/>
+    <entry sinr="23.0"  por="99.9"/>
+    <entry sinr="24.0"  por="100.0"/>
+  </datarate>
+</tdmabasemodel-pcr>
