@@ -1021,7 +1021,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                        bytesAvailable,
                                        pendingTxSlotInfo_.destination_);
 
-  MessageComponents & components{std::get<0>(entry)};
+  MessageComponents & components = std::get<0>(entry);
   size_t totalSize{std::get<1>(entry)};
 
   if(totalSize)

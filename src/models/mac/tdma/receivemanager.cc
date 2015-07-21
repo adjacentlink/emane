@@ -170,12 +170,12 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
       double dSINR{};
       double dNoiseFloordB{};
 
-      BaseModelMessage & baseModelMessage{std::get<0>(pendingInfo_)};
+      BaseModelMessage & baseModelMessage = std::get<0>(pendingInfo_);
       PacketInfo pktInfo{std::get<1>(pendingInfo_)};
       size_t length{std::get<2>(pendingInfo_)};
-      TimePoint & startOfReception{std::get<3>(pendingInfo_)};
-      FrequencySegments & frequencySegments{std::get<4>(pendingInfo_)};
-      Microseconds & span{std::get<5>(pendingInfo_)};
+      TimePoint & startOfReception = std::get<3>(pendingInfo_);
+      FrequencySegments & frequencySegments = std::get<4>(pendingInfo_);
+      Microseconds & span = std::get<5>(pendingInfo_);
       std::uint64_t u64SequenceNumber{std::get<7>(pendingInfo_)};
 
       auto & frequencySegment = *frequencySegments.begin();
