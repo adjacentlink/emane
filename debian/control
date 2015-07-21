@@ -77,6 +77,12 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: EMANE commeffect model replacement for commercial network emulators.
 
+Package: emane-model-tdmaeventscheduler
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EMANE TDMA radio model
+
 Package: emane-agent-gpsdlocation
 Section: libs
 Architecture: any
