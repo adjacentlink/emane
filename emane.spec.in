@@ -445,6 +445,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc NEWS
 %doc README
 %doc SPONSOR
+%doc %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmanem.xml
+%doc %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmaradiomodel.xml
+%doc %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmabasemodelpcr.xml
 
 %files gen-eel
 %defattr(-,root,root,-)

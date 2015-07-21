@@ -16,7 +16,13 @@ EXTRA_DIST=                          \
  eventscheduler.h                    \
  eventtablepublisher.h               \
  slotter.h                           \
- slotter.inl
+ slotter.inl                         \
+ tdmanem.xml.in                      \
+ tdmaradiomodel.xml.in
+
+BUILT_SOURCES =                      \
+ tdmanem.xml                         \
+ tdmaradiomodel.xml
 
 libtdmaeventschedulerradiomodel_la_LDFLAGS= \
  $(ACE_LIBS)                         \
@@ -28,3 +34,22 @@ libtdmaeventschedulerradiomodel_la_LDFLAGS= \
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  
 
+tdmanem.xml: tdmaradiomodel.xml.in
+	$(edit) $< > $@
+
+tdmaradiomodel.xml: tdmaradiomodel.xml.in
+	$(edit) $< > $@
+
+clean-local:
+	rm -f $(BUILT_SOURCES)
+
+install-exec-hook:	
+	$(mkinstalldirs) $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler
+	cp -f tdmanem.xml $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler
+	cp -f tdmaradiomodel.xml $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler
+	cp -f ../tdmabasemodelpcr.xml $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler
+
+uninstall-local:
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler/tdmanem.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler/tdmaradiomodel.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/xml/models/mac/tdmaeventscheduler/tdmabasemodelpcr.xml
