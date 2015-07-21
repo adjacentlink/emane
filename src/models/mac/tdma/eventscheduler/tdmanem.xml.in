@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nem SYSTEM "file://@datadir@/dtd/nem.dtd">
+<nem>
+  <transport definition="transvirtual.xml"/>
+  <mac definition="tdmaradiomodel.xml"/>
+  <phy>
+    <param name="fixedantennagain"         value="0.0"/>
+    <param name="fixedantennagainenable"   value="on"/>
+    <param name="bandwidth"                value="1M"/>
+    <param name="noisemode"                value="all"/>
+    <param name="propagationmodel"         value="precomputed"/>
+    <param name="systemnoisefigure"        value="4.0"/>
+    <param name="subid"                    value="7"/>
+  </phy>
+</nem>
