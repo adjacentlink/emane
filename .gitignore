@@ -89,3 +89,5 @@ src/models/shim/phyapitest/phyapitestshim.xml
 src/models/shim/timinganalysis/timinganalysisshim.xml
 src/transports/raw/transraw.xml
 src/transports/virtual/transvirtual.xml
+src/models/mac/tdma/eventscheduler/tdmanem.xml
+src/models/mac/tdma/eventscheduler/tdmaradiomodel.xml
