@@ -1,6 +1,7 @@
 dist_bin_SCRIPTS =        \
  emanegentransportxml     \
- emaneconvertdtdpath
+ emaneconvertdtdpath      \
+ emaneantennapatternview
 
 EXTRA_DIST =              \
  emanegenmanifests.sh

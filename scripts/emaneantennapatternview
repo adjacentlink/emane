@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of Adjacent Link LLC nor the names of its
+#   contributors may be used to endorse or promote products derived
+#   from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+from lxml import etree
+from visual import *
+import numpy as np
+import sys
+from optparse import OptionParser
+import os
+
+NUM_ELEVATION=181
+NUM_BEARING=360
+NORMALIZE_MAX_DB=40
+
+def loadProfile(filename,fill,rotation):
+    profile = np.empty((NUM_ELEVATION,NUM_BEARING))
+    profile[:] = fill
+    gainMax = fill
+
+    doc = etree.parse(filename)
+
+    root = doc.getroot()
+
+    for elevation in root.xpath('/antennaprofile//elevation'):
+        elevationMin = int(elevation.get('min'))
+        elevationMax = int(elevation.get('max'))
+
+        for bearing in elevation.xpath('bearing'):
+            bearingMin = int(bearing.get('min'))
+            bearingMax = int(bearing.get('max'))
+
+            for gain in bearing.xpath('gain'):
+                antennaGain = int(round(float(gain.get('value'))))
+                gainMax = max(antennaGain,gainMax)
+
+                for elevationDegrees in range(elevationMin,elevationMax+1):
+                    for bearingDegrees in range(bearingMin,bearingMax+1):
+                        profile[elevationDegrees + 90, (bearingDegrees - rotation) % 360] = antennaGain
+
+    return (profile,gainMax)
+
+
+def render(profile,gainMax,color):
+    normalizedGain = NORMALIZE_MAX_DB - gainMax
+    for elevation in range(0,NUM_ELEVATION):
+        p = []
+
+        for bearing in range(0,NUM_BEARING):
+            rho =  profile[elevation,bearing] + normalizedGain
+
+            if rho >= 0:
+                theta =  math.radians(bearing)
+                phi = math.radians(elevation)
+
+                x = rho * np.sin(phi) * np.cos(theta)
+                y = rho * np.sin(phi) * np.sin(theta)
+                z = rho * np.cos(phi)
+
+                p.append((x,y,z))
+
+        if len(p):
+            p.append(p[0])
+            curve(pos=p,color=color)
+
+
+usage = "%prog [OPTION]... ANTENNAPROFILEXML"
+
+description="""Simple rendering utility for EMANE antenna and blockage patterns."""
+
+optionParser = OptionParser(usage=usage,
+                            description=description)
+
+optionParser.add_option("-a",
+                        "--arotate",
+                        action="store",
+                        type="int",
+                        dest="arotate",
+                        metavar='DEGREES',
+                        default=0,
+                        help="antenna rotation in degrees [default: %default]")
+
+optionParser.add_option("-b",
+                        "--brotate",
+                        action="store",
+                        type="int",
+                        dest="brotate",
+                        metavar='DEGREES',
+                        default=0,
+                        help="blockage rotation in degrees [default: %default]")
+
+optionParser.add_option("-s",
+                        "--sum",
+                        action="store_true",
+                        dest="sum",
+                        default=False,
+                        help="display sum of patterns")
+
+optionParser.add_option("--blockage",
+                        type="string",
+                        dest="blockage",
+                        metavar='FILE',
+                        default=False,
+                        help="blockage XML file")
+
+optionParser.add_option("--null",
+                        type="int",
+                        dest="null",
+                        metavar="DECIBELS",
+                        default=-200,
+                        help="null value representing full loss in dB [default: %default]")
+
+optionParser.add_option("--scenesize",
+                        action="store",
+                        type="int",
+                        dest="scenesize",
+                        default=50,
+                        help="scene size [default: %default]")
+
+(options, args) = optionParser.parse_args()
+
+if len(args) != 1:
+    print >>sys.stderr, "invalid number of arguments"
+    exit(1)
+
+scene = display()
+scene.autoscale = False
+scene.range = [options.scenesize] * 3
+
+# draw sphere at origin
+sphere(pos=(0,0,0),radius=1,color=color.yellow)
+
+# load the antenna profile
+profile,gainMax = loadProfile(args[0],
+                              options.null,
+                              options.arotate - 90)
+
+# initialize a blockage matrix with no blockage
+blockage = np.zeros((NUM_ELEVATION,NUM_BEARING))
+
+# load blockage matrix if specified
+if options.blockage:
+    blockage,_ = loadProfile(options.blockage,0,options.brotate - 90)
+
+# sum profile and blockage matrix if specified
+if options.sum:
+    summation = np.add(profile,blockage)
+    render(summation,gainMax,color.green)
+else:
+    render(profile,gainMax,color.green)
+
+    if options.blockage:
+        render(blockage,gainMax,color.red)

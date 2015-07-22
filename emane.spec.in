@@ -32,7 +32,7 @@ Group: Applications/System
 EMANE DTDs required for EMANE XML.
 
 %package utils
-Requires: emane-dtds  >= %{version} python-lxml
+Requires: emane-dtds  >= %{version} python-lxml python-visual
 Summary: EMANE utilities
 Group:  Applications/System
 
@@ -208,6 +208,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{_bindir}/emanegentransportxml
 %{_bindir}/emaneconvertdtdpath
+%{_bindir}/emaneantennapatternview
 
 %doc AUTHORS
 %doc COPYING

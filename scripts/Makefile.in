@@ -291,7 +291,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 dist_bin_SCRIPTS = \
  emanegentransportxml     \
- emaneconvertdtdpath
+ emaneconvertdtdpath      \
+ emaneantennapatternview
 
 EXTRA_DIST = \
  emanegenmanifests.sh

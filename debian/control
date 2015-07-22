@@ -26,7 +26,7 @@ Description:  EMANE DTDs required for EMANE XML.
 Package: emane-utils
 Section: extra
 Architecture: any
-Depends: python-lxml, ${shlibs:Depends}, ${misc:Depends}
+Depends: python-lxml, python-visual, ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE utilities
 
 Package: emane-libs
