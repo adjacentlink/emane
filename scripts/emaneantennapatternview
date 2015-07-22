@@ -35,7 +35,7 @@ from visual import *
 import numpy as np
 import sys
 from optparse import OptionParser
-import os
+
 
 NUM_ELEVATION=181
 NUM_BEARING=360
