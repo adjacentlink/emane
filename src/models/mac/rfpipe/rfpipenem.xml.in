@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE nem SYSTEM "file://@datadir@/dtd/nem.dtd">
 <nem name="RF-PIPE NEM">
+  <transport definition="transvirtual.xml"/>
   <mac definition="rfpipemac.xml"/>
   <phy>
     <param name="fixedantennagain"         value="0.0"/>
@@ -12,5 +13,4 @@
     <param name="subid"                    value="2"/>
     <param name="txpower"                  value="0.0"/>
   </phy>
-  <transport definition="transvirtual.xml"/>
 </nem>
