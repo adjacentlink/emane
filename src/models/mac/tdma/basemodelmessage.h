@@ -35,9 +35,8 @@
 
 #include "emane/serializable.h"
 #include "emane/types.h"
-#include "tdmabasemodelheader.pb.h"
+#include "tdmabasemodelmessage.pb.h"
 #include "emane/models/tdma/messagecomponent.h"
-#include "emane/utils/vectorio.h"
 
 namespace EMANE
 {

@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tdmabasemodelheader.pb.h"
+#include "tdmabasemodelmessage.pb.h"
 
 inline
 EMANE::Models::TDMA::BaseModelMessage::BaseModelMessage():

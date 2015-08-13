@@ -21,12 +21,12 @@ libtdmabase_la_SOURCES =             \
  queuestatuspublisher.cc             \
  receivemanager.cc                   \
  slotstatustablepublisher.cc         \
- tdmabasemodelheader.pb.cc           \
+ tdmabasemodelmessage.pb.cc          \
  txslotinfosformatter.cc 
 
 BUILT_SOURCES =                      \
- tdmabasemodelheader.pb.cc           \
- tdmabasemodelheader.pb.h
+ tdmabasemodelmessage.pb.cc          \
+ tdmabasemodelmessage.pb.h
 
 EXTRA_DIST=                          \
  basemodelimpl.h                     \
@@ -39,7 +39,7 @@ EXTRA_DIST=                          \
  queuestatuspublisher.h              \
  receivemanager.h                    \
  slotstatustablepublisher.h          \
- tdmabasemodelheader.proto           \
+ tdmabasemodelmessage.proto          \
  tdmabasemodelpcr.xml                \
  txslotinfosformatter.h
 
@@ -51,5 +51,5 @@ libtdmabase_la_LDFLAGS=              \
 clean-local:
 	rm -f $(BUILT_SOURCES)
 
-tdmabasemodelheader.pb.cc tdmabasemodelheader.pb.h: tdmabasemodelheader.proto
+tdmabasemodelmessage.pb.cc tdmabasemodelmessage.pb.h: tdmabasemodelmessage.proto
 	protoc -I=. --cpp_out=. $<
