@@ -94,7 +94,7 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::registerStatistics(Statisti
                                                 [this,queueIndex](StatisticTablePublisher * pTable)
                                                 {
                                                   std::lock_guard<std::mutex> m(mutexBroadcastPacketAcceptTable_);
-                                                  broadcastAcceptTables_[queueIndex]->clear();
+                                                  broadcastAcceptInfos_[queueIndex].clear();
                                                   pTable->clear();
                                                 },
                                                 "Broadcast bytes accepted");
@@ -105,7 +105,7 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::registerStatistics(Statisti
                                                 [this,queueIndex](StatisticTablePublisher * pTable)
                                                 {
                                                   std::lock_guard<std::mutex> m(mutexUnicastPacketAcceptTable_);
-                                                  unicastAcceptTables_[queueIndex]->clear();
+                                                  unicastAcceptInfos_[queueIndex].clear();
                                                   pTable->clear();
                                                 },
                                                 "Unicast bytes accepted");
@@ -116,7 +116,7 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::registerStatistics(Statisti
                                                 [this,queueIndex](StatisticTablePublisher * pTable)
                                                 {
                                                   std::lock_guard<std::mutex> m(mutexBroadcastPacketDropTable_);
-                                                  broadcastDropTables_[queueIndex]->clear();
+                                                  broadcastDropInfos_[queueIndex].clear();
                                                   pTable->clear();
                                                 },
                                                 "Broadcast bytes dropped");
@@ -127,7 +127,7 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::registerStatistics(Statisti
                                                 [this,queueIndex](StatisticTablePublisher * pTable)
                                                 {
                                                   std::lock_guard<std::mutex> m(mutexUnicastPacketDropTable_);
-                                                  unicastDropTables_[queueIndex]->clear();
+                                                  unicastDropInfos_[queueIndex].clear();
                                                   pTable->clear();
                                                 },
                                                 "Unicast bytes dropped");
@@ -173,6 +173,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
   AcceptInfoArrary * pAcceptInfos{};
   DropInfoArrary  * pDropInfos{};
 
+  std::mutex * pMutexAcceptTable = {};
+  std::mutex * pMutexDropTable = {};
+
   if(dst == NEM_BROADCAST_MAC_ADDRESS)
     {
       pAcceptTables = &broadcastAcceptTables_;
@@ -180,6 +183,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
 
       pAcceptInfos = &broadcastAcceptInfos_;
       pDropInfos = &broadcastDropInfos_;
+
+      pMutexAcceptTable = &mutexBroadcastPacketAcceptTable_;
+      pMutexDropTable = &mutexBroadcastPacketDropTable_;
     }
   else
     {
@@ -188,6 +194,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
 
       pAcceptInfos = &unicastAcceptInfos_;
       pDropInfos = &unicastDropInfos_;
+
+      pMutexAcceptTable = &mutexUnicastPacketAcceptTable_;
+      pMutexDropTable = &mutexUnicastPacketDropTable_;
     }
 
   // detetmine the relevant queue based on priority
@@ -195,6 +204,8 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
 
   if(action == InboundAction::ACCEPT_GOOD)
     {
+      std::lock_guard<std::mutex> m(*pMutexAcceptTable);
+
       auto iter = (*pAcceptInfos)[u8QueueIndex].find(src);
 
       if(iter == (*pAcceptInfos)[u8QueueIndex].end())
@@ -218,6 +229,8 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
     }
   else
     {
+      std::lock_guard<std::mutex> m(*pMutexDropTable);
+
       auto iter = (*pDropInfos)[u8QueueIndex].find(src);
 
       if(iter == (*pDropInfos)[u8QueueIndex].end())
@@ -343,6 +356,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
   AcceptInfoArrary * pAcceptInfos{};
   DropInfoArrary  * pDropInfos{};
 
+  std::mutex * pMutexAcceptTable = {};
+  std::mutex * pMutexDropTable = {};
+
   if(dst == NEM_BROADCAST_MAC_ADDRESS)
     {
       pAcceptTables = &broadcastAcceptTables_;
@@ -350,6 +366,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
 
       pAcceptInfos = &broadcastAcceptInfos_;
       pDropInfos = &broadcastDropInfos_;
+
+      pMutexAcceptTable = &mutexBroadcastPacketAcceptTable_;
+      pMutexDropTable = &mutexBroadcastPacketDropTable_;
     }
   else
     {
@@ -358,14 +377,19 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
 
       pAcceptInfos = &unicastAcceptInfos_;
       pDropInfos = &unicastDropInfos_;
+
+      pMutexAcceptTable = &mutexUnicastPacketAcceptTable_;
+      pMutexDropTable = &mutexUnicastPacketDropTable_;
     }
 
   // detetmine the relevant queue based on priority
   std::uint8_t u8QueueIndex{priorityToQueue(priority)};
 
 
-   if(action == OutboundAction::ACCEPT_GOOD)
+  if(action == OutboundAction::ACCEPT_GOOD)
     {
+      std::lock_guard<std::mutex> m(*pMutexAcceptTable);
+
       auto iter = (*pAcceptInfos)[u8QueueIndex].find(src);
 
       if(iter == (*pAcceptInfos)[u8QueueIndex].end())
@@ -387,9 +411,11 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
                                               ACCEPT_COLUMN_NUM_BYTES_TX,
                                               Any{bytes});
     }
-   else
-     {
-       auto iter = (*pDropInfos)[u8QueueIndex].find(src);
+  else
+    {
+      std::lock_guard<std::mutex> m(*pMutexDropTable);
+
+      auto iter = (*pDropInfos)[u8QueueIndex].find(src);
 
       if(iter == (*pDropInfos)[u8QueueIndex].end())
         {
@@ -448,14 +474,14 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
         default:
           break;
         }
-     }
+    }
 }
 
 void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
                                                               const MessageComponents & components,
                                                               OutboundAction action)
 {
- for(const auto & component : components)
+  for(const auto & component : components)
     {
       outbound(src,
                component.getDestination(),

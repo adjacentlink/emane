@@ -358,7 +358,6 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
     {
       if(totalBytesCopied < bytes)
         {
-
           if(totalBytesVisited + entry.iov_len < pMetaInfo->offset_)
             {
               totalBytesVisited += entry.iov_len;
@@ -367,8 +366,10 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
             {
               char * pBuf{reinterpret_cast<char *>(entry.iov_base)};
 
+              // where are we in the current entry
               auto offset = pMetaInfo->offset_ - totalBytesVisited;
 
+              // how much of this entry is left
               auto remainder = entry.iov_len - offset;
 
               // if necessary adjust totalBytesVisited after
@@ -381,16 +382,23 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
 
               // clamp the reaminder if there is more remaining than
               // what was request
-              if(remainder > bytes)
+              size_t amountToCopy{};
+
+              if(remainder > bytes - totalBytesCopied)
                 {
-                  remainder = bytes;
+                  amountToCopy =  bytes - totalBytesCopied;
+                  remainder -= amountToCopy;
+                }
+              else
+                {
+                  amountToCopy = remainder;
                 }
 
-              vectorIOs.push_back(Utils::make_iovec(pBuf+offset,remainder));
+              vectorIOs.push_back(Utils::make_iovec(pBuf+offset,amountToCopy));
 
-              pMetaInfo->offset_ += remainder;
-              totalBytesVisited += remainder;
-              totalBytesCopied += remainder;
+              pMetaInfo->offset_ += amountToCopy;
+              totalBytesVisited += amountToCopy;
+              totalBytesCopied += amountToCopy;
             }
         }
       else
@@ -398,6 +406,7 @@ EMANE::Models::TDMA::Queue::fragmentPacket(DownstreamPacket * pPacket,
           break;
         }
     }
+
 
   MessageComponent component{bIsControl_ ?
       MessageComponent::Type::CONTROL :
