@@ -177,8 +177,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         " propagation associated with a received packet will be clamped"
                                         " to their respective maximums defined by noisemaxsegmentoffset,"
                                         " noisemaxsegmentduration and noisemaxmessagepropagation. When"
-                                        " disabled, any packet with an above max value will be dropped.",
-                                        1);
+                                        " disabled, any packet with an above max value will be dropped.");
 
 
   configRegistrar.registerNumeric<std::uint64_t>("noisemaxsegmentoffset",
