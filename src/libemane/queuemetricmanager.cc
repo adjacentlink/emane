@@ -53,8 +53,8 @@ class EMANE::QueueMetricManager::Implementation
       { }
 
      void updateQueueMetric(std::uint16_t u16QueueId,
-                            std::uint32_t u32QueueSize,
-                            std::uint32_t u32QueueDepth,
+                            std::uint32_t u32MaxQueueSize,
+                            std::uint32_t u32CurrentQueueDepth,
                             std::uint32_t u32NumDiscards,
                             const EMANE::Microseconds & delayMicroseconds)
        {
@@ -66,24 +66,28 @@ class EMANE::QueueMetricManager::Implementation
          rData.u32NumSamples_ += 1;
 
          // bump the delay sum
-         rData.delayMicroseconds_ += delayMicroseconds;
+         rData.sumDelayMicroseconds_ += delayMicroseconds;
 
-         // check max size
-         if(rData.u32QueueSize_ < u32QueueSize)
+         // check max size change
+         if(rData.u32MaxQueueSize_ != u32MaxQueueSize)
            {
-             rData.u32QueueSize_ = u32QueueSize;
+             // set new max size
+             rData.u32MaxQueueSize_ = u32MaxQueueSize;
+
+             // reset high water mark
+             rData.u32QueueHighWaterMark_ = 0;
            }
 
-         // check max depth
-         if(rData.u32QueueDepth_ < u32QueueDepth)
+         // check queue depth high water
+         if(rData.u32QueueHighWaterMark_ < u32CurrentQueueDepth)
            {
-             rData.u32QueueDepth_ = u32QueueDepth;
+             rData.u32QueueHighWaterMark_ = u32CurrentQueueDepth;
            }
 
-         // check max discards
-         if(rData.u32NumDiscards_ < u32NumDiscards)
+         // check discards high water
+         if(rData.u32NumDiscardsHighWaterMark_ < u32NumDiscards)
            {
-             rData.u32NumDiscards_ = u32NumDiscards;
+             rData.u32NumDiscardsHighWaterMark_ = u32NumDiscards;
            }
        }
 
@@ -94,36 +98,33 @@ class EMANE::QueueMetricManager::Implementation
 
         EMANE::Controls::R2RIQueueMetrics metrics;
 
-       for(auto iter : queueDataMap_)
+       for(auto & iter : queueDataMap_)
          {
            // get avg delay time
-           const EMANE::Microseconds avgDelayMicroseconds{getAvg_i(iter.second.delayMicroseconds_, 
+           const EMANE::Microseconds avgDelayMicroseconds{getAvg_i(iter.second.sumDelayMicroseconds_,
                                                                    iter.second.u32NumSamples_)};
 
-           EMANE::Controls::R2RIQueueMetric metric{iter.first,                        // queue id
-                                                   iter.second.u32QueueSize_,         // queue size
-                                                   iter.second.u32QueueDepth_,        // queue depth
-                                                   iter.second.u32NumDiscards_,       // num discards
-                                                   avgDelayMicroseconds};              // avg delay
+           EMANE::Controls::R2RIQueueMetric metric{iter.first,                               // queue id
+                                                   iter.second.u32MaxQueueSize_,             // queue max size
+                                                   iter.second.u32QueueHighWaterMark_,       // queue current depth high water
+                                                   iter.second.u32NumDiscardsHighWaterMark_, // num discards high water
+                                                   avgDelayMicroseconds};                    // avg delay
 
            metrics.push_back(metric); 
-    
-           // reset num discards
-           iter.second.u32NumDiscards_ = 0;
- 
-           // reset delay sum
-           iter.second.delayMicroseconds_ = EMANE::Microseconds::zero();
+
+           // reset data
+           iter.second.reset();
          }
 
          return metrics;
       }
 
 
-     bool addQueueMetric(std::uint16_t queueId, std::uint32_t u32QueueSize)
+     bool addQueueMetric(std::uint16_t queueId, std::uint32_t u32MaxQueueSize)
       {
         ACE_Guard<ACE_Thread_Mutex> m(mutex_);
 
-        return queueDataMap_.insert(std::make_pair(queueId, QueueData(u32QueueSize))).second;
+        return queueDataMap_.insert(std::make_pair(queueId, QueueData(u32MaxQueueSize))).second;
       }
 
 
@@ -148,27 +149,39 @@ class EMANE::QueueMetricManager::Implementation
 
     private:
       struct QueueData {
-        std::uint32_t        u32QueueSize_;
-        std::uint32_t        u32QueueDepth_;
-        std::uint32_t        u32NumSamples_;
-        std::uint32_t        u32NumDiscards_;
-        EMANE::Microseconds  delayMicroseconds_;
+        // metrics observed over the report interval
+        std::uint32_t        u32MaxQueueSize_;              // queue max size
+        std::uint32_t        u32QueueHighWaterMark_;        // queue depth high water
+        std::uint32_t        u32NumSamples_;                // num samples
+        std::uint32_t        u32NumDiscardsHighWaterMark_;  // num discards high water
+        EMANE::Microseconds  sumDelayMicroseconds_;         // total delay
 
        QueueData() :
-         u32QueueSize_{},
-         u32QueueDepth_{},
+         u32MaxQueueSize_{},
+         u32QueueHighWaterMark_{},
          u32NumSamples_{},
-         u32NumDiscards_{},
-         delayMicroseconds_{}
+         u32NumDiscardsHighWaterMark_{},
+         sumDelayMicroseconds_{}
         { }
 
        QueueData(std::uint32_t u32MaxSize) :
-         u32QueueSize_(u32MaxSize),
-         u32QueueDepth_{},
+         u32MaxQueueSize_(u32MaxSize),
+         u32QueueHighWaterMark_{},
          u32NumSamples_{},
-         u32NumDiscards_{},
-         delayMicroseconds_{}
+         u32NumDiscardsHighWaterMark_{},
+         sumDelayMicroseconds_{}
         { }
+
+       void reset()
+        {
+          u32NumDiscardsHighWaterMark_ = 0;
+
+          sumDelayMicroseconds_ = EMANE::Microseconds::zero();
+
+          u32NumSamples_ = 0;
+
+          u32QueueHighWaterMark_ = 0;
+        }
      };
 
      using QueueDataMap = std::map<std::uint16_t, QueueData>;
@@ -232,23 +245,23 @@ EMANE::QueueMetricManager::getQueueMetrics()
 
 void 
 EMANE::QueueMetricManager::updateQueueMetric(std::uint16_t u16QueueId,
-                                             std::uint32_t u32QueueSize,
-                                             std::uint32_t u32QueueDepth,
+                                             std::uint32_t u32MaxQueueSize,
+                                             std::uint32_t u32CurrentQueueDepth,
                                              std::uint32_t u32NumDiscards,
                                              const Microseconds & delayMicroseconds)
 {
   pImpl_->updateQueueMetric(u16QueueId,
-                            u32QueueSize,
-                            u32QueueDepth,
+                            u32MaxQueueSize,
+                            u32CurrentQueueDepth,
                             u32NumDiscards,
                             delayMicroseconds);
 }
 
 
 bool 
-EMANE::QueueMetricManager::addQueueMetric(std::uint16_t u16QueueId, std::uint32_t u32QueueSize)
+EMANE::QueueMetricManager::addQueueMetric(std::uint16_t u16QueueId, std::uint32_t u32MaxQueueSize)
 {
-  return pImpl_->addQueueMetric(u16QueueId, u32QueueSize);
+  return pImpl_->addQueueMetric(u16QueueId, u32MaxQueueSize);
 }
 
 
