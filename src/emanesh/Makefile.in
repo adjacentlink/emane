@@ -583,7 +583,7 @@ setup.py:	setup.py.in
 rpm: $(BUILT_SOURCES)
 	$(PYTHON) setup.py bdist_rpm  \
    --vendor "Adjacent Link LLC" \
-   --requires "protobuf-python python-setuptools"
+   --requires "protobuf-python python-lxml"
 
 stdeb.cfg: stdeb.cfg.in
 	if test -f $@; then chmod u+w $@; fi
