@@ -18,6 +18,7 @@ heterogeneous network emulation using a pluggable MAC and PHY layer
 architecture.
 
 %package devel
+Requires: emane-libs = %{version} ace-devel
 Summary: Headers necessary to build EMANE network emulation modules.
 Group: Development/Libraries
 
