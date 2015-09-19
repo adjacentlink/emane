@@ -7,7 +7,7 @@ Group: Applications/System
 URL: https://github.com/adjacentlink/emane
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: libxml2 ace protobuf pcre emane-libs >= %{version} emane-dtds >= %{version}
+Requires: emane-libs >= %{version} emane-dtds >= %{version}
 BuildRequires: libxml2-devel ace-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
 Prefix: /usr
 Vendor: Adjacent Link LLC
@@ -40,7 +40,6 @@ Group:  Applications/System
 EMANE utilities
 
 %package libs
-Requires: libxml2 ace
 Summary: EMANE Libraries
 Group: Libraries
 
