@@ -7,7 +7,7 @@ Group: Applications/System
 URL: https://github.com/adjacentlink/emane
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: emane-libs >= %{version} emane-dtds >= %{version}
+Requires: emane-libs = %{version} emane-dtds = %{version}
 BuildRequires: libxml2-devel ace-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
 Prefix: /usr
 Vendor: Adjacent Link LLC
@@ -32,7 +32,7 @@ Group: Applications/System
 EMANE DTDs required for EMANE XML.
 
 %package utils
-Requires: emane-dtds  >= %{version} python-lxml
+Requires: emane-dtds = %{version} python-lxml
 Summary: EMANE utilities
 Group:  Applications/System
 
@@ -47,7 +47,7 @@ Group: Libraries
 EMANE Libraries required for components
 
 %package transportdaemon
-Requires: emane-libs  >= %{version} emane-dtds >= %{version}
+Requires: emane-libs = %{version} emane-dtds = %{version}
 Summary: EMANE transport daemon
 Group: Applications/System
 
@@ -55,7 +55,7 @@ Group: Applications/System
 EMANE transport daemon.  Creates and manages one or more transports.
 
 %package eventdaemon
-Requires: emane-libs >= %{version} emane-dtds >= %{version}
+Requires: emane-libs = %{version} emane-dtds = %{version}
 Summary: EMANE event daemon
 Group: Applications/System
 
@@ -63,7 +63,7 @@ Group: Applications/System
 EMANE event daemon forwards events to registered agents.
 
 %package eventservice
-Requires: emane-libs  >= %{version} emane-dtds >= %{version}
+Requires: emane-libs = %{version} emane-dtds = %{version}
 Summary: EMANE event service
 Group: Applications/System
 
@@ -71,7 +71,7 @@ Group: Applications/System
 EMANE event service creates and manages event generators. 
 
 %package model-rfpipe
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE RF Pipe MAC Layer
 Group: Libraries
 
@@ -79,7 +79,7 @@ Group: Libraries
 EMANE RF Pipe MAC Layer
 
 %package model-ieee80211abg
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE  802.11abg MAC Layer
 Group: Libraries
 
@@ -87,7 +87,7 @@ Group: Libraries
 EMANE 802.11abg MAC Layer
 
 %package model-bypass
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE Bypass MAC and PHY Layer
 Group: Libraries
 
@@ -96,7 +96,7 @@ EMANE Bypass MAC and PHY Layer
 
 %package model-commeffect
 Summary: EMANE commeffect shim model.
-Requires: emane-dtds >= %{version}
+Requires: emane-dtds = %{version}
 Group: Libraries
 
 %description model-commeffect
@@ -104,14 +104,14 @@ EMANE commeffect model replacement for commercial network emulators.
 
 %package model-tdmaeventscheduler
 Summary: EMANE TDMA Event Scheduler radio model.
-Requires: emane-dtds >= %{version}
+Requires: emane-dtds = %{version}
 Group: Libraries
 
 %description model-tdmaeventscheduler
 EMANE TDMA event scheduler model.
 
 %package agent-gpsdlocation
-Requires: emane-eventdaemon >= %{version}
+Requires: emane-eventdaemon = %{version}
 Summary: EMANE gpsd location agent 
 Group: Libraries
 
@@ -120,7 +120,7 @@ EMANE gpsd location agent translates location events into NMEA strings
 and transmits them to gpsd via a pseudo terminal device.
 
 %package trans-virtual
-Requires: emane-transportdaemon >= %{version}
+Requires: emane-transportdaemon = %{version}
 Summary: EMANE virtual transport implementation
 Group: Libraries
 
@@ -129,7 +129,7 @@ EMANE virtual transport.  Uses tun device to create a network layer
 entry point for the NEM stack.
 
 %package trans-raw
-Requires: emane-transportdaemon >= %{version}
+Requires: emane-transportdaemon = %{version}
 Summary: EMANE raw transport implementation
 Group: Libraries
 
@@ -138,7 +138,7 @@ EMANE raw transport.  Uses raw IP to create a network layer
 entry point for the NEM stack.
 
 %package model-phyapitestshim
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE PHY API Test shim
 Group: Libraries
 
@@ -146,7 +146,7 @@ Group: Libraries
 EMANE PHY API Test shim
 
 %package model-timinganalysisshim
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE Timing Test shim
 Group: Libraries
 
@@ -154,7 +154,7 @@ Group: Libraries
 EMANE Timing Test shim
 
 %package gen-eel
-Requires: emane >= %{version}
+Requires: emane = %{version}
 Summary: EMANE Emulation Event Log Generator
 Group: Libraries
 
