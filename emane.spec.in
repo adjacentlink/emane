@@ -97,7 +97,7 @@ EMANE Bypass MAC and PHY Layer
 
 %package model-commeffect
 Summary: EMANE commeffect shim model.
-Requires: emane-dtds = %{version}
+Requires: emane = %{version}
 Group: Libraries
 
 %description model-commeffect
@@ -105,7 +105,7 @@ EMANE commeffect model replacement for commercial network emulators.
 
 %package model-tdmaeventscheduler
 Summary: EMANE TDMA Event Scheduler radio model.
-Requires: emane-dtds = %{version}
+Requires: emane = %{version}
 Group: Libraries
 
 %description model-tdmaeventscheduler
