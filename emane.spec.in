@@ -155,7 +155,7 @@ Group: Libraries
 EMANE Timing Test shim
 
 %package gen-eel
-Requires: emane = %{version}
+Requires: emane-eventservice = %{version}
 Summary: EMANE Emulation Event Log Generator
 Group: Libraries
 
