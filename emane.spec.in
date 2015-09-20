@@ -252,7 +252,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{_libdir}/libemanexmlparser.*
 %{_libdir}/libemane.*
-%{_libdir}/pkgconfig/*
 
 %doc AUTHORS
 %doc COPYING
@@ -305,6 +304,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-, root, root)
 %{_includedir}/emane/*
+%{_libdir}/pkgconfig/*
 
 %doc AUTHORS
 %doc COPYING
