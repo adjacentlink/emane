@@ -183,7 +183,11 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 find ${RPM_BUILD_ROOT} -name '*.a' -exec rm '{}'  \;
 find ${RPM_BUILD_ROOT} -name '*.la' -exec rm '{}' \;
 mkdir -p ${RPM_BUILD_ROOT}%{_pkgdocdir}
-install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS COPYING ChangeLog NEWS README PROBLEM-REPORT-FORM SPONSOR
+install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS %{!?_licensedir:COPYING} ChangeLog NEWS README PROBLEM-REPORT-FORM SPONSOR
+%if 0%{?_licensedir:1}
+mkdir -p ${RPM_BUILD_ROOT}%{_licensedir}/%{name}
+install -t ${RPM_BUILD_ROOT}%{_licensedir}/%{name} COPYING
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -201,6 +205,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/emane.1.gz
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files utils
 %defattr(-, root, root)
@@ -209,6 +217,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/emanegentransportxml.1.gz
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files dtds
 %defattr(-, root, root)
@@ -234,6 +246,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/schema/tdmabasemodelpcr.xsd
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files libs
 %defattr(-, root, root)
@@ -241,6 +257,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libemane.*
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files transportdaemon
 %defattr(-, root, root)
@@ -248,6 +268,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/emanetransportd.1.gz
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files eventdaemon
 %defattr(-, root, root)
@@ -255,6 +279,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/emaneeventd.1.gz
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files eventservice
 %defattr(-, root, root)
@@ -262,6 +290,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/emaneeventservice.1.gz
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files devel
 %defattr(-, root, root)
@@ -269,6 +301,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-rfpipe
 %defattr(-, root, root)
@@ -278,6 +314,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/mac/rfpipe/rfpipepcr.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-bypass
 %defattr(-, root, root)
@@ -288,6 +328,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/mac/bypass/bypassnem.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-ieee80211abg
 %defattr(-, root, root)
@@ -297,6 +341,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211pcr.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files agent-gpsdlocation
 %defattr(-, root, root)
@@ -304,6 +352,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/agents/gpsdlocation/gpsdlocationagent.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files trans-virtual
 %defattr(-, root, root)
@@ -311,6 +363,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/transports/virtual/transvirtual.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files trans-raw
 %defattr(-, root, root)
@@ -318,6 +374,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/transports/raw/transraw.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-phyapitestshim
 %defattr(-, root, root)
@@ -325,6 +385,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/shim/phyapitest/phyapitestshim.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-timinganalysisshim
 %defattr(-, root, root)
@@ -332,6 +396,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/shim/timinganalysis/timinganalysisshim.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-commeffect
 %defattr(-,root,root,-)
@@ -341,6 +409,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/shim/commeffect/commeffectfilters.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files model-tdmaeventscheduler
 %defattr(-,root,root,-)
@@ -351,6 +423,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmabasemodelpcr.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files gen-eel
 %defattr(-,root,root,-)
@@ -362,9 +438,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/generators/eel/eelgenerator.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 
 %files manifest
 %defattr(-, root, root)
 %{_datadir}/emane/manifest/*.xml
 
 %doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
+
