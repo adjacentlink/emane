@@ -224,6 +224,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files dtds
 %defattr(-, root, root)
+%dir %{_datadir}/emane
+%dir %{_datadir}/emane/dtd
 %{_datadir}/emane/dtd/attrs.ent
 %{_datadir}/emane/dtd/mac.dtd
 %{_datadir}/emane/dtd/nem.dtd
@@ -242,8 +244,17 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/dtd/ieee80211pcr.dtd
 %{_datadir}/emane/dtd/antennaprofile.dtd
 %{_datadir}/emane/dtd/commeffectfilters.dtd
+%dir %{_datadir}/emane/schema
 %{_datadir}/emane/schema/manifest.xsd
 %{_datadir}/emane/schema/tdmabasemodelpcr.xsd
+%dir %{_datadir}/emane/xml
+%dir %{_datadir}/emane/xml/agents
+%dir %{_datadir}/emane/xml/generators
+%dir %{_datadir}/emane/xml/models
+%dir %{_datadir}/emane/xml/models/mac
+%dir %{_datadir}/emane/xml/models/phy
+%dir %{_datadir}/emane/xml/models/shim
+%dir %{_datadir}/emane/xml/transports
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}
@@ -297,6 +308,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-, root, root)
+%dir %{_includedir}/emane
 %{_includedir}/emane/*
 %{_libdir}/pkgconfig/*
 
@@ -309,6 +321,7 @@ rm -rf $RPM_BUILD_ROOT
 %files model-rfpipe
 %defattr(-, root, root)
 %{_libdir}/librfpipemaclayer.*
+%dir %{_datadir}/emane/xml/models/mac/rfpipe
 %{_datadir}/emane/xml/models/mac/rfpipe/rfpipemac.xml
 %{_datadir}/emane/xml/models/mac/rfpipe/rfpipenem.xml
 %{_datadir}/emane/xml/models/mac/rfpipe/rfpipepcr.xml
@@ -323,7 +336,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{_libdir}/libbypassmaclayer.*
 %{_libdir}/libbypassphylayer.*
+%dir %{_datadir}/emane/xml/models/phy/bypass
 %{_datadir}/emane/xml/models/phy/bypass/bypassphy.xml
+%dir %{_datadir}/emane/xml/models/mac/bypass
 %{_datadir}/emane/xml/models/mac/bypass/bypassmac.xml
 %{_datadir}/emane/xml/models/mac/bypass/bypassnem.xml
 
@@ -336,6 +351,7 @@ rm -rf $RPM_BUILD_ROOT
 %files model-ieee80211abg
 %defattr(-, root, root)
 %{_libdir}/libieee80211abgmaclayer.*
+%dir %{_datadir}/emane/xml/models/mac/ieee80211abg
 %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211abgmac.xml
 %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211abgnem.xml
 %{_datadir}/emane/xml/models/mac/ieee80211abg/ieee80211pcr.xml
@@ -349,6 +365,7 @@ rm -rf $RPM_BUILD_ROOT
 %files agent-gpsdlocation
 %defattr(-, root, root)
 %{_libdir}/libgpsdlocationagent.*
+%dir %{_datadir}/emane/xml/agents/gpsdlocation
 %{_datadir}/emane/xml/agents/gpsdlocation/gpsdlocationagent.xml
 
 %doc %{_pkgdocdir}
@@ -360,6 +377,7 @@ rm -rf $RPM_BUILD_ROOT
 %files trans-virtual
 %defattr(-, root, root)
 %{_libdir}/libtransvirtual.*
+%dir %{_datadir}/emane/xml/transports/virtual
 %{_datadir}/emane/xml/transports/virtual/transvirtual.xml
 
 %doc %{_pkgdocdir}
@@ -371,6 +389,7 @@ rm -rf $RPM_BUILD_ROOT
 %files trans-raw
 %defattr(-, root, root)
 %{_libdir}/libtransraw.*
+%dir %{_datadir}/emane/xml/transports/raw
 %{_datadir}/emane/xml/transports/raw/transraw.xml
 
 %doc %{_pkgdocdir}
@@ -382,6 +401,7 @@ rm -rf $RPM_BUILD_ROOT
 %files model-phyapitestshim
 %defattr(-, root, root)
 %{_libdir}/libphyapitestshim.*
+%dir %{_datadir}/emane/xml/models/shim/phyapitest
 %{_datadir}/emane/xml/models/shim/phyapitest/phyapitestshim.xml
 
 %doc %{_pkgdocdir}
@@ -393,6 +413,7 @@ rm -rf $RPM_BUILD_ROOT
 %files model-timinganalysisshim
 %defattr(-, root, root)
 %{_libdir}/libtiminganalysisshim.*
+%dir %{_datadir}/emane/xml/models/shim/timinganalysis
 %{_datadir}/emane/xml/models/shim/timinganalysis/timinganalysisshim.xml
 
 %doc %{_pkgdocdir}
@@ -404,6 +425,7 @@ rm -rf $RPM_BUILD_ROOT
 %files model-commeffect
 %defattr(-,root,root,-)
 %{_libdir}/libcommeffectshim.*
+%dir %{_datadir}/emane/xml/models/shim/commeffect
 %{_datadir}/emane/xml/models/shim/commeffect/commeffectshim.xml
 %{_datadir}/emane/xml/models/shim/commeffect/commeffectnem.xml
 %{_datadir}/emane/xml/models/shim/commeffect/commeffectfilters.xml
@@ -418,6 +440,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libtdmabase.*
 %{_libdir}/libtdmaeventschedulerradiomodel.*
+%dir %{_datadir}/emane/xml/models/mac/tdmaeventscheduler
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmanem.xml
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmaradiomodel.xml
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmabasemodelpcr.xml
@@ -435,6 +458,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libeelloaderpathloss.*
 %{_libdir}/libeelloaderantennaprofile.*
 %{_libdir}/libeelloadercommeffect.*
+%dir %{_datadir}/emane/xml/generators/eel
 %{_datadir}/emane/xml/generators/eel/eelgenerator.xml
 
 %doc %{_pkgdocdir}
@@ -445,6 +469,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files manifest
 %defattr(-, root, root)
+%dir %{_datadir}/emane
+%dir %{_datadir}/emane/manifest
 %{_datadir}/emane/manifest/*.xml
 
 %doc %{_pkgdocdir}
