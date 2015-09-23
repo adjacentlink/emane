@@ -221,8 +221,9 @@ class EventService:
     def nextEvent(self):
         events = []
         eventId = 0
+        running = True
 
-        while True:
+        while running:
             try:
                 rdfds = [self._socket,self._readFd]
 
@@ -257,6 +258,10 @@ class EventService:
                                 event.sequenceNumber,
                                 tuple(events))
 
+                elif fd is self._readFd:
+                    running = False
+                    break
+
                 elif fd is self._socketOTA:
                     data,_ = self._socketOTA.recvfrom(65535)
                     
@@ -282,6 +287,8 @@ class EventService:
                     return (uuid.UUID(bytes=otaHeader.uuid),
                             otaHeader.sequenceNumber,
                             tuple(events))
+
+        return (None, None, tuple(events))
 
 
     def subscribe(self,eventId,callback):
