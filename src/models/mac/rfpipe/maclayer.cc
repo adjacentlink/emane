@@ -1150,7 +1150,7 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
        
        /** [pysicallayer-frequencycontrolmessage-snippet] */
       // queue delay
-      Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - sot)}; 
+      Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_)};
       
       *pNumDownstreamQueueDelay_ += queueDelayMicroseconds.count();
       
