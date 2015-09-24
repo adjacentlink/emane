@@ -148,10 +148,13 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
                                          remoteAntennaProfileIter->second.getAntennaAzimuthDegrees(),
                                          std::get<1>(direction),
                                          remoteAntennaProfileIter->second.getAntennaElevationDegrees());
+
+          std::int16_t i16Azimuth{static_cast<std::int16_t>(std::round(lookupAngles.first))};
+          std::int16_t i16Elevation{static_cast<std::int16_t>(std::round(lookupAngles.second))};
           
-          // get the remote transmitter antenna gain
-          dTxAntennaGaindBi = pRemotePattern->getGain(std::round(lookupAngles.first),
-                                                      std::round(lookupAngles.second));
+          // get the remote transmitter antenna gain, use 0 for azimuth when 360
+          dTxAntennaGaindBi = pRemotePattern->getGain(i16Azimuth == 360 ? 0 : i16Azimuth,
+                                                      i16Elevation);
           
           // get the blocakage, if specified 
           //  Note: no adjustment is necessary to the direction azimuth and elvation
