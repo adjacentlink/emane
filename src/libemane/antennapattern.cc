@@ -228,6 +228,12 @@ double EMANE::AntennaPattern::getGain(std::int16_t iBearing,std::int16_t iElevat
 {
   double dGain{dMissingValue_};
 
+  //  use 0 for bearing when 360
+  if(iBearing == 360)
+    {
+      iBearing = 0;
+    }
+  
   const auto iter = elevationBearingGainMap_.lower_bound(iElevation);
 
   if(iter != elevationBearingGainMap_.end())
