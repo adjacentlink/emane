@@ -132,11 +132,6 @@ namespace EMANE
                         double dElReference,
                         double dElPointing)
   {
-    dAzReference = std::round(dAzReference);
-    dAzPointing = std::round(dAzPointing);
-    dElReference = std::round(dElReference);
-    dElPointing = std::round(dElPointing);
-
     // Az = Az(reference) - Az(pointing)
     double dAzimuth {dAzReference - dAzPointing};
     

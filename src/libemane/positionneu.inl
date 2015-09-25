@@ -79,21 +79,21 @@ void EMANE::PositionNEU::rotate(double dYawRadians, double dPitchRadians, double
       // order of rotion applied here is yaw, pitch, roll
       double dRotatedNorthMeters = 
         dNorthMeters_ * cos(dYawRadians) * cos(dPitchRadians) + 
-        dEastMeters_  * sin(dYawRadians) * cos(dPitchRadians) + 
+        dEastMeters_  * sin(dYawRadians) * cos(dPitchRadians) +
         dUpMeters_    * sin(dPitchRadians);
             
       double dRotatedEastMeters =
-        dNorthMeters_ * (cos(dYawRadians)   * sin(dPitchRadians) * sin(dRollRadians) - 
+        -dNorthMeters_ * (cos(dYawRadians)   * sin(dPitchRadians) * sin(dRollRadians) + 
                          sin(dYawRadians)      * cos(dRollRadians))  +
-        dEastMeters_  * (cos(dYawRadians)   * cos(dRollRadians)  + 
+        dEastMeters_  * (cos(dYawRadians)   * cos(dRollRadians)  +
                          sin(dYawRadians)      * sin(dPitchRadians)  * sin(dRollRadians)) -
         dUpMeters_    * (cos(dPitchRadians) * sin(dRollRadians));
             
       double dRotatedUpMeters =
-        dNorthMeters_ * (sin(dYawRadians)   * sin(dRollRadians) - 
-                         cos(dYawRadians)      * sin(dPitchRadians) * cos(dRollRadians))  +
-        dEastMeters_  * (cos(dYawRadians)   * sin(dRollRadians) - 
-                         sin(dYawRadians)      * sin(dPitchRadians) * cos(dRollRadians)) + 
+        -dNorthMeters_ * (cos(dYawRadians)  * sin(dPitchRadians) * cos(dRollRadians) +
+                         sin(dYawRadians)   * sin(dRollRadians)) -
+        dEastMeters_  * (sin(dYawRadians)   * sin(dPitchRadians) * cos(dRollRadians) -
+                         cos(dYawRadians)   * sin(dRollRadians)) +
         dUpMeters_    * (cos(dPitchRadians) * cos(dRollRadians));
                         
       dNorthMeters_ = dRotatedNorthMeters;
