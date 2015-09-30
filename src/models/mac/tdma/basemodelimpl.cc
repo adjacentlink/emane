@@ -180,6 +180,8 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
 
   neighborMetricManager_.registerStatistics(statisticRegistrar);
 
+  aggregationStatusPublisher_.registerStatistics(statisticRegistrar);
+
   pQueueManager_->setPacketStatusPublisher(&packetStatusPublisher_);
 
   pQueueManager_->initialize(registrar);
@@ -1083,6 +1085,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
 
                 }
             }
+
+          aggregationStatusPublisher_.update(components);
 
           BaseModelMessage baseModelMessage{pendingTxSlotInfo_.u64AbsoluteSlotIndex_,
               pendingTxSlotInfo_.u64DataRatebps_,

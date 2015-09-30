@@ -122,8 +122,9 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libtdmabase_la_LIBADD =
-am_libtdmabase_la_OBJECTS = libtdmabase_la-basemodel.lo \
-	libtdmabase_la-basemodelimpl.lo \
+am_libtdmabase_la_OBJECTS =  \
+	libtdmabase_la-aggregationstatuspublisher.lo \
+	libtdmabase_la-basemodel.lo libtdmabase_la-basemodelimpl.lo \
 	libtdmabase_la-basicqueuemanager.lo \
 	libtdmabase_la-packetstatuspublisherimpl.lo \
 	libtdmabase_la-pormanager.lo libtdmabase_la-queue.lo \
@@ -404,6 +405,7 @@ libtdmabase_la_CPPFLAGS = \
  $(libxml2_CFLAGS)
 
 libtdmabase_la_SOURCES = \
+ aggregationstatuspublisher.cc       \
  basemodel.cc                        \
  basemodelimpl.cc                    \
  basicqueuemanager.cc                \
@@ -421,6 +423,7 @@ BUILT_SOURCES = \
  tdmabasemodelmessage.pb.h
 
 EXTRA_DIST = \
+ aggregationstatuspublisher.h        \
  basemodelimpl.h                     \
  basemodelmessage.h                  \
  basemodelmessage.inl                \
@@ -520,6 +523,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-aggregationstatuspublisher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basemodel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basemodelimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtdmabase_la-basicqueuemanager.Plo@am__quote@
@@ -552,6 +556,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
+
+libtdmabase_la-aggregationstatuspublisher.lo: aggregationstatuspublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-aggregationstatuspublisher.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-aggregationstatuspublisher.Tpo -c -o libtdmabase_la-aggregationstatuspublisher.lo `test -f 'aggregationstatuspublisher.cc' || echo '$(srcdir)/'`aggregationstatuspublisher.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtdmabase_la-aggregationstatuspublisher.Tpo $(DEPDIR)/libtdmabase_la-aggregationstatuspublisher.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='aggregationstatuspublisher.cc' object='libtdmabase_la-aggregationstatuspublisher.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libtdmabase_la-aggregationstatuspublisher.lo `test -f 'aggregationstatuspublisher.cc' || echo '$(srcdir)/'`aggregationstatuspublisher.cc
 
 libtdmabase_la-basemodel.lo: basemodel.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtdmabase_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libtdmabase_la-basemodel.lo -MD -MP -MF $(DEPDIR)/libtdmabase_la-basemodel.Tpo -c -o libtdmabase_la-basemodel.lo `test -f 'basemodel.cc' || echo '$(srcdir)/'`basemodel.cc

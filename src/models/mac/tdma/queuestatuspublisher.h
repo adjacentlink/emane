@@ -94,6 +94,10 @@ namespace EMANE
         using FragmentHistogram = std::map<std::uint8_t,std::array<std::uint64_t,10>>;
 
         FragmentHistogram fragmentHistogram_;
+
+        std::array<StatisticNumeric<std::uint64_t> *,5> pHighWaterMarkQueue_;
+        std::array<std::uint64_t,5> depthQueueInfo_;
+        std::array<std::uint64_t,5> highWaterMarkQueueInfo_;
       };
     }
   }

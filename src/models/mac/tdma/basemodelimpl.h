@@ -43,6 +43,7 @@
 #include "slotstatustablepublisher.h"
 #include "receivemanager.h"
 #include "packetstatuspublisherimpl.h"
+#include "aggregationstatuspublisher.h"
 
 namespace EMANE
 {
@@ -140,6 +141,7 @@ namespace EMANE
         ReceiveManager receiveManager_;
         FlowControlManager flowControlManager_;
         std::uint64_t u64ScheduleIndex_;
+        AggregationStatusPublisher aggregationStatusPublisher_;
 
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
