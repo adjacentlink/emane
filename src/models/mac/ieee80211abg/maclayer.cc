@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -123,7 +123,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::MACLayer(NEMId id,
   downstreamQueueTimedEventId_{},
   bHasPendingDownstreamQueueEntry_{},
   RNDZeroToOne_{0.0f, 1.0f},
-  commonLayerStatistics_(MAX_ACCESS_CATEGORIES)
+  commonLayerStatistics_(MAX_ACCESS_CATEGORIES),
+  currentEndOfTransmissionTime_{}
 {
   commonLayerStatistics_[0].reset(
     new Utils::CommonLayerStatistics{STATISTIC_TABLE_LABELS,
@@ -1190,6 +1191,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
           // drop, replace token
           addToken();
         }
+
+      // check to see if a packet can be sent
+      if(currentEndOfTransmissionTime_ <= Clock::now())
+        {
+          handleDownstreamQueueEntry(u64SequenceNumber_);
+        }
     }
   else
     {
@@ -1205,11 +1212,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
             pPlatformService_->timerService().
             scheduleTimedEvent(optionalWait.first,
                                new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                   this)});
+                                                                   this,
+                                                                   u64SequenceNumber_)});
         }
       else
         {
-          handleDownstreamQueueEntry();
+          handleDownstreamQueueEntry(u64SequenceNumber_);
         }
     }
 }
@@ -1393,7 +1401,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
                        {Controls::FrequencyControlMessage::create(
                          0,                                                 // bandwidth (0 uses phy default)
                          {{0,rMACHeaderParams.getDurationMicroseconds()}}), // freq (0 uses phy default)
-                       Controls::TimeStampControlMessage::create(entry.txTime_)}); 
+                       Controls::TimeStampControlMessage::create(entry.txTime_)});
+
+  currentEndOfTransmissionTime_ = currentTime + entry.durationMicroseconds_ + overheadMicroseconds;
 }
 
 
@@ -1817,42 +1827,46 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
 }
 
 
-bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry()
+bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry(std::uint64_t u64SequenceNumber)
 {
-  // there are two ways to end processing: schedule a timer or have no
-  //  other packets in the downstream queue once you finish processing
-  //  the pending packet
-  while(bHasPendingDownstreamQueueEntry_)
+  if(u64SequenceNumber == u64SequenceNumber_)
     {
-      // if there is no further processing for the pending packet
-      //  update the state and see if there is another packet
-      //  pending
-      if(!pTxState_->process(this,pendingDownstreamQueueEntry_))
+      // there are two ways to end processing: schedule a timer or have no
+      //  other packets in the downstream queue once you finish processing
+      //  the pending packet
+      while(bHasPendingDownstreamQueueEntry_)
         {
-          pTxState_->update(this,pendingDownstreamQueueEntry_);
-
-          std::tie(pendingDownstreamQueueEntry_,bHasPendingDownstreamQueueEntry_) =
-            downstreamQueue_.dequeue();
-
-          addToken();
-        }
-
-      // if something is pending we need to schedule it - this could be the
-      // same packet entry that we began with
-      if(bHasPendingDownstreamQueueEntry_)
-        {
-          auto optionalWait = pTxState_->getWaitTime(pendingDownstreamQueueEntry_);
-
-          if(optionalWait.second && optionalWait.first > Clock::now())
+          // if there is no further processing for the pending packet
+          //  update the state and see if there is another packet
+          //  pending
+          if(!pTxState_->process(this,pendingDownstreamQueueEntry_))
             {
-              downstreamQueueTimedEventId_ =
-                pPlatformService_->timerService().
-                scheduleTimedEvent(optionalWait.first,
-                                   new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                       this)});
+              pTxState_->update(this,pendingDownstreamQueueEntry_);
 
-              // we are finished handling the queue entry (for now)
-              break;
+              std::tie(pendingDownstreamQueueEntry_,bHasPendingDownstreamQueueEntry_) =
+                downstreamQueue_.dequeue();
+
+              addToken();
+            }
+
+          // if something is pending we need to schedule it - this could be the
+          // same packet entry that we began with
+          if(bHasPendingDownstreamQueueEntry_)
+            {
+              auto optionalWait = pTxState_->getWaitTime(pendingDownstreamQueueEntry_);
+
+              if(optionalWait.second && optionalWait.first > Clock::now())
+                {
+                  downstreamQueueTimedEventId_ =
+                    pPlatformService_->timerService().
+                    scheduleTimedEvent(optionalWait.first,
+                                       new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                                                           this,
+                                                                           u64SequenceNumber_)});
+
+                  // we are finished handling the queue entry (for now)
+                  break;
+                }
             }
         }
     }
