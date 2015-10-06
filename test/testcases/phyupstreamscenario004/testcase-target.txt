@@ -270,7 +270,7 @@ Processing upstream packet...
 [17]   power: -100.000000
 
 [17]  MAC ReceivePropertiesControlMessage data:
-[17]   sot: 300.000100
+[17]   sot: 300.000110
 [17]   span: 200
 [17]   prop delay: 1
 [17]   receiver sensativity: -109.208188
