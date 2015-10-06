@@ -18,7 +18,7 @@
 [2] duration: 210
 [2] power mW: 1
 [2] transmitter: 1
-[2] reportable bin 0 time: 3003005
+[2] reportable bin 0 time: 3003200
 [2] reportable propagation: 0
 [2] reportable span: 210
 [2] reportable in-band: yes
@@ -27,8 +27,8 @@
 [2] reportable duration: 210
 [2] reportable rx power dBm: 0
  Frequency: 3000000000
-  150:1
-  161:0
+  160:1
+  171:0
 
 [3] update abs time: 3003005 relative time: 3005
 [3] propagation: 0
@@ -39,7 +39,7 @@
 [3] duration: 210
 [3] power mW: 1
 [3] transmitter: 2
-[3] reportable bin 0 time: 3003005
+[3] reportable bin 0 time: 3003200
 [3] reportable propagation: 0
 [3] reportable span: 210
 [3] reportable in-band: yes
@@ -48,8 +48,8 @@
 [3] reportable duration: 210
 [3] reportable rx power dBm: 0
  Frequency: 3000000000
-  150:2
-  161:0
+  160:2
+  171:0
 
 [4] update abs time: 3003005 relative time: 3005
 [4] propagation: 0
@@ -60,7 +60,7 @@
 [4] duration: 210
 [4] power mW: 1
 [4] transmitter: 3
-[4] reportable bin 0 time: 3003005
+[4] reportable bin 0 time: 3003200
 [4] reportable propagation: 0
 [4] reportable span: 210
 [4] reportable in-band: yes
@@ -69,8 +69,8 @@
 [4] reportable duration: 210
 [4] reportable rx power dBm: 0
  Frequency: 3000000000
-  150:3
-  161:0
+  160:3
+  171:0
 
 [5] update abs time: 3003005 relative time: 3005
 [5] propagation: 0
@@ -81,7 +81,7 @@
 [5] duration: 105
 [5] power mW: 1
 [5] transmitter: 1
-[5] reportable bin 0 time: 3003005
+[5] reportable bin 0 time: 3003200
 [5] reportable propagation: 0
 [5] reportable span: 105
 [5] reportable in-band: yes
@@ -90,8 +90,8 @@
 [5] reportable duration: 105
 [5] reportable rx power dBm: 0
  Frequency: 3000000000
-  150:3
-  161:0
+  160:3
+  171:0
 
 [6] update abs time: 3003005 relative time: 3005
 [6] propagation: 0
@@ -102,7 +102,7 @@
 [6] duration: 400
 [6] power mW: 1
 [6] transmitter: 2
-[6] reportable bin 0 time: 3003005
+[6] reportable bin 0 time: 3003200
 [6] reportable propagation: 0
 [6] reportable span: 400
 [6] reportable in-band: yes
@@ -111,7 +111,7 @@
 [6] reportable duration: 400
 [6] reportable rx power dBm: 0
  Frequency: 3000000000
-  150:3
-  161:1
-  171:0
+  160:3
+  171:1
+  180:0
 
