@@ -194,6 +194,11 @@ EMANE::Utils::VectorIO EMANE::DownstreamPacket::getVectorIO() const
   return pImpl_->getVectorIO();
 }
 
+const void * EMANE::DownstreamPacket::get() const
+{
+  return pImpl_->get();
+}
+  
 size_t EMANE::DownstreamPacket::length() const
 {
   return pImpl_->length();
