@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -340,7 +340,9 @@ namespace EMANE
 
         std::vector<std::unique_ptr<Utils::CommonLayerStatistics>> commonLayerStatistics_;
 
-        bool handleDownstreamQueueEntry();
+        TimePoint currentEndOfTransmissionTime_;
+
+        bool handleDownstreamQueueEntry(std::uint64_t u64SequenceNumber);
 
         void setEntrySequenceNumber(DownstreamQueueEntry &entry);
 

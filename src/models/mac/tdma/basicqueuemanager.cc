@@ -270,8 +270,6 @@ size_t EMANE::Models::TDMA::BasicQueueManager::enqueue(std::uint8_t u8QueueIndex
     {
       auto ret = pImpl_->queues_[u8QueueIndex].enqueue(std::move(pkt));
 
-      pImpl_->queueStatusPublisher_.enqueue(u8QueueIndex);
-
       if(ret.second)
         {
           packetsDropped = 1;
@@ -288,6 +286,8 @@ size_t EMANE::Models::TDMA::BasicQueueManager::enqueue(std::uint8_t u8QueueIndex
                                             ret.first->length(),
                                             PacketStatusPublisher::OutboundAction::DROP_OVERFLOW);
         }
+
+      pImpl_->queueStatusPublisher_.enqueue(u8QueueIndex);
     }
 
   return packetsDropped;

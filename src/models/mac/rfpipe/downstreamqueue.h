@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -56,14 +56,12 @@ namespace EMANE
       struct DownstreamQueueEntry 
       {
         DownstreamPacket pkt_;              // packet payload
-        std::uint64_t u64SequenceNumber_;   // packet sequence number
         TimePoint acquireTime_;             // packet acquire time (absolute time)
         Microseconds durationMicroseconds_; // packet transmission duration
         std::uint64_t u64DataRatebps_;      // packet data rate bps
 
         DownstreamQueueEntry() :
           pkt_{DownstreamPacket{EMANE::PacketInfo{0,0,0,{}},nullptr,0}},
-          u64SequenceNumber_{},
           acquireTime_{},
           durationMicroseconds_{},
           u64DataRatebps_{}
@@ -75,19 +73,16 @@ namespace EMANE
          * @brief  initializer
          *
          * @param pkt                  reference to the downstream packet
-         * @param u64SequenceNumber    sequence number
          * @param acquireTime          acquireTimetart of transmission
          * @param durationMicroseconds duration of transmision
          * @param u64DataRatebps       data rate bps
          */
 
         DownstreamQueueEntry(DownstreamPacket & pkt, 
-                             std::uint64_t u64SequenceNumber, 
                              const TimePoint & acquireTime,
                              const Microseconds & durationMicroseconds,
                              std::uint64_t u64DataRatebps) :
           pkt_{std::move(pkt)},
-          u64SequenceNumber_{u64SequenceNumber},
           acquireTime_{acquireTime},
           durationMicroseconds_{durationMicroseconds},
           u64DataRatebps_{u64DataRatebps}

@@ -12,6 +12,7 @@ libtdmabase_la_CPPFLAGS=             \
  $(libxml2_CFLAGS)
 
 libtdmabase_la_SOURCES =             \
+ aggregationstatuspublisher.cc       \
  basemodel.cc                        \
  basemodelimpl.cc                    \
  basicqueuemanager.cc                \
@@ -29,6 +30,7 @@ BUILT_SOURCES =                      \
  tdmabasemodelmessage.pb.h
 
 EXTRA_DIST=                          \
+ aggregationstatuspublisher.h        \
  basemodelimpl.h                     \
  basemodelmessage.h                  \
  basemodelmessage.inl                \

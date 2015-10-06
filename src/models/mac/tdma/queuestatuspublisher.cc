@@ -90,6 +90,30 @@ void EMANE::Models::TDMA::QueueStatusPublisher::registerStatistics(StatisticRegi
     }
 
 
+  pHighWaterMarkQueue_[0] =
+    statisticRegistrar.registerNumeric<std::uint64_t>("highWaterMarkQueue0",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "High water mark queue 0");
+
+  pHighWaterMarkQueue_[1] =
+    statisticRegistrar.registerNumeric<std::uint64_t>("highWaterMarkQueue1",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "High water mark queue 1");
+
+  pHighWaterMarkQueue_[2] =
+    statisticRegistrar.registerNumeric<std::uint64_t>("highWaterMarkQueue2",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "High water mark queue 2");
+
+  pHighWaterMarkQueue_[3] =
+    statisticRegistrar.registerNumeric<std::uint64_t>("highWaterMarkQueue3",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "High water mark queue 3");
+
+  pHighWaterMarkQueue_[4] =
+    statisticRegistrar.registerNumeric<std::uint64_t>("highWaterMarkQueue4",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "High water mark queue 4");
 }
 
 void EMANE::Models::TDMA::QueueStatusPublisher::drop(std::uint8_t u8Queue,
@@ -112,6 +136,8 @@ void EMANE::Models::TDMA::QueueStatusPublisher::drop(std::uint8_t u8Queue,
       pQueueStatusTable_->setCell(u8Queue,4,Any{toobig});
       break;
     }
+
+  depthQueueInfo_[u8Queue] -= count;
 }
 
 void EMANE::Models::TDMA::QueueStatusPublisher::dequeue(std::uint8_t u8RequestQueue,
@@ -181,10 +207,21 @@ void EMANE::Models::TDMA::QueueStatusPublisher::dequeue(std::uint8_t u8RequestQu
     pQueueStatusTable_->setCell(u8ActualQueue,9,Any{queue4});
     break;
     }
+
+  depthQueueInfo_[u8ActualQueue] -= packetsCompletedSend;
 }
 
 void EMANE::Models::TDMA::QueueStatusPublisher::enqueue(std::uint8_t u8Queue)
 {
   auto & enqueued = std::get<0>(statusTableInfo_[u8Queue]);
   pQueueStatusTable_->setCell(u8Queue,1,Any{++enqueued});
+
+  ++depthQueueInfo_[u8Queue];
+
+  if(depthQueueInfo_[u8Queue] > highWaterMarkQueueInfo_[u8Queue])
+    {
+      highWaterMarkQueueInfo_[u8Queue] = depthQueueInfo_[u8Queue];
+
+      *pHighWaterMarkQueue_[u8Queue] = highWaterMarkQueueInfo_[u8Queue];
+    }
 }
