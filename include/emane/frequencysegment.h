@@ -55,12 +55,25 @@ namespace EMANE
      * @param u64FrequencyHz Frequency in Hz
      * @param durationMicroseconds Segment duration in microseconds
      * @param offsetMicroseconds Segment offset relative to the start not the previous segment
-     * @param dRxPowerdBm Receive power of the segment in dBm (upstream only)
      */
     FrequencySegment(std::uint64_t u64FrequencyHz,
                      const Microseconds & durationMicroseconds,
-                     const Microseconds & offsetMicroseconds = Microseconds::zero(),
-                     double dRxPowerdBm = 0);
+                     const Microseconds & offsetMicroseconds = Microseconds::zero());
+
+
+    /**
+     * Create a FrequencySegment instance
+     *
+     * @param u64FrequencyHz Frequency in Hz
+     * @param durationMicroseconds Segment duration in microseconds
+     * @param offsetMicroseconds Segment offset relative to the start not the previous segment
+     * @param dPowerdBm Receive power of the segment in dBm (upstream) or transmit power of
+     *        segment in dBm (downstream)
+     */
+    FrequencySegment(std::uint64_t u64FrequencyHz,
+                     double dPowerdBm,
+                     const Microseconds & durationMicroseconds,
+                     const Microseconds & offsetMicroseconds = Microseconds::zero());
 
     /**
      * Create a FrequencySegment from another instance
@@ -104,12 +117,20 @@ namespace EMANE
      * @return receive power
      */
     double getRxPowerdBm() const;
+
+    /**
+     * Gets the power of the segment in dBm if present
+     *
+     * @return pair receive power and flag that is true if power specified
+     */
+    std::pair<double,bool> getPowerdBm() const;
     
   private:
     std::uint64_t u64FrequencyHz_;
     Microseconds durationMicroseconds_;
     Microseconds offsetMicroseconds_;
-    double dRxPowerdBm_;
+    double dPowerdBm_;
+    bool bHasPower_;
   };
   
   using FrequencySegments = std::list<FrequencySegment>;

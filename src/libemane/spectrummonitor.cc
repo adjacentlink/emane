@@ -213,9 +213,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                     std::min(minSoR,validTxTime + validOffset + validPropagation);
 
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
+                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
                         validDuration,
-                        validOffset,
-                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i])});
+                        validOffset});
                 }
 
               ++i;
@@ -389,9 +389,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                   minSoR = std::min(minSoR,startOfReception);
               
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
+                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
                         validDuration,
-                        validOffset,
-                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i])});
+                        validOffset});
                 }
             }
 

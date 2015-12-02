@@ -146,9 +146,19 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
           for(const auto & segment :
                 RepeatedPtrFieldFrequencySegment(msg.frequencysegments()))
             {
-              frequencySegments.push_back({segment.frequencyhz(),
-                    Microseconds(segment.durationmicroseconds()),
-                    Microseconds(segment.offsetmicroseconds())});
+              if(segment.has_powerdbm())
+                {
+                  frequencySegments.push_back({segment.frequencyhz(),
+                        segment.powerdbm(),
+                        Microseconds(segment.durationmicroseconds()),
+                        Microseconds(segment.offsetmicroseconds())});
+                }
+              else
+                {
+                  frequencySegments.push_back({segment.frequencyhz(),
+                        Microseconds(segment.durationmicroseconds()),
+                        Microseconds(segment.offsetmicroseconds())});
+                }
             }
 
           RegistrationId registrationId{static_cast<RegistrationId>(msg.registrationid())};
@@ -319,6 +329,11 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
       pSegment->set_frequencyhz(segment.getFrequencyHz());
       pSegment->set_offsetmicroseconds(segment.getOffset().count());
       pSegment->set_durationmicroseconds(segment.getDuration().count());
+
+      if(segment.getPowerdBm().second)
+        {
+          pSegment->set_powerdbm(segment.getPowerdBm().first);
+        }
     }
 
   std::string sSerialization;
@@ -358,12 +373,16 @@ EMANE::Strings EMANE::CommonPHYHeader::format() const
       sFormat.push_back("freq: " + std::to_string(segment.getFrequencyHz()));
       sFormat.push_back("duration: " + std::to_string(segment.getDuration().count()));
       sFormat.push_back("offset: " + std::to_string(segment.getOffset().count()));
+      if(segment.getPowerdBm().second)
+        {
+          sFormat.push_back("segment power: " + std::to_string(segment.getPowerdBm().first));
+        }
     }
 
   for(const auto & transmitter : pImpl_->getTransmitters())
     {
       sFormat.push_back("src: " + std::to_string(transmitter.getNEMId()));
-      sFormat.push_back("power: " + std::to_string(transmitter.getPowerdBm()));
+      sFormat.push_back("transmitter power: " + std::to_string(transmitter.getPowerdBm()));
     }
 
   return sFormat;

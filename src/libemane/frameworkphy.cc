@@ -739,9 +739,19 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                 // by using 0 Hz.
                 if(segment.getFrequencyHz() == 0)
                   {
-                    frequencySegments.push_back({u64TxFrequencyHz_,       // use our frequency
-                          segment.getDuration(), // duration
-                          segment.getOffset()}); // offset
+                    if(segment.getPowerdBm().second)
+                      {
+                        frequencySegments.push_back({u64TxFrequencyHz_,       // use our frequency
+                              segment.getPowerdBm().first,
+                              segment.getDuration(), // duration
+                              segment.getOffset()}); // offset
+                      }
+                    else
+                      {
+                        frequencySegments.push_back({u64TxFrequencyHz_,       // use our frequency
+                              segment.getDuration(), // duration
+                              segment.getOffset()}); // offset
+                      }
                   }
                 else
                   {
@@ -977,7 +987,11 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                   // sum up the rx power for each segment
                   for(const auto & dPathlossdB : pathlossInfo.first)
                     {
-                      double powerdBm{transmitter.getPowerdBm() +
+                      auto optionalSegmentPowerdBm = freqIter->getPowerdBm();
+
+                      double powerdBm{(optionalSegmentPowerdBm.second ?
+                                       optionalSegmentPowerdBm.first :
+                                       transmitter.getPowerdBm()) +
                           gainInfodBi.first -
                           dPathlossdB};
                       
