@@ -1067,12 +1067,12 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
         }
 
       // check to see if a packet can be sent
-      if(currentEndOfTransmissionTime_ + delayMicroseconds_ + getJitter() <= Clock::now())
-        {
-          TimePoint sot{Clock::now()};
+      auto now = Clock::now();
 
-          handleDownstreamQueueEntry(sot,u64TxSequenceNumber_);
-        }
+      if(currentEndOfTransmissionTime_ <= now)
+         {
+           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+         }
     }
   else
     {
@@ -1080,26 +1080,21 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
       pendingDownstreamQueueEntry_ = std::move(entry);
 
-      // delay and jitter is applied on the transmit side prior to
-      // sending the packet to the PHY for transmission. This is a change
-      // from previous version of the mac
-      Microseconds txDelay{delayMicroseconds_ + getJitter()};
+      auto now = Clock::now();
 
-      TimePoint sot{Clock::now() + txDelay};
-
-      if(txDelay > Microseconds::zero())
+      if(currentEndOfTransmissionTime_ <= now)
+         {
+           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+         }
+      else
         {
           downstreamQueueTimedEventId_ = 
             pPlatformService_->timerService().
-            scheduleTimedEvent(sot,
+            scheduleTimedEvent(currentEndOfTransmissionTime_,
                                new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
                                                                    this,
-                                                                   sot,
+                                                                   currentEndOfTransmissionTime_,
                                                                    u64TxSequenceNumber_)});
-        }
-      else
-        {
-          handleDownstreamQueueEntry(sot,u64TxSequenceNumber_);
         }
     }
 }
@@ -1111,10 +1106,21 @@ bool
 EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                             std::uint64_t u64TxSequenceNumber)
 {
-  if(u64TxSequenceNumber == u64TxSequenceNumber_)
+  auto now = Clock::now();
+
+  // cached sequence number and next sequence number equality
+  // guarantees sending the next packet, if available - even if an
+  // early wakeup happens
+  if(u64TxSequenceNumber == u64TxSequenceNumber_ ||
+     (bHasPendingDownstreamQueueEntry_ && currentEndOfTransmissionTime_ <= now))
     {
-      // previous end-of-transmission time
-      TimePoint now = Clock::now();
+      // the packet that was scheduled to be handled, has been but
+      // there is another packet pending transmission and current packet
+      // end of transmission has past - so send that one instead
+      if(u64TxSequenceNumber != u64TxSequenceNumber_)
+        {
+          sot = now;
+        }
 
       if(bHasPendingDownstreamQueueEntry_)
         {
@@ -1177,55 +1183,31 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                         now);
 
 
-          auto eor = sot + pendingDownstreamQueueEntry_.durationMicroseconds_;
+          // earliest you can send the next packet
+          currentEndOfTransmissionTime_ =
+            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + delayMicroseconds_ + getJitter();
 
-          auto pCallback = new std::function<bool()>{[this]()
-                                                     {
-                                                       std::tie(pendingDownstreamQueueEntry_,
-                                                                bHasPendingDownstreamQueueEntry_) =
-                                                       downstreamQueue_.dequeue();
+          std::tie(pendingDownstreamQueueEntry_,
+                   bHasPendingDownstreamQueueEntry_) =
+            downstreamQueue_.dequeue();
 
-                                                       if(bHasPendingDownstreamQueueEntry_)
-                                                         {
-                                                           Microseconds txDelay{delayMicroseconds_ + getJitter()};
-
-                                                           TimePoint sot{Clock::now() + txDelay};
-
-                                                           if(txDelay > Microseconds::zero())
-                                                             {
-                                                               downstreamQueueTimedEventId_ =
-                                                                 pPlatformService_->timerService().
-                                                                 scheduleTimedEvent(sot,
-                                                                                    new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                                                                        this,
-                                                                                                                        sot,
-                                                                                                                        u64TxSequenceNumber_)});
-                                                             }
-                                                           else
-                                                             {
-                                                               handleDownstreamQueueEntry(sot,u64TxSequenceNumber_);
-                                                             }
-                                                         }
-
-                                                       return true;
-                                                     }};
-
-
-          if(eor > now)
+          if(bHasPendingDownstreamQueueEntry_)
             {
-              // wait for end of reception before processing next packet
-              pPlatformService_->timerService().scheduleTimedEvent(eor,pCallback);
+              if(currentEndOfTransmissionTime_ > now)
+                {
+                  downstreamQueueTimedEventId_ =
+                    pPlatformService_->timerService().
+                    scheduleTimedEvent(sot,
+                                       new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                                                           this,
+                                                                           currentEndOfTransmissionTime_,
+                                                                           u64TxSequenceNumber_)});
+                }
+              else
+                {
+                  handleDownstreamQueueEntry(currentEndOfTransmissionTime_,u64TxSequenceNumber_);
+                }
             }
-          else
-            {
-              // we can process now, end of reception has past
-              (*pCallback)();
-
-              delete pCallback;
-            }
-
-          // update current end of transmission
-          currentEndOfTransmissionTime_ = eor;
         }
     }
 
