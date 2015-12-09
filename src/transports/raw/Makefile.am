@@ -9,24 +9,24 @@ libtransraw_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libtransraw_la_SOURCES= \
- rawtransport.cc        \
- ../common/ethernettransport.cc
+ rawtransport.cc        
 
 EXTRA_DIST=             \
  rawtransport.h         \
- ../common/ethernettransport.h \
  transraw.xml.in
 
-BUILT_SOURCES =                \
+BUILT_SOURCES =         \
  transraw.xml
 
-libtransraw_la_LIBADD= \
+libtransraw_la_LIBADD=  \
  $(WIN32_EXTRA_LIBADD)        
 
 libtransraw_la_LDFLAGS= \
  $(WIN32_EXTRA_LDFLAGS) \
  $(pcap_LIBS)           \
  $(ACE_LIBS)            \
+ -L../common            \
+ -lcommontransport      \
  -avoid-version
 
 edit = sed                     \

@@ -32,13 +32,13 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.2,[emane at adjacent link dot com])
+AC_INIT([emane],0.9.3,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.9.6])
+AM_INIT_AUTOMAKE([])
 
 AC_PROG_CXX
 
@@ -251,6 +251,7 @@ AC_OUTPUT(
  src/applications/emaneeventservice/Makefile
  src/emanesh/Makefile
  src/transports/Makefile
+ src/transports/common/Makefile
  src/transports/virtual/Makefile
  src/transports/raw/Makefile
  src/models/Makefile
