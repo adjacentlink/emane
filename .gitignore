@@ -1,9 +1,26 @@
-# configure output
-**/Makefile
-config.log
-config.status
+# autotools
+Makefile
+Makefile.in
+configure
 libtool
+config
+config.status
+config.log
+aclocal.m4
 autom4te.cache
+*.o
+compile
+config.guess
+config.sub
+depcomp
+install-sh
+libtool.m4
+ltmain.sh
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
+lt~obsolete.m4
+missing
 
 # version
 include/emane/version.h

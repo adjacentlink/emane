@@ -85,7 +85,8 @@ EXTRA_DIST =         \
  PROBLEM-REPORT-FORM \
  SPONSOR             \
  README.md           \
- debian
+ debian              \
+ autogen.sh
 
 DISTCLEANFILES = .rpmbuild
 
