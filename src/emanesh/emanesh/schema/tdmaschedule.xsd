@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in
+the documentation and/or other materials provided with the
+distribution.
+* Neither the name of Adjacent Link LLC nor the names of its
+contributors may be used to endorse or promote products derived
+from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+-->
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+  <xs:annotation>
+    <xs:documentation>
+
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name='IndexType'>
+    <xs:restriction base='xs:token'>
+      <xs:pattern value='([0-9]+,{0,1}|[0-9]+:[0-9]+,{0,1}){1,}'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='DestinationType'>
+    <xs:restriction base='xs:token'>
+      <xs:pattern value='([1-9][0-9]*|broadcast)'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='NodeType'>
+    <xs:restriction base='xs:token'>
+      <xs:pattern value='([1-9][0-9]*,{0,1}|[1-9][0-9]*:[1-9][0-9]*,{0,1}){1,}'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='SIPrefixType'>
+    <xs:restriction base='xs:token'>
+      <xs:pattern value='[0-9]+(.[0-9]+){0,1}(G|M|K){0,1}'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='ClassType'>
+    <xs:restriction base="xs:unsignedShort">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name='emane-tdma-schedule'>
+    <xs:annotation>
+      <xs:documentation>
+        This document defines a TDMA schedule for use by the EMANE
+        TDMA radio model.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="structure" minOccurs='0'>
+          <xs:annotation>
+            <xs:documentation>
+              A structure defines information about the slot structure
+              including: slot size, slot overhead, the number of
+              frames in a multiframe, the number of slots in a frame
+              and the transceiver bandwidth.
+
+              A schedule that does not contain a structure is
+              considered an update. Any number of updates are
+              permitted provided the first schedule is a full schedule
+              containing a structure.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:attribute name='slotduration' type='xs:unsignedLong' use='required'>
+              <xs:annotation>
+                <xs:documentation>
+                  Slot duration in microseconds.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='slotoverhead' type='xs:unsignedLong' use='required'>
+              <xs:annotation>
+                <xs:documentation>
+                  Slot overhead in microseconds.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='frames' type='xs:unsignedShort' use='required'>
+              <xs:annotation>
+                <xs:documentation>
+                  The number of frames in a multiframe.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='slots' type='xs:unsignedShort' use='required'>
+              <xs:annotation>
+                <xs:documentation>
+                  The number of slots in a frame.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='bandwidth' type='SIPrefixType' use='required'>
+              <xs:annotation>
+                <xs:documentation>
+                  The transceiver bandwith in Hz.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="multiframe">
+          <xs:annotation>
+            <xs:documentation>
+              A multiframe contains one or more frames. The frames
+              attribute contains the total number of frames present
+              in the multiframe.
+
+              Any frame not defined will result in all slots being
+              idle for all nodes specified in the schedule.
+
+              Optional attributes may be used to specify defaults
+              for: frequency, power and class. If specified, these
+              values will be used unless otherwise overridden.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="frame" maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation>
+                    A frame contains one or more slots. Where each
+                    slot is defined to be tx, rx or idle.  Any slot
+                    not specified as tx or idle will be set to rx and
+                    use the default frequency for the frame.
+
+                    The index attribute can contain one, some or all
+                    frame index values to indicate which frame is
+                    being defined. A comma separated list of frames
+                    which may include the use of ':' to indicate a
+                    range, may be used when defining the
+                    index. Frames are 0 indexed within a multiframe.
+
+                    Optional attributes may be used to specify
+                    defaults for: frequency, power, class and
+                    datarate. If specified, these values will be used
+                    unless they are overridden.
+                  </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="slot" maxOccurs="unbounded">
+                      <xs:annotation>
+                        <xs:documentation>
+                          A slot contains the tx, rx and idle
+                          information for one or more nodes.
+
+                          The index attribute can contain one, some
+                          or all slot index values to indicate which
+                          slot is being defined. A comma separated
+                          list of slots which may include the use of
+                          ':' to indicate a range, may be used when
+                          defining the index. Slots are 0 indexed
+                          within a frame.
+
+                          Multiple slot elements with overlapping
+                          index values may be defined to specify a
+                          different configuration for different
+                          nodes. For a specific slot index node pair,
+                          only one definition is permitted.
+
+                          A defined slot defaults to tx for all
+                          specified nodes. An undefined slot
+                          defaults to rx for all remaining nodes.
+                        </xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:choice minOccurs='0'>
+                          <xs:element name="tx">
+                            <xs:complexType>
+                              <xs:attribute name='frequency' type='SIPrefixType' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot transmit frequency in Hz.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name='power' type='xs:decimal' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot trasmit power in dBm.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name='class' type='ClassType' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot transmit traffic class.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name='datarate' type='SIPrefixType' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot transmit datarate in bps.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name='destination' type='DestinationType' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot transmit destination
+                                    NEM. Only unicast traffic destined
+                                    for this NEM will be sent on this
+                                    slot.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="rx">
+                            <xs:complexType>
+                              <xs:attribute name='frequency' type='SIPrefixType' use='optional'>
+                                <xs:annotation>
+                                  <xs:documentation>
+                                    The slot receive frequency in Hz.
+                                  </xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="idle"/>
+                        </xs:choice>
+                        <xs:attribute name='index' type='IndexType' use='required'>
+                            <xs:annotation>
+                              <xs:documentation>
+                                A comma separated list of slots which
+                                may include the use of ':' to indicate
+                                a range. Slots are 0 indexed within a
+                                frame.
+                              </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name='nodes' type='NodeType' use='required'>
+                          <xs:annotation>
+                            <xs:documentation>
+                              A comma separated list of nodes which
+                              may include the use of ':' to indicate a
+                              range.
+                            </xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name='index' type='IndexType' use='required'>
+                      <xs:annotation>
+                        <xs:documentation>
+                          A comma separated list of frames which may
+                          include the use of ':' to indicate a
+                          range. Frames are 0 indexed within a
+                          multiframe.
+                        </xs:documentation>
+                      </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name='frequency' type='SIPrefixType' use='optional'>
+                    <xs:annotation>
+                      <xs:documentation>
+                        The defualt frame frequency used for all slots
+                        in Hz. May be overridden on a slot basis.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name='power' type='xs:decimal' use='optional'>
+                    <xs:annotation>
+                      <xs:documentation>
+                        The default frame power used for all slots in
+                        dBm. May be overridden on a slot basis.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name='class' type='ClassType' use='optional'>
+                    <xs:annotation>
+                      <xs:documentation>
+                        The default frame traffic class used for all
+                        slots. May be overridden on a slot basis.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name='datarate' type='SIPrefixType' use='optional'>
+                    <xs:annotation>
+                      <xs:documentation>
+                        The default frame datarate used for all slots
+                        in bps. May be overridden on a slot basis.
+                      </xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name='frequency' type='SIPrefixType' use='optional'>
+              <xs:annotation>
+                <xs:documentation>
+                  The defualt schedule frequency used for all slots
+                  in Hz. May be overridden on a frame or slot basis.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='power' type='xs:decimal' use='optional'>
+              <xs:annotation>
+                <xs:documentation>
+                  The default schedule power used for all slots in
+                  dBm. May be overridden on a frame or slot basis.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='class' type='ClassType' use='optional'>
+              <xs:annotation>
+                <xs:documentation>
+                  The default schedule traffic class used for all
+                  slots. May be overridden on a frame or slot basis.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name='datarate' type='SIPrefixType' use='optional'>
+              <xs:annotation>
+                <xs:documentation>
+                  The default schedule datarate used for all slots in
+                  bps. May be overridden on a frame or slot basis.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

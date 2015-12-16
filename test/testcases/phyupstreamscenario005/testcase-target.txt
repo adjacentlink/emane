@@ -60,7 +60,7 @@
 [6]   duration: 200
 [6]   offset: 100
 [6]   src: 4
-[6]   power: 2.000000
+[6]   transmitter power: 2.000000
 
 [6]  Packet forwarded to next layer
 
@@ -113,7 +113,7 @@ Processing upstream packet...
 [10]   duration: 200
 [10]   offset: 100
 [10]   src: 4
-[10]   power: 2.000000
+[10]   transmitter power: 2.000000
 
 [10]  Packet forwarded to next layer
 
@@ -143,7 +143,7 @@ Processing upstream packet...
 [11]   duration: 200
 [11]   offset: 100
 [11]   src: 4
-[11]   power: 2.000000
+[11]   transmitter power: 2.000000
 
 [11]  Packet forwarded to next layer
 
@@ -199,9 +199,9 @@ Processing upstream packet...
 [16]   duration: 100
 [16]   offset: 200
 [16]   src: 2
-[16]   power: 0.000000
+[16]   transmitter power: 0.000000
 [16]   src: 3
-[16]   power: 5.000000
+[16]   transmitter power: 5.000000
 
 [16]  Packet dropped
 
@@ -223,7 +223,7 @@ Processing upstream packet...
 [17]   duration: 500
 [17]   offset: 0
 [17]   src: 4
-[17]   power: 12.000000
+[17]   transmitter power: 12.000000
 
 [17]  Packet forwarded to next layer
 
@@ -264,9 +264,9 @@ Processing upstream packet...
 [19]   duration: 100
 [19]   offset: 200
 [19]   src: 2
-[19]   power: 0.000000
+[19]   transmitter power: 0.000000
 [19]   src: 3
-[19]   power: 5.000000
+[19]   transmitter power: 5.000000
 
 [19]  Packet dropped
 
@@ -292,7 +292,7 @@ Processing upstream packet...
 [21]   duration: 500
 [21]   offset: 0
 [21]   src: 4
-[21]   power: 12.000000
+[21]   transmitter power: 12.000000
 
 [21]  Packet forwarded to next layer
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
- Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@
 
  <xs:simpleType name='NameType'>
    <xs:restriction base='xs:token'>
-     <xs:pattern value='[A-Za-z0-9]+'/>
+     <xs:pattern value='[A-Za-z0-9\.]+'/>
    </xs:restriction>
  </xs:simpleType>
 

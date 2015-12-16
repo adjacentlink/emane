@@ -78,7 +78,7 @@ namespace EMANE
    (((x) & 0X00000000000000FFULL) << 56))
 
 
-  std::uint64_t inline HTONLL(std::uint64_t x)
+  constexpr std::uint64_t HTONLL(std::uint64_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;
@@ -89,7 +89,7 @@ namespace EMANE
 #endif
   }
 
-  std::uint64_t inline NTOHLL(std::uint64_t x)
+  constexpr std::uint64_t NTOHLL(std::uint64_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;
@@ -100,7 +100,7 @@ namespace EMANE
 #endif
   }
 
-  std::uint32_t inline HTONL(std::uint32_t x)
+  constexpr std::uint32_t HTONL(std::uint32_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;
@@ -111,7 +111,7 @@ namespace EMANE
 #endif
   }
 
-  std::uint32_t inline NTOHL(std::uint32_t x)
+  constexpr std::uint32_t NTOHL(std::uint32_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;
@@ -122,7 +122,7 @@ namespace EMANE
 #endif
   }
 
-  std::uint16_t inline HTONS(std::uint16_t x)
+  constexpr std::uint16_t HTONS(std::uint16_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;
@@ -133,7 +133,7 @@ namespace EMANE
 #endif
   }
 
-  std::uint16_t inline NTOHS(std::uint16_t x)
+  constexpr std::uint16_t NTOHS(std::uint16_t x)
   {
 #if __BYTE_ORDER == __BIG_ENDIAN
     return x;

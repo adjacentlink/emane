@@ -1,5 +1,5 @@
 %AC_COPYRIGHT([
- Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,13 +32,13 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.2,[emane at adjacent link dot com])
+AC_INIT([emane],0.9.3,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.9.6])
+AM_INIT_AUTOMAKE([])
 
 AC_PROG_CXX
 
@@ -163,7 +163,7 @@ AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 
 # compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -g0 -O3"
+CXXFLAGS="$CXXFLAGS -W -Wall -O3"
 
 # options for use with gprof
 if test "$with_profile" = "yes"
@@ -236,6 +236,8 @@ AC_OUTPUT(
  include/emane/generators/Makefile
  include/emane/generators/eel/Makefile
  include/emane/events/Makefile
+ include/emane/models/Makefile
+ include/emane/models/tdma/Makefile
  include/emane/version.h
  src/Makefile
  src/libemanexmlparser/Makefile 
@@ -249,6 +251,7 @@ AC_OUTPUT(
  src/applications/emaneeventservice/Makefile
  src/emanesh/Makefile
  src/transports/Makefile
+ src/transports/common/Makefile
  src/transports/virtual/Makefile
  src/transports/raw/Makefile
  src/models/Makefile
@@ -258,6 +261,8 @@ AC_OUTPUT(
  src/models/phy/bypass/Makefile
  src/models/mac/rfpipe/Makefile
  src/models/mac/ieee80211abg/Makefile
+ src/models/mac/tdma/Makefile
+ src/models/mac/tdma/eventscheduler/Makefile
  src/models/shim/Makefile
  src/models/shim/timinganalysis/Makefile
  src/models/shim/phyapitest/Makefile

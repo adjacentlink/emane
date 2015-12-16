@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,4 +38,5 @@ from pathlossevent import PathlossEvent
 from commeffectevent import CommEffectEvent
 from antennaprofileevent import AntennaProfileEvent
 from onehopneighborsevent import OneHopNeighborsEvent
-
+from tdmascheduleevent import TDMAScheduleEvent
+from tdmaschedule import TDMASchedule

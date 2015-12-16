@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,7 +133,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
   // validate txTime in case of time sync issues
   auto validTxTime = txTime;
       
-  if(txTime > now || now - txTime > timeSyncThreshold_)
+  if(txTime > now + timeSyncThreshold_ || now - txTime > timeSyncThreshold_)
     {
       validTxTime = now;
     }
@@ -213,9 +213,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                     std::min(minSoR,validTxTime + validOffset + validPropagation);
 
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
+                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
                         validDuration,
-                        validOffset,
-                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i])});
+                        validOffset});
                 }
 
               ++i;
@@ -389,9 +389,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                   minSoR = std::min(minSoR,startOfReception);
               
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
+                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
                         validDuration,
-                        validOffset,
-                        Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i])});
+                        validOffset});
                 }
             }
 

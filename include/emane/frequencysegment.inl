@@ -32,22 +32,33 @@
 
 inline
 EMANE::FrequencySegment::FrequencySegment(std::uint64_t u64FrequencyHz,
+                                          double dPowerdBm,
                                           const Microseconds & durationMicroseconds,
-                                          const Microseconds & offsetMicroseconds,
-                                          double dRxPowerdBm):
+                                          const Microseconds & offsetMicroseconds):
   u64FrequencyHz_{u64FrequencyHz},
   durationMicroseconds_{durationMicroseconds},
   offsetMicroseconds_{offsetMicroseconds},
-  dRxPowerdBm_{dRxPowerdBm}{}
+  dPowerdBm_{dPowerdBm},
+  bHasPower_{true}{}
+
+inline
+EMANE::FrequencySegment::FrequencySegment(std::uint64_t u64FrequencyHz,
+                                          const Microseconds & durationMicroseconds,
+                                          const Microseconds & offsetMicroseconds):
+  u64FrequencyHz_{u64FrequencyHz},
+  durationMicroseconds_{durationMicroseconds},
+  offsetMicroseconds_{offsetMicroseconds},
+  dPowerdBm_{},
+  bHasPower_{false}{}
 
 inline
 EMANE::FrequencySegment::FrequencySegment(const FrequencySegment & rhs,
-                                          double dRxPowerdBm):
+                                          double dPowerdBm):
   u64FrequencyHz_{rhs.u64FrequencyHz_},
   durationMicroseconds_{rhs.durationMicroseconds_},
   offsetMicroseconds_{rhs.offsetMicroseconds_},
-  dRxPowerdBm_{dRxPowerdBm}{}
-
+  dPowerdBm_{dPowerdBm},
+  bHasPower_{true}{}
 
 inline
 std::uint64_t EMANE::FrequencySegment::getFrequencyHz() const
@@ -70,5 +81,11 @@ const EMANE::Microseconds & EMANE::FrequencySegment::getDuration() const
 inline
 double EMANE::FrequencySegment::getRxPowerdBm() const
 {
-  return dRxPowerdBm_;
+  return dPowerdBm_;
+}
+
+inline
+std::pair<double,bool> EMANE::FrequencySegment::getPowerdBm() const
+{
+  return {dPowerdBm_,bHasPower_};
 }

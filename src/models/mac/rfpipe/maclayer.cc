@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -93,7 +93,8 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
   pNumDownstreamQueueDelay_{},
   downstreamQueueTimedEventId_{},
   bHasPendingDownstreamQueueEntry_{},
-  pendingDownstreamQueueEntry_{}
+  pendingDownstreamQueueEntry_{},
+  currentEndOfTransmissionTime_{}
 {}
 
 EMANE::Models::RFPipe::MACLayer::~MACLayer(){}
@@ -1032,13 +1033,10 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
   Microseconds durationMicroseconds{getDurationMicroseconds(pkt.length())};
   
   DownstreamQueueEntry entry{pkt,                   // pkt
-      u64TxSequenceNumber_,  // sequence number
       beginTime,             // acquire time
       durationMicroseconds,  // duration
       u64DataRatebps_};      // data rate
-  
-  ++u64TxSequenceNumber_;
-  
+
   if(bHasPendingDownstreamQueueEntry_)
     {
       std::vector<DownstreamQueueEntry> result{downstreamQueue_.enqueue(entry)};
@@ -1067,6 +1065,14 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
                 }
             }
         }
+
+      // check to see if a packet can be sent
+      auto now = Clock::now();
+
+      if(currentEndOfTransmissionTime_ <= now)
+         {
+           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+         }
     }
   else
     {
@@ -1074,25 +1080,21 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
       pendingDownstreamQueueEntry_ = std::move(entry);
 
-      // delay and jitter is applied on the transmit side prior to
-      // sending the packet to the PHY for transmission. This is a change
-      // from previous version of the mac
-      Microseconds txDelay{delayMicroseconds_ + getJitter()};
+      auto now = Clock::now();
 
-      TimePoint sot{Clock::now() + txDelay};
-
-      if(txDelay > Microseconds::zero())
+      if(currentEndOfTransmissionTime_ <= now)
+         {
+           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+         }
+      else
         {
           downstreamQueueTimedEventId_ = 
             pPlatformService_->timerService().
-            scheduleTimedEvent(sot,
+            scheduleTimedEvent(currentEndOfTransmissionTime_,
                                new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
                                                                    this,
-                                                                   sot)});
-        }
-      else
-        {
-          handleDownstreamQueueEntry(sot);
+                                                                   currentEndOfTransmissionTime_,
+                                                                   u64TxSequenceNumber_)});
         }
     }
 }
@@ -1100,118 +1102,112 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
 
 
-bool 
-EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot)
+bool
+EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
+                                                            std::uint64_t u64TxSequenceNumber)
 {
-  // previous end-of-transmission time
-  TimePoint now = Clock::now();
+  auto now = Clock::now();
 
-  if(bHasPendingDownstreamQueueEntry_)
+  // cached sequence number and next sequence number equality
+  // guarantees sending the next packet, if available - even if an
+  // early wakeup happens
+  if(u64TxSequenceNumber == u64TxSequenceNumber_ ||
+     (bHasPendingDownstreamQueueEntry_ && currentEndOfTransmissionTime_ <= now))
     {
-      if(bFlowControlEnable_)
+      // the packet that was scheduled to be handled, has been but
+      // there is another packet pending transmission and current packet
+      // end of transmission has past - so send that one instead
+      if(u64TxSequenceNumber != u64TxSequenceNumber_)
         {
-          auto status = flowControlManager_.addToken();
+          sot = now;
+        }
 
-          if(!status.second)
+      if(bHasPendingDownstreamQueueEntry_)
+        {
+          if(bFlowControlEnable_)
             {
-              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                      ERROR_LEVEL,
-                                      "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
-                                      id_,
-                                      pzLayerName,
-                                      __func__,
-                                      status.first);
+              auto status = flowControlManager_.addToken();
 
+              if(!status.second)
+                {
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          ERROR_LEVEL,
+                                          "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
+                                          id_,
+                                          pzLayerName,
+                                          __func__,
+                                          status.first);
+
+                }
             }
-        }
-      
-      MACHeaderMessage rfpipeMACHeader{pendingDownstreamQueueEntry_.u64DataRatebps_}; 
 
-      Serialization serialization{rfpipeMACHeader.serialize()};
+          MACHeaderMessage rfpipeMACHeader{pendingDownstreamQueueEntry_.u64DataRatebps_};
 
-      auto & pkt = pendingDownstreamQueueEntry_.pkt_;
-      
-      // prepend mac header to outgoing packet
-       pkt.prepend(serialization.c_str(), serialization.size());
+          Serialization serialization{rfpipeMACHeader.serialize()};
 
-       // next prepend the serialization length
-       pkt.prependLengthPrefixFraming(serialization.size());
-       
-       commonLayerStatistics_.processOutbound(pkt, 
-                                              std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_));
+          auto & pkt = pendingDownstreamQueueEntry_.pkt_;
 
-       /** [pysicallayer-frequencycontrolmessage-snippet] */
-       
-       sendDownstreamPacket(CommonMACHeader(type_, pendingDownstreamQueueEntry_.u64SequenceNumber_), 
-                            pkt,
-                            {Controls::FrequencyControlMessage::create(0,                                   // bandwidth (0 means use phy default)
-                                                                       {{0, pendingDownstreamQueueEntry_.durationMicroseconds_}}), // freq (0 means use phy default)
-                                Controls::TimeStampControlMessage::create(sot)});
-       
-       /** [pysicallayer-frequencycontrolmessage-snippet] */
-      // queue delay
-      Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - sot)}; 
-      
-      *pNumDownstreamQueueDelay_ += queueDelayMicroseconds.count();
-      
-      avgDownstreamQueueDelay_.update(queueDelayMicroseconds.count());
-      
-      queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
-                                            downstreamQueue_.getMaxCapacity(),      // queue size
-                                            downstreamQueue_.getCurrentDepth(),     // queue depth
-                                            downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
-                                            queueDelayMicroseconds);                // queue delay 
-          
-      neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
-                                                    pendingDownstreamQueueEntry_.u64DataRatebps_, 
-                                                    now);
-      
+          // prepend mac header to outgoing packet
+          pkt.prepend(serialization.c_str(), serialization.size());
 
-      auto eor = sot + pendingDownstreamQueueEntry_.durationMicroseconds_;
+          // next prepend the serialization length
+          pkt.prependLengthPrefixFraming(serialization.size());
 
-      auto pCallback = new std::function<bool()>{[this]()
-                                                 {
-                                                   std::tie(pendingDownstreamQueueEntry_,
-                                                            bHasPendingDownstreamQueueEntry_) =
-                                                   downstreamQueue_.dequeue();
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_));
 
-                                                   if(bHasPendingDownstreamQueueEntry_)
-                                                     {
-                                                       Microseconds txDelay{delayMicroseconds_ + getJitter()};
+          /** [pysicallayer-frequencycontrolmessage-snippet] */
 
-                                                       TimePoint sot{Clock::now() + txDelay};
-                                                       
-                                                       if(txDelay > Microseconds::zero())
-                                                         {
-                                                           downstreamQueueTimedEventId_ = 
-                                                             pPlatformService_->timerService().
-                                                             scheduleTimedEvent(sot,
-                                                                                new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                                                                    this,
-                                                                                                                    sot)});
-                                                         }
-                                                       else
-                                                         {
-                                                           handleDownstreamQueueEntry(sot);
-                                                         }
-                                                     }
+          sendDownstreamPacket(CommonMACHeader(type_, u64TxSequenceNumber_++),
+                               pkt,
+                               {Controls::FrequencyControlMessage::create(0, // bandwidth (0 means use phy default)
+                                                                          {{0, pendingDownstreamQueueEntry_.durationMicroseconds_}}), // freq (0 means use phy default)
+                                   Controls::TimeStampControlMessage::create(sot)});
 
-                                                   return true;
-                                                 }};
-                                                   
+          /** [pysicallayer-frequencycontrolmessage-snippet] */
+          // queue delay
+          Microseconds queueDelayMicroseconds{std::chrono::duration_cast<Microseconds>(now - pendingDownstreamQueueEntry_.acquireTime_)};
+
+          *pNumDownstreamQueueDelay_ += queueDelayMicroseconds.count();
+
+          avgDownstreamQueueDelay_.update(queueDelayMicroseconds.count());
+
+          queueMetricManager_.updateQueueMetric(0,                                      // queue id, (we only have 1 queue)
+                                                downstreamQueue_.getMaxCapacity(),      // queue size
+                                                downstreamQueue_.getCurrentDepth(),     // queue depth
+                                                downstreamQueue_.getNumDiscards(true),  // get queue discards and clear counter
+                                                queueDelayMicroseconds);                // queue delay
+
+          neighborMetricManager_.updateNeighborTxMetric(pendingDownstreamQueueEntry_.pkt_.getPacketInfo().getDestination(),
+                                                        pendingDownstreamQueueEntry_.u64DataRatebps_,
+                                                        now);
 
 
-      if(eor > now)
-        {
-          // wait for end of reception before processing next packet
-          pPlatformService_->timerService().scheduleTimedEvent(eor,pCallback);
-        }
-      else
-        {
-          // we can process now, end of reception has past
-          (*pCallback)();
-              
-          delete pCallback;
+          // earliest you can send the next packet
+          currentEndOfTransmissionTime_ =
+            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + delayMicroseconds_ + getJitter();
+
+          std::tie(pendingDownstreamQueueEntry_,
+                   bHasPendingDownstreamQueueEntry_) =
+            downstreamQueue_.dequeue();
+
+          if(bHasPendingDownstreamQueueEntry_)
+            {
+              if(currentEndOfTransmissionTime_ > now)
+                {
+                  downstreamQueueTimedEventId_ =
+                    pPlatformService_->timerService().
+                    scheduleTimedEvent(sot,
+                                       new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                                                           this,
+                                                                           currentEndOfTransmissionTime_,
+                                                                           u64TxSequenceNumber_)});
+                }
+              else
+                {
+                  handleDownstreamQueueEntry(currentEndOfTransmissionTime_,u64TxSequenceNumber_);
+                }
+            }
         }
     }
 

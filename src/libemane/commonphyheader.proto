@@ -47,6 +47,7 @@ message CommonPHYHeader
     required uint64 frequencyHz = 1;
     required uint64 offsetMicroseconds = 2;
     required uint64 durationMicroseconds = 3;
+    optional double powerdBm = 4;
   }
   
   required uint32 registrationId = 1;

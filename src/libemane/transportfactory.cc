@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -32,29 +32,30 @@
  */
 
 #include "transportfactory.h"
+#include <dlfcn.h>
 
 EMANE::TransportFactory::TransportFactory(const std::string & sLibraryName):
-  shlibHandle_(0),
-  createTransportFunc_(0),
-  destroyTransportFunc_(0)
+  pLibHandle_{},
+  createTransportFunc_{},
+  destroyTransportFunc_{}
 {
-   if((shlibHandle_ = ACE_OS::dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
+   if((pLibHandle_ = dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
     {
-      throw Utils::FactoryException(ACE_OS::dlerror());
+      throw Utils::FactoryException(dlerror());
     }
 
   if((createTransportFunc_ = 
-      reinterpret_cast<CreateTransportFunc>((void (*)())(ACE_OS::dlsym(shlibHandle_,"create")))) == 0)
+      reinterpret_cast<CreateTransportFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s missing create symbol. (Missing DECLARE_TRANSPORT()?)",
                                                    sLibraryName.c_str());
     }
 
   if((destroyTransportFunc_ = 
-      reinterpret_cast<DestroyTransportFunc>((void (*)())ACE_OS::dlsym(shlibHandle_,"destroy"))) == 0)
+      reinterpret_cast<DestroyTransportFunc>((void (*)())dlsym(pLibHandle_,"destroy"))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
       throw makeException<Utils::FactoryException>("%s missing destroy symbol. (Missing DECLARE_TRANSPORT()?)",
                                                    sLibraryName.c_str());
     }
@@ -62,7 +63,7 @@ EMANE::TransportFactory::TransportFactory(const std::string & sLibraryName):
 
 EMANE::TransportFactory::~TransportFactory()
 {
-  ACE_OS::dlclose(shlibHandle_);
+  dlclose(pLibHandle_);
 }
 
 EMANE::Transport * EMANE::TransportFactory::createTransport(NEMId id, PlatformServiceProvider *pPlatformService) const

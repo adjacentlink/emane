@@ -50,7 +50,7 @@
 [3]   duration: 200
 [3]   offset: 0
 [3]   src: 2
-[3]   power: 0.000000
+[3]   transmitter power: 0.000000
 
 [3]  Packet dropped
 
@@ -81,7 +81,7 @@
 [5]   duration: 100
 [5]   offset: 400
 [5]   src: 2
-[5]   power: 5.000000
+[5]   transmitter power: 5.000000
 
 [5]  Packet forwarded to next layer
 
@@ -119,7 +119,7 @@ Processing upstream packet...
 [7]   duration: 100
 [7]   offset: 400
 [7]   src: 2
-[7]   power: 5.000000
+[7]   transmitter power: 5.000000
 
 [7]  Packet forwarded to next layer
 

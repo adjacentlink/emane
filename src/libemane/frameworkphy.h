@@ -42,6 +42,7 @@
 #include "gainmanager.h"
 #include "propagationmodelalgorithm.h"
 #include "eventtablepublisher.h"
+#include "receivepowertablepublisher.h"
 
 #include <set>
 #include <cstdint>
@@ -106,6 +107,7 @@ namespace EMANE
     std::unique_ptr<PropagationModelAlgorithm> pPropagationModelAlgorithm_;
     Utils::CommonLayerStatistics commonLayerStatistics_;
     EventTablePublisher eventTablePublisher_;
+    ReceivePowerTablePublisher receivePowerTablePublisher_;
     Microseconds noiseBinSize_;
     Microseconds maxSegmentOffset_;
     Microseconds maxMessagePropagation_;

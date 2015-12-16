@@ -29,7 +29,8 @@ for plugin in eelgenerator \
     nemmanager \
     transportmanager \
     eventgeneratormanager \
-    eventagentmanager;
+    eventagentmanager\
+    tdmaeventschedulerradiomodel;
 do
     LD_LIBRARY_PATH=$ld_library_path_orig
     

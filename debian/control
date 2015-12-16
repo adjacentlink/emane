@@ -77,6 +77,12 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: EMANE commeffect model replacement for commercial network emulators.
 
+Package: emane-model-tdmaeventscheduler
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EMANE TDMA radio model
+
 Package: emane-agent-gpsdlocation
 Section: libs
 Architecture: any
@@ -94,6 +100,12 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE raw transport.  Uses raw IP to create a network layer entry point for the NEM stack.
+
+Package: emane-trans-common
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EMANE common transport ethernet functionality
 
 Package: emane-model-phyapitest
 Section: libs

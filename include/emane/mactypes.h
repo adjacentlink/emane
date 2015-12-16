@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -64,7 +65,7 @@ namespace EMANE
   const RegistrationId REGISTERED_EMANE_MAC_RF_PIPE = 0x0004;
 
   /*
-   * TDMA Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2012.03.03
+   * TDMA Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2015.03.27
    */
   const RegistrationId REGISTERED_EMANE_MAC_TDMA = 0x0005;
 

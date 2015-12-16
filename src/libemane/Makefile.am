@@ -38,7 +38,9 @@ BUILT_SOURCES =                          \
  radiotorouter.pb.cc                     \
  radiotorouter.pb.h                      \
  remotecontrolportapi.pb.cc              \
- remotecontrolportapi.pb.h              
+ remotecontrolportapi.pb.h               \
+ tdmascheduleevent.pb.cc                 \
+ tdmascheduleevent.pb.h
 
 libemane_la_SOURCES =                         \
  antennapattern.cc                            \
@@ -136,6 +138,7 @@ libemane_la_SOURCES =                         \
  radioservice.cc                              \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
+ receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
  serializedcontrolmessage.cc                  \
@@ -149,6 +152,7 @@ libemane_la_SOURCES =                         \
  statisticservice.cc                          \
  statistictableclearupdatehandler.cc          \
  statistictablequeryhandler.cc                \
+ tdmascheduleevent.cc                         \
  timer.cc                                     \
  timerservice.cc                              \
  timerserviceproxy.cc                         \
@@ -176,7 +180,8 @@ libemane_la_SOURCES =                         \
  otatransmitter.pb.cc                         \
  pathlossevent.pb.cc                          \
  radiotorouter.pb.cc                          \
- remotecontrolportapi.pb.cc                   
+ remotecontrolportapi.pb.cc                   \
+ tdmascheduleevent.pb.cc                      
 
 
 
@@ -265,6 +270,7 @@ EXTRA_DIST=                                   \
  radioservice.h                               \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
+ receivepowertablepublisher.h                 \
  shimlayer.h                                  \
  spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
@@ -296,7 +302,8 @@ EXTRA_DIST=                                   \
  otatransmitter.proto                         \
  pathlossevent.proto                          \
  radiotorouter.proto                          \
- remotecontrolportapi.proto                   
+ remotecontrolportapi.proto                   \
+ tdmascheduleevent.proto
 
 libemane_la_LIBADD=       \
  $(WIN32_EXTRA_LIBADD)
@@ -345,6 +352,9 @@ commonmacheader.pb.cc commonmacheader.pb.h: commonmacheader.proto
 	protoc -I=. --cpp_out=. $<
 
 remotecontrolportapi.pb.cc remotecontrolportapi.pb.h: remotecontrolportapi.proto
+	protoc -I=. --cpp_out=. $<
+
+tdmascheduleevent.pb.cc tdmascheduleevent.pb.h: tdmascheduleevent.proto
 	protoc -I=. --cpp_out=. $<
 
 clean-local:

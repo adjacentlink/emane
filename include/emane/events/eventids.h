@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,5 +42,7 @@
 #define EMANE_EVENT_COMMEFFECT 103
 
 #define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
+
+#define EMANE_EVENT_TDMA_SCHEDULE 105
 
 #endif // EMANEEVENTIDS_HEADER_
