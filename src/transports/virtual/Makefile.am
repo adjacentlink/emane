@@ -9,13 +9,11 @@ libtransvirtual_la_CPPFLAGS= \
 
 libtransvirtual_la_SOURCES= \
  virtualtransport.cc        \
- tuntap.cc                  \
- ../common/ethernettransport.cc
+ tuntap.cc                  
 
 EXTRA_DIST=                 \
  virtualtransport.h         \
  tuntap.h                   \
- ../common/ethernettransport.h \
  transvirtual.xml.in        
 
 BUILT_SOURCES =             \
@@ -27,6 +25,8 @@ libtransvirtual_la_LIBADD= \
 libtransvirtual_la_LDFLAGS= \
  $(WIN32_EXTRA_LDFLAGS)     \
  $(ACE_LIBS)                \
+ -L../common                \
+ -lcommontransport          \
  -avoid-version
 
 edit = sed                     \

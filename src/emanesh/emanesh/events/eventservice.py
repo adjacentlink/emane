@@ -212,8 +212,8 @@ class EventService:
                                 default(serialization.nemId,
                                         serialization.eventId,
                                         serialization.data,
-                                        uuid.UUID(bytes=event.uuid),
-                                        msg.sequenceNumber)                              
+                                        uuid.UUID(bytes=otaHeader.uuid),
+                                        otaHeader.sequenceNumber)                              
                         finally:
                             self._lock.release()   
 

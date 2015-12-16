@@ -123,7 +123,7 @@ EMANE gpsd location agent translates location events into NMEA strings
 and transmits them to gpsd via a pseudo terminal device.
 
 %package trans-virtual
-Requires: emane-transportdaemon = %{version}
+Requires: emane-transportdaemon = %{version} emane-trans-common = %{version}
 Summary: EMANE virtual transport implementation
 Group: Libraries
 
@@ -132,13 +132,21 @@ EMANE virtual transport.  Uses tun device to create a network layer
 entry point for the NEM stack.
 
 %package trans-raw
-Requires: emane-transportdaemon = %{version}
+Requires: emane-transportdaemon = %{version} emane-trans-common = %{version}
 Summary: EMANE raw transport implementation
 Group: Libraries
 
 %description trans-raw
 EMANE raw transport.  Uses raw IP to create a network layer
 entry point for the NEM stack.
+
+%package trans-common
+Requires: emane-transportdaemon = %{version}
+Summary: EMANE common transport ethernet functionality
+Group: Libraries
+
+%description trans-common
+EMANE common transport ethernet functionality.
 
 %package model-phyapitestshim
 Requires: emane = %{version}
@@ -391,6 +399,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libtransraw.*
 %dir %{_datadir}/emane/xml/transports/raw
 %{_datadir}/emane/xml/transports/raw/transraw.xml
+
+%files trans-common
+%defattr(-, root, root)
+%{_libdir}/libcommontransport.*
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}

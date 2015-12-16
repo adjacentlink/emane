@@ -101,6 +101,12 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE raw transport.  Uses raw IP to create a network layer entry point for the NEM stack.
 
+Package: emane-trans-common
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EMANE common transport ethernet functionality
+
 Package: emane-model-phyapitest
 Section: libs
 Architecture: any
