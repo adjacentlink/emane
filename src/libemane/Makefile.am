@@ -7,7 +7,6 @@ libemane_la_CPPFLAGS =  \
  -I@top_srcdir@/include
 
 libemane_la_CXXFLAGS =  \
- $(ACE_CFLAGS)          \
  $(AM_CFLAGS)           \
  $(libuuid_CFLAGS)      \
  $(libxml2_CFLAGS)
@@ -63,6 +62,8 @@ libemane_la_SOURCES =                         \
  configurationupdatehandler.cc                \
  controlmessageserializer.cc                  \
  controlportservice.cc                        \
+ controlportsession.cc                        \
+ datagramsocket.cc                            \
  downstreampacket.cc                          \
  downstreamtransport.cc                       \
  errorresponse.cc                             \
@@ -87,6 +88,7 @@ libemane_la_SOURCES =                         \
  frequencyofinterestcontrolmessage.cc         \
  frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
+ inetaddr.cc                                  \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
  locationevent.cc                             \
@@ -100,6 +102,7 @@ libemane_la_SOURCES =                         \
  maclayer.cc                                  \
  main.cc                                      \
  manifestqueryhandler.cc                      \
+ multicastsocket.cc                           \
  neighbormetricmanager.cc                     \
  nembuilder.cc                                \
  nemimpl.cc                                   \
@@ -143,6 +146,7 @@ libemane_la_SOURCES =                         \
  requestmessagehandler.cc                     \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
+ socket.cc                                    \
  spectrummonitor.cc                           \
  spectrumwindowutils.cc                       \
  statisticclearupdatehandler.cc               \
@@ -201,6 +205,8 @@ EXTRA_DIST=                                   \
  controlmessageserializer.h                   \
  controlmessageserializermessages.h           \
  controlportservice.h                         \
+ controlportsession.h                         \
+ datagramsocket.h                             \
  emulator.h                                   \
  errorresponse.h                              \
  eventagentfactory.h                          \
@@ -232,6 +238,7 @@ EXTRA_DIST=                                   \
  maclayer.h                                   \
  main.h                                       \
  manifestqueryhandler.h                       \
+ multicastsocket.h                            \
  nemimpl.h                                    \
  nemlayerstack.h                              \
  nemlayerstateconfigured.h                    \
@@ -271,6 +278,8 @@ EXTRA_DIST=                                   \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
  receivepowertablepublisher.h                 \
+ socket.h                                     \
+ socketexception.h                            \
  shimlayer.h                                  \
  spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
@@ -305,12 +314,7 @@ EXTRA_DIST=                                   \
  remotecontrolportapi.proto                   \
  tdmascheduleevent.proto
 
-libemane_la_LIBADD=       \
- $(WIN32_EXTRA_LIBADD)
-
 libemane_la_LDFLAGS=     \
- $(WIN32_EXTRA_LDFLAGS)  \
- $(ACE_LIBS)             \
  $(libxml2_LIBS)         \
  $(libuuid_LIBS)         \
  -avoid-version

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -60,28 +61,14 @@ namespace EMANE
        */
       void setLogLevel(const LogLevel level);
 
-      /**
-       * Redirect logging to syslog
-       *
-       * @param program the tag name of logged statements in syslog
-       */
-      void redirectLogsToSysLog(const char *program);
 
       /**
        * Redirect logging to file
        *
        * @param filename the name of the destination file
        */
-      void redirectLogsToFile(const char* filename); 
+      void redirectLogsToFile(const char* filename);
 
-      /**
-       * Redirect logging to remoet logger
-       *
-       * @param program the tag name of logged statements in syslog
-       * @param address the address of the remote logger
-       */
-      void redirectLogsToRemoteLogger(const char *program, 
-                                      const char* address);
 
       /**
        * Output a log message
@@ -90,7 +77,7 @@ namespace EMANE
        * @param fmt format string (see printf)
        * @param ... Variable data (see printf)
        */
-      void log(LogLevel level, const char *fmt, ...) 
+      void log(LogLevel level, const char *fmt, ...)
         __attribute__ ((format (printf, 3, 4)));
 
       /**

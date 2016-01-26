@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,8 +39,8 @@
 #include <libxml/tree.h>
 
 
-EMANE::NEMConfiguration::NEMConfiguration(xmlNodePtr pNEMNode, 
-                                          std::string sURI) : 
+EMANE::NEMConfiguration::NEMConfiguration(xmlNodePtr pNEMNode,
+                                          std::string sURI) :
   LayerConfiguration{"nem"},
   u16Id_{0},
   type_{STRUCTURED}
@@ -64,14 +64,14 @@ EMANE::NEMConfiguration::~NEMConfiguration()
 }
 
 
-ACE_UINT16 
+EMANE::NEMId
 EMANE::NEMConfiguration::getNEMId()
 {
   return u16Id_;
 }
 
 
-const EMANE::LayerConfigurations 
+const EMANE::LayerConfigurations
 &EMANE::NEMConfiguration::getLayers()
 {
   return layers_;
@@ -85,16 +85,16 @@ EMANE::NEMConfiguration::isExternalTransport()
 }
 
 
-bool 
+bool
 EMANE::NEMConfiguration::isValid()
 {
-  return (type_ == UNSTRUCTURED) || (haveLayer("phy") && 
+  return (type_ == UNSTRUCTURED) || (haveLayer("phy") &&
                                      haveLayer("mac") &&
                                      haveLayer("transport"));
 }
 
 
-void 
+void
 EMANE::NEMConfiguration::doProcessRootAttributes(xmlNodePtr pRoot)
 {
   if(getAttrVal(pRoot, "type") == "unstructured")
@@ -104,27 +104,27 @@ EMANE::NEMConfiguration::doProcessRootAttributes(xmlNodePtr pRoot)
 }
 
 
-void 
+void
 EMANE::NEMConfiguration::doProcessChildNode(xmlNodePtr pNode)
 {
   doProcessLayer(pNode);
 }
 
 
-void 
+void
 EMANE::NEMConfiguration::doProcessLayer(xmlNodePtr pNode)
 {
   std::string sLayerName{reinterpret_cast<const char*>(pNode->name)};
 
   std::string sDefinitionFile{getAttrVal(pNode, "definition")};
-  
+
   std::string sURI{};
-  
+
   if(!sDefinitionFile.empty())
     {
       sURI = getDefinitionPath() + sDefinitionFile;
     }
-  
+
   if(sLayerName == "shim")
     {
       layers_.push_back(new PluginConfiguration{pNode, sURI, sLayerName});
@@ -135,8 +135,8 @@ EMANE::NEMConfiguration::doProcessLayer(xmlNodePtr pNode)
 
       if (pIter == layers_.end())
         {
-          pIter = 
-            layers_.insert(pIter, 
+          pIter =
+            layers_.insert(pIter,
                            new PluginConfiguration{pNode, sURI, sLayerName});
         }
       else
@@ -166,14 +166,14 @@ EMANE::NEMConfiguration::findFirstLayer(const std::string & sType)
 {
   return find_if(layers_.begin(),
                  layers_.end(),
-                 [sType](LayerConfiguration *l) 
-                 { 
-                   return l->getType() == sType; 
+                 [sType](LayerConfiguration *l)
+                 {
+                   return l->getType() == sType;
                  });
 }
 
 
-bool 
+bool
 EMANE::NEMConfiguration::haveLayer(const std::string & type)
 {
   return findFirstLayer(type) != layers_.end();

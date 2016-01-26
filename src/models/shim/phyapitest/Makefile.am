@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libphyapitestshim.la
 
 libphyapitestshim_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(ACE_CFLAGS)                 \
  $(libuuid_CFLAGS)             \
  $(AM_CFLAGS)
 
@@ -16,12 +15,7 @@ EXTRA_DIST =                   \
 BUILT_SOURCES =                \
  phyapitestshim.xml
 
-libphyapitestshim_la_LIBADD=   \
- $(WIN32_EXTRA_LIBADD)        
-
 libphyapitestshim_la_LDFLAGS=  \
- $(WIN32_EXTRA_LDFLAGS)        \
- $(ACE_LIBS)                   \
  -avoid-version
 
 edit = sed                     \

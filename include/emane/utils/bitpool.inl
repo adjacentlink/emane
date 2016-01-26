@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,10 +35,7 @@
 #include "bitpool.h"
 
 #include <cmath>
-
-#include <ace/Time_Value.h>
-#include <ace/OS_NS_sys_time.h>
-
+#include <condition_variable>
 
 namespace
 {
@@ -49,8 +47,8 @@ inline
 EMANE::Utils::BitPool::BitPool(PlatformServiceProvider * pPlatformService, NEMId id) :
  pPlatformService_{pPlatformService},
  id_(id),
- u64MaxSize_{}, 
- u64CurrentSize_{}, 
+ u64MaxSize_{},
+ u64CurrentSize_{},
  lastRequestTime_{},
  fFillRemainder_{}
 { }
@@ -63,14 +61,14 @@ EMANE::Utils::BitPool::~BitPool()
 
 
 inline
- void 
+ void
 EMANE::Utils::BitPool::setMaxSize(std::uint64_t u64NewSize)
 {
   // lock mutex
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
   // size changed
-  if(u64NewSize != u64MaxSize_) 
+  if(u64NewSize != u64MaxSize_)
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
@@ -81,7 +79,7 @@ EMANE::Utils::BitPool::setMaxSize(std::uint64_t u64NewSize)
                              u64NewSize);
 
       // new size is less than current size
-      if(u64CurrentSize_ > u64NewSize) 
+      if(u64CurrentSize_ > u64NewSize)
         {
           // reduce current size
           u64CurrentSize_ = u64NewSize;
@@ -95,14 +93,14 @@ EMANE::Utils::BitPool::setMaxSize(std::uint64_t u64NewSize)
 
 
 inline
-std::uint64_t 
+std::uint64_t
 EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
 {
   // lock mutex
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
   // disabled
-  if(u64MaxSize_ == 0 || u64Request == 0) 
+  if(u64MaxSize_ == 0 || u64Request == 0)
     {
       // nothing outstanding
       return 0;
@@ -112,7 +110,7 @@ EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
   std::uint64_t u64Acquired{};
 
   // try to fulfill request
-  while(1) 
+  while(1)
     {
       TimePoint currentTime = Clock::now();
 
@@ -121,41 +119,35 @@ EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
 
       // make request
       u64Acquired += doDrainPool(u64Request - u64Acquired, currentTime, waitIntervalMicroseconds);
- 
+
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
                              "NEM %03hu BitPool::%s request %ju, acquired %ju, pool remaining %ju,  %4.2f%%",
                              id_,
-                             __func__, 
-                             u64Request, 
+                             __func__,
+                             u64Request,
                              u64Acquired,
                              u64CurrentSize_,
-                             100.0f * (1.0f - (static_cast<float>(u64MaxSize_ - u64CurrentSize_) / 
+                             100.0f * (1.0f - (static_cast<float>(u64MaxSize_ - u64CurrentSize_) /
                                                static_cast<float>(u64MaxSize_))));
 
-      // request fulfilled 
-      if(!bFullFill || u64Acquired == u64Request) 
+      // request fulfilled
+      if(!bFullFill || u64Acquired == u64Request)
         {
           // done
           break;
-       } 
+       }
 
-     // absolute wait time 
-     ACE_Time_Value tvWaitTime;
-
-     Microseconds microseconds = std::chrono::duration_cast<Microseconds>(currentTime.time_since_epoch()) +
-                                 waitIntervalMicroseconds;
-
-     tvWaitTime.set(microseconds.count() / 1000000.0);
-
-     // local mutex 
-     ACE_Thread_Mutex mutex;
+     // local mutex
+     std::mutex mutex;
 
      // condition variable
-     ACE_Condition<ACE_Thread_Mutex> cond(mutex);
+     std::condition_variable cond{};
+
+     std::unique_lock<std::mutex> lock(mutex);
 
      // wait here
-     if(cond.wait(&tvWaitTime) != -1) {
+     if(cond.wait_until(lock,currentTime + waitIntervalMicroseconds) != std::cv_status::timeout) {
 
        // did not time out, spurious wake up
        break;
@@ -168,20 +160,20 @@ EMANE::Utils::BitPool::get(std::uint64_t u64Request, bool bFullFill)
 
 
 inline
-std::uint64_t 
+std::uint64_t
 EMANE::Utils::BitPool::getCurrentSize()
 {
   // lock mutex
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
   return u64CurrentSize_;
 }
 
 
 inline
-std::uint64_t 
-EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request, 
-                                   const TimePoint & requestTime, 
+std::uint64_t
+EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request,
+                                   const TimePoint & requestTime,
                                    Microseconds & intervalMicroseconds)
 {
   std::uint64_t u64Acquired{};
@@ -190,7 +182,7 @@ EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request,
   doFillPool(requestTime);
 
   // drain the pool
-  if(u64Request > u64CurrentSize_) 
+  if(u64Request > u64CurrentSize_)
     {
       // size outstanding
       std::uint64_t u64Outstanding{u64Request - u64CurrentSize_};
@@ -208,7 +200,7 @@ EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request,
       intervalMicroseconds = std::chrono::duration_cast<Microseconds>(DoubleSeconds{fSeconds});
 
       // cap wait interval to fill interval
-      if(intervalMicroseconds > FillIntervalMicroseconds) 
+      if(intervalMicroseconds > FillIntervalMicroseconds)
         {
           intervalMicroseconds = FillIntervalMicroseconds;
         }
@@ -234,7 +226,7 @@ EMANE::Utils::BitPool::doDrainPool(std::uint64_t u64Request,
 
 
 inline
-void 
+void
 EMANE::Utils::BitPool::doFillPool(const TimePoint & requestTime)
 {
   // fill the pool since last request
@@ -242,29 +234,29 @@ EMANE::Utils::BitPool::doFillPool(const TimePoint & requestTime)
     {
       // time since last request
       Microseconds deltaTMicroseconds{std::chrono::duration_cast<Microseconds>(requestTime - lastRequestTime_)};
-    
+
      // fill the pool depending on elapsed time
-     if(deltaTMicroseconds >= FillIntervalMicroseconds) 
+     if(deltaTMicroseconds >= FillIntervalMicroseconds)
        {
          // fill to full capacity
          u64CurrentSize_ = u64MaxSize_;
 
          fFillRemainder_ = 0;
        }
-     else 
+     else
        {
          // find the amount of time into the fill interval
          Microseconds diffMicroseconds{FillIntervalMicroseconds - (FillIntervalMicroseconds - deltaTMicroseconds)};
 
          // accumulate fill amount for this interval
-         fFillRemainder_ += (static_cast<float>(diffMicroseconds.count()) / 
+         fFillRemainder_ += (static_cast<float>(diffMicroseconds.count()) /
                              static_cast<float>(FillIntervalMicroseconds.count())) * u64MaxSize_;
 
          // have at least a whole unit
          if(fFillRemainder_ >= 1.0f)
            {
              std::uint64_t u64Fill{static_cast<std::uint64_t>(fFillRemainder_)};
- 
+
              // fill pool
              if((u64CurrentSize_ + u64Fill) <= u64MaxSize_)
                {
@@ -274,10 +266,10 @@ EMANE::Utils::BitPool::doFillPool(const TimePoint & requestTime)
                {
                  u64CurrentSize_ = u64MaxSize_;
                }
-             
+
              // keep fraction remainder
              fFillRemainder_ -= u64Fill;
-           } 
+           }
        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,45 +34,16 @@
 #ifndef EMANEUTILSNETUTILS_HEADER_
 #define EMANEUTILSNETUTILS_HEADER_
 
-#include <ace/INET_Addr.h>
-#include <ace/OS_NS_string.h>
 #include <sstream>
 #include <vector>
+#include <cstdint>
+#include <cstring>
+#include <arpa/inet.h>
 
 namespace EMANE
 {
   namespace Utils
   {
-    /**
-     * @union INET_Addr
-     *
-     * @brief Definition of an ipv4/ipv6 internet address 
-     *
-     */
-    union INET_Addr
-    {
-      sockaddr_in  in4_;
-#if defined (ACE_HAS_IPV6)
-      sockaddr_in6 in6_;
-#endif /* ACE_HAS_IPV6 */
-    };
-
-    // Return @c true if the IP address is IPv4/IPv6 multicast address.
-    // Internal version of is_multicast due to bug in at least ACE version 5.6.2
-    // See doc directory for available patches.
-    inline bool
-    is_multicast (const ACE_INET_Addr & addr)
-    {
-      INET_Addr *p = (INET_Addr*) addr.get_addr();
-#if defined (ACE_HAS_IPV6)
-      if (addr.get_type() == AF_INET6)
-        return p->in6_.sin6_addr.s6_addr[0] == 0xFF;
-#endif /* ACE_HAS_IPV6 */
-      return
-        ACE_NTOHL(p->in4_.sin_addr.s_addr) >= 0xE0000000 &&  // 224.0.0.0
-        ACE_NTOHL(p->in4_.sin_addr.s_addr) <= 0xEFFFFFFF;    // 239.255.255.255
-    }
-
     /**
      * @struct UdpHeader
      *
@@ -82,10 +53,10 @@ namespace EMANE
 
     struct UdpHeader
     {
-      ACE_UINT16 u16Udpsrc;
-      ACE_UINT16 u16Udpdst;
-      ACE_UINT16 u16Udplen;
-      ACE_UINT16 u16Udpcheck;
+      std::uint16_t u16Udpsrc;
+      std::uint16_t u16Udpdst;
+      std::uint16_t u16Udplen;
+      std::uint16_t u16Udpcheck;
     } __attribute__((packed));
 
 
@@ -94,14 +65,14 @@ namespace EMANE
      * @brief ip udp protocol
      *
      */
-    const ACE_UINT8 IP_PROTO_UDP = 0x11;
+    const std::uint8_t IP_PROTO_UDP = 0x11;
 
     /**
      *
      * @brief udp header len
      *
      */
-    const ACE_UINT16 UDP_HEADER_LEN = 8;
+    const std::uint16_t UDP_HEADER_LEN = 8;
 
 
     /**
@@ -110,8 +81,8 @@ namespace EMANE
      * @return returns the ip header version
      *
      */
-    inline ACE_UINT8 
-    get_ip_version(ACE_UINT8 vhl)
+    inline std::uint8_t
+    get_ip_version(std::uint8_t vhl)
     {
       return ((vhl >> 4) & 0x0F);
     }
@@ -122,8 +93,8 @@ namespace EMANE
      * @return returns the ip header length
      *
      */
-    inline ACE_UINT8 
-    get_ip_hdrlen(ACE_UINT8 vhl)
+    inline std::uint8_t
+    get_ip_hdrlen(std::uint8_t vhl)
     {
       return ((vhl & 0x0F) << 2);
     }
@@ -136,8 +107,8 @@ namespace EMANE
      * @return returns ipv4 dscp value
      *
      */
-    inline ACE_UINT8 
-    get_ip_dscp(ACE_UINT8 tos)
+    inline std::uint8_t
+    get_ip_dscp(std::uint8_t tos)
     {
       return (tos >> 2);
     }
@@ -151,8 +122,8 @@ namespace EMANE
      *
      */
 
-    inline ACE_UINT8 
-    get_ip_dscp(ACE_UINT8 ver, ACE_UINT8 clas)
+    inline std::uint8_t
+    get_ip_dscp(std::uint8_t ver, std::uint8_t clas)
     {
       return (((ver & 0x0F) << 2) | (clas >> 6));
     }
@@ -167,16 +138,16 @@ namespace EMANE
      */
     struct Ip4Header
     {
-      ACE_UINT8  u8Ipv4vhl;
-      ACE_UINT8  u8Ipv4tos;
-      ACE_UINT16 u16Ipv4len;
-      ACE_UINT16 u16Ipv4id;
-      ACE_UINT16 u16Ipv4frag;
-      ACE_UINT8  u8Ipv4hops;
-      ACE_UINT8  u8Ipv4proto;
-      ACE_UINT16 u16Ipv4check;
-      ACE_UINT32 u32Ipv4src;
-      ACE_UINT32 u32Ipv4dst;
+      std::uint8_t  u8Ipv4vhl;
+      std::uint8_t  u8Ipv4tos;
+      std::uint16_t u16Ipv4len;
+      std::uint16_t u16Ipv4id;
+      std::uint16_t u16Ipv4frag;
+      std::uint8_t  u8Ipv4hops;
+      std::uint8_t  u8Ipv4proto;
+      std::uint16_t u16Ipv4check;
+      std::uint32_t u32Ipv4src;
+      std::uint32_t u32Ipv4dst;
     } __attribute__((packed));
 
     /**
@@ -184,30 +155,30 @@ namespace EMANE
      * @brief ipv4 header len without options
      *
      */
-    const ACE_UINT16 IPV4_HEADER_LEN = 20;
+    const std::uint16_t IPV4_HEADER_LEN = 20;
 
 
     /**
      *
-     * @brief ipv4 addr len 
+     * @brief ipv4 addr len
      *
      */
-    const ACE_UINT16 IPV4_ADDR_LEN = 4;
+    const std::uint16_t IPV4_ADDR_LEN = 4;
 
 
     /**
      *
-     * @brief ipv6 addr len 
+     * @brief ipv6 addr len
      *
      */
-    const ACE_UINT16 IPV6_ADDR_LEN = 16;
+    const std::uint16_t IPV6_ADDR_LEN = 16;
 
     /**
      *
      * @brief IPv6 ICMP Protocol
      *
      */
-    const ACE_UINT8 IPV6_P_ICMP = 0x3A;
+    const std::uint8_t IPV6_P_ICMP = 0x3A;
 
     /**
      *
@@ -216,7 +187,7 @@ namespace EMANE
      * @return returns the ip header version (hopefully version 4)
      *
      */
-    inline ACE_UINT8
+    inline std::uint8_t
     get_version(const Ip4Header *ip)
     {
       return get_ip_version(ip->u8Ipv4vhl);
@@ -230,7 +201,7 @@ namespace EMANE
      * @return returns the ipv4 header length with options in bytes
      *
      */
-    inline ACE_UINT8
+    inline std::uint8_t
     get_hdrlen(const Ip4Header *ip)
     {
       return get_ip_hdrlen(ip->u8Ipv4vhl);
@@ -244,10 +215,10 @@ namespace EMANE
      * @return returns the total ipv4 packet length
      *
      */
-    inline ACE_UINT16
+    inline std::uint16_t
     get_len(const Ip4Header *ip)
     {
-      return ACE_NTOHS(ip->u16Ipv4len); 
+      return ntohs(ip->u16Ipv4len);
     }
 
 
@@ -258,7 +229,7 @@ namespace EMANE
      * @return returns the dscp value
      *
      */
-    inline ACE_UINT8 
+    inline std::uint8_t
     get_dscp(const Ip4Header *ip)
     {
       return get_ip_dscp(ip->u8Ipv4tos);
@@ -274,17 +245,17 @@ namespace EMANE
      *
      */
     inline void
-    addr_to_string(const ACE_UINT8 * addr, size_t addrlen, const char *delim, char *buf, size_t buflen)
+    addr_to_string(const std::uint8_t * addr, size_t addrlen, const char *delim, char *buf, size_t buflen)
     {
       size_t pos = 0;
 
-      for(size_t i = 0; i < addrlen; ++i) 
+      for(size_t i = 0; i < addrlen; ++i)
         {
-          if(i < (addrlen - 1)) 
+          if(i < (addrlen - 1))
             {
               pos += snprintf(buf + pos, buflen - pos, "%02X%s", addr[i] & 0xFF, delim);
             }
-          else 
+          else
             {
               pos += snprintf(buf + pos, buflen - pos, "%02X", addr[i] & 0xFF);
             }
@@ -301,17 +272,17 @@ namespace EMANE
      */
     struct Ip6Header
     {
-      struct { 
-        ACE_UINT8   u8Ipv6Ver;
-        ACE_UINT8   u8Ipv6Class;
-        ACE_UINT16  u16Ipv6Flow;
+      struct {
+        std::uint8_t   u8Ipv6Ver;
+        std::uint8_t   u8Ipv6Class;
+        std::uint16_t  u16Ipv6Flow;
       } vcf;
 
-      ACE_UINT16 u16Ipv6len;
-      ACE_UINT8  u8Ipv6next;
-      ACE_UINT8  u8Ipv6hops;
-      ACE_UINT8  Ipv6src[IPV6_ADDR_LEN];
-      ACE_UINT8  Ipv6dst[IPV6_ADDR_LEN];
+      std::uint16_t u16Ipv6len;
+      std::uint8_t  u8Ipv6next;
+      std::uint8_t  u8Ipv6hops;
+      std::uint8_t  Ipv6src[IPV6_ADDR_LEN];
+      std::uint8_t  Ipv6dst[IPV6_ADDR_LEN];
     } __attribute__((packed));
 
     /**
@@ -319,36 +290,36 @@ namespace EMANE
      * @brief ipv6 header len
      *
      */
-    const ACE_UINT16 IPV6_HEADER_LEN = 40;
+    const std::uint16_t IPV6_HEADER_LEN = 40;
 
     /**
      *
      * @brief ipv6 max addr len
      *
      */
-    const ACE_UINT16 IPV6_MAX_BIT_LEN = 128;
+    const std::uint16_t IPV6_MAX_BIT_LEN = 128;
 
 
 
-    inline ACE_UINT8
+    inline std::uint8_t
     get_version(const Ip6Header *ip)
     {
       return get_ip_version(ip->vcf.u8Ipv6Ver);
     }
 
-    inline ACE_UINT8
+    inline std::uint8_t
     get_hdrlen(const Ip6Header *ip)
     {
       return get_ip_hdrlen(ip->vcf.u8Ipv6Ver);
     }
 
-    inline ACE_UINT16
+    inline std::uint16_t
     get_len(const Ip6Header *ip)
     {
-      return (ACE_NTOHS(ip->u16Ipv6len) + IPV6_HEADER_LEN);
+      return (ntohs(ip->u16Ipv6len) + IPV6_HEADER_LEN);
     }
 
-    inline ACE_UINT8 
+    inline std::uint8_t
     get_dscp(const Ip6Header *ip)
     {
       return get_ip_dscp(ip->vcf.u8Ipv6Ver, ip->vcf.u8Ipv6Class);
@@ -361,7 +332,7 @@ namespace EMANE
      * @brief Ethernet hardware address length
      *
      */
-    const ACE_UINT16 ETH_ALEN = 6;
+    const std::uint16_t ETH_ALEN = 6;
 
 
     /**
@@ -369,7 +340,7 @@ namespace EMANE
      * @brief Ethernet header length.
      *
      */
-    const ACE_UINT16 ETH_HEADER_LEN = 14;
+    const std::uint16_t ETH_HEADER_LEN = 14;
 
 
     /**
@@ -377,14 +348,14 @@ namespace EMANE
      * @brief Ethernet Arp header length.
      *
      */
-    const ACE_UINT16 ETHARP_HEADER_LEN = 28;
+    const std::uint16_t ETHARP_HEADER_LEN = 28;
 
     /**
      *
      * @brief Max ip packet len
      *
      */
-    const ACE_UINT16 IP_MAX_PACKET = 0xFFFF;
+    const std::uint16_t IP_MAX_PACKET = 0xFFFF;
 
 
     /**
@@ -392,7 +363,7 @@ namespace EMANE
      * @brief Ethernet hardware type
      *
      */
-    const ACE_UINT16 ARPHRD_ETHER = 0x0001;
+    const std::uint16_t ARPHRD_ETHER = 0x0001;
 
 
     /**
@@ -400,7 +371,7 @@ namespace EMANE
      * @brief Ethernet ipv4 protocol
      *
      */
-    const ACE_UINT16 ETH_P_IPV4 = 0x0800;
+    const std::uint16_t ETH_P_IPV4 = 0x0800;
 
 
     /**
@@ -408,14 +379,14 @@ namespace EMANE
      * @brief Ethernet arp protocol
      *
      */
-    const ACE_UINT16 ETH_P_ARP = 0x0806;
+    const std::uint16_t ETH_P_ARP = 0x0806;
 
     /**
      *
      * @brief Ethernet ipv6 protocol
      *
      */
-    const ACE_UINT16 ETH_P_IPV6 = 0x86DD;
+    const std::uint16_t ETH_P_IPV6 = 0x86DD;
 
     /**
      *
@@ -425,7 +396,7 @@ namespace EMANE
      *
      */
     struct  EtherAddrBytes{
-      ACE_UINT8  buff[ETH_ALEN];
+      std::uint8_t  buff[ETH_ALEN];
     } __attribute__((packed));
 
     /**
@@ -436,9 +407,9 @@ namespace EMANE
      *
      */
     struct EtherAddrWords{
-      ACE_UINT16 word1;
-      ACE_UINT16 word2;
-      ACE_UINT16 word3;
+      std::uint16_t word1;
+      std::uint16_t word2;
+      std::uint16_t word3;
     } __attribute__((packed));
 
     /**
@@ -463,13 +434,13 @@ namespace EMANE
     struct  EtherHeader{
       union  EtherAddr dst;
       union  EtherAddr src;
-      ACE_UINT16 u16proto;
+      std::uint16_t u16proto;
     } __attribute__((packed));
 
 
     /**
      *
-     * @param eth a pointer to an  EtherHeader 
+     * @param eth a pointer to an  EtherHeader
      *
      * @return returns a pointer the src EtherAddr
      *
@@ -482,7 +453,7 @@ namespace EMANE
 
     /**
      *
-     * @param eth a pointer to an  EtherHeader 
+     * @param eth a pointer to an  EtherHeader
      *
      * @return returns a pointer the dst EtherAddr
      *
@@ -495,22 +466,22 @@ namespace EMANE
 
     /**
      *
-     * @param eth a pointer to an  EtherHeader 
+     * @param eth a pointer to an  EtherHeader
      *
      * @return returns the ether protocol id in host byte order
      *
      */
-    inline ACE_UINT16
+    inline std::uint16_t
     get_protocol(const EtherHeader *eth)
     {
-      return ACE_NTOHS(eth->u16proto);
+      return ntohs(eth->u16proto);
     }
 
 
 
     /**
      *
-     * @param addr a pointer to an  EtherAddr 
+     * @param addr a pointer to an  EtherAddr
      *
      * @return returns the formatted address string
      *
@@ -520,7 +491,7 @@ namespace EMANE
     {
       static char buf[64];
 
-      addr_to_string((ACE_UINT8*) addr, ETH_ALEN, ":", buf, sizeof(buf));
+      addr_to_string((std::uint8_t*) addr, ETH_ALEN, ":", buf, sizeof(buf));
 
       return buf;
     }
@@ -528,7 +499,7 @@ namespace EMANE
 
     /**
      *
-     * @param addr a pointer to an  EtherAddr 
+     * @param addr a pointer to an  EtherAddr
      *
      * @return returns the formatted address string
      *
@@ -538,7 +509,7 @@ namespace EMANE
     {
       char buf[64];
 
-      addr_to_string((ACE_UINT8*) addr, ETH_ALEN, ":", buf, sizeof(buf));
+      addr_to_string((std::uint8_t*) addr, ETH_ALEN, ":", buf, sizeof(buf));
 
       return buf;
     }
@@ -554,53 +525,53 @@ namespace EMANE
      */
     struct EtherArpHeader
     {
-      ACE_UINT16        u16hwType;
-      ACE_UINT16        u16protocol;
-      ACE_UINT8         u8hwAddrLen;
-      ACE_UINT8         u8protoAddrLen;
-      ACE_UINT16        u16code; 
+      std::uint16_t        u16hwType;
+      std::uint16_t        u16protocol;
+      std::uint8_t         u8hwAddrLen;
+      std::uint8_t         u8protoAddrLen;
+      std::uint16_t        u16code;
       EtherAddr         srcHwAddr;
-      ACE_UINT32        u32srcProtoAddr;
+      std::uint32_t        u32srcProtoAddr;
       EtherAddr         dstHwAddr;
-      ACE_UINT32        u32dstProtoAddr;
+      std::uint32_t        u32dstProtoAddr;
     } __attribute__((packed));
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the hardware type
      *
      */
-    inline ACE_UINT16
+    inline std::uint16_t
     get_hwtype(const EtherArpHeader *arp)
     {
-      return ACE_NTOHS(arp->u16hwType);
+      return ntohs(arp->u16hwType);
     }
 
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the protocol id in host byte order
      *
      */
-    inline ACE_UINT16
+    inline std::uint16_t
     get_protocol(const EtherArpHeader *arp)
     {
-      return ACE_NTOHS(arp->u16protocol);
+      return ntohs(arp->u16protocol);
     }
 
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the hardware address len
      *
      */
-    inline ACE_UINT8
+    inline std::uint8_t
     get_hwaddrlen(const EtherArpHeader *arp)
     {
       return (arp->u8hwAddrLen);
@@ -609,12 +580,12 @@ namespace EMANE
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the protocol addresss len
      *
      */
-    inline ACE_UINT8
+    inline std::uint8_t
     get_protoaddrlen(const EtherArpHeader *arp)
     {
       return (arp->u8protoAddrLen);
@@ -622,21 +593,21 @@ namespace EMANE
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the arp code in host byte order
      *
      */
-    inline ACE_UINT16
+    inline std::uint16_t
     get_code(const EtherArpHeader *arp)
     {
-      return ACE_NTOHS(arp->u16code);
+      return ntohs(arp->u16code);
     }
 
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the src (requestor) hardware address
      *
@@ -650,7 +621,7 @@ namespace EMANE
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the destination (responder) hardware address
      *
@@ -663,12 +634,12 @@ namespace EMANE
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the src (requestor) protocol address
      *
      */
-    inline ACE_UINT32
+    inline std::uint32_t
     get_srcprotoaddr(const EtherArpHeader *arp)
     {
       return (arp->u32srcProtoAddr);
@@ -677,12 +648,12 @@ namespace EMANE
 
     /**
      *
-     * @param arp a pointer to an  EtherArpHeader 
+     * @param arp a pointer to an  EtherArpHeader
      *
      * @return returns the (responder) destination protocol address
      *
      */
-    inline ACE_UINT32
+    inline std::uint32_t
     get_dstprotoaddr(const EtherArpHeader *arp)
     {
       return (arp->u32dstProtoAddr);
@@ -694,7 +665,7 @@ namespace EMANE
      * @brief Ethernet arp request
      *
      */
-    const ACE_UINT16 ETH_ARPOP_REQUEST = 0x0001;
+    const std::uint16_t ETH_ARPOP_REQUEST = 0x0001;
 
 
     /**
@@ -702,7 +673,7 @@ namespace EMANE
      * @brief Ethernet arp reply
      *
      */
-    const ACE_UINT16 ETH_ARPOP_REPLY = 0x0002;
+    const std::uint16_t ETH_ARPOP_REPLY = 0x0002;
 
 
 
@@ -713,29 +684,29 @@ namespace EMANE
      * @return returns the derived NEM id
      *
      */
-    inline ACE_UINT16 
+    inline std::uint16_t
     ethaddr4_to_id (const EtherAddr *addr)
     {
       // multicast mac
-      static ACE_UINT8 MulticastMacAddr[3] = {0x01, 0x00, 0x5E};
+      static std::uint8_t MulticastMacAddr[3] = {0x01, 0x00, 0x5E};
 
       // broadcast mac
-      static ACE_UINT8 BroadcastMacAddr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      static std::uint8_t BroadcastMacAddr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
       // multicast
-      if(ACE_OS::memcmp(addr->bytes.buff, MulticastMacAddr, 3) == 0) 
+      if(memcmp(addr->bytes.buff, MulticastMacAddr, 3) == 0)
         {
-          return ACE_NTOHS(0xFFFF);
+          return ntohs(0xFFFF);
         }
       // broadcast
-      else if(ACE_OS::memcmp(addr->bytes.buff, BroadcastMacAddr, 6) == 0) 
+      else if(memcmp(addr->bytes.buff, BroadcastMacAddr, 6) == 0)
         {
-          return ACE_NTOHS(0xFFFF);
+          return ntohs(0xFFFF);
         }
       // unicast
-      else 
-        { 
-          return ACE_NTOHS(addr->words.word3);
+      else
+        {
+          return ntohs(addr->words.word3);
         }
     }
 
@@ -747,29 +718,29 @@ namespace EMANE
      * @return returns the derived NEM id
      *
      */
-    inline ACE_UINT16 
+    inline std::uint16_t
     ethaddr6_to_id (const EtherAddr *addr)
     {
       // multicast mac
-      static ACE_UINT8 MulticastMacAddr[2] = {0x33, 0x33};
+      static std::uint8_t MulticastMacAddr[2] = {0x33, 0x33};
 
       // broadcast mac
-      static ACE_UINT8 BroadcastMacAddr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      static std::uint8_t BroadcastMacAddr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
       // multicast
-      if(ACE_OS::memcmp(addr->bytes.buff, MulticastMacAddr, 2) == 0) 
+      if(memcmp(addr->bytes.buff, MulticastMacAddr, 2) == 0)
         {
-          return ACE_NTOHS(0xFFFF);
+          return ntohs(0xFFFF);
         }
       // broadcast
-      else if(ACE_OS::memcmp(addr->bytes.buff, BroadcastMacAddr, 6) == 0) 
+      else if(memcmp(addr->bytes.buff, BroadcastMacAddr, 6) == 0)
         {
-          return ACE_NTOHS(0xFFFF);
+          return ntohs(0xFFFF);
         }
       // unicast
-      else 
-        { 
-          return ACE_NTOHS(addr->words.word3);
+      else
+        {
+          return ntohs(addr->words.word3);
         }
     }
 
@@ -780,11 +751,11 @@ namespace EMANE
      * @return returns the prefix length in bits
      *
      */
-    inline ACE_UINT8
+    inline std::uint8_t
     get_prefixlen (const in6_addr *prefix)
     {
-      ACE_UINT8 len = 0;
-      ACE_UINT8 *u8ptr = (ACE_UINT8 *) prefix;
+      std::uint8_t len = 0;
+      std::uint8_t *u8ptr = (std::uint8_t *) prefix;
 
       while ((*u8ptr == 0xff) && len < IPV6_MAX_BIT_LEN)
         {
@@ -794,7 +765,7 @@ namespace EMANE
 
       if (len < IPV6_MAX_BIT_LEN)
         {
-          ACE_UINT8 byte = *u8ptr;
+          std::uint8_t byte = *u8ptr;
           while (byte)
             {
               len++;
@@ -812,16 +783,16 @@ namespace EMANE
      * @param buflen length of buffer
      * @param prev running sum
      *
-     * @return returns the 16 bit one’s complement of the one’s complement 
+     * @return returns the 16 bit one’s complement of the one’s complement
      *         sum of all 16 bit words in the buffer
      *
      */
 
-    inline ACE_UINT16
-    inet_cksum (const void * buf, int buflen, ACE_UINT16 prev = 0)
+    inline std::uint16_t
+    inet_cksum (const void * buf, int buflen, std::uint16_t prev = 0)
     {
-      ACE_UINT32 sum = 0;
-      ACE_UINT16 *w = (ACE_UINT16 *) buf;
+      std::uint32_t sum = 0;
+      std::uint16_t *w = (std::uint16_t *) buf;
 
       while (buflen > 1) {
         sum += *w;
@@ -830,7 +801,7 @@ namespace EMANE
       }
 
       if (buflen) {
-        ACE_UINT8 *byte = (ACE_UINT8 *) w;
+        std::uint8_t *byte = (std::uint8_t *) w;
         sum += *byte;
       }
 
@@ -840,16 +811,16 @@ namespace EMANE
     }
 
     /**
-     * @struct IP6ICMPHeader 
+     * @struct IP6ICMPHeader
      *
      * @brief Definition of the IPv6 ICMP header.
      *
      */
     struct IP6ICMPHeader {
-      ACE_UINT8    u8Type;
-      ACE_UINT8    u8Code;
-      ACE_UINT16   u16Checksum;
-      ACE_UINT32   u32Flags;
+      std::uint8_t    u8Type;
+      std::uint8_t    u8Code;
+      std::uint16_t   u16Checksum;
+      std::uint32_t   u32Flags;
       sockaddr_in6 targetAddr;
     } __attribute__((packed));
 
@@ -858,14 +829,14 @@ namespace EMANE
      * @brief IPv6 ICMP Neighbor Soliciation
      *
      */
-    const ACE_UINT8 IP6_ICMP_NEIGH_SOLICIT = 135;
-  
+    const std::uint8_t IP6_ICMP_NEIGH_SOLICIT = 135;
+
     /**
      *
      * @brief IPv6 ICMP Neighbor Advertisement
      *
      */
-    const ACE_UINT8 IP6_ICMP_NEIGH_ADVERT = 136;
+    const std::uint8_t IP6_ICMP_NEIGH_ADVERT = 136;
 
     /**
      * @param val the frequency in Hz
@@ -875,7 +846,7 @@ namespace EMANE
      *
      */
 
-    inline std::string formatFrequency(const ACE_UINT64 val, const int precision = 6)
+    inline std::string formatFrequency(const std::uint64_t val, const int precision = 6)
     {
       std::stringstream ss;
 
@@ -899,7 +870,7 @@ namespace EMANE
         {
           ss << (fFrequency / 1e+9) << " GHz";
         }
-      else 
+      else
         {
           ss << (fFrequency / 1e+12) << " THz";
         }
@@ -916,8 +887,8 @@ namespace EMANE
       std::string str = sInput;
 
       std::vector<std::string> strVector;
- 
-      while ((pzToken = ACE_OS::strtok (iTokenCount == 0 ? &str[0] : NULL, pzDelimeter)) != NULL) 
+
+      while ((pzToken = strtok (iTokenCount == 0 ? &str[0] : NULL, pzDelimeter)) != NULL)
         {
           ++iTokenCount;
 

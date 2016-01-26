@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libbypassmaclayer.la
 
 libbypassmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(ACE_CFLAGS)                 \
  $(libuuid_CFLAGS)             \
  $(AM_CFLAGS)
 
@@ -18,12 +17,8 @@ BUILT_SOURCES =                \
  bypassnem.xml                 \
  bypassmac.xml                   
 
-libbypassmaclayer_la_LIBADD=   \
- $(WIN32_EXTRA_LIBADD)        
-
 libbypassmaclayer_la_LDFLAGS=  \
  $(WIN32_EXTRA_LDFLAGS)        \
- $(ACE_LIBS)                   \
  -avoid-version
 
 edit = sed                     \

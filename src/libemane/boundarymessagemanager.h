@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +37,11 @@
 #include "emane/packetinfo.h"
 #include "emane/controlmessage.h"
 #include "emane/types.h"
+#include "emane/inetaddr.h"
 #include "emane/utils/vectorio.h"
+#include "datagramsocket.h"
 
-#include <ace/SOCK_Dgram.h>
-#include <ace/Thread.h>
+#include <thread>
 
 namespace EMANE
 {
@@ -51,46 +53,45 @@ namespace EMANE
     /**
      * @throw BoundaryMessageManagerException
      */
-    void open(const ACE_INET_Addr & localAddress,
-              const ACE_INET_Addr & remoteAddress);
-    
+    void open(const INETAddr & localAddress,
+              const INETAddr & remoteAddress);
+
     void close();
-    
+
     void processBoundaryMessage(const void * pData,
                                 size_t length);
-    
+
     void sendPacketMessage(const PacketInfo & packetInfo,
                            const void * pPacketData,
                            size_t packetLength,
                            const ControlMessages & msgs);
-    
+
     void sendPacketMessage(const PacketInfo & packetInfo,
                            const Utils::VectorIO & packetIO,
                            size_t overallLength,
                            const ControlMessages & msgs);
-      
+
     void sendControlMessage(const ControlMessages & msgs);
-    
+
   protected:
     BoundaryMessageManager(NEMId id);
-    
+
     virtual void doProcessPacketMessage(const PacketInfo &,
                                         const void * pPacketData,
                                         size_t packetLength,
                                         const ControlMessages & msgs) = 0;
-    
+
     virtual void doProcessControlMessage(const ControlMessages & msgs) = 0;
 
   private:
     NEMId id_;
-    ACE_SOCK_Dgram udp_;
-    ACE_INET_Addr localAddress_;
-    ACE_INET_Addr remoteAddress_;
-    ACE_thread_t thread_;
+    DatagramSocket udp_;
+    INETAddr localAddress_;
+    INETAddr remoteAddress_;
+    std::thread thread_;
     bool bOpen_;
-    ACE_INET_Addr addr_;
-    
-    ACE_THR_FUNC_RETURN processNetworkMessage();
+
+    void processNetworkMessage();
   };
 }
 

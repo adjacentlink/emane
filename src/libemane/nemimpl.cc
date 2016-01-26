@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,7 +39,7 @@
 #include <sstream>
 #include <iomanip>
 
-EMANE::Application::NEMImpl::NEMImpl(NEMId id, 
+EMANE::Application::NEMImpl::NEMImpl(NEMId id,
                                      std::unique_ptr<NEMLayerStack> & pNEMLayerStack,
                                      bool bExternalTransport):
   pNEMLayerStack_(std::move(pNEMLayerStack)),
@@ -52,27 +52,27 @@ EMANE::Application::NEMImpl::NEMImpl(NEMId id,
 }
 
 EMANE::Application::NEMImpl::~NEMImpl(){}
-    
+
 void EMANE::Application::NEMImpl::initialize(Registrar & registrar)
 {
   if(bExternalTransport_)
     {
       auto & configRegistrar = registrar.configurationRegistrar();
-      
-      configRegistrar.registerNonNumeric<ACE_INET_Addr>("platformendpoint",
-                                                        ConfigurationProperties::REQUIRED,
-        {},
-                                                        "IPv4 or IPv6 NEM Platform Service endpoint.");
 
-      configRegistrar.registerNonNumeric<ACE_INET_Addr>("transportendpoint",
-                                                        ConfigurationProperties::REQUIRED,
+      configRegistrar.registerNonNumeric<INETAddr>("platformendpoint",
+                                                   ConfigurationProperties::REQUIRED,
         {},
-                                                        "IPv4 or IPv6 Transport endpoint.");
+                                                   "IPv4 or IPv6 NEM Platform Service endpoint.");
+
+      configRegistrar.registerNonNumeric<INETAddr>("transportendpoint",
+                                                   ConfigurationProperties::REQUIRED,
+        {},
+                                                   "IPv4 or IPv6 Transport endpoint.");
     }
 
-  pNEMLayerStack_->initialize(registrar); 
+  pNEMLayerStack_->initialize(registrar);
 }
-    
+
 void EMANE::Application::NEMImpl::configure(const ConfigurationUpdate & update)
 {
   for(const auto & item : update)
@@ -80,25 +80,23 @@ void EMANE::Application::NEMImpl::configure(const ConfigurationUpdate & update)
       if(item.first == "platformendpoint")
         {
           platformEndpointAddr_ = item.second[0].asINETAddr();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEM  %03hu NEMImpl::configure platformendpoint: %s/%hu",
+                                  "NEM  %03hu NEMImpl::configure platformendpoint: %s",
                                   id_,
-                                  platformEndpointAddr_.get_host_addr(),
-                                  platformEndpointAddr_.get_port_number());
-          
+                                  platformEndpointAddr_.str().c_str());
+
         }
       else if(item.first == "transportendpoint")
         {
           transportEndpointAddr_ = item.second[0].asINETAddr();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEM  %03hu NEMImpl::configure transportendpoint: %s/%hu",
+                                  "NEM  %03hu NEMImpl::configure transportendpoint: %s",
                                   id_,
-                                  transportEndpointAddr_.get_host_addr(),
-                                  transportEndpointAddr_.get_port_number());
+                                  transportEndpointAddr_.str().c_str());
         }
       else
         {
@@ -108,7 +106,7 @@ void EMANE::Application::NEMImpl::configure(const ConfigurationUpdate & update)
         }
     }
 }
-    
+
 void EMANE::Application::NEMImpl::start()
 {
   NEMOTAAdapter_.open();
@@ -132,7 +130,7 @@ void EMANE::Application::NEMImpl::postStart()
 {
   pNEMLayerStack_->postStart();
 }
-    
+
 void EMANE::Application::NEMImpl::stop()
 {
   if(bExternalTransport_)
@@ -142,9 +140,9 @@ void EMANE::Application::NEMImpl::stop()
 
   NEMOTAAdapter_.close();
 
-  pNEMLayerStack_->stop(); 
+  pNEMLayerStack_->stop();
 }
-    
+
 void EMANE::Application::NEMImpl::destroy()
   throw()
 {

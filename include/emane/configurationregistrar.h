@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +50,7 @@ namespace EMANE
    *
    * @brief The ConfigurationRegistrar allows NEM layers to register
    * the configuration items they require.
-   * 
+   *
    * @note Registration may only occur during Component::initialize()
    */
   class ConfigurationRegistrar
@@ -110,7 +111,7 @@ namespace EMANE
                             const std::string & sRegexPattern = {});
 
     /**
-     * Registers a ConfigurationValidator callable. This callable is passed 
+     * Registers a ConfigurationValidator callable. This callable is passed
      * the complete list of configuration sent to an NEM during Component::configure()
      * and RunningStateMutable::processConfiguration(). The validator returns @a true to
      * indicate the configuration is valid and @a flase to indicate an error.
@@ -125,7 +126,7 @@ namespace EMANE
      * indicate an error in the configuration.
      */
     virtual void registerValidator(ConfigurationValidator validator) = 0;
-    
+
   protected:
     ConfigurationRegistrar();
 
@@ -226,7 +227,7 @@ namespace EMANE
  *
  * Non-Numeric configuration items may have any one of the following types:
  * - std::string
- * - ACE_INET_Addr
+ * - INETAddr
  *
  * @snippet src/models/mac/rfpipe/maclayer.cc configurationregistrar-registernonnumeric-snippet
  *
@@ -250,7 +251,7 @@ namespace EMANE
  * An optional validator callable is used by the emulator framework to validate configuration item
  * relationships prior to calling @ref EMANE::Component::configure "Component::configure" or
  * @ref EMANE::RunningStateMutable::processConfiguration "RunningStateMutable::processConfiguration" on a
- * component. 
+ * component.
  *
  * A component can register a validator callable using @ref EMANE::ConfigurationRegistrar::registerValidator
  * "ConfigurationRegistrar::registerValidator".
@@ -286,7 +287,7 @@ namespace EMANE
  * Both @ref EMANE::Component::configure "configure" and @ref EMANE::RunningStateMutable::processConfiguration
  * "processConfiguration" are passed a single @ref EMANE::ConfigurationUpdate "ConfigurationUpdate" parameter.
  *
- * @snippet include/emane/configurationupdate.h configurationregistrar-configurationnameanyvalues-snippet 
+ * @snippet include/emane/configurationupdate.h configurationregistrar-configurationnameanyvalues-snippet
  *
  * @section HandlingConfigurationItems Handling Configuration Items
  *

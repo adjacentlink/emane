@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,9 +40,6 @@
 
 #include <string>
 
-#include <ace/LSOCK_Stream.h>
-#include <ace/FILE_IO.h>
-
 namespace EMANE
 {
   namespace Agents
@@ -58,39 +56,35 @@ namespace EMANE
       public:
         Agent(NEMId nemId,
               PlatformServiceProvider *pPlatformService);
-      
+
         ~Agent();
-  
+
         void initialize(Registrar & registrar) override;
-      
+
         void configure(const ConfigurationUpdate & update) override;
-      
+
         void start() override;
-      
+
         void stop() override;
-      
+
         void destroy() throw() override;
 
         void processEvent(const EventId&,
                           const Serialization &) override;
-      
+
         void processTimedEvent(TimerEventId eventId,
                                const TimePoint & expireTime,
                                const TimePoint & scheduleTime,
                                const TimePoint & fireTime,
                                const void * arg) override;
-      
+
       private:
         NEMId nemId_;
-        ACE_UNIX_Addr gpsdControlAddr_;
-        ACE_SOCK_Stream gpsdClientStream_;
         int masterPTY_;
         int slavePTY_;
         std::string sClientPTTYName_;
         std::string sPseudoTerminalFile_;
-        std::string sGPSDControlSocket_;
-        bool bGPSDConnectionEnabled_;
-        ACE_FILE_IO pseudoTerminalNameFile_;
+        std::string sPseudoTerminalNameFile_;
         bool bHaveInitialPosition_;
         bool bHaveInitialVelocity_;
         double dLatitudeDegrees_;
@@ -99,7 +93,7 @@ namespace EMANE
         double dAzimuthDegrees_;
         double dMagnitudeMetersPerSecond_;
         TimerEventId timerId_;
-  
+
         /**
          * Convert position in to NMEA strings and send to gpsd via pseudo  terminal
          *
@@ -118,7 +112,7 @@ namespace EMANE
          *
          */
         void sendSpoofedGPVTG(double dAzimuth, double dMagnitude);
-      
+
         void doCheckSumNMEA(char *buf, size_t len);
       };
     }

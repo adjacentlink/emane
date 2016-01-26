@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,8 +38,6 @@
 
 #include "emane/utils/parameterconvert.h"
 
-#include <ace/Guard_T.h>
-
 #include <vector>
 
 namespace
@@ -73,7 +72,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::MACConfig(LogServiceProvider & logServic
  logServiceProvider_(logServiceProvider),
  id_{id}
 { }
- 
+
 
 /**
 *
@@ -120,7 +119,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                 " 5.5 11] Mbps are valid when mode is set to 802.11b or 802.11b/g."
                                                 " OFDM rates [6 9 12 18 24 36 48 54] Mbps are valid when mode is"
                                                 " set to 802.11a/g or 802.11b/g.",
-                                                 1, 
+                                                 1,
                                                 12);
 
   configRegistrar.registerNumeric<std::uint8_t>("multicastrate",
@@ -133,7 +132,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                 " 54].  DSS rates [1 2 5.5 11] Mbps are valid when mode is set to"
                                                 " 802.11b or 802.11b/g.  OFDM rates [6 9 12 18 24 36 48 54] Mbps"
                                                 " are valid when mode is set to 802.11a/g or 802.11b/g.",
-                                                 1, 
+                                                 1,
                                                  12);
 
   configRegistrar.registerNumeric<std::uint16_t>("rtsthreshold",
@@ -142,7 +141,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                                  "Defines a threshold in bytes for when RTS/CTS is used as part of"
                                                  " the carrier sensing channel access protocol when transmitting"
                                                  " unicast packets.",
-                                                 0, 
+                                                 0,
                                                  0xffff);
 
   configRegistrar.registerNumeric<bool>("flowcontrolenable",
@@ -407,7 +406,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
                                         {false},
                                         "Defines if radio metrics will be reported up via the Radio to"
                                         " Router Interface (R2RI).");
-  
+
 
 
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
@@ -436,7 +435,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
 * @retval true if on, false if off
 *
 */
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::getPromiscuosEnable() const
 {
   return configItems_.bPromiscousModeEnable_;
@@ -451,7 +450,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getPromiscuosEnable() const
 * @retval true if on, false if off
 *
 */
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::getWmmEnable() const
 {
   return configItems_.bWmmEnable_;
@@ -465,7 +464,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getWmmEnable() const
 * @retval modulation type
 *
 */
-EMANE::Models::IEEE80211ABG::MODULATION_TYPE 
+EMANE::Models::IEEE80211ABG::MODULATION_TYPE
 EMANE::Models::IEEE80211ABG::MACConfig::getModulationType() const
 {
   switch(configItems_.u8ModeIndex_)
@@ -492,7 +491,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getModulationType() const
 * @retval datarate index
 *
 */
-std::uint8_t 
+std::uint8_t
 EMANE::Models::IEEE80211ABG::MACConfig::getUnicastDataRateIndex() const
 {
   return configItems_.u8UnicastDataRateIndex_;
@@ -506,7 +505,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getUnicastDataRateIndex() const
 * @retval datarate index
 *
 */
-std::uint8_t 
+std::uint8_t
 EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateIndex() const
 {
   return configItems_.u8BroadcastDataRateIndex_;
@@ -520,19 +519,19 @@ EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateIndex() const
 * @retval datarate in Kbps
 *
 */
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getUnicastDataRateKbps() const
 {
   return UnicastDataRateIndexTable[configItems_.u8UnicastDataRateIndex_];
 }
 
 
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getMaxDataRateKbps() const
 {
-  return UnicastDataRateIndexTable[configItems_.u8UnicastDataRateIndex_] > 
+  return UnicastDataRateIndexTable[configItems_.u8UnicastDataRateIndex_] >
          BroadcastDataRateIndexTable[configItems_.u8BroadcastDataRateIndex_] ?
-           UnicastDataRateIndexTable[configItems_.u8UnicastDataRateIndex_] : 
+           UnicastDataRateIndexTable[configItems_.u8UnicastDataRateIndex_] :
            BroadcastDataRateIndexTable[configItems_.u8BroadcastDataRateIndex_];
 }
 
@@ -545,7 +544,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getMaxDataRateKbps() const
 * @retval datarate in Kbps
 *
 */
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateKbps() const
 {
   return BroadcastDataRateIndexTable[configItems_.u8BroadcastDataRateIndex_];
@@ -558,7 +557,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateKbps() const
 * @retval datarate in Kbps
 *
 */
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getUnicastDataRateKbps(std::uint8_t u8Index) const
 {
   return UnicastDataRateIndexTable[u8Index];
@@ -572,7 +571,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getUnicastDataRateKbps(std::uint8_t u8In
 * @retval datarate in Kbps
 *
 */
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateKbps(std::uint8_t u8Index) const
 {
   return BroadcastDataRateIndexTable[u8Index];
@@ -588,7 +587,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getBroadcastDataRateKbps(std::uint8_t u8
 * @retval max ptp distance
 *
 */
-std::uint32_t 
+std::uint32_t
 EMANE::Models::IEEE80211ABG::MACConfig::getMaxP2pDistance() const
 {
   return configItems_.u32MaxP2PDistance_;
@@ -602,7 +601,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getMaxP2pDistance() const
 * @retval number of access categories (queues)
 *
 */
-std::uint8_t 
+std::uint8_t
 EMANE::Models::IEEE80211ABG::MACConfig::getNumAccessCategories() const
 {
   return configItems_.bWmmEnable_ == true ? MAX_ACCESS_CATEGORIES : 1;
@@ -618,7 +617,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getNumAccessCategories() const
 * @retval queue size
 *
 */
-std::uint8_t 
+std::uint8_t
 EMANE::Models::IEEE80211ABG::MACConfig::getQueueSize(std::uint8_t u8Category) const
 {
   switch(u8Category)
@@ -647,7 +646,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getQueueSize(std::uint8_t u8Category) co
 * @retval queue size
 *
 */
-std::uint16_t 
+std::uint16_t
 EMANE::Models::IEEE80211ABG::MACConfig::getQueueEntrySize(std::uint8_t u8Category) const
 {
   switch(u8Category)
@@ -810,7 +809,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getAifsMicroseconds(std::uint8_t u8Categ
     {
       case 3:
         return configItems_.aifsMicroseconds3_;
- 
+
       case 2:
         return configItems_.aifsMicroseconds2_;
 
@@ -840,7 +839,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getTxOpMicroseconds(std::uint8_t u8Categ
     {
       case 3:
         return configItems_.txopMicroseconds3_;
- 
+
       case 2:
         return configItems_.txopMicroseconds2_;
 
@@ -869,7 +868,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getRetryLimit(std::uint8_t u8Category) c
     {
       case 3:
         return configItems_.u8RetryLimit3_;
- 
+
       case 2:
         return configItems_.u8RetryLimit2_;
 
@@ -906,7 +905,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getFlowControlEnable() const
 * @retval flow control tokens
 *
 */
-std::uint16_t 
+std::uint16_t
 EMANE::Models::IEEE80211ABG::MACConfig::getFlowControlTokens() const
 {
   return configItems_.u16FlowControlTokens_;
@@ -920,7 +919,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getFlowControlTokens() const
 * @retval pcr uri
 *
 */
-std::string 
+std::string
 EMANE::Models::IEEE80211ABG::MACConfig::getPcrUri() const
 {
   return configItems_.sPcrUri_;
@@ -928,7 +927,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getPcrUri() const
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::MACConfig::getNeighborTimeoutMicroseconds() const
 {
   return configItems_.neighborTimeoutMicroseconds_;
@@ -936,35 +935,35 @@ EMANE::Models::IEEE80211ABG::MACConfig::getNeighborTimeoutMicroseconds() const
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::MACConfig::getChannelActivityIntervalMicroseconds() const
 {
   return configItems_.channelActivityIntervalMicroseconds_;
 }
 
 
-std::uint16_t 
+std::uint16_t
 EMANE::Models::IEEE80211ABG::MACConfig::getRtsThreshold() const
 {
   return configItems_.u16RtsThreshold_;
 }
 
 
-EMANE::Models::IEEE80211ABG::CWRatioVector 
+EMANE::Models::IEEE80211ABG::CWRatioVector
 EMANE::Models::IEEE80211ABG::MACConfig::getCWMinRatioVector(std::uint8_t u8Category) const
 {
   return configItems_.CWMinRatioTable_[u8Category];
 }
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::MACConfig::getNeighborMetricDeleteTimeMicroseconds() const
 {
   return configItems_.neighborMetricDeleteTimeMicroseconds_;
 }
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::MACConfig::getRadioMetricReportIntervalMicroseconds() const
 {
   return configItems_.radioMetricReportIntervalMicroseconds_;
@@ -978,7 +977,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::getRadioMetricEnable() const
 }
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::MACConfig::setCWMinRatioVector(std::uint8_t u8Category)
 {
   const std::uint16_t cw{getCWMin(u8Category)};
@@ -992,7 +991,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::setCWMinRatioVector(std::uint8_t u8Categ
 }
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::MACConfig::initCWMinRatioTable()
 {
   configItems_.CWMinRatioTable_.resize(getNumAccessCategories());
@@ -1005,7 +1004,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::initCWMinRatioTable()
    }
 }
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::configure(const ConfigurationUpdate & update)
 {
   for(const auto & item : update)
@@ -1030,7 +1029,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configure(const ConfigurationUpdate & up
 }
 
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::processConfiguration(const ConfigurationUpdate & update)
 {
   for(const auto & item : update)
@@ -1047,7 +1046,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::processConfiguration(const Configuration
 }
 
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const ConfigurationNameAnyValues & item)
 {
     if(item.first == "mode")
@@ -1156,7 +1155,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "aifs0")
       {
-        configItems_.aifsMicroseconds0_ = 
+        configItems_.aifsMicroseconds0_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1170,7 +1169,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "aifs1")
       {
-        configItems_.aifsMicroseconds1_ = 
+        configItems_.aifsMicroseconds1_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1184,7 +1183,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "aifs2")
       {
-        configItems_.aifsMicroseconds2_ = 
+        configItems_.aifsMicroseconds2_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1198,7 +1197,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "aifs3")
       {
-        configItems_.aifsMicroseconds3_ = 
+        configItems_.aifsMicroseconds3_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1264,7 +1263,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "txop0")
       {
-        configItems_.txopMicroseconds0_ = 
+        configItems_.txopMicroseconds0_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1278,7 +1277,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "txop1")
       {
-        configItems_.txopMicroseconds1_ = 
+        configItems_.txopMicroseconds1_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1292,7 +1291,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "txop2")
       {
-        configItems_.txopMicroseconds2_ = 
+        configItems_.txopMicroseconds2_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1306,7 +1305,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       }
     else if(item.first == "txop3")
       {
-        configItems_.txopMicroseconds3_ = 
+        configItems_.txopMicroseconds3_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{(item.second[0].asFloat())});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1414,7 +1413,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       {
         float fValue{item.second[0].asFloat()};
 
-        configItems_.neighborTimeoutMicroseconds_ = 
+        configItems_.neighborTimeoutMicroseconds_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{fValue});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1430,7 +1429,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       {
         float fValue{item.second[0].asFloat()};
 
-        configItems_.channelActivityIntervalMicroseconds_ = 
+        configItems_.channelActivityIntervalMicroseconds_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{fValue});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1459,7 +1458,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       {
         float fValue{item.second[0].asFloat()};
 
-        configItems_.radioMetricReportIntervalMicroseconds_ = 
+        configItems_.radioMetricReportIntervalMicroseconds_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{fValue});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1475,7 +1474,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
       {
         float fValue{item.second[0].asFloat()};
 
-        configItems_.neighborMetricDeleteTimeMicroseconds_ = 
+        configItems_.neighborMetricDeleteTimeMicroseconds_ =
           std::chrono::duration_cast<Microseconds>(DoubleSeconds{fValue});
 
         LOGGER_STANDARD_LOGGING(logServiceProvider_,
@@ -1487,7 +1486,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
                                 item.first.c_str(),
                                 fValue);
       }
-    else 
+    else
       {
          return false;
       }
@@ -1496,7 +1495,7 @@ EMANE::Models::IEEE80211ABG::MACConfig::configureStaticItems(const Configuration
 }
 
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACConfig::configureDynamicItems(const ConfigurationNameAnyValues & item)
 {
     if(item.first == "unicastrate")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ namespace EMANE
         {
         case EMANERemoteControlPortAPI::Any::TYPE_ANY_INT8:
           return Any{static_cast<std::int8_t>(any.i32value())};
-        
+
         case EMANERemoteControlPortAPI::Any::TYPE_ANY_UINT8:
           return Any{static_cast<std::uint8_t>(any.u32value())};
 
@@ -119,7 +119,7 @@ namespace EMANE
 
         case EMANERemoteControlPortAPI::Any::TYPE_ANY_FLOAT:
           return Any{any.fvalue()};
-         
+
         case EMANERemoteControlPortAPI::Any::TYPE_ANY_DOUBLE:
           return Any{any.dvalue()};
 
@@ -130,7 +130,7 @@ namespace EMANE
           return EMANE::Any{any.bvalue()};
 
         case EMANERemoteControlPortAPI::Any::TYPE_ANY_INETADDR:
-          return EMANE::Any{ACE_INET_Addr(any.svalue().c_str())};
+          return EMANE::Any{INETAddr(any.svalue().c_str())};
         }
 
       throw AnyException("unknown type");
@@ -146,7 +146,7 @@ namespace EMANE
           pAny->set_type(EMANERemoteControlPortAPI::Any::TYPE_ANY_INT64);
           pAny->set_i64value(any.asINT64());
           break;
-        
+
         case Any::Type::TYPE_UINT64:
           pAny->set_type(EMANERemoteControlPortAPI::Any::TYPE_ANY_UINT64);
           pAny->set_u64value(any.asUINT64());
@@ -196,14 +196,7 @@ namespace EMANE
           pAny->set_type(EMANERemoteControlPortAPI::Any::TYPE_ANY_INETADDR);
           // slight cheat - send INET Addrs using their string
           // representation
-          {
-            char buf[128];
-          
-            any.asINETAddr().addr_to_string(buf,
-                                            sizeof(buf));
-          
-            pAny->set_svalue(buf);
-          }
+          pAny->set_svalue(any.asINETAddr().str());
           break;
 
         case Any::Type::TYPE_BOOL:

@@ -21,11 +21,7 @@ BUILT_SOURCES =                   \
  shimheader.pb.cc                 \
  shimheader.pb.h
 
-libtiminganalysisshim_la_LIBADD=  \
- $(WIN32_EXTRA_LIBADD)        
-
 libtiminganalysisshim_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS)           \
  -avoid-version
 
 edit = sed                        \

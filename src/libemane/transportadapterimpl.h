@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -46,33 +46,33 @@ namespace EMANE
     /**
      * @class TransportAdapterImpl
      *
-     * @brief Implementation of the Transport Adapter interface. Connects 
+     * @brief Implementation of the Transport Adapter interface. Connects
      *        a Transport implemenation with its respective NEM stack.
      */
     class TransportAdapterImpl : public TransportAdapter,
                                  public BoundaryMessageManager
-  
+
     {
     public:
       TransportAdapterImpl(NEMId id);
-    
+
       ~TransportAdapterImpl();
 
       void initialize(Registrar & registrar) override;
-    
+
       void configure(const ConfigurationUpdate & update) override;
-    
+
       void start() override;
-    
+
       void postStart() override;
-    
+
       void stop() override;
-    
+
       void destroy() throw() override;
 
       void processDownstreamPacket(DownstreamPacket & pkt,
                                    const ControlMessages & msgs);
-    
+
       void processDownstreamControl(const ControlMessages & msgs);
 
       void setTransport(std::unique_ptr<Transport> & pTransport) override;
@@ -82,14 +82,14 @@ namespace EMANE
     private:
       NEMId id_;
       std::unique_ptr<Transport> pTransport_;
-      ACE_INET_Addr transportEndpointAddr_;
-      ACE_INET_Addr platformEndpointAddr_;
+      INETAddr transportEndpointAddr_;
+      INETAddr platformEndpointAddr_;
 
       void doProcessPacketMessage(const PacketInfo &,
                                   const void * pPacketData,
                                   size_t packetLength,
                                   const ControlMessages & msgs);
-    
+
       void doProcessControlMessage(const ControlMessages & msgs);
     };
   }

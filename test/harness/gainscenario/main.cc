@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,37 +41,28 @@
 #include "antennaprofilemanifest.h"
 #include "emane/utils/parameterconvert.h"
 
-#include <ace/Get_Opt.h>
+#include <getopt.h>
 
 void usage();
 
 int main(int argc, char* argv[])
 {
   LIBXML_TEST_VERSION;
-  
-  const ACE_TCHAR options[] = ACE_TEXT("hs:");
 
-  ACE_Get_Opt cmd_opts(argc,argv,options);
-  
-  if(cmd_opts.long_option(ACE_TEXT("help"),'h') == -1)
+  option options[] =
     {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: help")),
-                       EXIT_FAILURE);
-    }
-  
-  if(cmd_opts.long_option(ACE_TEXT("schema"),'s',ACE_Get_Opt::ARG_REQUIRED) == -1)
-    {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: schema")),EXIT_FAILURE);
-    }
-  
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
+    };
+
   int iOption{};
+  int iOptionIndex{};
   std::string sScenario{};
   std::string sManifest{};
   std::string sSchema{"gainscenario.xsd"};
-  
-  while((iOption = cmd_opts()) != EOF)
+
+  while((iOption = getopt_long(argc,argv,"hs:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -79,75 +70,72 @@ int main(int argc, char* argv[])
           // --help
           usage();
           return 0;
-              
+
         case 's':
           // --schema
-          sSchema = cmd_opts.opt_arg();
+          sSchema = optarg;
           break;
 
         case ':':
           // missing arguement
-          std::cerr<<"-"<<cmd_opts.opt_opt()<<"requires an argument"<<std::endl;
+          std::cerr<<"-"<<static_cast<char>(iOption)<<"requires an argument"<<std::endl;
           return EXIT_FAILURE;
-              
+
         default:
-          std::cerr<<"Unknown option: "<<cmd_opts.last_option()<<std::endl;
+          std::cerr<<"Unknown option: "<<static_cast<char>(iOption)<<std::endl;
           return EXIT_FAILURE;
         }
     }
 
-  int iIndex = cmd_opts.opt_ind();
-  
-  if(iIndex < cmd_opts.argc())
-    {
-      sManifest = argv[iIndex];
-    }
-  else
+  if(optind >= argc)
     {
       std::cerr<<"missing manifest"<<std::endl;
       return EXIT_FAILURE;
     }
-
-  ++iIndex;
-  
-  if(iIndex < cmd_opts.argc())
-    {
-      sScenario = argv[iIndex];
-    }
   else
+    {
+      sManifest = argv[optind];
+    }
+
+  ++optind;
+
+ if(optind >= argc)
     {
       std::cerr<<"missing scenario"<<std::endl;
       return EXIT_FAILURE;
     }
+  else
+    {
+      sScenario = argv[optind];
+    }
 
-      
   std::cout.precision(10);
 
   try
     {
       EMANE::AntennaProfileManifest::instance()->load(sManifest);
-      
-     
+
+
 
       xmlDocPtr pSchemaDoc{xmlReadFile(sSchema.c_str(),
                                        NULL,
                                        XML_PARSE_NONET)};
-      
+
       if(!pSchemaDoc)
         {
           std::cerr<<"unable to open schema"<<std::endl;
           return EXIT_FAILURE;
         }
 
-  
+
       xmlSchemaParserCtxtPtr pParserContext{xmlSchemaNewDocParserCtxt(pSchemaDoc)};
-  
+
       if(!pParserContext)
         {
           std::cerr<<"bad schema context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlSchemaPtr pSchema{xmlSchemaParse(pParserContext)};
 
       if(!pSchema)
@@ -164,31 +152,31 @@ int main(int argc, char* argv[])
           std::cerr<<"bad schema valid context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlDocPtr pDoc = xmlReadFile(sScenario.c_str(),nullptr,0);
 
-  
+
       if(xmlSchemaValidateDoc(pSchemaValidCtxtPtr, pDoc))
         {
           return EXIT_FAILURE;
         }
 
-   
+
       xmlNodePtr pRoot = xmlDocGetRootElement(pDoc);
 
       xmlChar * pNEMId = xmlGetProp(pRoot,BAD_CAST "nem");
-      
+
       auto id =
         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-      
+
       xmlFree(pNEMId);
 
       EMANE::GainManager gainManager{id};
-      
+
       EMANE::LocationManager locationManager{id};
-      
+
       int iActionIndex{};
-      
+
       for(xmlNodePtr pNode = pRoot->children; pNode; pNode = pNode->next)
         {
           if(pNode->type == XML_ELEMENT_NODE)
@@ -214,10 +202,10 @@ int main(int argc, char* argv[])
                                       if(!xmlStrcmp(pPOVNode->name,BAD_CAST "pov"))
                                         {
                                           xmlChar * pNEMId = xmlGetProp(pPOVNode,BAD_CAST "nem");
-                                          
+
                                           auto nemId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                                          
+
                                           xmlFree(pNEMId);
 
                                           EMANE::Position position{};
@@ -242,81 +230,81 @@ int main(int argc, char* argv[])
                                                       xmlFree(pLatitude);
 
                                                       xmlChar * pLongitude = xmlGetProp(pEntryNode,BAD_CAST "longitude");
-                              
+
                                                       auto longitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pLongitude)).toDouble();
-                                                      
+
                                                       xmlFree(pLongitude);
 
                                                       xmlChar * pAltitude = xmlGetProp(pEntryNode,BAD_CAST "altitude");
-                              
+
                                                       auto altitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAltitude)).toDouble();
-                                                      
+
                                                       xmlFree(pAltitude);
-                                                      
+
                                                       position = EMANE::Position{latitude,longitude,altitude};
                                                     }
                                                   else if(!xmlStrcmp(pEntryNode->name,BAD_CAST "orientation"))
                                                     {
                                                       xmlChar * pPitch = xmlGetProp(pEntryNode,BAD_CAST "pitch");
-                                                       
+
                                                       auto pitch =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pPitch)).toDouble();
-                                                      
+
                                                       xmlFree(pPitch);
 
                                                       xmlChar * pRoll = xmlGetProp(pEntryNode,BAD_CAST "roll");
-                              
+
                                                       auto roll =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRoll)).toDouble();
-                                                      
-                                                      xmlFree(pRoll); 
-                                                      
+
+                                                      xmlFree(pRoll);
+
                                                       xmlChar * pYaw = xmlGetProp(pEntryNode,BAD_CAST "yaw");
-                              
+
                                                       auto yaw =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pYaw)).toDouble();
-                                                      
+
                                                       xmlFree(pYaw);
 
                                                       orientation = EMANE::Orientation{roll,pitch,yaw};
 
                                                       bHasOrientation = true;
 
-                                                    } 
+                                                    }
                                                   else if(!xmlStrcmp(pEntryNode->name,BAD_CAST "velocity"))
                                                     {
                                                       xmlChar * pAzimuth = xmlGetProp(pEntryNode,BAD_CAST "azimuth");
-                                                       
+
                                                       auto azimuth =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAzimuth)).toDouble();
-                                                      
+
                                                       xmlFree(pAzimuth);
 
                                                       xmlChar * pElevation = xmlGetProp(pEntryNode,BAD_CAST "elevation");
-                              
+
                                                       auto elevation =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toDouble();
-                                                      
-                                                      xmlFree(pElevation); 
+
+                                                      xmlFree(pElevation);
 
                                                       xmlChar * pMagnitude = xmlGetProp(pEntryNode,BAD_CAST "magnitude");
-                              
+
                                                       auto magnitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMagnitude)).toDouble();
-                                                      
-                                                      xmlFree(pMagnitude); 
+
+                                                      xmlFree(pMagnitude);
 
                                                       velocity = EMANE::Velocity{azimuth,elevation,magnitude};
 
                                                       bHasVelocity = true;
-                                                    } 
+                                                    }
                                                 }
                                             }
 
                                           std::cout<<"["<<iActionIndex<<"] location "<<nemId<<" P:["<<position.getLatitudeDegrees()<<","<<position.getLongitudeDegrees()<<","<<position.getAltitudeMeters()<<"]";
-                                          
+
                                           if(bHasOrientation)
                                             {
                                               std::cout<<" O:["<<orientation.getPitchDegrees()<<","<<orientation.getRollDegrees()<<","<<orientation.getYawDegrees()<<"]";
@@ -334,15 +322,15 @@ int main(int argc, char* argv[])
                                     }
                                 }
                               std::cout<<std::endl;
-                              
+
                               locationManager.update(locations);
-                              
+
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "antennaprofiles"))
                             {
                               EMANE::AntennaProfiles profiles;
                               ++iActionIndex;
-                              
+
                               for(xmlNodePtr pProfileNode = pActionNode->children;
                                   pProfileNode;
                                   pProfileNode = pProfileNode->next)
@@ -352,32 +340,32 @@ int main(int argc, char* argv[])
                                       if(!xmlStrcmp(pProfileNode->name,BAD_CAST "profile"))
                                         {
                                           xmlChar * pNEMId = xmlGetProp(pProfileNode,BAD_CAST "nem");
-                                          
+
                                           auto nemId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                                          
+
                                           xmlFree(pNEMId);
 
                                           xmlChar * pProfileId = xmlGetProp(pProfileNode,BAD_CAST "id");
-                                          
+
                                           auto profileId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pProfileId)).toUINT16();
-                                          
+
                                           xmlFree(pProfileId);
 
                                           xmlChar * pAzimuth = xmlGetProp(pProfileNode,BAD_CAST "azimuth");
-                                                       
+
                                           auto azimuth =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAzimuth)).toDouble();
-                                          
+
                                           xmlFree(pAzimuth);
-                                          
+
                                           xmlChar * pElevation = xmlGetProp(pProfileNode,BAD_CAST "elevation");
-                                          
+
                                           auto elevation =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toDouble();
-                                          
-                                          xmlFree(pElevation); 
+
+                                          xmlFree(pElevation);
 
                                           profiles.push_back({nemId,profileId,azimuth,elevation});
 
@@ -395,54 +383,54 @@ int main(int argc, char* argv[])
                               double dTxFixedGain{};
                               bool bRxHasFixedGain{};
                               bool bTxHasFixedGain{};
-                              
+
                               xmlChar * pNEMId = xmlGetProp(pActionNode,BAD_CAST "nem");
-                                          
+
                               auto nemId =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                              
+
                               xmlFree(pNEMId);
 
                               xmlChar * pRxFixedGain = xmlGetProp(pActionNode,BAD_CAST "rxfixedgain");
-                              
+
                               if(pRxFixedGain)
                                 {
                                   dRxFixedGain =
                                     EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRxFixedGain)).toDouble();
-                                          
+
                                   xmlFree(pRxFixedGain);
-                                  
+
                                   bRxHasFixedGain = true;
                                 }
 
 
                               xmlChar * pTxFixedGain = xmlGetProp(pActionNode,BAD_CAST "txfixedgain");
-                              
+
                               if(pTxFixedGain)
                                 {
                                   dTxFixedGain =
                                     EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTxFixedGain)).toDouble();
-                                          
+
                                   xmlFree(pTxFixedGain);
-                                  
+
                                   bTxHasFixedGain = true;
                                 }
 
-                              
+
                               auto locationInfoRet = locationManager.getLocationInfo(nemId);
 
                               auto gainInfodBi = gainManager.determineGain(nemId,
                                                                            locationInfoRet.first,
                                                                            std::make_pair(dRxFixedGain,bRxHasFixedGain),
                                                                            std::make_pair(dTxFixedGain,bTxHasFixedGain));
-                              
+
                               std::cout<<"["<<++iActionIndex<<"] request "<<nemId;
 
                               if(bRxHasFixedGain)
                                 {
                                   std::cout<<" rxgain="<<dRxFixedGain;
                                 }
-                              
+
                               if(bTxHasFixedGain)
                                 {
                                   std::cout<<" txgain="<<dTxFixedGain;
@@ -480,7 +468,7 @@ int main(int argc, char* argv[])
       std::cout<<exp.what();
       return EXIT_FAILURE;
     }
-  
+
   return EXIT_SUCCESS;
 }
 

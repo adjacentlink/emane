@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,9 +41,6 @@
 
 #include <map>
 #include <vector>
-
-#include <ace/Thread_Mutex.h>
-#include <ace/Time_Value.h>
 
 namespace EMANE
 {

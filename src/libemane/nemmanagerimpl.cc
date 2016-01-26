@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -43,14 +43,11 @@
 #include "otaexception.h"
 #include "antennaprofilemanifest.h"
 
-#include <ace/Reactor.h>
-
 EMANE::Application::NEMManagerImpl::NEMManagerImpl(const uuid_t & uuid):
-  NEMManager{uuid},
-  thread_{}{}
+  NEMManager{uuid}{}
 
 EMANE::Application::NEMManagerImpl::~NEMManagerImpl(){}
-    
+
 void EMANE::Application::NEMManagerImpl::add(std::unique_ptr<Application::NEM> & pNEM)
 {
   if(!platformNEMMap_.insert(std::make_pair(pNEM->getNEMId(),std::move(pNEM))).second)
@@ -60,36 +57,36 @@ void EMANE::Application::NEMManagerImpl::add(std::unique_ptr<Application::NEM> &
                                              pNEM->getNEMId());
     }
 }
-    
+
 void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
 {
   auto & configRegistrar = registrar.configurationRegistrar();
-  
-  configRegistrar.registerNonNumeric<ACE_INET_Addr>("eventservicegroup",
-                                                    ConfigurationProperties::REQUIRED,
-                                                    {},
-                                                    "IPv4 or IPv6 Event Service channel multicast endpoint.");
-  
+
+  configRegistrar.registerNonNumeric<INETAddr>("eventservicegroup",
+                                               ConfigurationProperties::REQUIRED,
+                                               {},
+                                               "IPv4 or IPv6 Event Service channel multicast endpoint.");
+
   configRegistrar.registerNonNumeric<std::string>("eventservicedevice",
                                                   ConfigurationProperties::NONE,
                                                   {},
                                                   "Device to associate with the Event Service channel multicast endpoint.");
-  
+
   configRegistrar.registerNumeric<std::uint8_t>("eventservicettl",
                                                 ConfigurationProperties::DEFAULT,
                                                 {1},
                                                 "Device to associate with the Event Service channel multicast endpoint.");
 
-  configRegistrar.registerNonNumeric<ACE_INET_Addr>("otamanagergroup",
-                                                    ConfigurationProperties::NONE,
-                                                    {},
-                                                    "IPv4 or IPv6 Event Service OTA channel endpoint.");
-  
+  configRegistrar.registerNonNumeric<INETAddr>("otamanagergroup",
+                                               ConfigurationProperties::NONE,
+                                               {},
+                                               "IPv4 or IPv6 Event Service OTA channel endpoint.");
+
   configRegistrar.registerNonNumeric<std::string>("otamanagerdevice",
                                                   ConfigurationProperties::NONE,
                                                   {},
                                                   "Device to associate with the OTA channel multicast endpoint.");
-  
+
   configRegistrar.registerNumeric<std::uint8_t>("otamanagerttl",
                                                 ConfigurationProperties::DEFAULT,
                                                 {1},
@@ -107,10 +104,10 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
                                          "Enable OTA channel multicast communication.");
 
 
-   configRegistrar.registerNonNumeric<ACE_INET_Addr>("controlportendpoint",
-                                                     ConfigurationProperties::REQUIRED,
-                                                     {ACE_INET_Addr{static_cast<uint16_t>(47000),INADDR_ANY }},
-                                                     "IPv4 or IPv6 control port endpoint.");
+   configRegistrar.registerNonNumeric<INETAddr>("controlportendpoint",
+                                                ConfigurationProperties::REQUIRED,
+                                                {INETAddr{"0.0.0.0",47000 }},
+                                                "IPv4 or IPv6 control port endpoint.");
 
    configRegistrar.registerNonNumeric<std::string>("antennaprofilemanifesturi",
                                                    EMANE::ConfigurationProperties::NONE,
@@ -133,29 +130,28 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
       if(item.first == "otamanagergroup")
         {
           OTAManagerGroupAddr_ = item.second[0].asINETAddr();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEMManagerImpl::configure OTA Manager Channel Group: %s/%hu",
-                                  OTAManagerGroupAddr_.get_host_addr(),
-                                  OTAManagerGroupAddr_.get_port_number());
-          
+                                  "NEMManagerImpl::configure OTA Manager Channel Group: %s",
+                                  OTAManagerGroupAddr_.str().c_str());
+
         }
       else if(item.first == "otamanagerdevice")
         {
           sOTAManagerGroupDevice_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %s",
                                   item.first.c_str(),
                                   sOTAManagerGroupDevice_.c_str());
-          
+
         }
       else if(item.first == "otamanagerttl")
         {
           u8OTAManagerTTL_ = item.second[0].asUINT8();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %hhu",
@@ -165,7 +161,7 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
       else if(item.first == "otamanagerloopback")
         {
           bOTAManagerChannelLoopback_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %s",
@@ -175,7 +171,7 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
       else if(item.first == "otamanagerchannelenable")
         {
           bOTAManagerChannelEnable_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %s",
@@ -188,27 +184,26 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEMManagerImpl::configure %s: %s/%hu",
+                                  "NEMManagerImpl::configure %s: %s",
                                   item.first.c_str(),
-                                  eventServiceGroupAddr_.get_host_addr(),
-                                  eventServiceGroupAddr_.get_port_number());
-          
+                                  eventServiceGroupAddr_.str().c_str());
+
         }
       else if(item.first == "eventservicedevice")
         {
           sEventServiceDevice_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %s",
                                   item.first.c_str(),
                                   sEventServiceDevice_.c_str());
-          
+
         }
       else if(item.first == "eventservicettl")
         {
           u8EventServiceTTL_ = item.second[0].asUINT8();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %hhu",
@@ -218,25 +213,24 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
       else if(item.first == "controlportendpoint")
         {
           controlPortAddr_ = item.second[0].asINETAddr();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEMManagerImpl::configure %s: %s/%hu",
+                                  "NEMManagerImpl::configure %s: %s",
                                   item.first.c_str(),
-                                  controlPortAddr_.get_host_addr(),
-                                  controlPortAddr_.get_port_number());
+                                  controlPortAddr_.str().c_str());
         }
 
       else if(item.first == "antennaprofilemanifesturi")
         {
           sAntennaProfileManifestURI_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "NEMManagerImpl::configure %s: %s",
                                   item.first.c_str(),
                                   sAntennaProfileManifestURI_.c_str());
-                                  
+
         }
       else
         {
@@ -281,7 +275,7 @@ void EMANE::Application::NEMManagerImpl::start()
 
   try
     {
-      EMANE::EventServiceSingleton::instance()->open(eventServiceGroupAddr_, 
+      EMANE::EventServiceSingleton::instance()->open(eventServiceGroupAddr_,
                                                      sEventServiceDevice_,
                                                      u8EventServiceTTL_,
                                                      true,
@@ -292,19 +286,13 @@ void EMANE::Application::NEMManagerImpl::start()
       throw StartException(e.what());
     }
 
-  acceptor_.open(controlPortAddr_,ACE_Reactor::instance(),0,1,1);
-  
+  controlPortService_.open(controlPortAddr_);
+
   std::for_each(platformNEMMap_.begin(),
                 platformNEMMap_.end(),
                 std::bind(&Component::start,
                           std::bind(&PlatformNEMMap::value_type::second,
                                     std::placeholders::_1)));
-
-  thread_ = std::thread([]()
-                        {
-                          ACE_Reactor::instance()->owner(ACE_OS::thr_self());
-                          ACE_Reactor::instance()->run_reactor_event_loop();
-                        });
 }
 
 void EMANE::Application::NEMManagerImpl::postStart()
@@ -318,11 +306,7 @@ void EMANE::Application::NEMManagerImpl::postStart()
 
 void EMANE::Application::NEMManagerImpl::stop()
 {
-  ACE_Reactor::instance()->end_reactor_event_loop();
-
-  thread_.join();
-
-  acceptor_.close();
+  controlPortService_.close();
 
   std::for_each(platformNEMMap_.begin(),
                 platformNEMMap_.end(),

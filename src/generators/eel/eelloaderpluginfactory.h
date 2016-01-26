@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,8 +39,6 @@
 #include "emane/utils/factoryexception.h"
 #include "emane/generators/eel/loaderplugin.h"
 
-#include <ace/OS_NS_dlfcn.h>
-
 namespace EMANE
 {
   namespace Generators
@@ -73,7 +72,7 @@ namespace EMANE
          * @throw Utils::FactoryException
          */
         void construct(const std::string & sLibraryName);
-    
+
         /**
          * Create a loader
          *
@@ -88,12 +87,12 @@ namespace EMANE
          *
          */
         void destoryPlugin(LoaderPlugin * pLoader) const;
-    
+
       private:
-        using createPluginFunc = LoaderPlugin * (*)(); 
+        using createPluginFunc = LoaderPlugin * (*)();
         using destroyPluginFunc = void (*)(LoaderPlugin*);
 
-        ACE_SHLIB_HANDLE shlibHandle_;
+        void * pLibHandle_;
         createPluginFunc createPluginFunc_;
         destroyPluginFunc destroyPluginFunc_;
       };

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +34,7 @@
 #include "controlmessageserializer.h"
 #include "controlmessageserializerexception.h"
 #include "emane/controls/serializedcontrolmessage.h"
-
-#include <ace/INET_Addr.h>
+#include <arpa/inet.h>
 
 EMANE::ControlMessageSerializer::ControlMessageSerializer(const ControlMessages & msgs):
   serializations_(msgs.size(),std::string()),
@@ -44,17 +44,17 @@ EMANE::ControlMessageSerializer::ControlMessageSerializer(const ControlMessages 
 {
   ControlMessages::const_iterator iter = msgs.begin();
 
-  controlMessageSerializerHeader_.u16Count_ = ACE_HTONS(msgs.size());
+  controlMessageSerializerHeader_.u16Count_ = htons(msgs.size());
   vectorIO_[0].iov_len = sizeof(ControlMessageSerializerHeader);
-  vectorIO_[0].iov_base = &controlMessageSerializerHeader_;  
+  vectorIO_[0].iov_base = &controlMessageSerializerHeader_;
   length_ += vectorIO_[0].iov_len;
-  
+
   for(int i = 0; iter != msgs.end(); ++iter,++i)
     {
       (*iter)->serialize().swap(serializations_[i]);
-      controlMessageHeaders_[i].u16Id_ = ACE_HTONS((*iter)->getId());
-      controlMessageHeaders_[i].u16Length_ = ACE_HTONS(serializations_[i].length());
-     
+      controlMessageHeaders_[i].u16Id_ = htons((*iter)->getId());
+      controlMessageHeaders_[i].u16Length_ = htons(serializations_[i].length());
+
       vectorIO_[i*2+1].iov_len = sizeof(ControlMessageHeader);
       vectorIO_[i*2+1].iov_base = &controlMessageHeaders_[i];
       length_ += vectorIO_[i*2+1].iov_len;
@@ -66,8 +66,8 @@ EMANE::ControlMessageSerializer::ControlMessageSerializer(const ControlMessages 
 }
 
 EMANE::ControlMessageSerializer::~ControlMessageSerializer(){}
-    
-const EMANE::Utils::VectorIO & 
+
+const EMANE::Utils::VectorIO &
 EMANE::ControlMessageSerializer::getVectorIO() const
 {
   return vectorIO_;
@@ -86,30 +86,30 @@ EMANE::ControlMessages EMANE::ControlMessageSerializer::create(const void * pDat
     {
       const ControlMessageSerializerHeader * pControlMessageSerializerHeader =
         reinterpret_cast<const ControlMessageSerializerHeader *>(pData);
-      
-      ACE_UINT16 u16ControlMessageCount =
-        ACE_NTOHS(pControlMessageSerializerHeader->u16Count_);
-      
+
+      std::uint16_t u16ControlMessageCount =
+        std::uint16_t(pControlMessageSerializerHeader->u16Count_);
+
       length -= sizeof(ControlMessageSerializerHeader);
 
-      const ControlMessageHeader * pControlMessageHeader = 
+      const ControlMessageHeader * pControlMessageHeader =
         reinterpret_cast<const ControlMessageHeader *>(pControlMessageSerializerHeader->data_);
-      
+
       for(int i = 0; i < u16ControlMessageCount; ++i)
         {
           if(length >= sizeof(ControlMessageHeader))
             {
               length -= sizeof(ControlMessageHeader);
-              
-              ACE_UINT16 u16ControlMessageId = ACE_NTOHS(pControlMessageHeader->u16Id_);
-              ACE_UINT16 u16ControlMessageLength = ACE_NTOHS(pControlMessageHeader->u16Length_);
+
+              std::uint16_t u16ControlMessageId = ntohs(pControlMessageHeader->u16Id_);
+              std::uint16_t u16ControlMessageLength = ntohs(pControlMessageHeader->u16Length_);
 
               if(length >= u16ControlMessageLength)
                 {
                   controlMessages.push_back(Controls::SerializedControlMessage::create(u16ControlMessageId,
                                                                                        pControlMessageHeader->data_,
                                                                                        u16ControlMessageLength));
-                  
+
                   length -= u16ControlMessageLength;
                 }
               else
@@ -118,7 +118,7 @@ EMANE::ControlMessages EMANE::ControlMessageSerializer::create(const void * pDat
                 }
 
 
-              pControlMessageHeader = 
+              pControlMessageHeader =
                 reinterpret_cast<const ControlMessageHeader *>(pControlMessageHeader->data_ +
                                                                u16ControlMessageLength);
             }
@@ -127,32 +127,32 @@ EMANE::ControlMessages EMANE::ControlMessageSerializer::create(const void * pDat
               throw ControlMessageSerializerException("Control Message count mismatch");
             }
 
-          
+
         }
     }
   else
     {
       throw ControlMessageSerializerException("Control message serializer header length mismatch");
     }
-  
+
   return controlMessages;
 }
 
-EMANE::ControlMessages 
+EMANE::ControlMessages
 EMANE::ControlMessageSerializer::create(const EMANE::Utils::VectorIO & vectorIO)
 {
   ControlMessages controlMessages;
-  
+
   if(!vectorIO.empty())
     {
       if(vectorIO[0].iov_len == sizeof(ControlMessageSerializerHeader))
         {
           const ControlMessageSerializerHeader * pControlMessageSerializerHeader =
             reinterpret_cast<const ControlMessageSerializerHeader *>(vectorIO[0].iov_base);
-          
-          ACE_UINT16 u16ControlMessageCount =
-                ACE_NTOHS(pControlMessageSerializerHeader->u16Count_);
-          
+
+          std::uint16_t u16ControlMessageCount =
+            ntohs(pControlMessageSerializerHeader->u16Count_);
+
 
           if(u16ControlMessageCount <= (vectorIO.size() - 1) / 2)
             {
@@ -163,10 +163,10 @@ EMANE::ControlMessageSerializer::create(const EMANE::Utils::VectorIO & vectorIO)
                       const ControlMessageHeader * pControlMessageHeader =
                         reinterpret_cast<const ControlMessageHeader *>(vectorIO[i*2 +1].iov_base);
 
-                      ACE_UINT16 u16ControlMessageId = ACE_NTOHS(pControlMessageHeader->u16Id_);
-                      ACE_UINT16 u16ControlMessageLength = ACE_NTOHS(pControlMessageHeader->u16Length_);
-                      
-                      
+                      std::uint16_t u16ControlMessageId = ntohs(pControlMessageHeader->u16Id_);
+                      std::uint16_t u16ControlMessageLength = ntohs(pControlMessageHeader->u16Length_);
+
+
                       if(vectorIO[i*2 + 2].iov_len == u16ControlMessageLength)
                         {
                           controlMessages.push_back(Controls::SerializedControlMessage::create(u16ControlMessageId,

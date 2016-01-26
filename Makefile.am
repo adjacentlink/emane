@@ -82,7 +82,6 @@ EXTRA_DIST =         \
  ChangeLog           \
  NEWS                \
  emane.spec.in       \
- PROBLEM-REPORT-FORM \
  SPONSOR             \
  README.md           \
  debian              \

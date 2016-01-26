@@ -28,7 +28,6 @@ EXTRA_DIST=                    \
 
 libcommeffectshim_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(ACE_CFLAGS)                 \
  $(AM_CFLAGS)                  \
  $(libuuid_CFLAGS)             \
  $(libxml2_CFLAGS)
@@ -46,12 +45,7 @@ libcommeffectshim_la_SOURCES=  \
  target.cc                     
 
 
-libcommeffectshim_la_LIBADD=   \
- $(WIN32_EXTRA_LIBADD)        
-
 libcommeffectshim_la_LDFLAGS=  \
- $(WIN32_EXTRA_LDFLAGS)        \
- $(ACE_LIBS)                   \
  $(libxml2_LIBS)               \
  -avoid-version
 

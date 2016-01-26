@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -43,8 +43,6 @@
 #include <map>
 #include <list>
 
-#include <ace/Time_Value.h>
-
 namespace EMANE
 {
   namespace Models
@@ -57,7 +55,7 @@ namespace EMANE
         ProfileManager(NEMId id, PlatformServiceProvider * pPlatformService);
 
         virtual ~ProfileManager();
-      
+
         std::pair<Events::CommEffect, bool> getProfileData(const void* buf,
                                                            size_t len,
                                                            NEMId id) const;

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +60,7 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 #include <iomanip>
-#include <ace/Get_Opt.h>
+#include <getopt.h>
 
 namespace
 {
@@ -76,7 +77,7 @@ namespace
       return totalProcessed_;
     }
 
-    void processUpstreamPacket(EMANE::UpstreamPacket &, 
+    void processUpstreamPacket(EMANE::UpstreamPacket &,
                                const EMANE::ControlMessages & msgs) override
     {
       std::cout<<"["<<iAction_<<"]  Packet forwarded to next layer"<<std::endl<<std::endl;;
@@ -89,7 +90,7 @@ namespace
             case EMANE::Controls::FrequencyControlMessage::IDENTIFIER:
               {
                 const auto pFrequencyControlMessage =
-                  static_cast<const EMANE::Controls::FrequencyControlMessage *>(pControlMessage); 
+                  static_cast<const EMANE::Controls::FrequencyControlMessage *>(pControlMessage);
 
                 std::cout<<"["<<iAction_<<"]  MAC FrequencyControlMessage data:"<<std::endl;
 
@@ -99,13 +100,13 @@ namespace
                   }
                 std::cout<<std::endl;
               }
-              
+
               break;
 
             case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
            {
              const auto pReceivePropertiesControlMessage =
-               static_cast<const EMANE::Controls::ReceivePropertiesControlMessage *>(pControlMessage); 
+               static_cast<const EMANE::Controls::ReceivePropertiesControlMessage *>(pControlMessage);
 
              std::cout<<"["<<iAction_<<"]  MAC ReceivePropertiesControlMessage data:"<<std::endl;
              for(const auto & sLine : EMANE::Controls::ReceivePropertiesControlMessageFormatter{pReceivePropertiesControlMessage}())
@@ -116,13 +117,13 @@ namespace
            }
 
            break;
-           
+
          default:
            std::cout<<"Unknown control message id: "<<pControlMessage->getId()<<std::endl;
            break;
             }
         }
-      
+
       std::cout<<"Processing upstream packet..."<<std::endl;
     }
 
@@ -144,37 +145,23 @@ EMANE::FrameworkPHY * createPHY(EMANE::NEMId id,EMANE::SpectrumMonitor * pSpectr
 int main(int argc, char * argv[])
 {
   LIBXML_TEST_VERSION;
-  
-  const ACE_TCHAR options[] = ACE_TEXT("hs:");
 
-  ACE_Get_Opt cmd_opts(argc,argv,options);
-  
-  if(cmd_opts.long_option(ACE_TEXT("help"),'h') == -1)
+  option options[] =
     {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: help")),
-                       EXIT_FAILURE);
-    }
-  
-  if(cmd_opts.long_option(ACE_TEXT("schema"),'s',ACE_Get_Opt::ARG_REQUIRED) == -1)
-    {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: schema")),EXIT_FAILURE);
-    }
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {"profiles",1,nullptr,'p'},
+      {0, 0,nullptr,0},
+    };
 
-  if(cmd_opts.long_option(ACE_TEXT("profiles"),'p',ACE_Get_Opt::ARG_REQUIRED) == -1)
-    {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: profiles")),EXIT_FAILURE);
-    }
-  
   int iOption{};
+  int iOptionIndex{};
   std::string sScenario{};
   std::string sManifest{};
   std::string sSchema{"gainscenario.xsd"};
   std::string sProfiles{};
 
-  while((iOption = cmd_opts()) != EOF)
+  while((iOption = getopt_long(argc,argv,"hs:p:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -182,41 +169,40 @@ int main(int argc, char * argv[])
           // --help
           usage();
           return 0;
-              
+
         case 's':
           // --schema
-          sSchema = cmd_opts.opt_arg();
+          sSchema = optarg;
           break;
 
         case 'p':
           // --profiles
-          sProfiles = cmd_opts.opt_arg();
+          sProfiles = optarg;
           break;
 
         case ':':
           // missing arguement
-          std::cerr<<"-"<<cmd_opts.opt_opt()<<"requires an argument"<<std::endl;
+          std::cerr<<"-"<<static_cast<char>(iOption)<<"requires an argument"<<std::endl;
           return EXIT_FAILURE;
-              
+
         default:
-          std::cerr<<"Unknown option: "<<cmd_opts.last_option()<<std::endl;
+          std::cerr<<"Unknown option: "<<static_cast<char>(iOption)<<std::endl;
           return EXIT_FAILURE;
         }
     }
 
-  int iIndex = cmd_opts.opt_ind();
- 
-  if(iIndex < cmd_opts.argc())
-    {
-      sScenario = argv[iIndex];
-    }
-  else
+
+  if(optind >= argc)
     {
       std::cerr<<"missing scenario"<<std::endl;
       return EXIT_FAILURE;
     }
+  else
+    {
+      sScenario = argv[optind];
+    }
 
-      
+
   std::cout.precision(10);
 
   try
@@ -225,27 +211,27 @@ int main(int argc, char * argv[])
         {
           EMANE::AntennaProfileManifest::instance()->load(sProfiles);
         }
-     
+
 
       xmlDocPtr pSchemaDoc{xmlReadFile(sSchema.c_str(),
                                        NULL,
                                        XML_PARSE_NONET)};
-      
+
       if(!pSchemaDoc)
         {
           std::cerr<<"unable to open schema"<<std::endl;
           return EXIT_FAILURE;
         }
 
-  
+
       xmlSchemaParserCtxtPtr pParserContext{xmlSchemaNewDocParserCtxt(pSchemaDoc)};
-  
+
       if(!pParserContext)
         {
           std::cerr<<"bad schema context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlSchemaPtr pSchema{xmlSchemaParse(pParserContext)};
 
       if(!pSchema)
@@ -262,31 +248,31 @@ int main(int argc, char * argv[])
           std::cerr<<"bad schema valid context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlDocPtr pDoc = xmlReadFile(sScenario.c_str(),nullptr,0);
 
-  
+
       if(xmlSchemaValidateDoc(pSchemaValidCtxtPtr, pDoc))
         {
           return EXIT_FAILURE;
         }
 
-   
+
       xmlNodePtr pRoot = xmlDocGetRootElement(pDoc);
 
       xmlChar * pNEMId = xmlGetProp(pRoot,BAD_CAST "nem");
-      
+
       auto id =
         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-      
+
       xmlFree(pNEMId);
 
       EMANE::SpectrumMonitor spectrumMonitor{};
 
       auto pPHYLayer = createPHY(id,&spectrumMonitor);
- 
+
       HarnessUpstreamTransport harnessUpstreamTransport;
-      
+
       pPHYLayer->setUpstreamTransport(&harnessUpstreamTransport);
 
       bool bRunning{};
@@ -308,7 +294,7 @@ int main(int argc, char * argv[])
                           if(!xmlStrcmp(pActionNode->name,BAD_CAST "configure"))
                             {
                               EMANE::ConfigurationUpdateRequest request;
-                         
+
                               ++iActionIndex;
 
                               for(xmlNodePtr pParamListNode = pActionNode->children;
@@ -320,13 +306,13 @@ int main(int argc, char * argv[])
                                       if(!xmlStrcmp(pParamListNode->name,BAD_CAST "paramlist"))
                                         {
                                           EMANE::ConfigurationNameStringValues values;
-                                     
+
                                           xmlChar * pName = xmlGetProp(pParamListNode,BAD_CAST "name");
-                                     
+
                                           values.first = reinterpret_cast<const char *>(pName);
 
                                           xmlFree(pName);
-                                     
+
 
                                           for(xmlNodePtr pItemNode = pParamListNode->children;
                                               pItemNode;
@@ -337,7 +323,7 @@ int main(int argc, char * argv[])
                                                   if(!xmlStrcmp(pItemNode->name,BAD_CAST "item"))
                                                     {
                                                       xmlChar * pValue = xmlGetProp(pItemNode,BAD_CAST "value");
-                                                  
+
                                                       values.second.push_back(reinterpret_cast<const char *>(pValue));
 
                                                       xmlFree(pValue);
@@ -349,15 +335,15 @@ int main(int argc, char * argv[])
                                         }
                                     }
                                 }
-                         
+
                               if(!bRunning)
                                 {
                                   pPHYLayer->configure(EMANE::ConfigurationServiceSingleton::instance()->buildUpdates(pPHYLayer->getBuildId(),
                                                                                                                       request));
                                   pPHYLayer->start();
-      
+
                                   bRunning = true;
-                                  
+
                                 }
                               else
                                 {
@@ -366,19 +352,19 @@ int main(int argc, char * argv[])
                                 }
 
                               std::cout<<"["<<iActionIndex<<"] configure "<<std::endl;
-                              
+
                               auto results = EMANE::ConfigurationServiceSingleton::instance()->queryConfiguration(pPHYLayer->getBuildId());
-                              
+
                               for(const auto & entry : results)
                                 {
                                   std::cout<<"["<<iActionIndex<<"]  "<<entry.first<<":"<<std::endl;
-                                  
+
                                   for(const auto & value :  entry.second)
                                     {
                                       std::cout<<"["<<iActionIndex<<"]    "<<value.toString()<<std::endl;
                                     }
                                 }
-                              
+
                               std::cout<<std::endl;
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "locations"))
@@ -402,10 +388,10 @@ int main(int argc, char * argv[])
                                       if(!xmlStrcmp(pPOVNode->name,BAD_CAST "pov"))
                                         {
                                           xmlChar * pNEMId = xmlGetProp(pPOVNode,BAD_CAST "nem");
-                                          
+
                                           auto nemId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                                          
+
                                           xmlFree(pNEMId);
 
                                           EMANE::Position position{};
@@ -430,81 +416,81 @@ int main(int argc, char * argv[])
                                                       xmlFree(pLatitude);
 
                                                       xmlChar * pLongitude = xmlGetProp(pEntryNode,BAD_CAST "longitude");
-                              
+
                                                       auto longitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pLongitude)).toDouble();
-                                                      
+
                                                       xmlFree(pLongitude);
 
                                                       xmlChar * pAltitude = xmlGetProp(pEntryNode,BAD_CAST "altitude");
-                              
+
                                                       auto altitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAltitude)).toDouble();
-                                                      
+
                                                       xmlFree(pAltitude);
-                                                      
+
                                                       position = EMANE::Position{latitude,longitude,altitude};
                                                     }
                                                   else if(!xmlStrcmp(pEntryNode->name,BAD_CAST "orientation"))
                                                     {
                                                       xmlChar * pPitch = xmlGetProp(pEntryNode,BAD_CAST "pitch");
-                                                       
+
                                                       auto pitch =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pPitch)).toDouble();
-                                                      
+
                                                       xmlFree(pPitch);
 
                                                       xmlChar * pRoll = xmlGetProp(pEntryNode,BAD_CAST "roll");
-                              
+
                                                       auto roll =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRoll)).toDouble();
-                                                      
-                                                      xmlFree(pRoll); 
-                                                      
+
+                                                      xmlFree(pRoll);
+
                                                       xmlChar * pYaw = xmlGetProp(pEntryNode,BAD_CAST "yaw");
-                              
+
                                                       auto yaw =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pYaw)).toDouble();
-                                                      
+
                                                       xmlFree(pYaw);
 
                                                       orientation = EMANE::Orientation{roll,pitch,yaw};
 
                                                       bHasOrientation = true;
 
-                                                    } 
+                                                    }
                                                   else if(!xmlStrcmp(pEntryNode->name,BAD_CAST "velocity"))
                                                     {
                                                       xmlChar * pAzimuth = xmlGetProp(pEntryNode,BAD_CAST "azimuth");
-                                                       
+
                                                       auto azimuth =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAzimuth)).toDouble();
-                                                      
+
                                                       xmlFree(pAzimuth);
 
                                                       xmlChar * pElevation = xmlGetProp(pEntryNode,BAD_CAST "elevation");
-                              
+
                                                       auto elevation =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toDouble();
-                                                      
-                                                      xmlFree(pElevation); 
+
+                                                      xmlFree(pElevation);
 
                                                       xmlChar * pMagnitude = xmlGetProp(pEntryNode,BAD_CAST "magnitude");
-                              
+
                                                       auto magnitude =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMagnitude)).toDouble();
-                                                      
-                                                      xmlFree(pMagnitude); 
+
+                                                      xmlFree(pMagnitude);
 
                                                       velocity = EMANE::Velocity{azimuth,elevation,magnitude};
 
                                                       bHasVelocity = true;
-                                                    } 
+                                                    }
                                                 }
                                             }
 
                                           std::cout<<"["<<iActionIndex<<"] location "<<nemId<<" P:["<<position.getLatitudeDegrees()<<","<<position.getLongitudeDegrees()<<","<<position.getAltitudeMeters()<<"]";
-                                          
+
                                           if(bHasOrientation)
                                             {
                                               std::cout<<" O:["<<orientation.getPitchDegrees()<<","<<orientation.getRollDegrees()<<","<<orientation.getYawDegrees()<<"]";
@@ -538,7 +524,7 @@ int main(int argc, char * argv[])
 
                               EMANE::AntennaProfiles profiles;
                               ++iActionIndex;
-                              
+
                               for(xmlNodePtr pProfileNode = pActionNode->children;
                                   pProfileNode;
                                   pProfileNode = pProfileNode->next)
@@ -548,32 +534,32 @@ int main(int argc, char * argv[])
                                       if(!xmlStrcmp(pProfileNode->name,BAD_CAST "profile"))
                                         {
                                           xmlChar * pNEMId = xmlGetProp(pProfileNode,BAD_CAST "nem");
-                                          
+
                                           auto nemId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                                          
+
                                           xmlFree(pNEMId);
 
                                           xmlChar * pProfileId = xmlGetProp(pProfileNode,BAD_CAST "id");
-                                          
+
                                           auto profileId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pProfileId)).toUINT16();
-                                          
+
                                           xmlFree(pProfileId);
 
                                           xmlChar * pAzimuth = xmlGetProp(pProfileNode,BAD_CAST "azimuth");
-                                                       
+
                                           auto azimuth =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pAzimuth)).toDouble();
-                                          
+
                                           xmlFree(pAzimuth);
-                                          
+
                                           xmlChar * pElevation = xmlGetProp(pProfileNode,BAD_CAST "elevation");
-                                          
+
                                           auto elevation =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toDouble();
-                                          
-                                          xmlFree(pElevation); 
+
+                                          xmlFree(pElevation);
 
                                           profiles.push_back({nemId,profileId,azimuth,elevation});
 
@@ -582,11 +568,11 @@ int main(int argc, char * argv[])
                                     }
                                 }
 
-                                                 
+
                               pPHYLayer->processEvent(EMANE::Events::AntennaProfileEvent::IDENTIFIER,
                                                       EMANE::Events::AntennaProfileEvent{profiles}.serialize());
 
-                              std::cout<<std::endl;                              
+                              std::cout<<std::endl;
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "pathloss"))
                             {
@@ -612,29 +598,29 @@ int main(int argc, char * argv[])
 
                                           auto nemId =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNEMId)).toUINT16();
-                                          
+
                                           xmlFree(pNEMId);
 
                                           xmlChar * pPathloss = xmlGetProp(pEntryNode,BAD_CAST "pathloss");
 
                                           auto fPathloss =
                                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pPathloss)).toFloat();
-                                          
+
                                           xmlFree(pPathloss);
 
                                           float fRevPathloss{fPathloss};
 
                                           xmlChar * pRevPathloss = xmlGetProp(pEntryNode,BAD_CAST "rpathloss");
-                                          
+
                                           if(pRevPathloss)
                                             {
-                                              fRevPathloss = 
+                                              fRevPathloss =
                                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRevPathloss)).toFloat();
 
                                               xmlFree(pRevPathloss);
                                             }
-                                          
-                                     
+
+
                                           pathlosses.push_back({nemId,fPathloss,fRevPathloss});
 
                                           std::cout<<"["<<iActionIndex<<"] pathloss "<<nemId<<" Forward Pathloss: "<<fPathloss<< " Reverse Pathloss: "<<fRevPathloss<<std::endl;
@@ -661,18 +647,18 @@ int main(int argc, char * argv[])
 
                               // what would get gettimeofday() in running code
                               xmlChar * pNow = xmlGetProp(pActionNode,BAD_CAST "now");
-              
-                              auto now = 
+
+                              auto now =
                                 EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNow)).toUINT64()};
-                           
+
                               xmlFree(pNow);
 
                               // actual tx time presumed to be <= 'now'
                               xmlChar * pTxTime = xmlGetProp(pActionNode,BAD_CAST "txtime");
-                           
+
                               auto txTime =
                                 EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTxTime)).toUINT64()};
-                         
+
                               xmlFree(pTxTime);
 
 
@@ -680,52 +666,52 @@ int main(int argc, char * argv[])
 
                               auto destination =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pDestination)).toUINT16();
-                                          
+
                               xmlFree(pDestination);
 
                               xmlChar * pSource = xmlGetProp(pActionNode,BAD_CAST "source");
-                                          
+
                               auto source =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pSource)).toUINT16();
-                                          
+
                               xmlFree(pSource);
 
 
                               xmlChar * pSize = xmlGetProp(pActionNode,BAD_CAST "size");
-                                          
+
                               auto size =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pSize)).toUINT16();
-                                          
+
                               xmlFree(pSize);
 
                               // actual tx time presumed to be <= 'now'
                               xmlChar * pBandwidth = xmlGetProp(pActionNode,BAD_CAST "bandwidth");
-                           
+
                               auto bandwidth =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidth)).toUINT64();
-                         
+
                               xmlFree(pBandwidth);
-                         
+
                               double dTxFixedGain{};
                               bool bTxHasFixedGain{false};
-                         
+
                               xmlChar * pTxFixedGain = xmlGetProp(pActionNode,BAD_CAST "fixedgain");
-                         
+
                               if(pTxFixedGain)
                                 {
                                   dTxFixedGain =
                                     EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTxFixedGain)).toDouble();
-                             
+
                                   xmlFree(pTxFixedGain);
-                             
+
                                   bTxHasFixedGain = true;
                                 }
 
                               xmlChar * pSubId = xmlGetProp(pActionNode,BAD_CAST "subid");
-                                          
+
                               auto subId =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pSubId)).toUINT16();
-                                          
+
                               xmlFree(pSubId);
 
                               EMANE::FrequencySegments segments;
@@ -748,26 +734,26 @@ int main(int argc, char * argv[])
                                                   if(!xmlStrcmp(pSegmentNode->name,BAD_CAST "segment"))
                                                     {
                                                       xmlChar * pFrequency = xmlGetProp(pSegmentNode,BAD_CAST "frequency");
-                                                 
-                                                      auto frequency = 
+
+                                                      auto frequency =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64();
-                                                 
+
                                                       xmlFree(pFrequency);
-                                                 
+
                                                       xmlChar * pOffset = xmlGetProp(pSegmentNode,BAD_CAST "offset");
-                                                 
-                                                      auto offset = 
+
+                                                      auto offset =
                                                         EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pOffset)).toUINT64()};
-                                                 
+
                                                       xmlFree(pOffset);
-                                                 
+
                                                       xmlChar * pDuration = xmlGetProp(pSegmentNode,BAD_CAST "duration");
-                                                 
+
                                                       auto duration =
                                                         EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pDuration)).toUINT64()};
-                                                 
+
                                                       xmlFree(pDuration);
-                                                 
+
                                                       segments.push_back({frequency,duration,offset});
                                                     }
                                                 }
@@ -784,19 +770,19 @@ int main(int argc, char * argv[])
                                                   if(!xmlStrcmp(pTransmitterNode->name,BAD_CAST "transmitter"))
                                                     {
                                                       xmlChar * pTransmitter = xmlGetProp(pTransmitterNode,BAD_CAST "nem");
-                                                      
-                                                      auto transmitter = 
+
+                                                      auto transmitter =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTransmitter)).toUINT16();
-                                                      
+
                                                       xmlFree(pTransmitter);
-                                                      
+
                                                       xmlChar * pTxPowerdBm = xmlGetProp(pTransmitterNode,BAD_CAST "power");
-                                                      
-                                                      auto txPowerdBm = 
+
+                                                      auto txPowerdBm =
                                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTxPowerdBm)).toDouble();
-                                                      
+
                                                       xmlFree(pTxPowerdBm);
-                                                      
+
                                                       transmitters.push_back({transmitter,txPowerdBm});
                                                     }
                                                 }
@@ -804,7 +790,7 @@ int main(int argc, char * argv[])
                                         }
                                     }
                                 }
-                              
+
                               std::vector<std::uint8_t> data(size,0);
 
                               EMANE::UpstreamPacket pkt{{source,destination,0,EMANE::TimePoint{now}},&data[0],size};
@@ -814,7 +800,7 @@ int main(int argc, char * argv[])
 
                               std::size_t currentTotalProccessed = harnessUpstreamTransport.getTotalProcessed();
 
-                              
+
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
                                   subId,
                                   ++u16SequenceNumber,
@@ -823,14 +809,14 @@ int main(int argc, char * argv[])
                                   segments,
                                     transmitters,
                                       {dTxFixedGain,bTxHasFixedGain}};
-                              
+
                               std::cout<<"["<<iActionIndex<<"]  Common PHY Header data:"<<std::endl;
 
                               for(const auto & sLine : hdr.format())
                                 {
                                   std::cout<<"["<<iActionIndex<<"]   "<<sLine<<std::endl;
                                 }
-                               
+
                               std::cout<<std::endl;
 
                               pPHYLayer->processUpstreamPacket_i(EMANE::TimePoint{now},
@@ -843,11 +829,11 @@ int main(int argc, char * argv[])
                                 {
                                   std::cout<<"["<<iActionIndex<<"]  Packet dropped"<<std::endl<<std::endl;
 
-                                  auto results = 
+                                  auto results =
                                     EMANE::StatisticService::instance()->queryTable(pPHYLayer->getBuildId(),
                                                                                     {"UnicastPacketDropTable0",
                                                                                         "BroadcastPacketDropTable0"});
-                                  
+
 
                                   for(const auto entry : results)
                                     {
@@ -857,18 +843,18 @@ int main(int argc, char * argv[])
                                       for(const auto & label : entry.second.first)
                                         {
                                           labelLengths.push_back(label.size());
-                                          std::cout<<std::setiosflags(ios::left) <<std::setw(label.size())<<label<<"|";
+                                          std::cout<<std::setiosflags(std::ios::left) <<std::setw(label.size())<<label<<"|";
                                         }
-                                      
+
                                       std::cout<<std::endl;
-                                      
+
                                       for(const auto & row : entry.second.second)
                                         {
                                           int i{};
                                           std::cout<<"["<<iActionIndex<<"] "<<'|';
                                           for(const auto & any : row)
                                             {
-                                              std::cout<<std::setiosflags(ios::left) <<std::setw(labelLengths[i++])<<any.toString()<<"|";
+                                              std::cout<<std::setiosflags(std::ios::left) <<std::setw(labelLengths[i++])<<any.toString()<<"|";
                                             }
 
                                           std::cout<<std::endl;
@@ -882,43 +868,43 @@ int main(int argc, char * argv[])
                               ++iActionIndex;
 
                               std::cout<<"["<<iActionIndex<<"] window"<<std::endl;
-                              
+
                               // what would get gettimeofday() in running code
                               xmlChar * pNow = xmlGetProp(pActionNode,BAD_CAST "now");
-              
-                              auto now = 
+
+                              auto now =
                                 EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNow)).toUINT64()};
-                           
+
                               xmlFree(pNow);
-                                                      
+
                               xmlChar * pFrequency = xmlGetProp(pActionNode,BAD_CAST "frequency");
-                              
+
                               auto frequency = EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64();
-                           
+
                               xmlFree(pFrequency);
 
                               EMANE::TimePoint timepoint = EMANE::TimePoint::min();
-                              
+
                               // what would get gettimeofday() in running code<
                               xmlChar * pTime = xmlGetProp(pActionNode,BAD_CAST "time");
-                              
+
                               if(pTime)
                                 {
-                                  timepoint = 
+                                  timepoint =
                                     EMANE::TimePoint{EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTime)).toUINT64()}};
-                           
+
                                   xmlFree(pTime);
                                 }
 
                               EMANE::Microseconds duration{0};
-                              
+
                               xmlChar * pDuration = xmlGetProp(pActionNode,BAD_CAST "duration");
-              
+
                               if(pDuration)
                                 {
-                                  duration = 
+                                  duration =
                                     EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pDuration)).toUINT64()};
-                                  
+
                                   xmlFree(pDuration);
                                 }
 
@@ -930,11 +916,11 @@ int main(int argc, char * argv[])
                                   EMANE::Microseconds binSize{};
                                   double dReceiverSensitivityMilliWatt{};
                                   bool bSignalInNoise{};
-                              
+
                                   auto window = spectrumMonitor.request_i(EMANE::TimePoint{now},frequency,duration,timepoint);
 
                                   std::tie(bins,startOfBinTime,binSize,dReceiverSensitivityMilliWatt,bSignalInNoise) = window;
-                                    
+
 
                                   std::cout<<"["
                                            <<iActionIndex
@@ -959,7 +945,7 @@ int main(int argc, char * argv[])
                                            <<"]  bin size: "
                                            << binSize.count()
                                            <<std::endl;
-                                  
+
                                   std::cout<<"["
                                            <<iActionIndex
                                            <<"]  rx sensitivity: "
@@ -971,7 +957,7 @@ int main(int argc, char * argv[])
                                            <<"]  signal in noise: "
                                            << (bSignalInNoise ? "yes" : "no")
                                            <<std::endl;
-                                      
+
                                   for(const auto & entry : EMANE::Utils::spectrumCompress(bins))
                                     {
                                       std::cout<<"["
@@ -981,7 +967,7 @@ int main(int argc, char * argv[])
                                                <<":"
                                                <<entry.second<<std::endl;
                                     }
-                                 
+
 
                                   for(xmlNodePtr pMaxBinNoiseFloorNode = pActionNode->children;
                                       pMaxBinNoiseFloorNode;
@@ -1003,14 +989,14 @@ int main(int argc, char * argv[])
                                                        <<"]  Power (dBm): "
                                                        << powerdBm
                                                        <<std::endl;
-                                              
+
                                               xmlChar * pStartTime = xmlGetProp(pMaxBinNoiseFloorNode,BAD_CAST "starttime");
-                           
+
                                               if(pStartTime)
                                                 {
                                                   auto startTime =
                                                     EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pStartTime)).toUINT64()};
-                                                  
+
                                                   xmlFree(pStartTime);
 
                                                   std::cout<<"["
@@ -1021,20 +1007,20 @@ int main(int argc, char * argv[])
 
 
                                                   xmlChar * pEndTime = xmlGetProp(pMaxBinNoiseFloorNode,BAD_CAST "endtime");
-                                                  
+
                                                   if(pEndTime)
                                                     {
                                                       auto endTime =
                                                         EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pEndTime)).toUINT64()};
-                                                      
+
                                                       xmlFree(pEndTime);
-                                                      
+
                                                       std::cout<<"["
                                                                <<iActionIndex
                                                                <<"]  max bin noise floor end time: "
                                                                << endTime.count()
                                                                <<std::endl;
-                                                       
+
                                                       auto ret = EMANE::Utils::maxBinNoiseFloorRange(window,powerdBm,EMANE::TimePoint{startTime},EMANE::TimePoint{endTime});
 
                                                        std::cout<<"["
@@ -1089,7 +1075,7 @@ int main(int argc, char * argv[])
                                                            <<"]  signal in noise: "
                                                            << (ret.second ? "yes" : "no")
                                                            <<std::endl;
-                                                  
+
                                                 }
                                             }
                                         }
@@ -1106,10 +1092,10 @@ int main(int argc, char * argv[])
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "frequencyofinterest"))
                             {
                               xmlChar * pBandwidth = xmlGetProp(pActionNode,BAD_CAST "bandwidth");
-                           
-                              auto bandwidth = 
+
+                              auto bandwidth =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidth)).toUINT64();
-                           
+
                               xmlFree(pBandwidth);
 
                               EMANE::FrequencySet foi{};
@@ -1121,9 +1107,9 @@ int main(int argc, char * argv[])
                                       if(!xmlStrcmp(pChildNode->name,BAD_CAST "frequency"))
                                         {
                                           xmlChar * pFrequency = xmlGetProp(pChildNode,BAD_CAST "value");
-                                       
+
                                           foi.insert(EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64());
-                                       
+
                                           xmlFree(pFrequency);
                                         }
                                     }
@@ -1146,7 +1132,7 @@ int main(int argc, char * argv[])
                                            <<std::endl;
                                 }
 
-                              auto pFrequencyOfInterestControlMessage = 
+                              auto pFrequencyOfInterestControlMessage =
                                 EMANE::Controls::FrequencyOfInterestControlMessage::create(bandwidth,foi);
 
                               pPHYLayer->processDownstreamControl({pFrequencyOfInterestControlMessage});
@@ -1154,8 +1140,6 @@ int main(int argc, char * argv[])
                               std::cout<<std::endl;
 
                             }
-
-                          //XXX
                         }
                     }
                 }
@@ -1168,7 +1152,7 @@ int main(int argc, char * argv[])
       std::cout<<exp.what();
       return EXIT_FAILURE;
     }
-  
+
   return EXIT_SUCCESS;
 }
 
@@ -1187,27 +1171,27 @@ void usage()
 EMANE::FrameworkPHY * createPHY(EMANE::NEMId id, EMANE::SpectrumMonitor * pSpectrumMonitor)
 {
   EMANE::PlatformService * pPlatformService{new EMANE::PlatformService{}};
-  
+
   EMANE::FrameworkPHY * pPHYLayer{new EMANE::FrameworkPHY{id, pPlatformService,pSpectrumMonitor}};
-  
+
   EMANE::BuildId buildId{EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pPHYLayer,
                                                                                        EMANE::COMPONENT_PHYILAYER,
                                                                                        "")};
-  
+
   EMANE::ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                                 pPHYLayer);
-  
+
   pPlatformService->setPlatformServiceUser(buildId,pPHYLayer);
-   
+
   // register event service handler with event service
   EMANE::EventServiceSingleton::instance()->registerEventServiceUser(buildId,
                                                                      pPHYLayer,
                                                                      id);
-   
+
   EMANE::RegistrarProxy registrarProxy{buildId};
-   
+
   // initialize
   pPHYLayer->initialize(registrarProxy);
-   
+
   return pPHYLayer;
 }

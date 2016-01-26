@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link, LLC, Bridgewater New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link, LLC, Bridgewater New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,14 +34,10 @@
 #include "maclayer.h"
 #include "utils.h"
 
-#include <ace/OS_NS_time.h>
-
-
-
-EMANE::Models::IEEE80211ABG::WMMManager::WMMManager(NEMId id, 
-                                                    PlatformServiceProvider * pPlatformService, 
+EMANE::Models::IEEE80211ABG::WMMManager::WMMManager(NEMId id,
+                                                    PlatformServiceProvider * pPlatformService,
                                                     MACLayer *pMACLayer):
-  id_{id}, 
+  id_{id},
   pPlatformService_{pPlatformService},
   pMACLayler_{pMACLayer},
   u8NumCategories_{1}
@@ -49,7 +45,7 @@ EMANE::Models::IEEE80211ABG::WMMManager::WMMManager(NEMId id,
    totalUtilizationVector_.resize(u8NumCategories_);
    localUtilizationVector_.resize(u8NumCategories_);
 
-   // reset 
+   // reset
    resetCounters();
 }
 
@@ -71,9 +67,9 @@ EMANE::Models::IEEE80211ABG::WMMManager::updateTotalActivity(const std::uint8_t 
                              ERROR_LEVEL,
                              "MACI %03hu %s::%s: invalid category %hhu, max is %hhu, ignore",
                              id_,
-                             "WMMManager", 
-                             __func__, 
-                             u8Category, 
+                             "WMMManager",
+                             __func__,
+                             u8Category,
                              u8NumCategories_);
     }
    else
@@ -85,12 +81,12 @@ EMANE::Models::IEEE80211ABG::WMMManager::updateTotalActivity(const std::uint8_t 
       totalUtilizationMicroseconds_ += durationMicroseconds;
 
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
+                             DEBUG_LEVEL,
                              "MACI %03hu %s::%s: category %hhu, duration %lf",
-                             id_, 
-                             "WMMManager", 
+                             id_,
+                             "WMMManager",
                              __func__,
-                             u8Category, 
+                             u8Category,
                              std::chrono::duration_cast<DoubleSeconds>(durationMicroseconds).count());
     }
 }
@@ -104,11 +100,11 @@ EMANE::Models::IEEE80211ABG::WMMManager::updateLocalActivity(const std::uint8_t 
    if(u8Category > u8NumCategories_)
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             ERROR_LEVEL, 
+                             ERROR_LEVEL,
                              "MACI %03hu %s::%s: invalid category %hhu, max is %hhu, ignore",
                              id_,
-                             "WMMManager", 
-                             __func__, 
+                             "WMMManager",
+                             __func__,
                              u8Category,
                              u8NumCategories_);
     }
@@ -128,8 +124,8 @@ EMANE::Models::IEEE80211ABG::WMMManager::updateLocalActivity(const std::uint8_t 
                              "MACI %03hu %s::%s: category %hhu, duration %lf",
                               id_,
                               "WMMManager",
-                              __func__, 
-                              u8Category, 
+                              __func__,
+                              u8Category,
                               std::chrono::duration_cast<DoubleSeconds>(durationMicroseconds).count());
     }
 }
@@ -142,9 +138,9 @@ EMANE::Models::IEEE80211ABG::WMMManager::setNumCategories(const std::uint8_t u8N
    if(u8NumCategories_ != u8NumCategories)
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
-                             "MACI %03hu %s::%s: change num categories from %hhu to %hhu", 
-                             id_, 
+                             DEBUG_LEVEL,
+                             "MACI %03hu %s::%s: change num categories from %hhu to %hhu",
+                             id_,
                              "WMMManager",
                              __func__,
                              u8NumCategories_,
@@ -180,7 +176,7 @@ EMANE::Models::IEEE80211ABG::WMMManager::resetCounters()
 
 
 
-EMANE::Models::IEEE80211ABG::WMMManager::UtilizationRatioVector 
+EMANE::Models::IEEE80211ABG::WMMManager::UtilizationRatioVector
 EMANE::Models::IEEE80211ABG::WMMManager::getUtilizationRatios(const Microseconds & deltaTMicroseconds)
 {
   // initialize to <total = 0.0, local = 0.0>
@@ -192,7 +188,7 @@ EMANE::Models::IEEE80211ABG::WMMManager::getUtilizationRatios(const Microseconds
      // get activity ratio (used / interval)
      float fActivityRatio{getRatio(totalUtilizationMicroseconds_, deltaTMicroseconds)};
 
-     // clamp it 
+     // clamp it
      if(fActivityRatio > 1.0f)
       {
         fActivityRatio = 1.0f;
@@ -218,12 +214,12 @@ EMANE::Models::IEEE80211ABG::WMMManager::getUtilizationRatios(const Microseconds
         LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                DEBUG_LEVEL,
                                "MACI %03hu %s::%s: category %hhu, [total_bw %lf, ratio %f], "
-                               "usage [total %f, %3.2f%%]", 
+                               "usage [total %f, %3.2f%%]",
                                id_,
                                "WMMManager",
-                               __func__, 
-                               u8Category, 
-                               vec[u8Category].first, 
+                               __func__,
+                               u8Category,
+                               vec[u8Category].first,
                                vec[u8Category].second,
                                std::chrono::duration_cast<DoubleSeconds>(totalUtilizationMicroseconds_).count(),
                                fActivityRatio * 100.0f);

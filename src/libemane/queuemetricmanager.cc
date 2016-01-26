@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,9 +37,7 @@
 #include "emane/queuemetricmanager.h"
 #include "emane/constants.h"
 
-#include <ace/Guard_T.h>
-#include <ace/Thread_Mutex.h>
-
+#include <mutex>
 
 class EMANE::QueueMetricManager::Implementation
   {
@@ -58,10 +56,10 @@ class EMANE::QueueMetricManager::Implementation
                             std::uint32_t u32NumDiscards,
                             const EMANE::Microseconds & delayMicroseconds)
        {
-         ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+         std::lock_guard<std::mutex> m(mutex_);
 
          QueueData & rData = getQueueData_i(u16QueueId);
-    
+
          // bump num samples
          rData.u32NumSamples_ += 1;
 
@@ -94,7 +92,7 @@ class EMANE::QueueMetricManager::Implementation
 
     EMANE::Controls::R2RIQueueMetrics getQueueMetrics()
       {
-        ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+        std::lock_guard<std::mutex> m(mutex_);
 
         EMANE::Controls::R2RIQueueMetrics metrics;
 
@@ -110,7 +108,7 @@ class EMANE::QueueMetricManager::Implementation
                                                    iter.second.u32NumDiscardsHighWaterMark_, // num discards high water
                                                    avgDelayMicroseconds};                    // avg delay
 
-           metrics.push_back(metric); 
+           metrics.push_back(metric);
 
            // reset data
            iter.second.reset();
@@ -122,7 +120,7 @@ class EMANE::QueueMetricManager::Implementation
 
      bool addQueueMetric(std::uint16_t queueId, std::uint32_t u32MaxQueueSize)
       {
-        ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+        std::lock_guard<std::mutex> m(mutex_);
 
         return queueDataMap_.insert(std::make_pair(queueId, QueueData(u32MaxQueueSize))).second;
       }
@@ -130,7 +128,7 @@ class EMANE::QueueMetricManager::Implementation
 
     bool removeQueueMetric(std::uint16_t queueId)
       {
-        ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+        std::lock_guard<std::mutex> m(mutex_);
 
         auto iter = queueDataMap_.find(queueId);
 
@@ -190,7 +188,7 @@ class EMANE::QueueMetricManager::Implementation
 
      QueueDataMap queueDataMap_;
 
-     ACE_Thread_Mutex mutex_;
+     std::mutex mutex_;
 
 
      QueueData & getQueueData_i(std::uint16_t queueId)
@@ -243,7 +241,7 @@ EMANE::QueueMetricManager::getQueueMetrics()
 }
 
 
-void 
+void
 EMANE::QueueMetricManager::updateQueueMetric(std::uint16_t u16QueueId,
                                              std::uint32_t u32MaxQueueSize,
                                              std::uint32_t u32CurrentQueueDepth,
@@ -258,7 +256,7 @@ EMANE::QueueMetricManager::updateQueueMetric(std::uint16_t u16QueueId,
 }
 
 
-bool 
+bool
 EMANE::QueueMetricManager::addQueueMetric(std::uint16_t u16QueueId, std::uint32_t u32MaxQueueSize)
 {
   return pImpl_->addQueueMetric(u16QueueId, u32MaxQueueSize);
@@ -270,5 +268,3 @@ EMANE::QueueMetricManager::removeQueueMetric(std::uint16_t u16QueueId)
 {
   return pImpl_->removeQueueMetric(u16QueueId);
 }
-
-

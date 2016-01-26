@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,12 +35,10 @@
 #define EMANEUTILSPARAMETERCONVERT_HEADER_
 
 #include "emane/exception.h"
-
+#include "emane/inetaddr.h"
 #include <string>
 #include <cstdint>
 #include <limits>
-
-#include <ace/INET_Addr.h>
 
 namespace EMANE
 {
@@ -67,7 +65,7 @@ namespace EMANE
       public:
         ConversionException(const std::string & sDescription):
           Exception("ConvertionException",sDescription){}
-      
+
         ~ConversionException() throw(){}
       };
 
@@ -77,12 +75,12 @@ namespace EMANE
        * @param sParameter Value as a string
        */
       ParameterConvert(const std::string & sParameter);
-    
+
       /**
        * Destroys an instance
        */
       ~ParameterConvert();
-    
+
       /**
        * Convert parameter string to an std::int64_t
        *
@@ -111,7 +109,7 @@ namespace EMANE
       std::uint64_t toUINT64(std::uint64_t u64Min = std::numeric_limits<std::uint64_t>::min(),
                              std::uint64_t u64Max = std::numeric_limits<std::uint64_t>::max()) const;
 
-    
+
       /**
        * Convert parameter string to an std::int32_t
        *
@@ -153,7 +151,7 @@ namespace EMANE
        */
       std::int16_t toINT16(std::int16_t i16Min = std::numeric_limits<std::int16_t>::min(),
                            std::int16_t i16Max = std::numeric_limits<std::int16_t>::max()) const;
-    
+
       /**
        * Convert parameter string to an std::uint16_t
        *
@@ -225,14 +223,14 @@ namespace EMANE
                       double dMax = std::numeric_limits<double>::max()) const;
 
       /**
-       * Convert parameter string to an ACE_INET_Addr
+       * Convert parameter string to an INETAddr
        *
-       * @return ACE_INET_Addr value
+       * @return INETAddr value
        *
        * @exception ConversionException Thrown when an error is encountered during
        * conversion either to input format or out of range value.
        */
-      ACE_INET_Addr toINETAddr() const;
+      INETAddr toINETAddr() const;
 
       /**
        * Convert parameter string to an bool

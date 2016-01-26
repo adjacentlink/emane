@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,8 +34,6 @@
 #include "ethernettransport.h"
 #include "emane/componenttypes.h"
 
-#include <ace/Guard_T.h>
-
 
 EMANE::Transports::Ethernet::EthernetTransport::EthernetTransport(NEMId id,
                                                                   PlatformServiceProvider *pPlatformService):
@@ -55,11 +53,11 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
    if(len < Utils::ETH_HEADER_LEN)
      {
         LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                ERROR_LEVEL, 
-                               "TRANSPORTI %03d EthernetTransport::%s len %zd < min eth header len %d", 
-                                id_, 
-                                __func__, 
-                                len, 
+                                ERROR_LEVEL,
+                               "TRANSPORTI %03d EthernetTransport::%s len %zd < min eth header len %d",
+                                id_,
+                                __func__,
+                                len,
                                 Utils::ETH_HEADER_LEN);
 
         // error
@@ -71,7 +69,7 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
        const Utils::EtherHeader *pEthHeader = (Utils::EtherHeader *) buf;
 
        // eth protocol
-       const ACE_UINT16 u16ethProtocol = Utils::get_protocol(pEthHeader);
+       const std::uint16_t u16ethProtocol = Utils::get_protocol(pEthHeader);
 
        // reduce length by eth hdr len
        len -= Utils::ETH_HEADER_LEN;
@@ -79,17 +77,17 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
        switch(u16ethProtocol)
         {
           // eth ipv4
-          case Utils::ETH_P_IPV4: 
+          case Utils::ETH_P_IPV4:
           {
             // check min len
             if(len < Utils::IPV4_HEADER_LEN)
              {
                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                       ERROR_LEVEL, 
-                                       "TRANSPORTI %03d EthernetTransport::%s ipv4, len %zu < min len %d", 
-                                       id_, 
-                                       __func__, 
-                                       len, 
+                                       ERROR_LEVEL,
+                                       "TRANSPORTI %03d EthernetTransport::%s ipv4, len %zu < min len %d",
+                                       id_,
+                                       __func__,
+                                       len,
                                        Utils::IPV4_HEADER_LEN);
 
                // error
@@ -100,43 +98,43 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
                // success
                return 0;
              }
-          } 
+          }
 
          // eth ipv6
-         case Utils::ETH_P_IPV6: 
+         case Utils::ETH_P_IPV6:
           {
             // check min len
             if(len < Utils::IPV6_HEADER_LEN)
              {
                 LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                        ERROR_LEVEL, 
-                                        "TRANSPORTI %03d EthernetTransport::%s ipv6, len %zu < min len %d", 
-                                        id_, 
-                                        __func__, 
-                                        len, 
+                                        ERROR_LEVEL,
+                                        "TRANSPORTI %03d EthernetTransport::%s ipv6, len %zu < min len %d",
+                                        id_,
+                                        __func__,
+                                        len,
                                         Utils::IPV6_HEADER_LEN);
 
                 // error
                 return -1;
              }
            else
-             { 
+             {
                // success
                return 0;
              }
           }
 
          // eth arp
-         case Utils::ETH_P_ARP: 
+         case Utils::ETH_P_ARP:
           {
             // check min len
             if(len < Utils::ETHARP_HEADER_LEN)
              {
                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                       ERROR_LEVEL, "TRANSPORTI %03d EthernetTransport::%s arp, len %zu < len %d", 
-                                       id_, 
-                                       __func__, 
-                                       len, 
+                                       ERROR_LEVEL, "TRANSPORTI %03d EthernetTransport::%s arp, len %zu < len %d",
+                                       id_,
+                                       __func__,
+                                       len,
                                        Utils::ETHARP_HEADER_LEN);
 
                // error
@@ -152,9 +150,9 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
         // unknown protocol
         default:
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                 DEBUG_LEVEL, "TRANSPORTI %03d EthernetTransport::%s allow unknown protocol %02X", 
-                                 id_, 
-                                 __func__, 
+                                 DEBUG_LEVEL, "TRANSPORTI %03d EthernetTransport::%s allow unknown protocol %02X",
+                                 id_,
+                                 __func__,
                                  u16ethProtocol);
 
           // but not an error
@@ -167,21 +165,21 @@ int EMANE::Transports::Ethernet::EthernetTransport::verifyFrame(const void * buf
 
 int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::EtherHeader *pEthHeader,
                                                                NEMId & rNemDestination,
-                                                               ACE_UINT8 & rDspc)
+                                                               std::uint8_t & rDspc)
 {
    // eth protocol
-   const ACE_UINT16 u16ethProtocol = Utils::get_protocol(pEthHeader);
+  const std::uint16_t u16ethProtocol = Utils::get_protocol(pEthHeader);
 
    switch(u16ethProtocol)
    {
      // eth ipv4
-     case Utils::ETH_P_IPV4: 
+     case Utils::ETH_P_IPV4:
        {
          // ipv4 header
          const Utils::Ip4Header *pIpHeader = (Utils::Ip4Header*) ((Utils::EtherHeader*) pEthHeader + 1);
 
          // broadcast always mode
-         if(bBroadcastMode_) 
+         if(bBroadcastMode_)
            {
              rNemDestination = NEM_BROADCAST_MAC_ADDRESS;
            }
@@ -201,16 +199,16 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
 
          // success
          return 0;
-       } 
+       }
 
      // eth ipv6
-     case Utils::ETH_P_IPV6: 
+     case Utils::ETH_P_IPV6:
        {
          // ipv6 header
          const Utils::Ip6Header *pIpHeader = (Utils::Ip6Header*) ((Utils::EtherHeader*) pEthHeader + 1);
 
          // broadcast always mode
-         if(bBroadcastMode_) 
+         if(bBroadcastMode_)
            {
              rNemDestination = NEM_BROADCAST_MAC_ADDRESS;
            }
@@ -233,10 +231,10 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
        }
 
      // eth arp
-     case Utils::ETH_P_ARP: 
+     case Utils::ETH_P_ARP:
        {
          // broadcast always mode
-         if(bBroadcastMode_) 
+         if(bBroadcastMode_)
            {
              rNemDestination = NEM_BROADCAST_MAC_ADDRESS;
            }
@@ -246,7 +244,7 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
              rNemDestination = lookupArpCache(&pEthHeader->dst);
            }
          // use ether dst
-         else 
+         else
            {
              rNemDestination = Utils::ethaddr4_to_id(&pEthHeader->dst);
            }
@@ -261,10 +259,10 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
      // unknown protocol
      default:
        LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                              DEBUG_LEVEL, 
-                              "TRANSPORTI %03d EthernetTransport::%s allow unknown protocol %02X", 
+                              DEBUG_LEVEL,
+                              "TRANSPORTI %03d EthernetTransport::%s allow unknown protocol %02X",
                               id_,
-                              __func__, 
+                              __func__,
                               u16ethProtocol);
 
        // broadcast always mode
@@ -280,7 +278,7 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
        // use the last 2 bytes of the ethernet destination
        else
          {
-           rNemDestination = ACE_NTOHS(pEthHeader->dst.words.word3);
+           rNemDestination = ntohs(pEthHeader->dst.words.word3);
          }
 
        // set dscp to 0
@@ -309,19 +307,19 @@ void EMANE::Transports::Ethernet::EthernetTransport::updateArpCache(const Utils:
     {
 
       // eth protocol
-      const ACE_UINT16 u16ethProtocol = Utils::get_protocol(pEthHeader);
+      const std::uint16_t u16ethProtocol = Utils::get_protocol(pEthHeader);
 
       switch(u16ethProtocol)
       {
         // eth arp
-        case Utils::ETH_P_ARP: 
+        case Utils::ETH_P_ARP:
           {
             const Utils::EtherArpHeader *pEtherArpHeader = (Utils::EtherArpHeader*) ((Utils::EtherHeader*) pEthHeader + 1);
 
-            const ACE_UINT16 u16code = Utils::get_code(pEtherArpHeader);
+            const std::uint16_t u16code = Utils::get_code(pEtherArpHeader);
 
             // arp type reply or request
-            if((u16code == Utils::ETH_ARPOP_REPLY) || (u16code == Utils::ETH_ARPOP_REQUEST)) 
+            if((u16code == Utils::ETH_ARPOP_REPLY) || (u16code == Utils::ETH_ARPOP_REQUEST))
              {
                addEntry(*Utils::get_srchwaddr(pEtherArpHeader), nemId);
              }
@@ -331,16 +329,16 @@ void EMANE::Transports::Ethernet::EthernetTransport::updateArpCache(const Utils:
         case Utils::ETH_P_IPV6:
           {
             const Utils::Ip6Header *pIp6Header = (Utils::Ip6Header*) ((Utils::EtherHeader*) pEthHeader + 1);
-            
-            // check for icmpv6 
-            if (pIp6Header->u8Ipv6next == Utils::IPV6_P_ICMP) 
+
+            // check for icmpv6
+            if (pIp6Header->u8Ipv6next == Utils::IPV6_P_ICMP)
              {
                const Utils::IP6ICMPHeader *pICMP6Header = (Utils::IP6ICMPHeader*) ((Utils::Ip6Header*) pIp6Header + 1);
-              
-               const ACE_UINT8 icmpv6Type = pICMP6Header->u8Type;
-              
+
+               const std::uint8_t icmpv6Type = pICMP6Header->u8Type;
+
                // icmpv6 neighbor solicitation or advertisement
-               if ((icmpv6Type == Utils::IP6_ICMP_NEIGH_SOLICIT) || (icmpv6Type == Utils::IP6_ICMP_NEIGH_ADVERT)) 
+               if ((icmpv6Type == Utils::IP6_ICMP_NEIGH_SOLICIT) || (icmpv6Type == Utils::IP6_ICMP_NEIGH_ADVERT))
                 {
                   addEntry(pEthHeader->src, nemId);
                 }
@@ -351,23 +349,23 @@ void EMANE::Transports::Ethernet::EthernetTransport::updateArpCache(const Utils:
    }
 }
 
-void EMANE::Transports::Ethernet::EthernetTransport::addEntry(const Utils::EtherAddr& addr, NEMId nemId) 
+void EMANE::Transports::Ethernet::EthernetTransport::addEntry(const Utils::EtherAddr& addr, NEMId nemId)
 {
   // lock mutex
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
   const auto iter = macCache_.find(addr);
-  
+
   // new entry
   if(iter == macCache_.end())
     {
       macCache_.insert(std::make_pair(addr, nemId));
-      
+
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
+                             DEBUG_LEVEL,
                              "TRANSPORTI %03d ARPCache::%s added cache entry %s to nem %hu",
-                             id_, 
-                             __func__, 
+                             id_,
+                             __func__,
                              ethaddr_to_string(&addr).c_str(), nemId);
     }
   else
@@ -376,11 +374,11 @@ void EMANE::Transports::Ethernet::EthernetTransport::addEntry(const Utils::Ether
       if(iter->second != nemId)
        {
          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                DEBUG_LEVEL, 
+                                DEBUG_LEVEL,
                                 "TRANSPORTI %03d ARPCache::%s updated cache entry %s from nem %hu to nem %hu",
-                                id_, 
-                                __func__, 
-                                ethaddr_to_string(&addr).c_str(), 
+                                id_,
+                                __func__,
+                                ethaddr_to_string(&addr).c_str(),
                                 iter->second, nemId);
          // updated nem id
          iter->second = nemId;
@@ -392,7 +390,7 @@ void EMANE::Transports::Ethernet::EthernetTransport::addEntry(const Utils::Ether
 EMANE::NEMId EMANE::Transports::Ethernet::EthernetTransport::lookupArpCache(const Utils::EtherAddr *pEtherAddr)
 {
    // lock mutex
-   ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
    const auto iter = macCache_.find(*pEtherAddr);
 
@@ -400,10 +398,10 @@ EMANE::NEMId EMANE::Transports::Ethernet::EthernetTransport::lookupArpCache(cons
    if(iter == macCache_.end())
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
-                             "TRANSPORTI %03d EthernetTransport::%s no nem found for %s, using broadcast mac address", 
-                             id_, 
-                             __func__, 
+                             DEBUG_LEVEL,
+                             "TRANSPORTI %03d EthernetTransport::%s no nem found for %s, using broadcast mac address",
+                             id_,
+                             __func__,
                              Utils::ethaddr_to_string(pEtherAddr).c_str());
 
       return NEM_BROADCAST_MAC_ADDRESS;
@@ -411,12 +409,12 @@ EMANE::NEMId EMANE::Transports::Ethernet::EthernetTransport::lookupArpCache(cons
    else
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
-                             "TRANSPORTI %03d EthernetTransport::%s nem %hu found for %s, using %hu", 
-                             id_, 
-                             __func__, 
-                             iter->second, 
-                             Utils::ethaddr_to_string(pEtherAddr).c_str(), 
+                             DEBUG_LEVEL,
+                             "TRANSPORTI %03d EthernetTransport::%s nem %hu found for %s, using %hu",
+                             id_,
+                             __func__,
+                             iter->second,
+                             Utils::ethaddr_to_string(pEtherAddr).c_str(),
                              iter->second);
 
       return iter->second;
