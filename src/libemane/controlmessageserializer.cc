@@ -88,7 +88,7 @@ EMANE::ControlMessages EMANE::ControlMessageSerializer::create(const void * pDat
         reinterpret_cast<const ControlMessageSerializerHeader *>(pData);
 
       std::uint16_t u16ControlMessageCount =
-        std::uint16_t(pControlMessageSerializerHeader->u16Count_);
+        ntohs(pControlMessageSerializerHeader->u16Count_);
 
       length -= sizeof(ControlMessageSerializerHeader);
 
