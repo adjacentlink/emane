@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,43 +39,38 @@
 #include "eventservice.h"
 #include "otaheader.pb.h"
 #include "event.pb.h"
+#include "socketexception.h"
+
 #include "emane/net.h"
-
-#include "emane/utils/spawnmemberfunc.h"
-#include "emane/utils/recvcancelable.h"
-
+#include "emane/utils/threadutils.h"
 #include "emane/controls/otatransmittercontrolmessage.h"
 #include "emane/controls/serializedcontrolmessage.h"
 
 #include <sstream>
-
-#include <ace/Guard_T.h>
-#include <ace/OS_NS_string.h>
+#include <algorithm>
 
 EMANE::OTAManager::OTAManager():
-  thread_(0),
-  mcast_(ACE_SOCK_Dgram_Mcast::OPT_BINDADDR_NO),
   bOpen_(false),
   u64SequenceNumber_{}
 {
   uuid_clear(uuid_);
 }
-    
+
 EMANE::OTAManager::~OTAManager()
 {
   if(bOpen_)
     {
-      ACE_OS::thr_cancel(thread_);
+      ThreadUtils::cancel(thread_);
 
-      ACE_OS::thr_join(thread_,0,0);
+      thread_.join();
     }
 }
-    
+
 void EMANE::OTAManager::sendOTAPacket(NEMId id,
                                       DownstreamPacket & pkt,
                                       const ControlMessages & msgs) const
 {
-  // get the pkt info 
+  // get the pkt info
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
   // set of optional additional transmitters (AT)
@@ -96,21 +91,21 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
           std::tie(targetNEMId,
                    eventId,
                    serialization) = entry;
-      
+
           // process any local event
           EventServiceSingleton::instance()->processEventMessage(targetNEMId,
                                                                  eventId,
                                                                  serialization,
                                                                  id);
-          
+
           if(bOpen_)
             {
               auto pSerialization = data.add_serializations();
-              
+
               pSerialization->set_nemid(targetNEMId);
-              
+
               pSerialization->set_eventid(eventId);
-              
+
               pSerialization->set_data(serialization);
             }
         }
@@ -163,7 +158,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
   if(bOpen_)
     {
       std::string sEventSerialization{};
-          
+
       if(!eventSerializations.empty())
         {
           if(!data.SerializeToString(&sEventSerialization))
@@ -181,7 +176,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
       // create an ota message to carry the packet_info, and variable ctrl data len only
       // total message length with data payload is defined below
       EMANEMessage::OTAHeader otaheader;
-      
+
       otaheader.set_source(pktInfo.getSource());
       otaheader.set_destination(pktInfo.getDestination());
       otaheader.set_datalength(pkt.length());
@@ -189,7 +184,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
       otaheader.set_eventlength(sEventSerialization.size());
       otaheader.set_sequencenumber(++u64SequenceNumber_);
       otaheader.set_uuid(reinterpret_cast<const char *>(uuid_),sizeof(uuid_));
-      
+
       std::string sOTAHeader{};
 
       if(otaheader.SerializeToString(&sOTAHeader))
@@ -198,16 +193,16 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
 
           Utils::VectorIO vectorIO{{reinterpret_cast<char *>(&u16HeaderLength),sizeof(u16HeaderLength)},
               {const_cast<char *>(sOTAHeader.c_str()),sOTAHeader.size()}};
-          
+
           if(!sEventSerialization.empty())
             {
               vectorIO.push_back({const_cast<char *>(sEventSerialization.c_str()),sEventSerialization.size()});
             }
 
           const auto  & controlMessageIO = controlMessageSerializer.getVectorIO();
-          
+
           vectorIO.insert(vectorIO.end(),controlMessageIO.begin(),controlMessageIO.end());
-          
+
           const auto & packetIO = pkt.getVectorIO();
 
           vectorIO.insert(vectorIO.end(),packetIO.begin(),packetIO.end());
@@ -221,9 +216,9 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
                                       controlMessageSerializer.getLength(),
                                       pkt.length(),
                                       pktInfo.getSource(),
-                                      pktInfo.getDestination(), 
-                                      ACE_OS::strerror(errno));
-              
+                                      pktInfo.getDestination(),
+                                      strerror(errno));
+
             }
 
         }
@@ -240,11 +235,11 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
   // clean up control messages
   std::for_each(msgs.begin(),msgs.end(),[](const ControlMessage * p){delete p;});
 }
-    
+
 void EMANE::OTAManager::registerOTAUser(NEMId id, OTAUser * pOTAUser)
 {
   std::pair<NEMUserMap::iterator, bool> ret;
-  
+
   if(nemUserMap_.insert(std::make_pair(id,pOTAUser)).second == false)
     {
       std::stringstream ssDescription;
@@ -263,27 +258,26 @@ void EMANE::OTAManager::unregisterOTAUser(NEMId id)
     }
 }
 
-void EMANE::OTAManager::open(const ACE_INET_Addr & otaGroupAddress,
-                             const ACE_TCHAR* otaManagerDevice,
+void EMANE::OTAManager::open(const INETAddr & otaGroupAddress,
+                             const std::string & otaManagerDevice,
                              bool bLoopback,
                              int iTTL,
                              const uuid_t & uuid)
 {
   otaGroupAddress_ = otaGroupAddress;
-  ACE_hthread_t threadHandle;
-  int priority = 0;
-  int policy = 0;
 
   uuid_copy(uuid_,uuid);
-    
-  if(mcast_.open(otaGroupAddress,otaManagerDevice) == -1)
+
+  try
+    {
+      mcast_.open(otaGroupAddress,true,otaManagerDevice,iTTL,bLoopback);
+    }
+  catch(SocketException & exp)
     {
       std::stringstream sstream;
-          
+
       sstream<<"Platform OTA Manager: Unable to open OTA Manager socket: '"
-             <<otaGroupAddress.get_host_addr()
-             <<":"
-             <<otaGroupAddress.get_port_number()
+             <<otaGroupAddress.str()
              <<"'."
              <<std::endl
              <<std::endl
@@ -297,99 +291,25 @@ void EMANE::OTAManager::open(const ACE_INET_Addr & otaGroupAddress,
              <<otaManagerDevice
              <<" does not exist or is not up."
              <<std::endl
+             <<exp.what()
              <<std::ends;
-      
-      throw OTAException(sstream.str());
-    }
-  
-  if(mcast_.join(otaGroupAddress,1,otaManagerDevice) == -1)
-    {
-      std::stringstream sstream;
-      
-      sstream<<"Platform OTA Manager: Unable to join OTA Manager group: '"
-             <<otaGroupAddress.get_host_addr()
-             <<":"
-             <<otaGroupAddress.get_port_number()
-             <<"'."
-             <<std::endl
-             <<std::endl
-             <<"Possible reason(s):"
-             <<std::endl
-             <<" * "
-             <<otaGroupAddress.get_host_addr()
-             <<" is not a multicast address."
-             <<std::endl
-             <<std::ends;
-      
+
       throw OTAException(sstream.str());
     }
 
-  if(otaGroupAddress.get_type() == AF_INET)
+  thread_ = std::thread{&EMANE::OTAManager::processOTAMessage,this};
+
+  if(ThreadUtils::elevate(thread_))
     {
-      if(bLoopback == false)
-        {
-          if(mcast_.set_option(IP_MULTICAST_LOOP,0) == -1)
-            {
-              throw makeException<OTAException>("Unable to set OTA Manager group IP_MULTICAST_LOOP off errno: %s",
-                                                ACE_OS::strerror(errno));
-            }
-        }
-      if(mcast_.set_option(IP_MULTICAST_TTL,iTTL) == -1)
-        {
-          std::stringstream ssDescription;
-          ssDescription
-            <<"unable to set OTA Manager group IP_MULTICAST_TTL"
-            <<std::ends;
-          throw OTAException(ssDescription.str()); 
-        }
-    }
-  else if(otaGroupAddress.get_type() == AF_INET6)
-    {
-      if(bLoopback == false)
-        {
-          int loop = 0;
-          
-          if(mcast_.ACE_SOCK::set_option(IPPROTO_IPV6,IPV6_MULTICAST_LOOP,&loop,sizeof(loop)) == -1)
-            {
-              std::stringstream ssDescription;
-              ssDescription<<"unable to unset OTA Manager group IPV6_MULTICAST_LOOP errno " << ACE_OS::strerror (errno) << std::ends;
-              throw OTAException(ssDescription.str()); 
-            }
-        }
-      
-      if(mcast_.ACE_SOCK::set_option(IPPROTO_IPV6,IPV6_MULTICAST_HOPS,
-                                     &iTTL,
-                                     sizeof(iTTL)) == -1)
-        {
-            std::stringstream ssDescription;
-            ssDescription
-              <<"unable to set  OTA Manager group IPV6_MULTICAST_HOPS"
-              <<std::ends;
-            throw OTAException(ssDescription.str()); 
-        }
-    }
-  
-  
-  Utils::spawn(*this,&EMANE::OTAManager::processOTAMessage,&thread_,&threadHandle);
-
-  ACE_OS::thr_getprio(threadHandle,priority,policy);
-
-  if(policy == ACE_SCHED_RR)
-    { 
-      int retval = ACE_OS::thr_setprio(threadHandle,priority + 1,ACE_SCHED_RR);
-
-      if(retval != 0)
-        {
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,"OTAManager::open: Unable to set Real Time Priority");
-        }
+      LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                              ERROR_LEVEL,"OTAManager::open: Unable to set Real Time Priority");
     }
 
   bOpen_ = true;
 }
 
 
-ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
+void EMANE::OTAManager::processOTAMessage()
 {
   unsigned char buf[65536];
 
@@ -397,28 +317,28 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
 
   while(1)
     {
-      if((len = Utils::recvCancelable(mcast_, buf, sizeof(buf), addr_)) > 0)
+      if((len = mcast_.recv(buf,sizeof(buf),0)) > 0)
         {
           auto now =  Clock::now();
-          
+
           // ota message len sanity check
           if(static_cast<size_t>(len) >= sizeof(std::uint16_t))
             {
               std::uint16_t * pu16OTAHeaderLength{reinterpret_cast<std::uint16_t *>(buf)};
 
               *pu16OTAHeaderLength = NTOHS(*pu16OTAHeaderLength);
-              
+
               len -= sizeof(std::uint16_t);
 
               EMANEMessage::OTAHeader otaHeader;
 
-              if(static_cast<size_t>(len) >= *pu16OTAHeaderLength && 
+              if(static_cast<size_t>(len) >= *pu16OTAHeaderLength &&
                  otaHeader.ParseFromArray(&buf[2], *pu16OTAHeaderLength))
                 {
-                  if(static_cast<size_t>(len) == 
-                     otaHeader.datalength() + 
-                     otaHeader.controllength() + 
-                     otaHeader.eventlength() + 
+                  if(static_cast<size_t>(len) ==
+                     otaHeader.datalength() +
+                     otaHeader.controllength() +
+                     otaHeader.eventlength() +
                      *pu16OTAHeaderLength)
                     {
                       std::uint16_t u16EventIndex = 2 + *pu16OTAHeaderLength;
@@ -430,13 +350,13 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                           if(otaHeader.eventlength())
                             {
                               EMANEMessage::Event::Data data;
-                              
+
                               if(data.ParseFromArray(&buf[u16EventIndex],otaHeader.eventlength()))
                                 {
-                                  using RepeatedPtrFieldSerilaization = 
+                                  using RepeatedPtrFieldSerilaization =
                                     google::protobuf::RepeatedPtrField<EMANEMessage::Event::Data::Serialization>;
-                                  
-                                  for(const auto & repeatedSerialization : 
+
+                                  for(const auto & repeatedSerialization :
                                         RepeatedPtrFieldSerilaization(data.serializations()))
                                     {
                                       EventServiceSingleton::instance()->processEventMessage(repeatedSerialization.nemid(),
@@ -450,8 +370,8 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                                                           ERROR_LEVEL,"OTAManager message events could not be deserialized");
                                 }
                             }
-                          
-                          // create packet info from the ota data message 
+
+                          // create packet info from the ota data message
                           PacketInfo pktInfo(otaHeader.source(),
                                              otaHeader.destination(),
                                              0,
@@ -460,14 +380,14 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
 
                           UpstreamPacket pkt(pktInfo,&buf[u16PacketIndex],otaHeader.datalength());
 
-                          Controls::OTATransmitters otaTransmitters; 
-                          
+                          Controls::OTATransmitters otaTransmitters;
+
                           if(otaHeader.controllength())
                             {
-                              ControlMessages msgs = 
+                              ControlMessages msgs =
                                 ControlMessageSerializer::create(&buf[u16ControlIndex],
                                                                  otaHeader.controllength());
-                      
+
                               for(ControlMessages::const_iterator iter = msgs.begin(),end = msgs.end();
                                   iter != end;
                                   ++iter)
@@ -476,17 +396,17 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                                     {
                                       auto pSerializedControlMessage =
                                         static_cast<const Controls::SerializedControlMessage *>(*iter);
-                                      
+
                                       if(pSerializedControlMessage->getSerializedId() ==
                                          Controls::OTATransmitterControlMessage::IDENTIFIER)
                                         {
-                                          std::unique_ptr<Controls::OTATransmitterControlMessage> 
+                                          std::unique_ptr<Controls::OTATransmitterControlMessage>
                                             pOTATransmitterControlMessage(Controls::OTATransmitterControlMessage::
                                                                           create(pSerializedControlMessage->getSerialization()));
-                                          
+
                                           otaTransmitters = pOTATransmitterControlMessage->getOTATransmitters();
                                         }
-                                      
+
                                     }
 
                                   // delete all control messages
@@ -494,7 +414,7 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                                 }
                             }
 
-                          
+
                           // for each local NEM stack
                           for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
                               iter != end; ++iter)
@@ -518,7 +438,7 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
                                               *pu16OTAHeaderLength,
                                               otaHeader.datalength(),
                                               otaHeader.controllength(),
-                                              otaHeader.eventlength()); 
+                                              otaHeader.eventlength());
                     }
                 }
               else
@@ -540,6 +460,4 @@ ACE_THR_FUNC_RETURN EMANE::OTAManager::processOTAMessage()
           break;
         }
     }
-
-  return 0;
 }

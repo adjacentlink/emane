@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,36 +34,41 @@
 #include "boundarymessagemanager.h"
 #include "boundarymessagemanagerexception.h"
 #include "logservice.h"
-#include "emane/utils/spawnmemberfunc.h"
-#include "emane/utils/recvcancelable.h"
-#include "emane/controls/serializedcontrolmessage.h"
-#include "emane/upstreampacket.h"
 #include "controlmessageserializer.h"
 #include "netadaptermessage.h"
 
+#include "emane/utils/threadutils.h"
+#include "emane/controls/serializedcontrolmessage.h"
+#include "emane/upstreampacket.h"
+
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
+#include <cstring>
 
 EMANE::BoundaryMessageManager::BoundaryMessageManager(NEMId id):
   id_{id},
-  thread_{},
   bOpen_{}{}
 
 EMANE::BoundaryMessageManager::~BoundaryMessageManager()
 {
-   if(thread_)
+  if(thread_.joinable())
      {
        close();
      }
 }
 
-void EMANE::BoundaryMessageManager::open(const ACE_INET_Addr & localAddress,
-                                         const ACE_INET_Addr & remoteAddress)
+void EMANE::BoundaryMessageManager::open(const INETAddr & localAddress,
+                                         const INETAddr & remoteAddress)
 {
   localAddress_   = localAddress;
   remoteAddress_  = remoteAddress;
-  
-  if(udp_.open(localAddress_,ACE_PROTOCOL_FAMILY_INET,0,1) == -1)
+
+  try
+    {
+      udp_.open(localAddress_,true);
+    }
+  catch(...)
     {
       std::stringstream sstream;
 
@@ -71,16 +77,14 @@ void EMANE::BoundaryMessageManager::open(const ACE_INET_Addr & localAddress,
              <<std::setfill('0')
              <<id_
              <<": Unable to open receive socket to transport: '"
-             <<localAddress_.get_host_name()
-             <<":"
-             <<localAddress_.get_port_number()
+             <<localAddress_.str()
              <<"'."
              <<std::endl
              <<std::endl
              <<"Possible reason(s):"
              <<std::endl
              <<" * "
-             <<localAddress_.get_host_name()
+             <<localAddress_.str()
              <<" is not this host."
              <<std::endl
              <<std::ends;
@@ -88,22 +92,20 @@ void EMANE::BoundaryMessageManager::open(const ACE_INET_Addr & localAddress,
       throw BoundaryMessageManagerException(sstream.str());
     }
 
-  Utils::spawn(*this,& EMANE::BoundaryMessageManager::processNetworkMessage,&thread_);
+  thread_ = std::thread{&BoundaryMessageManager::processNetworkMessage,this};
 
   bOpen_ = true;
 }
 
 void EMANE::BoundaryMessageManager::close()
 {
-  if(thread_)
+  if(thread_.joinable())
     {
-      ACE_OS::thr_cancel(thread_);
+      ThreadUtils::cancel(thread_);
 
-      ACE_OS::thr_join(thread_,0,0);
-
-      thread_ = 0;
+      thread_.join();
     }
-  
+
   udp_.close();
 
   bOpen_ = false;
@@ -120,14 +122,14 @@ void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetI
                            msgs);
 }
 
-    
+
 void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetInfo,
                                                       const Utils::VectorIO & packetIO,
                                                       size_t packetDataLength,
                                                       const ControlMessages & msgs)
 {
   ssize_t len = 0;
-  
+
   ControlMessageSerializer controlMessageSerializer(msgs);
 
   NetAdapterDataMessage dataMessage;
@@ -138,35 +140,35 @@ void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetI
   dataMessage.u8Priority_ = packetInfo.getPriority();
   dataMessage.u16DataLen_ = packetDataLength;
   dataMessage.u16CtrlLen_ = controlMessageSerializer.getLength();
-  
+
   NetAdapterDataMessageToNet(&dataMessage);
 
   NetAdapterHeader header;
   memset(&header,0,sizeof(header));
   header.u16Id_ = NETADAPTER_DATA_MSG;
-  header.u16Length_ = 
-    sizeof(header) + 
-    sizeof(dataMessage) + 
-    packetDataLength + 
+  header.u16Length_ =
+    sizeof(header) +
+    sizeof(dataMessage) +
+    packetDataLength +
     controlMessageSerializer.getLength();
 
   NetAdapterHeaderToNet(&header);
-  
+
   const Utils::VectorIO & controlVectorIO =
     controlMessageSerializer.getVectorIO();
-      
+
   Utils::VectorIO vectorIO;
   vectorIO.push_back({&header,sizeof(header)});
   vectorIO.push_back({&dataMessage,sizeof(dataMessage)});
-  
+
   vectorIO.insert(vectorIO.end(),
                   packetIO.begin(),
                   packetIO.end());
-  
+
   vectorIO.insert(vectorIO.end(),
                   controlVectorIO.begin(),
                   controlVectorIO.end());
-  
+
   if((len = udp_.send(&vectorIO[0],
                       static_cast<int>(vectorIO.size()),
                       remoteAddress_)) == -1)
@@ -174,14 +176,14 @@ void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetI
       LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                               ERROR_LEVEL,"NEM %03d BoundaryMessageManager error "
                               "on message send (expected:%zu actual:%zd)",
-                              id_, 
+                              id_,
                               packetDataLength,
                               len);
     }
 
   std::for_each(msgs.begin(),msgs.end(),[](const ControlMessage * p){delete p;});
 }
-      
+
 void EMANE::BoundaryMessageManager::sendControlMessage(const ControlMessages & msgs)
 {
   ssize_t len = 0;
@@ -197,19 +199,19 @@ void EMANE::BoundaryMessageManager::sendControlMessage(const ControlMessages & m
   NetAdapterHeaderToNet(&header);
 
   NetAdapterControlMessage controlMessage;
-    
+
   memset(&controlMessage,0,sizeof(NetAdapterControlMessage));
   controlMessage.u16CtrlLen_ = controlMessageSerializer.getLength();
 
   NetAdapterControlMessageToNet(&controlMessage);
-  
+
   Utils::VectorIO vectorIO;
   vectorIO.push_back({&header,sizeof(header)});
   vectorIO.push_back({&controlMessage,sizeof(controlMessage)});
 
   const Utils::VectorIO & controlMessageVectorIO =
     controlMessageSerializer.getVectorIO();
-  
+
   vectorIO.insert(vectorIO.end(),
                              controlMessageVectorIO.begin(),
                              controlMessageVectorIO.end());
@@ -221,7 +223,7 @@ void EMANE::BoundaryMessageManager::sendControlMessage(const ControlMessages & m
       LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                               ERROR_LEVEL,"NEM %03d BoundaryMessageManager "
                               "error on control message send (expected:%hu actual:%zu)",
-                               id_, 
+                               id_,
                                header.u16Length_,
                                len);
     }
@@ -229,7 +231,7 @@ void EMANE::BoundaryMessageManager::sendControlMessage(const ControlMessages & m
   std::for_each(msgs.begin(),msgs.end(),[](const ControlMessage * p){delete p;});
 }
 
-ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
+void EMANE::BoundaryMessageManager::processNetworkMessage()
 {
   unsigned char buf[65536];
   ssize_t len = 0;
@@ -239,14 +241,14 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                           DEBUG_LEVEL,
                           "NEM %03d BoundaryMessageManager::processNetworkMessage",
                           id_);
-  
+
   while(1)
     {
       dstNemId = 0;
-      
+
       memset(&buf,0,sizeof(buf));
-      
-      if((len = Utils::recvCancelable(udp_,buf,sizeof(buf),addr_)) > 0)
+
+      if((len = udp_.recv(buf,sizeof(buf),0)) > 0)
         {
           LOGGER_VERBOSE_LOGGING(*LogServiceSingleton::instance(),
                                   DEBUG_LEVEL,
@@ -256,13 +258,13 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
           if(static_cast<size_t>(len) >= sizeof(NetAdapterHeader))
             {
               NetAdapterHeader * pHeader = reinterpret_cast<NetAdapterHeader *>(buf);
-              
+
               NetAdapterHeaderToHost(pHeader);
-              
+
               if(static_cast<size_t>(len) == pHeader->u16Length_)
                 {
                   len -= sizeof(NetAdapterHeader);
-                  
+
                   switch(pHeader->u16Id_)
                     {
                     case NETADAPTER_DATA_MSG:
@@ -270,12 +272,12 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                       if(static_cast<size_t>(len) >= sizeof(NetAdapterDataMessage))
                         {
                           NetAdapterDataMessage * pMsg =  reinterpret_cast<NetAdapterDataMessage *>(pHeader->data_);
-                        
+
                           NetAdapterDataMessageToHost(pMsg);
-                        
+
                           len -= sizeof(NetAdapterDataMessage);
 
-                          if(pMsg->u16Dst_ == ACE_HTONS(NETADAPTER_BROADCAST_ADDRESS))
+                          if(pMsg->u16Dst_ == htons(NETADAPTER_BROADCAST_ADDRESS))
                             {
                               dstNemId = NEM_BROADCAST_MAC_ADDRESS;
                             }
@@ -287,7 +289,7 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                           if(static_cast<size_t>(len) >= pMsg->u16DataLen_)
                             {
                               PacketInfo pinfo{pMsg->u16Src_, dstNemId, pMsg->u8Priority_,Clock::now()};
-                            
+
 
                               UpstreamPacket pkt(pinfo,
                                                  pMsg->data_,
@@ -302,7 +304,7 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                   const ControlMessages & controlMessages =
                                     ControlMessageSerializer::create(pMsg->data_ + pMsg->u16DataLen_,
                                                                      pMsg->u16CtrlLen_);
-                                    
+
                                   try
                                     {
                                       doProcessPacketMessage(pinfo,
@@ -312,7 +314,7 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                     }
                                   catch(...)
                                     {
-                                      // cannot really do too much at this point, so we'll log it 
+                                      // cannot really do too much at this point, so we'll log it
                                       // good candidate spot to generate and error event as well
                                       LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                                               ERROR_LEVEL,
@@ -328,10 +330,10 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                                           "NEM %03d BoundaryMessageManager::processNetworkMessage "
                                                           "processUpstreamPacket size too small for control message data",
                                                           id_);
-                                    
-                                    
+
+
                                 }
-                                
+
                             }
                           else
                             {
@@ -350,18 +352,18 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                                   "processUpstreamPacket size too small for packet data message",
                                                   id_);
                         }
-                      
+
                       break;
-                      
+
                     case NETADAPTER_CTRL_MSG:
 
                       if(static_cast<size_t>(len)  >= sizeof(NetAdapterControlMessage))
                         {
                           NetAdapterControlMessage * pMsg =
                             reinterpret_cast<NetAdapterControlMessage *>(pHeader->data_);
-                            
+
                           NetAdapterControlMessageToHost(pMsg);
-                            
+
                           len -= sizeof(NetAdapterControlMessage);
 
                           ControlMessages controlMessages;
@@ -371,14 +373,14 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                               const ControlMessages & controlMessages =
                                 ControlMessageSerializer::create(pMsg->data_,
                                                                  pMsg->u16CtrlLen_);
-                                
+
                               try
                                 {
                                   doProcessControlMessage(controlMessages);
                                 }
                               catch(...)
                                 {
-                                  // cannot really do too much at this point, so we'll log it 
+                                  // cannot really do too much at this point, so we'll log it
                                   // good candidate spot to generate and error event as well
                                   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                                           ERROR_LEVEL,
@@ -396,8 +398,8 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                             }
                         }
 
-                      break; 
-                      
+                      break;
+
                     default:
                       LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                               ERROR_LEVEL,
@@ -426,7 +428,7 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                       sizeof(NetAdapterHeader),
                                       len);
             }
-          
+
         }
       else
         {
@@ -435,10 +437,8 @@ ACE_THR_FUNC_RETURN EMANE::BoundaryMessageManager::processNetworkMessage()
                                   ERROR_LEVEL,
                                   "NEM %03d BoundaryMessageManager Message Header read error",
                                   id_);
-          
+
           break;
         }
-    } 
-
-  return 0;
+    }
 }

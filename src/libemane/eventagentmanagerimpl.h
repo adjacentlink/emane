@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,6 +35,7 @@
 #define EMANEAPPLICATIONEVENTAGENTMANAGERIMPL_HEADER_
 
 #include "emane/application/eventagentmanager.h"
+#include "emane/inetaddr.h"
 
 #include <vector>
 #include <memory>
@@ -46,9 +47,9 @@ namespace EMANE
     /**
      * @class EventAgentManagerImpl
      *
-     * @brief Deployment event server 
+     * @brief Deployment event server
      *
-     * @details Realization of the EventAgentManager interface.  Allows for the 
+     * @details Realization of the EventAgentManager interface.  Allows for the
      * registration and state management of event agents and event receivers.
      *
      */
@@ -56,28 +57,28 @@ namespace EMANE
     {
     public:
       EventAgentManagerImpl(const uuid_t & uuid);
-      
+
       ~EventAgentManagerImpl();
-      
+
       void initialize(Registrar & registrar) override;
-      
+
       void configure(const ConfigurationUpdate & update) override;
-      
+
       void start() override;
-      
+
       void postStart() override;
-      
+
       void stop() override;
-      
+
       void destroy() throw() override;
-      
+
       void add(std::unique_ptr<EventAgent> & pEventAgent) override;
-      
+
     private:
       using EventAgents = std::vector<std::unique_ptr<EventAgent>>;
-      
+
       EventAgents eventAgents_;
-      ACE_INET_Addr eventServiceGroupAddr_;
+      INETAddr eventServiceGroupAddr_;
       std::string sEventServiceDevice_;
       std::uint8_t u8EventServiceTTL_;
     };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -49,21 +49,21 @@ void EMANE::Application::EventAgentManagerImpl::add(std::unique_ptr<EventAgent> 
 {
   eventAgents_.push_back(std::move(pAgent));
 }
-   
+
 void EMANE::Application::EventAgentManagerImpl::initialize(Registrar & registrar)
 {
   auto & configRegistrar = registrar.configurationRegistrar();
-  
-  configRegistrar.registerNonNumeric<ACE_INET_Addr>("eventservicegroup",
-                                                    ConfigurationProperties::REQUIRED,
-                                                    {},
-                                                    "IPv4 or IPv6 Event Service channel multicast endpoint.");
-  
+
+  configRegistrar.registerNonNumeric<INETAddr>("eventservicegroup",
+                                               ConfigurationProperties::REQUIRED,
+                                               {},
+                                               "IPv4 or IPv6 Event Service channel multicast endpoint.");
+
   configRegistrar.registerNonNumeric<std::string>("eventservicedevice",
                                                   ConfigurationProperties::NONE,
                                                   {},
                                                   "Device to associate with the Event Service channel multicast endpoint.");
-  
+
   configRegistrar.registerNumeric<std::uint8_t>("eventservicettl",
                                                 ConfigurationProperties::DEFAULT,
                                                 {1},
@@ -80,27 +80,25 @@ void EMANE::Application::EventAgentManagerImpl::configure(const ConfigurationUpd
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "EventAgentManagerImpl::configure %s: %s/%hu",
+                                  "EventAgentManagerImpl::configure %s: %s",
                                   item.first.c_str(),
-                                  eventServiceGroupAddr_.get_host_addr(),
-                                  eventServiceGroupAddr_.get_port_number());
-          
+                                  eventServiceGroupAddr_.str().c_str());
         }
       else if(item.first == "eventservicedevice")
         {
           sEventServiceDevice_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "EventAgentManagerImpl::configure %s: %s",
                                   item.first.c_str(),
                                   sEventServiceDevice_.c_str());
-          
+
         }
       else if(item.first == "eventservicettl")
         {
           u8EventServiceTTL_ = item.second[0].asUINT8();
-          
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
                                   "EventAgentManagerImpl::configure %s: %hhu",

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +35,6 @@
 #include "emane/registrarexception.h"
 
 #include <pcre.h>
-#include <ace/Guard_T.h>
 
 EMANE::ConfigurationService::ConfigurationService(){}
 
@@ -42,7 +42,7 @@ void EMANE::ConfigurationService::registerRunningStateMutable(BuildId buildId,
                                                               RunningStateMutable * pRunningStateMutable)
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   runningStateMutables_.insert(std::make_pair(buildId,pRunningStateMutable));
 }
 
@@ -118,7 +118,7 @@ void EMANE::ConfigurationService::registerAny(BuildId buildId,
                            &pError,
                            &iErrorOffset,
                            0);
-      
+
       if(!pPCRE)
         {
           throw makeException<RegistrarException>("Bad regex pattern defined for %s: %s (offset:%i) %s",
@@ -131,11 +131,11 @@ void EMANE::ConfigurationService::registerAny(BuildId buildId,
         {
           pcre_free(pPCRE);
         }
-      
+
     }
-  
+
   auto iter = buildIdConfigurationStore_.find(buildId);
-  
+
   if(iter !=  buildIdConfigurationStore_.end())
     {
       if(!iter->second.insert(std::make_pair(sName,configurationInfo)).second)
@@ -149,32 +149,32 @@ void EMANE::ConfigurationService::registerAny(BuildId buildId,
       ConfigurationStore store;
 
       store.insert(std::make_pair(sName,configurationInfo));
-      
+
       buildIdConfigurationStore_.insert(std::make_pair(buildId,std::move(store)));
     }
 }
 
 
- 
+
 EMANE::ConfigurationManifest
 EMANE::ConfigurationService::getConfigurationManifest(BuildId buildId) const
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   ConfigurationManifest infos;
 
   auto iter = buildIdConfigurationStore_.find(buildId);
-  
+
   if(iter !=  buildIdConfigurationStore_.end())
     {
       auto & store = iter->second;
-      
-      std::transform(store.begin(), 
-                     store.end(), 
+
+      std::transform(store.begin(),
+                     store.end(),
                      std::back_inserter(infos),
                      std::bind(&ConfigurationStore::value_type::second,std::placeholders::_1));
     }
-  
+
   return infos;
 }
 
@@ -183,19 +183,19 @@ std::vector<std::pair<std::string,std::vector<EMANE::Any>>>
                                                   const std::vector<std::string> & names) const
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   std::vector<std::pair<std::string,std::vector<Any>>> values;
 
   auto iter = buildIdConfigurationStore_.find(buildId);
-  
+
   if(iter !=  buildIdConfigurationStore_.end())
     {
       auto & store = iter->second;
-      
+
       if(names.empty())
         {
-          for_each(store.begin(), 
-                   store.end(), 
+          for_each(store.begin(),
+                   store.end(),
                    bind([&values](const ConfigurationInfo & info)
                         {
                           values.push_back(std::make_pair(info.getName(),info.getValues()));
@@ -233,19 +233,19 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                           const ConfigurationUpdateRequest & parameters)
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   ConfigurationUpdate updates;
 
   auto iter = buildIdConfigurationStore_.find(buildId);
-  
+
   if(iter !=  buildIdConfigurationStore_.end())
     {
       auto & store = iter->second;
-      
+
       for(const auto & paramIter : parameters)
         {
           auto infoIter = store.find(paramIter.first);
-          
+
           if(infoIter != store.end())
             {
               if(paramIter.second.size() >= infoIter->second.getMinOccurs() &&
@@ -254,10 +254,10 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                   pcre * pPCRE{};
                   const char * pError{};
                   int iErrorOffset{};
-                  
+
                   // if regex defined, verify a match
                   const std::string & sRegexPattern = infoIter->second.getRegexPattern();
-                  
+
                   if(!sRegexPattern.empty())
                     {
                       pPCRE = pcre_compile(sRegexPattern.c_str(),
@@ -266,7 +266,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                            &iErrorOffset,
                                            0);
                     }
-      
+
                   std::vector<Any> anys;
 
                   for(const auto & value : paramIter.second)
@@ -274,9 +274,9 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                       try
                         {
                           auto anyType = infoIter->second.getType();
-                          
+
                           Any any{Any::create(value,anyType)};
-                          
+
                           // if numeric any verify range
                           if(anyType != Any::Type::TYPE_INET_ADDR &&
                              anyType != Any::Type::TYPE_STRING)
@@ -291,7 +291,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                                                               infoIter->second.getMaxValue().toString().c_str());
                                 }
                             }
-                          
+
                           if(pPCRE)
                             {
                               if(pcre_exec(pPCRE,
@@ -309,7 +309,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                                                               sRegexPattern.c_str());
                                 }
                             }
-                          
+
                           anys.push_back(any);
                         }
                       catch(AnyException & exp)
@@ -335,7 +335,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                                               paramIter.second.size(),
                                                               infoIter->second.getMinOccurs(),
                                                               infoIter->second.getMaxOccurs());
-                                               
+
                 }
             }
           else
@@ -350,7 +350,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
         {
           const auto & sParamName(iter.first);
           const auto & item(iter.second);
-          
+
           if(item.isRequired() || item.hasDefault())
             {
               if(std::find_if(updates.begin(),
@@ -363,7 +363,7 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                   if(item.isRequired())
                     {
                       throw makeException<ConfigurationException>("Required item not present: %s",
-                                                                  sParamName.c_str()); 
+                                                                  sParamName.c_str());
                     }
                   else
                     {
@@ -391,8 +391,8 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
             }
         }
 
-      
-      // update cache of current configuration values - we know the parameter 
+
+      // update cache of current configuration values - we know the parameter
       // is present, we would have thrown an
       std::for_each(updates.begin(),
                updates.end(),
@@ -407,12 +407,12 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
       if(!parameters.empty())
         {
           std::string sUnexpected{};
-          
+
           for(const auto & parameter : parameters)
             {
               sUnexpected.append(parameter.first + " ");
             }
-          
+
           throw makeException<ConfigurationException>("Parameter(s) not registered: %s",
                                                       sUnexpected.c_str());
         }
@@ -424,17 +424,17 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                          const ConfigurationUpdate & updates)
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   auto iter = buildIdConfigurationStore_.find(buildId);
-  
+
   if(iter !=  buildIdConfigurationStore_.end())
     {
       auto & store = iter->second;
-      
+
       for(const auto & update : updates)
         {
           auto infoIter = store.find(update.first);
-          
+
           if(infoIter != store.end())
             {
               // verify parameter is allowed to be updated
@@ -444,17 +444,17 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                                               update.first.c_str());
                 }
 
-              
+
               if(update.second.size() >= infoIter->second.getMinOccurs() &&
                  update.second.size() <= infoIter->second.getMaxOccurs())
                 {
                   pcre * pPCRE{};
                   const char * pError{};
                   int iErrorOffset{};
-                  
+
                   // if regex defined, verify a match
                   const std::string & sRegexPattern = infoIter->second.getRegexPattern();
-                  
+
                   if(!sRegexPattern.empty())
                     {
                       pPCRE = pcre_compile(sRegexPattern.c_str(),
@@ -463,13 +463,13 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                            &iErrorOffset,
                                            0);
                     }
-      
+
                   std::vector<Any> anys;
 
                   for(const auto & value : update.second)
                     {
                       auto anyType = infoIter->second.getType();
-                      
+
                       if(anyType!= value.getType())
                         {
                           throw makeException<ConfigurationException>("Parameter value type incorrect %s",
@@ -490,11 +490,11 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                                                           infoIter->second.getMaxValue().toString().c_str());
                             }
                         }
-                      
+
                       if(pPCRE)
                         {
                           std::string sValue{value.toString()};
-                          
+
                           if(pcre_exec(pPCRE,
                                        nullptr,
                                        sValue.c_str(),
@@ -510,7 +510,7 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                                                           sRegexPattern.c_str());
                             }
                         }
-                      
+
                     }
 
                   if(pPCRE)
@@ -525,7 +525,7 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                                                               update.second.size(),
                                                               infoIter->second.getMinOccurs(),
                                                               infoIter->second.getMaxOccurs());
-                                               
+
                 }
             }
           else
@@ -541,7 +541,7 @@ void EMANE::ConfigurationService::update(BuildId buildId,
       if(validatorIter != validatorStore_.end())
         {
           auto canidateUpdates = updates;
-      
+
           for(const auto & iter : store)
             {
               const auto & sParamName(iter.first);
@@ -563,7 +563,7 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                     }
                 }
             }
-    
+
           for(auto validator : validatorIter->second)
             {
               auto ret = validator(canidateUpdates);
@@ -574,12 +574,12 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                 }
             }
         }
-      
+
       auto mutablesIter = runningStateMutables_.find(buildId);
 
       if(mutablesIter != runningStateMutables_.end())
         {
-          // update cache of current configuration values - we know the parameter 
+          // update cache of current configuration values - we know the parameter
           // is present, we would have thrown an exception
           std::for_each(updates.begin(),
                         updates.end(),
@@ -587,14 +587,14 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                         {
                           store.find(v.first)->second.setValues(v.second);
                         });
-          
+
           mutablesIter->second->processConfiguration(updates);
         }
       else
         {
           throw makeException<ConfigurationException>("No component registered with build id %hu",buildId);
         }
-      
+
     }
 }
 

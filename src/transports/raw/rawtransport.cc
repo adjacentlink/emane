@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -31,13 +32,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ace/OS_NS_Thread.h>
-
-#ifdef WIN32
-#include <winsock2.h>
-#include <iphlpapi.h>
-#endif
-
 #include "rawtransport.h"
 
 #include "emane/downstreampacket.h"
@@ -45,45 +39,15 @@
 #include "emane/configureexception.h"
 #include "emane/startexception.h"
 
-#include "emane/utils/spawnmemberfunc.h"
+#include "emane/utils/threadutils.h"
 #include "emane/controls/serializedcontrolmessage.h"
 
 #include <sstream>
 
 namespace
 {
-  // common
   const int PCAP_SNAPLEN = 0xFFFF;
   const int PCAP_PROMISC = 1;
-
-#ifdef WIN32
-
-  const std::string DEVICE_PREFIX = "\\Device\\NPF_";
-
-  // win32 will buffer packets if PCAP_TIMEOUT is 0
-  const int PCAP_TIMEOUT = 1;
-
-#elif defined(__APPLE__)
-
-  const int AddressType = AF_LINK;
-
-  const std::string DEVICE_PREFIX = "";
-
-  // mac will buffer packets if PCAP_TIMEOUT is 0
-  const int PCAP_TIMEOUT = 1;
-
-  struct sockaddr_ll_t {
-    std::uint8_t  sll_len;
-    std::uint8_t  sll_family;
-    std::uint16_t sll_ifindex;
-    std::uint8_t  sll_type;
-    std::uint8_t  sll_nlen;
-    std::uint8_t  sll_alen;
-    std::uint8_t  sll_slen;
-    std::uint8_t  sll_addr[12];
-  }__attribute__((packed));
-
-#elif defined(__linux__)
 
   const int AddressType = AF_PACKET;
 
@@ -100,15 +64,13 @@ namespace
     std::uint8_t  sll_halen;
     std::uint8_t  sll_addr[8];
   }__attribute__((packed));
-
-#endif 
 }
 
 
 EMANE::Transports::Raw::RawTransport::RawTransport(NEMId id,
                                                    PlatformServiceProvider * pPlatformService):
   EthernetTransport(id, pPlatformService),
-  threadRead_{},
+  thread_{},
   pPcapHandle_{},
   pBitPool_{},
   u64BitRate_{}
@@ -121,9 +83,9 @@ EMANE::Transports::Raw::RawTransport::~RawTransport()
   // close pcap handle
   // Moves pcap_close call to the destructor
   // instead of the stop call because having it
-  // there caused emanetransportd to hang on a 
-  // ctrl-c 
-  if (pPcapHandle_ != NULL) 
+  // there caused emanetransportd to hang on a
+  // ctrl-c
+  if (pPcapHandle_ != NULL)
     {
       pcap_close(pPcapHandle_);
 
@@ -140,12 +102,12 @@ EMANE::Transports::Raw::RawTransport::~RawTransport()
 
 
 void EMANE::Transports::Raw::RawTransport::initialize(Registrar & registrar)
-{ 
+{
   // create bit pool
   pBitPool_ = new Utils::BitPool(pPlatformService_, id_);
 
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNonNumeric<std::string>("device",
                                                   ConfigurationProperties::NONE,
                                                   {},
@@ -184,47 +146,47 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
           u64BitRate_ =  item.second[0].asUINT64();
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL, 
+                                  INFO_LEVEL,
                                   "TRANSPORTI %03hu Transports::Raw::RawTransport %s %s: %ju",
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   u64BitRate_);
         }
       else if(item.first == "device")
         {
           sTargetDevice_ = item.second[0].asString();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL, 
-                                  "TRANSPORTI %03hu RawTransport %s %s: %s", 
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  INFO_LEVEL,
+                                  "TRANSPORTI %03hu RawTransport %s %s: %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   sTargetDevice_.c_str());
         }
       else if(item.first == "broadcastmodeenable")
         {
           bBroadcastMode_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL, 
-                                  "TRANSPORTI %03d RawTransport %s %s: %d", 
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  INFO_LEVEL,
+                                  "TRANSPORTI %03d RawTransport %s %s: %d",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   bBroadcastMode_);
         }
       else if(item.first == "arpcacheenable")
         {
           bArpCacheMode_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL, 
-                                  "TRANSPORTI %03d RawTransport %s %s: %d", 
-                                  id_, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  INFO_LEVEL,
+                                  "TRANSPORTI %03d RawTransport %s %s: %d",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
                                   bArpCacheMode_);
         }
       else
@@ -245,7 +207,7 @@ void EMANE::Transports::Raw::RawTransport::start()
 
   // pcap error buff
   char errbuf[PCAP_ERRBUF_SIZE]={};
-  
+
   // pcap interface list
   struct pcap_if *iflist;
 
@@ -260,72 +222,6 @@ void EMANE::Transports::Raw::RawTransport::start()
       throw StartException(ssDescription.str());
     }
 
-#ifdef WIN32
-
-  // we would prefer to use libpcap to obtain the interface info
-  // but the mac address does not seem to be supported in win32
-  // and we need the mac address to check for our own transmissions
-  // since winpcap does not support pcap_setdirection
-  
-  // query the adapter list here and search based on the ip address in win32
-  // instead of the complex adapter name like {11661990-8F30-46AD-A4F57D7AC1D2}
-
-  // adpater buff
-  IP_ADAPTER_INFO ai[256];
-
-  // buff len
-  ULONG buflen = sizeof(ai);
-
-  // adapter list
-  IP_ADAPTER_INFO* aip = &ai[0];
-
-  // get all adpater info
-  if(GetAdaptersInfo(aip, &buflen) == NO_ERROR) 
-    {
-      // each adpater
-      while (aip && !bMacResolved) 
-        {
-          // ip address
-          IP_ADDR_STRING *ip = &aip->IpAddressList;
-
-          // each ip address
-          while(ip && !bMacResolved) 
-            {
-              // address match
-              if(sTargetDevice_ == ip->IpAddress.String) 
-                {
-                  // add adapter name to device prefix
-                  sDeviceName += aip->AdapterName;
-
-                  // save mac addr
-                  memcpy(macAddr_.bytes.buff, aip->Address, Utils::ETH_ALEN);
-
-                  LOGGER_STANDARD_LOGGING(pPlatformService_, 
-                                          DEBUG_LEVEL, 
-                                          "TRANSPORTI %03d RawTransport %s adapter %s, hw addr %s",
-                                          id_, 
-                                          __func__,
-                                          aip->AdapterName,
-                                          ethaddr_to_string(&macAddr_).c_str());
-
-                  // set resolved flag
-                  bMacResolved = true;
-                }
-              // next address
-              ip = ip->Next;
-            }
-          // next adapter 
-          aip = aip->Next;
-        }
-    }
-  else 
-    {
-      std::stringstream ssDescription;
-      ssDescription<<"could not get adapters list "<< sTargetDevice_ << " " << errbuf<<std::ends;
-      throw StartException(ssDescription.str());
-    }
-
-#elif defined(__linux__) || defined(__APPLE__)
 
   // each interface
   struct pcap_if *ifp = iflist;
@@ -334,7 +230,7 @@ void EMANE::Transports::Raw::RawTransport::start()
   while (ifp)
     {
       // name match
-      if(sTargetDevice_ == ifp->name) 
+      if(sTargetDevice_ == ifp->name)
         {
           // add adapter name to device prefix
           sDeviceName += ifp->name;
@@ -343,25 +239,20 @@ void EMANE::Transports::Raw::RawTransport::start()
           pcap_addr_t *ap = ifp->addresses;
 
           // for each address
-          while (ap && !bMacResolved) 
+          while (ap && !bMacResolved)
             {
               // mac addr
-              if(ap->addr->sa_family == AddressType) 
+              if(ap->addr->sa_family == AddressType)
                 {
                   struct sockaddr_ll_t *s = (struct sockaddr_ll_t *) ap->addr;
 
-#ifdef __APPLE__
-                  // save mac addr
-                  memcpy(macAddr_.bytes.buff, &s->sll_addr[s->sll_nlen], Utils::ETH_ALEN);
-#elif defined(__linux__)
                   memcpy(macAddr_.bytes.buff, &s->sll_addr[0], Utils::ETH_ALEN);
-#endif
 
                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                          DEBUG_LEVEL, 
+                                          DEBUG_LEVEL,
                                           "TRANSPORTI %03d RawTransport %s adapter %s, hw addr %s",
-                                          id_, 
-                                          __func__, 
+                                          id_,
+                                          __func__,
                                           ifp->name,
                                           ethaddr_to_string(&macAddr_).c_str());
 
@@ -375,10 +266,6 @@ void EMANE::Transports::Raw::RawTransport::start()
       // next interface
       ifp = ifp->next;
     }
-#else
-#error "unknown platfrom"
-#endif
-
 
   // free interface list
   pcap_freealldevs(iflist);
@@ -407,8 +294,6 @@ void EMANE::Transports::Raw::RawTransport::start()
       throw StartException(ssDescription.str());
     }
 
-#ifndef WIN32
-
   // currently unsupported by winpcap
   if(pcap_setdirection(pPcapHandle_, PCAP_D_IN) < 0)
     {
@@ -417,12 +302,10 @@ void EMANE::Transports::Raw::RawTransport::start()
       throw StartException(ssDescription.str());
     }
 
-#endif
-
   pBitPool_->setMaxSize(u64BitRate_);
 
   // start pcap read thread
-  Utils::spawn(*this, &EMANE::Transports::Raw::RawTransport::readDevice, &threadRead_);
+  thread_ = std::thread(&RawTransport::readDevice,this);
 }
 
 
@@ -430,13 +313,11 @@ void EMANE::Transports::Raw::RawTransport::start()
 void EMANE::Transports::Raw::RawTransport::stop()
 {
   // cancel read thread
-  if(threadRead_ != 0)
+  if(thread_.joinable())
     {
-      ACE_OS::thr_cancel(threadRead_);
+      ThreadUtils::cancel(thread_);
 
-      ACE_OS::thr_join(threadRead_,0,0);
-
-      threadRead_ = 0;
+      thread_.join();
     }
 }
 
@@ -461,9 +342,9 @@ void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket 
   if(verifyFrame(pkt.get(), pkt.length()) < 0)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              ERROR_LEVEL, 
-                              "TRANSPORTI %03d RawTransport %s ethernet frame error", 
-                              id_, 
+                              ERROR_LEVEL,
+                              "TRANSPORTI %03d RawTransport %s ethernet frame error",
+                              id_,
                               __func__);
     }
 
@@ -478,27 +359,14 @@ void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket 
   // update arp cache
   updateArpCache(pEtherHeader, pktInfo.getSource());
 
-#ifdef WIN32
-
-  // lock mutex for writting
-  mutex_.acquire_write();
-
-  // add src mac addr to history set since we can not determine packet direction in win32
-  upstreamHostSrcMacAddrHistorySet_.insert(*Utils::get_srcaddr(pEtherHeader));
-
-  // unlock mutex
-  mutex_.release();
-
-#endif
-
   // send packet
   if(pcap_sendpacket(pPcapHandle_, (const std::uint8_t*) pkt.get(), pkt.length()) < 0)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              ERROR_LEVEL, 
-                              "TRANSPORTI %03d RawTransport %s pcap_sendpacket error %s", 
-                              id_, 
-                              __func__, 
+                              ERROR_LEVEL,
+                              "TRANSPORTI %03d RawTransport %s pcap_sendpacket error %s",
+                              id_,
+                              __func__,
                               pcap_geterr(pPcapHandle_));
     }
   else
@@ -506,7 +374,7 @@ void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket 
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
                              "TRANSPORTI %03d RawTransport %s src %hu, dst %hu, dscp %hhu, length %zu",
-                             id_, 
+                             id_,
                              __func__,
                              pktInfo.getSource(),
                              pktInfo.getDestination(),
@@ -515,15 +383,15 @@ void EMANE::Transports::Raw::RawTransport::processUpstreamPacket(UpstreamPacket 
 
       // drain the bit pool converting bytes to bits
       const size_t sizePending = pBitPool_->get(pkt.length() * 8);
- 
+
       // check for bitpool error
       if(sizePending != 0)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL, 
-                                  "TRANSPORTI %03d RawTransport %s bitpool request error %zd of %zd", 
-                                  id_, 
-                                  __func__, 
+                                  ERROR_LEVEL,
+                                  "TRANSPORTI %03d RawTransport %s bitpool request error %zd of %zd",
+                                  id_,
+                                  __func__,
                                   sizePending, pkt.length() * 8);
         }
     }
@@ -544,15 +412,15 @@ void EMANE::Transports::Raw::RawTransport::handleUpstreamControl(const ControlMe
           case Controls::SerializedControlMessage::IDENTIFIER:
             {
               const auto pSerializedControlMessage =
-                static_cast<const Controls::SerializedControlMessage *>(pMessage); 
-        
+                static_cast<const Controls::SerializedControlMessage *>(pMessage);
+
               switch(pSerializedControlMessage->getSerializedId())
                 {
                   default:
                      LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                            DEBUG_LEVEL, 
-                                            "TRANSPORTI %03hu RawTransport::%s unknown serialized msg id %hu, ignore", 
-                                            id_, 
+                                            DEBUG_LEVEL,
+                                            "TRANSPORTI %03hu RawTransport::%s unknown serialized msg id %hu, ignore",
+                                            id_,
                                             __func__,
                                             pSerializedControlMessage->getSerializedId());
 
@@ -562,9 +430,9 @@ void EMANE::Transports::Raw::RawTransport::handleUpstreamControl(const ControlMe
 
           default:
                LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                      DEBUG_LEVEL, 
-                                      "TRANSPORTI %03hu RawTransport::%s unknown msg id %hu, ignore", 
-                                      id_, 
+                                      DEBUG_LEVEL,
+                                      "TRANSPORTI %03hu RawTransport::%s unknown msg id %hu, ignore",
+                                      id_,
                                       __func__,
                                       pMessage->getId());
       }
@@ -573,11 +441,11 @@ void EMANE::Transports::Raw::RawTransport::handleUpstreamControl(const ControlMe
 
 
 
-ACE_THR_FUNC_RETURN EMANE::Transports::Raw::RawTransport::readDevice()
+void EMANE::Transports::Raw::RawTransport::readDevice()
 {
   const std::uint8_t* buf = NULL;
 
-  struct pcap_pkthdr *pcap_hdr = NULL;  
+  struct pcap_pkthdr *pcap_hdr = NULL;
 
   int iPcapResult{};
 
@@ -590,10 +458,10 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Raw::RawTransport::readDevice()
       if (iPcapResult < 0)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL, 
-                                  "TRANSPORTI %03d RawTransport %s pcap_next_ex error %s", 
-                                  id_, 
-                                  __func__, 
+                                  ERROR_LEVEL,
+                                  "TRANSPORTI %03d RawTransport %s pcap_next_ex error %s",
+                                  id_,
+                                  __func__,
                                   pcap_geterr(pPcapHandle_));
 
           // done
@@ -611,9 +479,9 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Raw::RawTransport::readDevice()
           if(verifyFrame(buf, pcap_hdr->caplen) < 0)
             {
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                      ERROR_LEVEL,  
-                                      "TRANSPORTI %03d RawTransport %s frame error", 
-                                      id_, 
+                                      ERROR_LEVEL,
+                                      "TRANSPORTI %03d RawTransport %s frame error",
+                                      id_,
                                       __func__);
             }
           else
@@ -626,30 +494,23 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Raw::RawTransport::readDevice()
 
               // get dst and dscp values from frame
               if(parseFrame(pEtherHeader, nemDestination, dscp) < 0)
-                {  
+                {
                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                          ERROR_LEVEL, 
-                                          "TRANSPORTI %03d RawTransport %s frame parse error", 
-                                          id_, 
+                                          ERROR_LEVEL,
+                                          "TRANSPORTI %03d RawTransport %s frame parse error",
+                                          id_,
                                           __func__);
                 }
               else
                 {
-                  // check for our own outbound transmission
-                  if(isOutbound(pEtherHeader))
-                    {
-                      // skip
-                      continue;
-                    }
-
                   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL, 
+                                         DEBUG_LEVEL,
                                          "TRANSPORTI %03d RawTransport %s src %hu, dst %hu, dscp %hhu, length %u",
-                                         id_, 
-                                         __func__, 
-                                         id_, 
-                                         nemDestination, 
-                                         dscp, 
+                                         id_,
+                                         __func__,
+                                         id_,
+                                         nemDestination,
+                                         dscp,
                                          pcap_hdr->caplen);
 
                   // create downstream packet with packet info
@@ -659,78 +520,22 @@ ACE_THR_FUNC_RETURN EMANE::Transports::Raw::RawTransport::readDevice()
 
                   // drain the bit pool converting bytes to bits
                   const size_t sizePending = pBitPool_->get(pcap_hdr->caplen * 8);
- 
+
                   // check for bitpool error
                   if(sizePending != 0)
                     {
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                              ERROR_LEVEL, 
-                                              "TRANSPORTI %03d RawTransport %s bitpool request error %zd of %u", 
-                                              id_, 
-                                              __func__, 
-                                              sizePending, 
+                                              ERROR_LEVEL,
+                                              "TRANSPORTI %03d RawTransport %s bitpool request error %zd of %u",
+                                              id_,
+                                              __func__,
+                                              sizePending,
                                               pcap_hdr->caplen * 8);
                     }
                 }
             }
         }
     }
-
-  return (ACE_THR_FUNC_RETURN) 0;
-}
-
-
-int EMANE::Transports::Raw::RawTransport::isOutbound(const Utils::EtherHeader *pEtherHeader)
-{
-#ifdef WIN32
-
-  // check mac src address since we can not determine packet direction in win32
-
-  // lock mutex for reading
-  mutex_.acquire_read();
-
-  // packet is from self
-  if(memcmp(Utils::get_srcaddr(pEtherHeader), &macAddr_, Utils::ETH_ALEN) == 0)
-    {
-      LOGGER_VERBOSE_LOGGING(pPlatformService_, 
-                             DEBUG_LEVEL, 
-                             "TRANSPORTI %03d RawTransport %s src %s is us",
-                             id_, 
-                             __func__,
-                             ethaddr_to_string(Utils::get_srcaddr(pEtherHeader)).c_str());
-
-      // yes src is us
-      return 1;
-    }
-
-  // check the src mac addr with the upstream src mac addr set 
-  EthAddrSetConstIter iter = upstreamHostSrcMacAddrHistorySet_.find(pEtherHeader->src);
-
-  // this source was seen on the upstream path
-  if(iter != upstreamHostSrcMacAddrHistorySet_.end())
-    {
-      LOGGER_VERBOSE_LOGGING(pPlatformService_, 
-                             DEBUG_LEVEL, 
-                             "TRANSPORTI %03d RawTransport %s src %s is downstream",
-                             id_, 
-                             __func__,
-                             ethaddr_to_string(&pEtherHeader->src).c_str());
- 
-      // yes this is from a remote NEM and the frame is heading up and out to ip stack
-      return 1;
-    }
-
-  // unlock mutex
-  mutex_.release();
-
-#else
-  // only needed in windoz nothing to do here
-  ACE_UNUSED_ARG(pEtherHeader);
-
-#endif
-
-  // no, its downstream (from ip)
-  return 0;
 }
 
 

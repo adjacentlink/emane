@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,14 +39,14 @@
 #include "emane/net.h"
 #include "emane/utils/parameterconvert.h"
 
-#include <ace/OS_NS_arpa_inet.h>
+#include <arpa/inet.h>
 
-void 
+void
 EMANE::Models::CommEffect::FilterReader::getFilters(xmlNode * cur, Filters & filters)
 {
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR "filter"))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR "filter")))
         {
           Target * pTarget = getTarget(cur->xmlChildrenNode);
 
@@ -73,9 +73,9 @@ EMANE::Models::CommEffect::FilterReader::getFilters(xmlNode * cur, Filters & fil
 EMANE::Models::CommEffect::Target *
 EMANE::Models::CommEffect::FilterReader::getTarget(xmlNode * cur)
 {
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR "target"))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR "target")))
         {
           EthernetProtocolRules rules =
             getEthernetProtocolRules(cur->xmlChildrenNode);
@@ -84,7 +84,7 @@ EMANE::Models::CommEffect::FilterReader::getTarget(xmlNode * cur)
         }
       cur = cur->next;
     }
-   
+
   return NULL;
 }
 
@@ -93,7 +93,7 @@ EMANE::Models::CommEffect::FilterReader::getTarget(xmlNode * cur)
 std::pair<EMANE::Events::CommEffect,bool>
 EMANE::Models::CommEffect::FilterReader::getEffect(xmlNode * cur)
 {
-  while(cur) 
+  while(cur)
     {
       if((!xmlStrcmp(cur->name, XMLCHAR "effect")))
         {
@@ -118,9 +118,9 @@ EMANE::Models::CommEffect::FilterReader::getEthernetProtocolRules(xmlNode * cur)
 {
   EthernetProtocolRules rules;
 
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR "ipv4"))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR "ipv4")))
         {
           std::string sSrc = getAttribute(cur, XMLCHAR "src");
           std::string sDst = getAttribute(cur, XMLCHAR "dst");
@@ -128,9 +128,9 @@ EMANE::Models::CommEffect::FilterReader::getEthernetProtocolRules(xmlNode * cur)
           std::string sTTL = getAttribute(cur, XMLCHAR "ttl");
           std::string sTOS = getAttribute(cur, XMLCHAR "tos");
 
-          EthernetProtocolIPv4Rule * ethProto = 
-            new EthernetProtocolIPv4Rule{static_cast<uint32_t>(ACE_OS::inet_addr(sSrc.c_str())),
-                                         static_cast<uint32_t>(ACE_OS::inet_addr(sDst.c_str())),
+          EthernetProtocolIPv4Rule * ethProto =
+            new EthernetProtocolIPv4Rule{static_cast<uint32_t>(inet_addr(sSrc.c_str())),
+                                         static_cast<uint32_t>(inet_addr(sDst.c_str())),
                                          EMANE::HTONS(Utils::ParameterConvert(sLen).toUINT16()),
                                          Utils::ParameterConvert(sTOS).toUINT8(),
                                          Utils::ParameterConvert(sTTL).toUINT8(),
@@ -152,9 +152,9 @@ EMANE::Models::CommEffect::FilterReader::getIPProtocolRules(xmlNodePtr cur)
 {
   IPProtocolRules rules;
 
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR "udp"))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR "udp")))
         {
           std::string sSrc = getAttribute(cur, XMLCHAR "sport");
           std::string sDst = getAttribute(cur, XMLCHAR "dport");
@@ -162,7 +162,7 @@ EMANE::Models::CommEffect::FilterReader::getIPProtocolRules(xmlNodePtr cur)
           rules.push_back(new IPProtocolUDPRule{EMANE::HTONS(Utils::ParameterConvert(sSrc).toUINT16()),
                 EMANE::HTONS(Utils::ParameterConvert(sDst).toUINT16())});
         }
-      else if((!xmlStrcmp(cur->name, XMLCHAR "protocol"))) 
+      else if((!xmlStrcmp(cur->name, XMLCHAR "protocol")))
         {
           std::string type = getAttribute(cur, XMLCHAR "type");
 
@@ -177,7 +177,7 @@ EMANE::Models::CommEffect::FilterReader::getIPProtocolRules(xmlNodePtr cur)
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::CommEffect::FilterReader::getDuration(xmlNode * cur, const char *id)
 {
   while(cur)
@@ -186,7 +186,7 @@ EMANE::Models::CommEffect::FilterReader::getDuration(xmlNode * cur, const char *
         {
           std::string sSec  = getAttribute(cur, XMLCHAR "sec");
           std::string sUSec = getAttribute(cur, XMLCHAR "usec");
-        
+
           return Microseconds{std::chrono::duration_cast<Microseconds>(std::chrono::seconds{Utils::ParameterConvert(sSec).toUINT32()}) +
               Microseconds{Utils::ParameterConvert(sUSec).toUINT32()}};
         }
@@ -201,9 +201,9 @@ EMANE::Models::CommEffect::FilterReader::getDuration(xmlNode * cur, const char *
 float
 EMANE::Models::CommEffect::FilterReader::getProbability(xmlNode * cur, const char * id)
 {
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR id))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR id)))
         {
           std::string sValue = getContent(cur);
 
@@ -219,9 +219,9 @@ EMANE::Models::CommEffect::FilterReader::getProbability(xmlNode * cur, const cha
 std::uint64_t
 EMANE::Models::CommEffect::FilterReader::getBitRate(xmlNode * cur, const char * id)
 {
-  while(cur) 
+  while(cur)
     {
-      if((!xmlStrcmp(cur->name, XMLCHAR id))) 
+      if((!xmlStrcmp(cur->name, XMLCHAR id)))
         {
           std::string sValue = getContent(cur);
 
@@ -235,17 +235,17 @@ EMANE::Models::CommEffect::FilterReader::getBitRate(xmlNode * cur, const char * 
 
 
 
-std::string 
+std::string
 EMANE::Models::CommEffect::FilterReader::getAttribute(xmlNodePtr cur, const xmlChar * id)
 {
   // default. don't care
   std::string str = "0";
 
-  if(id) 
+  if(id)
     {
       xmlChar *attr = xmlGetProp(cur, id);
 
-      if(attr) 
+      if(attr)
         {
           str =(const char *) attr;
         }
@@ -256,7 +256,7 @@ EMANE::Models::CommEffect::FilterReader::getAttribute(xmlNodePtr cur, const xmlC
 }
 
 
-std::string 
+std::string
 EMANE::Models::CommEffect::FilterReader::getContent(xmlNodePtr cur)
 {
   // default. don't care
@@ -264,7 +264,7 @@ EMANE::Models::CommEffect::FilterReader::getContent(xmlNodePtr cur)
 
   xmlChar *attr = xmlNodeGetContent(cur);
 
-  if(attr) 
+  if(attr)
     {
       str =(const char *) attr;
     }
@@ -281,38 +281,38 @@ EMANE::Models::CommEffect::FilterReader::load(const char * pzFilename)
   xmlParserCtxtPtr pContext{};
   Filters filters;
 
-  if(pzFilename) 
+  if(pzFilename)
     {
       pContext = xmlNewParserCtxt();
 
       if(pContext)
         {
           // Allocate the document tree
-          if(!(pDoc = xmlCtxtReadFile(pContext, 
-                                      pzFilename, 
-                                      0, 
+          if(!(pDoc = xmlCtxtReadFile(pContext,
+                                      pzFilename,
+                                      0,
                                       XML_PARSE_DTDVALID|XML_PARSE_NOERROR)))
             {
               xmlFreeParserCtxt(pContext);
-              
+
               throw FilterLoadFailure{};
             }
 
           if((pContext)->valid)
-            {          
-              if(!(pRoot = xmlDocGetRootElement(pDoc))) 
+            {
+              if(!(pRoot = xmlDocGetRootElement(pDoc)))
                 {
                   xmlFreeParserCtxt(pContext);
-                                
+
                   throw FilterLoadFailure{};
                 }
             }
           else
             {
               xmlFreeParserCtxt(pContext);
-              
+
               xmlFreeDoc(pDoc);
-              
+
               throw FilterLoadFailure{};
             }
         }
@@ -321,16 +321,16 @@ EMANE::Models::CommEffect::FilterReader::load(const char * pzFilename)
           throw FilterLoadFailure{};
         }
     }
-  else 
+  else
     {
       throw FilterLoadFailure{};;
     }
 
   xmlNodePtr pCurrent = pRoot;
-  
-  while(pCurrent) 
+
+  while(pCurrent)
     {
-      if((!xmlStrcmp(pCurrent->name, XMLCHAR "commeffect"))) 
+      if((!xmlStrcmp(pCurrent->name, XMLCHAR "commeffect")))
         {
           getFilters(pCurrent->xmlChildrenNode, filters);
         }
@@ -339,7 +339,7 @@ EMANE::Models::CommEffect::FilterReader::load(const char * pzFilename)
     }
 
   xmlFreeParserCtxt(pContext);
-  
+
   xmlFreeDoc(pDoc);
 
   return filters;

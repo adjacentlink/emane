@@ -48,6 +48,8 @@ emaneinc_HEADERS =                       \
  flowcontrolmanager.h                    \
  frequencysegment.h                      \
  frequencysegment.inl                    \
+ inetaddr.h                              \
+ inetaddrexception.h                     \
  logserviceprovider.h                    \
  logserviceprovider.inl                  \
  maclayerimpl.h                          \

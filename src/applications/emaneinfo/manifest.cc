@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,35 +42,35 @@ namespace EMANE
 std::string manifest(BuildId buildId, const std::string & sName)
 {
   xmlDocPtr pDoc{xmlNewDoc(BAD_CAST "1.0")};
-  
+
   xmlNodePtr pManifest{xmlNewNode(NULL,BAD_CAST "manifest")};
-      
+
   xmlNodePtr pPlugin{xmlNewChild(pManifest,NULL,BAD_CAST "plugin",NULL)};
-      
+
   xmlNewProp(pPlugin, BAD_CAST "name", BAD_CAST sName.c_str());
 
-  auto manifest = 
+  auto manifest =
     ConfigurationController::getConfigurationManifest(buildId);
-    
+
   xmlNodePtr pConfiguration{xmlNewChild(pPlugin,NULL,BAD_CAST "configuration",NULL)};
-    
+
   for(const auto & entry : manifest)
     {
       xmlNodePtr pParam{xmlNewChild(pConfiguration,NULL,BAD_CAST "parameter",NULL)};
-              
+
       xmlNewProp(pParam, BAD_CAST "name", BAD_CAST entry.getName().c_str());
       xmlNewProp(pParam, BAD_CAST "default", BAD_CAST (entry.hasDefault() ? "yes" : "no"));
       xmlNewProp(pParam, BAD_CAST "required", BAD_CAST (entry.isRequired() ? "yes" : "no"));
       xmlNewProp(pParam,  BAD_CAST "modifiable", BAD_CAST (entry.isModifiable() ? "yes" : "no"));
 
-             
+
       std::string sType;
       std::string sMinValue;
       std::string sMaxValue;
       bool bNumeric{true};
-      
+
       std::vector<std::string> values;
-              
+
       const auto & anyValues = entry.getValues();
 
       switch(entry.getType())
@@ -101,12 +101,12 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asUINT64());
                          });
           break;
-                  
+
         case Any::Type::TYPE_INT32:
           sType="int32";
           sMinValue = std::to_string(entry.getMinValue().asINT32());
           sMaxValue = std::to_string(entry.getMaxValue().asINT32());
-                  
+
           std::transform(anyValues.begin(),
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
@@ -114,7 +114,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asINT32());
                          });
           break;
-                  
+
         case Any::Type::TYPE_UINT32:
           sType="uint32";
           sMinValue = std::to_string(entry.getMinValue().asUINT32());
@@ -128,7 +128,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                          });
 
           break;
-                  
+
         case Any::Type::TYPE_INT16:
           sType="int16";
           sMinValue = std::to_string(entry.getMinValue().asINT16());
@@ -142,7 +142,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                          });
 
           break;
-                  
+
         case Any::Type::TYPE_UINT16:
           sType="uint16";
           sMinValue = std::to_string(entry.getMinValue().asUINT16());
@@ -156,7 +156,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                          });
 
           break;
-                  
+
         case Any::Type::TYPE_INT8:
           sType="int8";
           sMinValue = std::to_string(entry.getMinValue().asINT8());
@@ -169,7 +169,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asINT8());
                          });
           break;
-                  
+
         case Any::Type::TYPE_UINT8:
           sType="uint8";
           sMinValue = std::to_string(entry.getMinValue().asUINT8());
@@ -182,12 +182,12 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asUINT8());
                          });
           break;
-                  
+
         case Any::Type::TYPE_FLOAT:
           sType="float";
           sMinValue = std::to_string(entry.getMinValue().asFloat());
           sMaxValue = std::to_string(entry.getMaxValue().asFloat());
-                  
+
           std::transform(anyValues.begin(),
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
@@ -195,12 +195,12 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asFloat());
                          });
           break;
-                  
+
         case Any::Type::TYPE_DOUBLE:
           sType="double";
           sMinValue = std::to_string(entry.getMinValue().asDouble());
           sMaxValue = std::to_string(entry.getMaxValue().asDouble());
-                  
+
           std::transform(anyValues.begin(),
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
@@ -208,7 +208,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
                            return std::to_string(any.asDouble());
                          });
           break;
-                  
+
         case Any::Type::TYPE_INET_ADDR:
           bNumeric = false;
           sType="inetaddr";
@@ -217,18 +217,16 @@ std::string manifest(BuildId buildId, const std::string & sName)
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
                          {
-                           char buf[512];
-                           any.asINETAddr().addr_to_string(buf,sizeof(buf));
-                           return buf;
+                           return any.asINETAddr().str();
                          });
-                  
+
           break;
-                  
+
         case Any::Type::TYPE_BOOL:
           sType="bool";
           sMinValue = "false";
           sMaxValue = "true";
-                  
+
           std::transform(anyValues.begin(),
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
@@ -237,11 +235,11 @@ std::string manifest(BuildId buildId, const std::string & sName)
                          });
 
           break;
-                  
+
         case Any::Type::TYPE_STRING:
           bNumeric = false;
           sType="string";
-                   
+
           std::transform(anyValues.begin(),
                          anyValues.end(),
                          std::back_inserter(values),[](const Any & any)->std::string
@@ -252,7 +250,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
         }
 
       xmlNodePtr pNumericOrNonNumeric{};
-      
+
       if(bNumeric)
         {
           pNumericOrNonNumeric = xmlNewChild(pParam,NULL,BAD_CAST "numeric",NULL);
@@ -263,7 +261,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
         {
           pNumericOrNonNumeric = xmlNewChild(pParam,NULL,BAD_CAST "nonnumeric",NULL);
         }
-              
+
       const auto & sPattern = entry.getRegexPattern();
 
       xmlNewProp(pNumericOrNonNumeric, BAD_CAST "type", BAD_CAST sType.c_str());
@@ -279,8 +277,8 @@ std::string manifest(BuildId buildId, const std::string & sName)
                     {
                       xmlNewChild(pValues, NULL, BAD_CAST "value", BAD_CAST s.c_str());
                     });
-              
-              
+
+
       if(!sPattern.empty())
         {
           xmlNodePtr pRegex = xmlNewChild(pNumericOrNonNumeric, NULL, BAD_CAST "regex", NULL);
@@ -293,7 +291,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
           xmlNewChild(pNumericOrNonNumeric, NULL, BAD_CAST "description", BAD_CAST entry.getUsage().c_str());
         }
     }
-    
+
 
   xmlNodePtr pStatistic{xmlNewChild(pPlugin,NULL,BAD_CAST "statistics",NULL)};
 
@@ -302,7 +300,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
       xmlNodePtr pStat{xmlNewChild(pStatistic,NULL,BAD_CAST "element",NULL)};
 
       xmlNewProp(pStat, BAD_CAST "name", BAD_CAST entry.getName().c_str());
-      
+
       xmlNewProp(pStat, BAD_CAST "type", BAD_CAST anyTypeAsString(entry.getType()).c_str());
 
       xmlNewProp(pStat, BAD_CAST "clearable", BAD_CAST (entry.isClearable() ? "yes" : "no"));
@@ -318,7 +316,7 @@ std::string manifest(BuildId buildId, const std::string & sName)
    for(const auto & entry : StatisticController::getTableManifest(buildId))
      {
        xmlNodePtr pTable{xmlNewChild(pStatisticTables,NULL,BAD_CAST "table",NULL)};
-       
+
        xmlNewProp(pTable, BAD_CAST "name", BAD_CAST entry.getName().c_str());
 
        xmlNewProp(pTable, BAD_CAST "clearable", BAD_CAST (entry.isClearable() ? "yes" : "no"));
@@ -328,23 +326,22 @@ std::string manifest(BuildId buildId, const std::string & sName)
           xmlNewChild(pTable, NULL, BAD_CAST "description", BAD_CAST entry.getDescription().c_str());
         }
      }
-   
+
   xmlDocSetRootElement(pDoc,pManifest);
 
   xmlChar * xmlbuff;
- 
+
   int buffersize;
-  
+
   xmlDocDumpFormatMemory(pDoc, &xmlbuff, &buffersize, 1);
 
-  std::string sManifest(reinterpret_cast<char *>(xmlbuff),buffersize);  
+  std::string sManifest(reinterpret_cast<char *>(xmlbuff),buffersize);
 
   xmlFree(xmlbuff);
-  
+
   xmlFreeDoc(pDoc);
 
   return sManifest;
 }
   }
 }
-

@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libieee80211abgmaclayer.la
 
 libieee80211abgmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
- $(ACE_CFLAGS)                       \
  $(AM_CFLAGS)                        \
  $(libuuid_CFLAGS)                   \
  $(libxml2_CFLAGS)
@@ -89,12 +88,7 @@ BUILT_SOURCES =                      \
  onehopneighborsevent.pb.cc          \
  onehopneighborsevent.pb.h             
 
-libieee80211abgmaclayer_la_LIBADD=   \
- $(WIN32_EXTRA_LIBADD)
-
 libieee80211abgmaclayer_la_LDFLAGS=  \
- $(WIN32_EXTRA_LDFLAGS)              \
- $(ACE_LIBS)                         \
  $(libxml2_LIBS)                     \
  -avoid-version
 

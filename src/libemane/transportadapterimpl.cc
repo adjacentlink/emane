@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -55,17 +55,17 @@ void EMANE::Application::TransportAdapterImpl::setTransport(std::unique_ptr<Tran
 void EMANE::Application::TransportAdapterImpl::initialize(Registrar & registrar)
 {
   auto & configRegistrar = registrar.configurationRegistrar();
-  
-  configRegistrar.registerNonNumeric<ACE_INET_Addr>("platformendpoint",
-                                                    ConfigurationProperties::REQUIRED,
-                                                    {},
-                                                    "IPv4 or IPv6 NEM Platform Service endpoint.");
 
-  configRegistrar.registerNonNumeric<ACE_INET_Addr>("transportendpoint",
-                                                    ConfigurationProperties::REQUIRED,
-                                                     {},
-                                                    "IPv4 or IPv6 Transport endpoint.");
-  
+  configRegistrar.registerNonNumeric<INETAddr>("platformendpoint",
+                                               ConfigurationProperties::REQUIRED,
+                                               {},
+                                               "IPv4 or IPv6 NEM Platform Service endpoint.");
+
+  configRegistrar.registerNonNumeric<INETAddr>("transportendpoint",
+                                               ConfigurationProperties::REQUIRED,
+                                               {},
+                                               "IPv4 or IPv6 Transport endpoint.");
+
 }
 
 void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpdate & update)
@@ -78,11 +78,10 @@ void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpda
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "TRANS %03hu TransportAdapterImpl::configure platformendpoint: %s/%hu",
+                                  "TRANS %03hu TransportAdapterImpl::configure platformendpoint: %s",
                                   id_,
-                                  platformEndpointAddr_.get_host_addr(),
-                                  platformEndpointAddr_.get_port_number());
-          
+                                  platformEndpointAddr_.str().c_str());
+
         }
       else if(item.first == "transportendpoint")
         {
@@ -90,10 +89,9 @@ void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpda
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "TRANS %03hu TransportAdapterImpl::configure Transport endpoint: %s/%hu",
+                                  "TRANS %03hu TransportAdapterImpl::configure Transport endpoint: %s",
                                   id_,
-                                  transportEndpointAddr_.get_host_addr(),
-                                  transportEndpointAddr_.get_port_number());
+                                  transportEndpointAddr_.str().c_str());
         }
       else
         {
@@ -120,7 +118,7 @@ void EMANE::Application::TransportAdapterImpl::start()
     {
       throw StartException(exp.what());
     }
-  
+
   pTransport_->start();
 }
 
@@ -163,7 +161,7 @@ void EMANE::Application::TransportAdapterImpl::doProcessPacketMessage(const Pack
   UpstreamPacket pkt(packetInfo,
                      pPacketData,
                      packetLength);
-  
+
   pTransport_->processUpstreamPacket(pkt,msgs);
 }
 

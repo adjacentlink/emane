@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,12 +34,12 @@
 #ifndef EMANENETADAPTERMESSAGE_HEADER_
 #define EMANENETADAPTERMESSAGE_HEADER_
 
-#include <ace/Basic_Types.h>
+#include <cstdint>
 
 namespace EMANE
 {
-  const ACE_UINT16 NETADAPTER_DATA_MSG = 1;
-  const ACE_UINT16 NETADAPTER_CTRL_MSG = 2;
+  const std::uint16_t NETADAPTER_DATA_MSG = 1;
+  const std::uint16_t NETADAPTER_CTRL_MSG = 2;
 
   /**
    * @class NetAdapterHeader
@@ -47,14 +48,14 @@ namespace EMANE
    */
   struct NetAdapterHeader
   {
-    ACE_UINT16 u16Id_;     /**< Event id */
-    ACE_UINT16 u16Length_; /**< Total message length in bytes */
-    ACE_UINT8  data_[0];   /**< Pointer to message payload */
+    std::uint16_t u16Id_;     /**< Event id */
+    std::uint16_t u16Length_; /**< Total message length in bytes */
+    std::uint8_t  data_[0];   /**< Pointer to message payload */
   } __attribute__((packed));
 
   /**
    * Convert a NetAdapterHeader to host byte order
-   * 
+   *
    * @param pMsg Message header reference
    *
    * @return Message header reference.  Same as @a pMsg.
@@ -62,14 +63,14 @@ namespace EMANE
   inline
   NetAdapterHeader * NetAdapterHeaderToHost(NetAdapterHeader * pMsg)
   {
-    pMsg->u16Id_     =  ACE_NTOHS(pMsg->u16Id_);
-    pMsg->u16Length_ =  ACE_NTOHS(pMsg->u16Length_);
+    pMsg->u16Id_     =  ntohs(pMsg->u16Id_);
+    pMsg->u16Length_ =  ntohs(pMsg->u16Length_);
     return pMsg;
   }
 
   /**
    * Convert a NetAdapterHeader to network byte order
-   * 
+   *
    * @param pMsg Message header reference
    *
    * @return Message header reference.  Same as @a pMsg.
@@ -77,8 +78,8 @@ namespace EMANE
   inline
   NetAdapterHeader * NetAdapterHeaderToNet(NetAdapterHeader * pMsg)
   {
-    pMsg->u16Id_     =  ACE_HTONS(pMsg->u16Id_);
-    pMsg->u16Length_ =  ACE_HTONS(pMsg->u16Length_);
+    pMsg->u16Id_     =  htons(pMsg->u16Id_);
+    pMsg->u16Length_ =  htons(pMsg->u16Length_);
     return pMsg;
   }
 
@@ -89,12 +90,12 @@ namespace EMANE
    */
   struct NetAdapterDataMessage
   {
-    ACE_UINT16 u16Src_;
-    ACE_UINT16 u16Dst_;
-    ACE_UINT16 u16DataLen_;
-    ACE_UINT16 u16CtrlLen_;
-    ACE_UINT8  u8Priority_;
-    ACE_UINT8  data_[0];
+    std::uint16_t u16Src_;
+    std::uint16_t u16Dst_;
+    std::uint16_t u16DataLen_;
+    std::uint16_t u16CtrlLen_;
+    std::uint8_t  u8Priority_;
+    std::uint8_t  data_[0];
   } __attribute__((packed));
 
   /**
@@ -104,25 +105,25 @@ namespace EMANE
    */
   struct NetAdapterControlMessage
   {
-    ACE_UINT16 u16CtrlLen_;
-    ACE_UINT8 data_[0];
+    std::uint16_t u16CtrlLen_;
+    std::uint8_t data_[0];
   } __attribute__((packed));
-  
+
 
   inline
   NetAdapterControlMessage * NetAdapterControlMessageToHost(NetAdapterControlMessage * ctrl)
   {
-    ctrl->u16CtrlLen_ = ACE_NTOHS(ctrl->u16CtrlLen_);
+    ctrl->u16CtrlLen_ = ntohs(ctrl->u16CtrlLen_);
     return ctrl;
   }
 
   inline
   NetAdapterControlMessage *  NetAdapterControlMessageToNet(NetAdapterControlMessage * ctrl)
   {
-    ctrl->u16CtrlLen_ = ACE_HTONS(ctrl->u16CtrlLen_);
+    ctrl->u16CtrlLen_ = htons(ctrl->u16CtrlLen_);
     return ctrl;
   }
-  
+
   /**
    *
    * @brief converts netadapter data message from network to host byte order.
@@ -131,11 +132,11 @@ namespace EMANE
   inline
   NetAdapterDataMessage * NetAdapterDataMessageToHost(NetAdapterDataMessage * pkt)
   {
-    pkt->u16Src_      = ACE_NTOHS(pkt->u16Src_);
-    pkt->u16Dst_      = ACE_NTOHS(pkt->u16Dst_);
-    pkt->u16DataLen_  = ACE_NTOHS(pkt->u16DataLen_);
-    pkt->u16CtrlLen_  = ACE_NTOHS(pkt->u16CtrlLen_);
-    
+    pkt->u16Src_      = ntohs(pkt->u16Src_);
+    pkt->u16Dst_      = ntohs(pkt->u16Dst_);
+    pkt->u16DataLen_  = ntohs(pkt->u16DataLen_);
+    pkt->u16CtrlLen_  = ntohs(pkt->u16CtrlLen_);
+
     return pkt;
   }
 
@@ -147,21 +148,21 @@ namespace EMANE
   inline
   NetAdapterDataMessage * NetAdapterDataMessageToNet(NetAdapterDataMessage * pkt)
   {
-    pkt->u16Src_      = ACE_HTONS(pkt->u16Src_);
-    pkt->u16Dst_      = ACE_HTONS(pkt->u16Dst_);
-    pkt->u16DataLen_  = ACE_HTONS(pkt->u16DataLen_);
-    pkt->u16CtrlLen_  = ACE_HTONS(pkt->u16CtrlLen_);
+    pkt->u16Src_      = htons(pkt->u16Src_);
+    pkt->u16Dst_      = htons(pkt->u16Dst_);
+    pkt->u16DataLen_  = htons(pkt->u16DataLen_);
+    pkt->u16CtrlLen_  = htons(pkt->u16CtrlLen_);
 
     return pkt;
   }
 
- 
+
   /**
    *
    * @brief definition of the broadcast address used between network adapter and nem.
    *
    */
-  const ACE_UINT16 NETADAPTER_BROADCAST_ADDRESS = 0xFFFF;
+  const std::uint16_t NETADAPTER_BROADCAST_ADDRESS = 0xFFFF;
 }
 
 #endif //EMANENETADAPTERMESSAGE_HEADER_

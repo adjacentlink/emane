@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,28 +38,21 @@
 
 #include "loggerrecordmessage.h"
 #include "loggerlevelconvert.h"
-
 #include "loggermessage.pb.h"
 
-#include "emane/utils/spawnmemberfunc.h"
-#include "emane/utils/recvcancelable.h"
+#include "emane/utils/threadutils.h"
 
 #include <cstdarg>
 #include <cstdio>
 #include <chrono>
 #include <thread>
-
-#include <ace/OS_NS_sys_time.h>
-#include <ace/OS_NS_string.h>
-#include <ace/OS_NS_Thread.h>
-#include <ace/OS_NS_time.h>
-#include <ace/Log_Msg.h>
-#include <ace/streams.h>
+#include <iostream>
+#include <algorithm>
 
 namespace
 {
-  const char * LEVELSTRING[] = 
-    { 
+  const char * LEVELSTRING[] =
+    {
       "NONE",  // 0
       "ABORT", // 1
       "ERROR", // 2
@@ -74,36 +67,43 @@ namespace
 #define MAX_LEVEL    (TOTAL_LEVELS - 1)
 
 EMANE::LogService::LogService():
-  controlThread_{},
+  thread_{},
   level_{ABORT_LEVEL},
   bOpenBackend_{false},
-  bDecoupleLogging_{false},
-  bACELogging_{false},
-  u32LogSequenceNumber_{}
-{ };
+  u32LogSequenceNumber_{},
+  pStream_{&std::cout}
+{
+  bOpenBackend_ = true;
+
+  udpLoggerTxSocket_.open(INETAddr{"127.0.0.1",0});
+
+  localSocketAddress_ = udpLoggerTxSocket_.getLocalAddress();
+
+  thread_ = std::thread{&LogService::processControlMessages, this};
+};
 
 EMANE::LogService::~LogService()
 {
-  if(bDecoupleLogging_)
+  std::this_thread::sleep_for(DoubleSeconds(0.5));
+
+  if(thread_.joinable())
     {
-      std::this_thread::sleep_for(DoubleSeconds(0.5));     
+      ThreadUtils::cancel(thread_);
 
-      ACE_OS::thr_cancel(controlThread_);
-
-      ACE_OS::thr_join(controlThread_,0,0);
+      thread_.join();
     }
 };
 
 void EMANE::LogService::log(LogLevel level, const char *fmt, ...)
 {
-  if(level <= level_) 
+  if(level <= level_)
     {
       va_list ap;
-      
+
       va_start(ap, fmt);
-      
+
       vlog_i(level,fmt,ap);
-      
+
       va_end(ap);
     }
 }
@@ -111,7 +111,7 @@ void EMANE::LogService::log(LogLevel level, const char *fmt, ...)
 
 void EMANE::LogService::log(LogLevel level, const Strings & strings)
 {
-  if(level <= level_) 
+  if(level <= level_)
     {
       log_i(level, strings);
     }
@@ -120,54 +120,17 @@ void EMANE::LogService::log(LogLevel level, const Strings & strings)
 
 void EMANE::LogService::vlog(LogLevel level, const char *fmt, va_list ap)
 {
-  if(level <= level_) 
+  if(level <= level_)
     {
       vlog_i(level, fmt, ap);
     }
 }
 
 
-void EMANE::LogService::redirectLogsToSysLog(const ACE_TCHAR *program)
+void EMANE::LogService::redirectLogsToFile(const std::string & file)
 {
-  if(ACE_LOG_MSG->open(program, ACE_Log_Msg::SYSLOG, NULL) == -1)
-    {
-      ACE_DEBUG((LM_ERROR, ACE_TEXT ("SystemLogging Failed: %s\n"),ACE_OS::strerror(errno)));
-    }
-  else
-    {
-      bACELogging_ = true;
-    }
-}
-
-
-void EMANE::LogService::redirectLogsToFile(const char* file)
-{
-  ofstream *log_stream = new ofstream();
-
-  log_stream->open(file, ios::out | ios::app);
-
-  ACE_OSTREAM_TYPE * outputStream = ((ACE_OSTREAM_TYPE *)log_stream);
-
-  ACE_LOG_MSG->msg_ostream(outputStream);
-
-  ACE_LOG_MSG->clr_flags(ACE_Log_Msg::STDERR | ACE_Log_Msg::LOGGER);
-
-  ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
-
-  bACELogging_ = true;
-}
-
-
-void EMANE::LogService::redirectLogsToRemoteLogger(const ACE_TCHAR *program, const char* addr)
-{
-  if(ACE_LOG_MSG->open(program, ACE_Log_Msg::LOGGER,ACE_TEXT (addr)) == -1)
-    {
-      ACE_DEBUG((LM_ERROR, ACE_TEXT ("RemoteLogging Failed: %s\n"),ACE_OS::strerror(errno)));
-    }
-  else
-    {
-      bACELogging_ = true;
-    }  
+  ofs_.open(file,std::ofstream::trunc);
+  pStream_  = &ofs_;
 }
 
 
@@ -188,34 +151,24 @@ void EMANE::LogService::open()
   if(!bOpenBackend_)
     {
       bOpenBackend_ = true;
-      
-      if(udpLoggerTxSocket_.open(ACE_INET_Addr(static_cast<std::uint16_t>(0),"127.0.0.1"),
-                                 ACE_PROTOCOL_FAMILY_INET,
-                                 0,
-                                 1) == -1)
-        {
-          writeLogString("!!! Unable to decomple logging !!!", ERROR_LEVEL); 
-        }
-      else
-        {
-          udpLoggerTxSocket_.get_local_addr(localSocketAddress_);
-          
-          bDecoupleLogging_ = true;
 
-          EMANE::Utils::spawn(*this, &LogService::processControlMessages, &controlThread_);
-        }
+      udpLoggerTxSocket_.open(INETAddr{"127.0.0.1",0});
+
+      localSocketAddress_ = udpLoggerTxSocket_.getLocalAddress();
+
+      thread_ = std::thread{&LogService::processControlMessages, this};
     }
 }
 
 
-ACE_THR_FUNC_RETURN EMANE::LogService::processControlMessages(void)
+void EMANE::LogService::processControlMessages(void)
 {
   char buf[MAX_PACKET_LEN] ={0};
 
   char errmsg[1024] = {0};
 
   int iRxLength{};
-  
+
   std::uint16_t * pu16HeaderLength = reinterpret_cast<std::uint16_t *> (buf);
 
   int iMinExpectedLength = static_cast<int> (sizeof(*pu16HeaderLength));
@@ -223,83 +176,77 @@ ACE_THR_FUNC_RETURN EMANE::LogService::processControlMessages(void)
   while(1)
     {
       // wait for message here, the header len is the fisrt 2 bytes in network byte order
-      if((iRxLength = Utils::recvCancelable(udpLoggerTxSocket_,
-                                            buf, 
-                                            sizeof(buf), 
-                                            addrFrom_)) > iMinExpectedLength)
+      if((iRxLength = udpLoggerTxSocket_.recv(buf,sizeof(buf),0)) > iMinExpectedLength)
         {
           EMANEMessage::LoggerMessage loggerMessage;
-          
+
           try
             {
               if(!loggerMessage.ParseFromArray(buf + sizeof(*pu16HeaderLength),
                                                ntohs(*pu16HeaderLength)))
                 {
                   snprintf(errmsg, sizeof(errmsg), "!!! logger message failed ParseFromArray !!!");
-                  
-                  writeLogString(errmsg, ERROR_LEVEL);
+
+                  writeLogString(errmsg);
                 }
               else
                 {
                   if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
                     {
                       if(loggerMessage.has_record())
-                        {   
-                          writeLogString(loggerMessage.record().record().c_str(),
-                                         convertLogLevel(loggerMessage.record().level()));
+                        {
+                          writeLogString(loggerMessage.record().record().c_str());
                         }
                       else
                         {
                           snprintf(errmsg, sizeof(errmsg), "!!! logger message type RECORD does NOT have record !!!");
-                          
-                          writeLogString(errmsg, ERROR_LEVEL);
+
+                          writeLogString(errmsg);
                         }
                     }
                   else
                     {
                       snprintf(errmsg, sizeof(errmsg), "!!! unhandled logger message type %d !!!", loggerMessage.type());
-                      
-                      writeLogString(errmsg, ERROR_LEVEL);
+
+                      writeLogString(errmsg);
                     }
                 }
             }
           catch(google::protobuf::FatalException & exp)
             {
               snprintf(errmsg, sizeof(errmsg), "!!! caught exception (%s) !!!", exp.what());
-              
-              writeLogString(errmsg, ERROR_LEVEL);
+
+              writeLogString(errmsg);
             }
         }
       else if(iRxLength < 0)
         {
           // socket read error
           snprintf(errmsg, sizeof(errmsg), "!!! socket read error (%s) !!!", strerror(errno));
-              
-          writeLogString(errmsg, ERROR_LEVEL);
-              
+
+          writeLogString(errmsg);
+
           break;
         }
       else if(iRxLength == 0)
         {
           // socket empty
           snprintf(errmsg, sizeof(errmsg), "socket empty, bye");
-              
-          writeLogString(errmsg, DEBUG_LEVEL);
-              
+
+          writeLogString(errmsg);
+
           break;
         }
-      else 
+      else
         {
           // socket read length short
-          snprintf(errmsg, sizeof(errmsg), 
+          snprintf(errmsg, sizeof(errmsg),
                    "!!! socket read len of %d, msg length must be greater than %d, ignore !!!",
                    iRxLength, iMinExpectedLength);
-              
-          writeLogString(errmsg, DEBUG_LEVEL);
+
+          writeLogString(errmsg);
         }
     }
-  
-  return 0;
 }
 
 
@@ -310,11 +257,11 @@ ACE_THR_FUNC_RETURN EMANE::LogService::processControlMessages(void)
 void EMANE::LogService::log_i(LogLevel level, const char *fmt, ...)
 {
   va_list ap;
-      
+
   va_start(ap, fmt);
-      
+
   vlog_i(level,fmt,ap);
-      
+
   va_end(ap);
 }
 
@@ -324,34 +271,34 @@ void EMANE::LogService::log_i(LogLevel level, const Strings & strings)
 {
   std::string sMessage{};
 
-  std::for_each(strings.begin(), 
+  std::for_each(strings.begin(),
                 strings.end(),
                 [&sMessage](const std::string & sPart){sMessage += sPart; sMessage.push_back(' ');});
-      
+
   log_i(level,"%s",sMessage.c_str());
 }
 
 
 void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
 {
-  ACE_Time_Value tv = ACE_OS::gettimeofday();
-  
+  auto now = Clock::now();
+
+  std::time_t t{Clock::to_time_t(now)};
+
+  std::tm ltm;
+
+  localtime_r(&t, &ltm);
+
   // buffer size is MAX_LOG_LENGTH + timestamp + level
   const int iBuffSize{MAX_LOG_LENGTH + 22};
   char buff[iBuffSize] = {0};
 
-  struct tm ltm;
-     
-  time_t t = tv.sec();
-     
-  ACE_OS::localtime_r(&t, &ltm);
-
   int iLen = snprintf(buff, sizeof(buff),"%02d:%02d:%02d.%06lu %5s ",
-                     ltm.tm_hour,
-                     ltm.tm_min,
-                     ltm.tm_sec,
-                     tv.usec(),
-                     level >= 0 && level < TOTAL_LEVELS ? LEVELSTRING[level] : "?");
+                      ltm.tm_hour,
+                      ltm.tm_min,
+                      ltm.tm_sec,
+                      std::chrono::duration_cast<Microseconds>(now.time_since_epoch()).count()%1000000,
+                      level >= 0 && level < TOTAL_LEVELS ? LEVELSTRING[level] : "?");
 
   if(iLen < 0 || iLen > iBuffSize)
     {
@@ -364,20 +311,14 @@ void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
   if(iAppended > 0)
     {
       iLen += iAppended;
-      
+
       if(iLen > iBuffSize)
         {
           iLen = iBuffSize;
         }
     }
 
-  if(bDecoupleLogging_ == false)
-    {
-      writeLogString(buff, level);   
-    }
-  else
-    {
-      Utils::VectorIO outputVector(2);
+  Utils::VectorIO outputVector(2);
 
       // set buff, len, level and seq num in msg hdr, len does not include terminationg byte
       EMANE::Messages::LoggerRecordMessage msg {buff,
@@ -393,39 +334,13 @@ void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
       outputVector[0] = Utils::make_iovec((void *) &u16HeaderLen, sizeof(u16HeaderLen));
       outputVector[1] = Utils::make_iovec((void *) serialization.c_str(), serialization.size());
 
-      udpLoggerTxSocket_.send(static_cast<const iovec*>(&outputVector[0]), 
-                              static_cast<int>(outputVector.size()), 
+      udpLoggerTxSocket_.send(static_cast<const iovec*>(&outputVector[0]),
+                              static_cast<int>(outputVector.size()),
                               localSocketAddress_);
-    }
 }
 
 
-void EMANE::LogService::writeLogString(const char * pzLogMessage, LogLevel level)
+void EMANE::LogService::writeLogString(const char * pzLogMessage)
 {
-  if(bACELogging_)
-    {
-      // Map the EMANE Log Level to the appropriate ACE Log Level
-      switch(level)
-        {
-        case ABORT_LEVEL:   
-          ACE_DEBUG((LM_CRITICAL, ACE_TEXT("%s\n"),pzLogMessage));
-          break;
-        case ERROR_LEVEL:
-          ACE_DEBUG((LM_ERROR, ACE_TEXT("%s\n"),pzLogMessage));
-          break;
-        case INFO_LEVEL:
-          ACE_DEBUG((LM_INFO, ACE_TEXT("%s\n"),pzLogMessage));
-          break;
-        case DEBUG_LEVEL:
-          ACE_DEBUG((LM_DEBUG, ACE_TEXT("%s\n"),pzLogMessage));
-          break;
-        default:
-          ACE_DEBUG((LM_ERROR, ACE_TEXT("Log Message wasn't a valid log level\n")));
-          break;
-        }
-    }
-  else
-    {
-      printf("%s\n",pzLogMessage);
-    }
+  (*pStream_)<<pzLogMessage<<std::endl;
 }

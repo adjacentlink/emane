@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,8 +35,6 @@
 #include "emane/application/logger.h"
 #include "logservice.h"
 
-#include <ace/INET_Addr.h>
-#include <ace/ace_wchar.h>
 #include <cstdarg>
 
 EMANE::Application::Logger::Logger(){}
@@ -44,7 +43,7 @@ EMANE::Application::Logger::Logger(){}
 EMANE::Application::Logger::~Logger(){}
 
 
-void 
+void
 EMANE::Application::Logger::log(LogLevel level, const char *fmt, ...)
 {
   va_list ap;
@@ -62,31 +61,13 @@ EMANE::Application::Logger::setLogLevel(const LogLevel level)
 
 
 void
-EMANE::Application::Logger::redirectLogsToSysLog(const char *program)
-{
-  const ACE_TCHAR *aceprogram = ACE_TEXT_CHAR_TO_TCHAR(program);
-  LogServiceSingleton::instance()->redirectLogsToSysLog(aceprogram);
-}
-
-
-void 
 EMANE::Application::Logger::redirectLogsToFile(const char* file)
 {
   LogServiceSingleton::instance()->redirectLogsToFile(file);
 }
 
 
-void 
-EMANE::Application::Logger::redirectLogsToRemoteLogger(const char *program, 
-                                                       const char* addr)
-{
-  const ACE_TCHAR *aceprogram = ACE_TEXT_CHAR_TO_TCHAR(program);
-  LogServiceSingleton::instance()->redirectLogsToRemoteLogger(aceprogram, 
-                                                              addr);
-}
-
-
-void 
+void
 EMANE::Application::Logger::open()
 {
   LogServiceSingleton::instance()->open();

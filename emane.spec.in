@@ -191,7 +191,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 find ${RPM_BUILD_ROOT} -name '*.a' -exec rm '{}'  \;
 find ${RPM_BUILD_ROOT} -name '*.la' -exec rm '{}' \;
 mkdir -p ${RPM_BUILD_ROOT}%{_pkgdocdir}
-install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS %{!?_licensedir:COPYING} ChangeLog NEWS README PROBLEM-REPORT-FORM SPONSOR
+install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS %{!?_licensedir:COPYING} ChangeLog NEWS README SPONSOR
 %if 0%{?_licensedir:1}
 mkdir -p ${RPM_BUILD_ROOT}%{_licensedir}/%{name}
 install -t ${RPM_BUILD_ROOT}%{_licensedir}/%{name} COPYING

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,10 +34,6 @@
 
 #ifndef BITPOOL_HEADER_
 #define BITPOOL_HEADER_
-
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
-#include <ace/Guard_T.h>
 
 #include "emane/types.h"
 #include "emane/platformserviceprovider.h"
@@ -104,7 +101,7 @@ namespace EMANE
 
       float                 fFillRemainder_;
 
-      ACE_Thread_Mutex      mutex_;
+      std::mutex            mutex_;
 
       /**
        * Adds to pool
@@ -123,7 +120,7 @@ namespace EMANE
        * @return  number available in the pool
        *
        */
-      std::uint64_t doDrainPool(std::uint64_t u64Request, 
+      std::uint64_t doDrainPool(std::uint64_t u64Request,
                                 const TimePoint & requestTime,
                                 Microseconds & intervalMicroseconds);
     };

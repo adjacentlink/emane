@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,15 +35,11 @@
 #define EMANEAPPLICATIONNEMMANAGERIMPL_HEADAER_
 
 #include "emane/application/nemmanager.h"
+#include "emane/inetaddr.h"
+#include "controlportservice.h"
 
 #include <map>
 #include <memory>
-#include <thread>
-
-#include <ace/SOCK_Stream.h>
-#include <ace/SOCK_Acceptor.h>
-#include "controlportservice.h"
-#include <ace/Acceptor.h>
 
 namespace EMANE
 {
@@ -67,7 +63,7 @@ namespace EMANE
       void initialize(Registrar & registrar) override;
 
       void configure(const ConfigurationUpdate & update) override;
-    
+
       void start() override;
 
       void postStart() override;
@@ -76,26 +72,25 @@ namespace EMANE
 
       void destroy()
         throw() override;
-    
+
     private:
       using PlatformNEMMap = std::map<NEMId,std::unique_ptr<NEM>>;
-    
+
       PlatformNEMMap platformNEMMap_;
 
-      ACE_Acceptor<EMANE::ControlPort::ControlPortService,ACE_SOCK_ACCEPTOR> acceptor_;
+      ControlPort::Service controlPortService_;
 
-      ACE_INET_Addr OTAManagerGroupAddr_;
+      INETAddr OTAManagerGroupAddr_;
       std::string sOTAManagerGroupDevice_;
       std::uint8_t u8OTAManagerTTL_;
       bool bOTAManagerChannelLoopback_;
       bool bOTAManagerChannelEnable_;
-    
-      ACE_INET_Addr eventServiceGroupAddr_;
+
+      INETAddr eventServiceGroupAddr_;
       std::string sEventServiceDevice_;
       std::uint8_t u8EventServiceTTL_;
-      ACE_INET_Addr controlPortAddr_;
+      INETAddr controlPortAddr_;
       std::string sAntennaProfileManifestURI_;
-      std::thread thread_;
     };
   }
 }

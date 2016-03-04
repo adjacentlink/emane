@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,22 +33,22 @@
 #ifndef EMANECONTROLMESSAGESERIALIZERMESSAGES_HEADER_
 #define EMANECONTROLMESSAGESERIALIZERMESSAGES_HEADER_
 
-#include <ace/Basic_Types.h>
+#include <cstdint>
 
 namespace EMANE
 {
   struct ControlMessageHeader
   {
-    ACE_UINT16 u16Id_;
-    ACE_UINT16 u16Length_;
-    ACE_UINT8 data_[0];
-    
+    std::uint16_t u16Id_;
+    std::uint16_t u16Length_;
+    std::uint8_t data_[0];
+
   }__attribute__((packed));
 
   struct ControlMessageSerializerHeader
   {
-    ACE_UINT16 u16Count_;
-    ACE_UINT8 data_[0];
+    std::uint16_t u16Count_;
+    std::uint8_t data_[0];
   }__attribute__((packed));
 }
 

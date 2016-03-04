@@ -1,5 +1,5 @@
 %AC_COPYRIGHT([
- Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,6 @@ AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
 
 AC_PROG_INSTALL
 
-AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
 AC_LANG([C++])
@@ -74,9 +73,6 @@ AC_ARG_WITH([testcases],
            [AM_CONDITIONAL(WITH_TESTCASES,false)])
 
 
-AC_ARG_VAR([ACE_CFLAGS],[C compiler flags for ACE])
-AC_ARG_VAR([ACE_LIBS], [linker flags for ACE])
-
 AC_ARG_VAR([pcap_CFLAGS],[C compiler flags for libpcap])
 AC_ARG_VAR([pcap_LIBS], [linker flags for libpcap])
 
@@ -89,49 +85,8 @@ AC_CHECK_HEADER(sys/timerfd.h,
  [],
  [AC_MSG_ERROR("Missing sys/timerfd.h header")])
 
-_cppflags=${CPPFLAGS}
-_ldflags=${LDFLAGS}
 
-# Checks for libraries.
-if test "${ACE_CFLAGS}" != ""; then
-   CPPFLAGS="${ACE_CFLAGS} ${CPPFLAGS}"
-fi
-
-if test "${ACE_LIBS}" != ""; then
-   LDFLAGS="${ACE_LIBS} ${LDFLAGS}"
-fi
-
-AC_CHECK_HEADER(ace/OS_main.h,
- [AC_CHECK_LIB([ACE],main,[ACE_LIBS+=' -lACE'],
- [AC_MSG_ERROR("ACE not installed")])],
- [AC_MSG_ERROR("Missing ACE development headers")])
-
-
-CPPFLAGS=${_cppflags}
-LDFLAGS=${_ldflags}
-
-AC_SUBST(ACE_CFLAGS)
-AC_SUBST(ACE_LIBS)
-
-PCAP_LIB_NAME=pcap
-
-WIN32_EXTRA_LIBADD=
-WIN32_EXTRA_LDFLAGS=
-
-case "$host" in
- *-mingw*)
- CPPFLAGS="$CPPFLAGS -DWIN32"
- WIN32_EXTRA_LIBADD="-lws2_32 -liphlpapi"
- WIN32_EXTRA_LDFLAGS=-no-undefined
- PCAP_LIB_NAME=wpcap
- ;;
-*)
- LDFLAGS="$LDFLAGS -lpthread -ldl"
- ;;
-esac
-
-AC_SUBST(WIN32_EXTRA_LIBADD)
-AC_SUBST(WIN32_EXTRA_LDFLAGS)
+LDFLAGS="$LDFLAGS -lpthread -ldl"
 
 _cppflags=${CPPFLAGS}
 _ldflags=${LDFLAGS}
@@ -146,9 +101,9 @@ if test "${pcap_LIBS}" != ""; then
 fi
 
 AC_CHECK_HEADER(pcap.h,
- [AC_CHECK_LIB([${PCAP_LIB_NAME}],pcap_open_live,[pcap_LIBS+=" -l${PCAP_LIB_NAME}"],
- [AC_MSG_ERROR("${PCAP_LIB_NAME} not installed")])],
- [AC_MSG_ERROR("Missing ${PCAP_LIB_NAME} development headers")])
+ [AC_CHECK_LIB([pcap],pcap_open_live,[pcap_LIBS+=" -lpcap"],
+ [AC_MSG_ERROR("pcap not installed")])],
+ [AC_MSG_ERROR("Missing pcap development headers")])
 
 
 CPPFLAGS=${_cppflags}
@@ -186,10 +141,10 @@ CPPFLAGS="$CPPFLAGS -DVERBOSE_LOGGING"
 fi
 
 AC_SUBST(libemane_CFLAGS,
-["${libxml2_CFLAGS} ${ACE_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
+["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
 
 AC_SUBST(libemane_LIBS,
-["-lemane -lrt ${libxml2_LIBS} ${ACE_LIBS} ${protobuf_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
+["-lemane -lrt ${libxml2_LIBS} ${protobuf_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
 
 LANG=C
 AC_SUBST(LANG)

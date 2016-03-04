@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,6 +37,7 @@
 
 #include "ethernettransport.h"
 
+#include "emane/inetaddr.h"
 #include "emane/utils/bitpool.h"
 #include "emane/flowcontrolclient.h"
 
@@ -43,8 +45,7 @@
 
 #include "tuntap.h"
 
-#include <ace/INET_Addr.h>
-#include <ace/Thread_Mutex.h>
+#include <thread>
 
 namespace EMANE
 {
@@ -63,32 +64,32 @@ namespace EMANE
       public:
         VirtualTransport(NEMId id,
                          PlatformServiceProvider *pPlatformService);
-  
+
         ~VirtualTransport();
-  
+
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & update) override;
-  
+
         void start() override;
 
         void postStart() override;
 
         void stop() override;
-  
+
         void destroy() throw() override;
-  
+
         void processUpstreamPacket(UpstreamPacket & pkt,
                                    const ControlMessages & msgs);
-  
+
         void processUpstreamControl(const ControlMessages & msgs);
 
       private:
-        ACE_INET_Addr address_; 
+        INETAddr address_;
 
-        ACE_INET_Addr mask_;
+        INETAddr mask_;
 
-        std::string sDeviceName_; 
+        std::string sDeviceName_;
 
         std::string sDevicePath_;
 
@@ -98,7 +99,7 @@ namespace EMANE
 
         Utils::BitPool * pBitPool_;
 
-        ACE_thread_t threadRead_;
+        std::thread thread_;
 
         bool bCanceled_;
 
@@ -110,7 +111,7 @@ namespace EMANE
 
         Utils::CommonLayerStatistics commonLayerStatistics_;
 
-        ACE_THR_FUNC_RETURN readDevice();
+        void readDevice();
 
         void handleUpstreamControl(const ControlMessages & msgs);
       };

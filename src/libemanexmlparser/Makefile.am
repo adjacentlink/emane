@@ -32,12 +32,6 @@ EXTRA_DIST=                       \
  transportdaemonconfiguration.h   \
  transportinstanceconfiguration.h
 
-
-
-libemanexmlparser_la_LIBADD= \
- $(WIN32_EXTRA_LIBADD)
-
 libemanexmlparser_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS)       \
  $(libxml2_LIBS)              \
  -avoid-version

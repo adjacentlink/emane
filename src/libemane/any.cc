@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 EMANE::Any::Any(std::int64_t i64Value):
   type_{Type::TYPE_INT64},
   i64Value_{i64Value}{}
-  
+
 EMANE::Any::Any(std::uint64_t u64Value):
   type_{Type::TYPE_UINT64},
   u64Value_{u64Value}{}
@@ -64,7 +64,7 @@ EMANE::Any::Any(std::int8_t i8Value):
 EMANE::Any::Any(std::uint8_t u8Value):
   type_{Type::TYPE_UINT8},
   u64Value_(u8Value){}
-    
+
 EMANE::Any::Any(float fValue):
   type_{Type::TYPE_FLOAT},
   dValue_{fValue}{}
@@ -73,7 +73,7 @@ EMANE::Any::Any(double dValue):
   type_{Type::TYPE_DOUBLE},
   dValue_{dValue}{}
 
-EMANE::Any::Any(const ACE_INET_Addr & addrValue):
+EMANE::Any::Any(const INETAddr & addrValue):
   type_{Type::TYPE_INET_ADDR},
   addrValue_(addrValue){}
 
@@ -91,27 +91,30 @@ EMANE::Any::Any(const std::string & sValue):
 
 EMANE::Any::Any(const Any& rhs)
 {
-  memcpy(this,&rhs,sizeof(Any));
-  
+  type_ = rhs.type_;
+
   if(type_ == Type::TYPE_STRING)
     {
       new (&sValue_) std::string(rhs.sValue_);
     }
   else if(type_ == Type::TYPE_INET_ADDR)
     {
-      new (&addrValue_) ACE_INET_Addr(rhs.addrValue_);
+      new (&addrValue_) INETAddr(rhs.addrValue_);
+    }
+  else
+    {
+      memcpy(this,&rhs,sizeof(Any));
     }
 }
 
 EMANE::Any & EMANE::Any::operator=(const Any & rhs)
 {
-  // if std::string or ACE_INET_Addr cleanup
+  // if std::string or INETAddr cleanup
   this->~Any();
-  
-  // copy state  as binary represenation 
-  memcpy(this,&rhs,sizeof(Any));
-  
-  // if std::string or ACE_INET_Addr use placement new
+
+  type_ = rhs.type_;
+
+  // if std::string or INETAddr use placement new
   // to create object
   if(type_ == Type::TYPE_STRING)
     {
@@ -119,25 +122,30 @@ EMANE::Any & EMANE::Any::operator=(const Any & rhs)
     }
   else if(type_ == Type::TYPE_INET_ADDR)
     {
-      new (&addrValue_) ACE_INET_Addr(rhs.addrValue_);
+      new (&addrValue_) INETAddr(rhs.addrValue_);
     }
-  
+  else
+    {
+      // copy state  as binary represenation
+      memcpy(this,&rhs,sizeof(Any));
+    }
+
   return *this;
 }
 
 EMANE::Any::~Any()
 {
-  // if std::string or ACE_INET_Addr cleanup
+  // if std::string or INETAddr cleanup
   if(type_ == Type::TYPE_STRING)
     {
       sValue_.~basic_string<char>();
     }
   else if(type_ == Type::TYPE_INET_ADDR)
     {
-      addrValue_.~ACE_INET_Addr();
+      addrValue_.~INETAddr();
     }
 }
-    
+
 std::int64_t EMANE::Any::asINT64() const
 {
   if(type_ == Type::TYPE_INT64)
@@ -157,7 +165,7 @@ std::uint64_t EMANE::Any::asUINT64() const
 
   throw AnyException("Not UINT64");
 }
-    
+
 std::int32_t EMANE::Any::asINT32() const
 {
   if(type_ == Type::TYPE_INT32)
@@ -238,7 +246,7 @@ double EMANE::Any::asDouble() const
   throw AnyException("Not Double");
 }
 
-ACE_INET_Addr EMANE::Any::asINETAddr() const
+EMANE::INETAddr EMANE::Any::asINETAddr() const
 {
   if(type_ == Type::TYPE_INET_ADDR)
     {
@@ -275,7 +283,7 @@ EMANE::Any::Type EMANE::Any::getType() const
   return type_;
 }
 
-std::ostream & operator<<(ostream &out, const EMANE::Any & any)
+std::ostream & operator<<(std::ostream &out, const EMANE::Any & any)
 {
   out<<any.toString();
   return out;
@@ -287,51 +295,44 @@ std::string EMANE::Any::toString() const
     {
     case EMANE::Any::Type::TYPE_INT64:
       return std::to_string(asINT64());
-      
+
     case EMANE::Any::Type::TYPE_UINT64:
       return std::to_string(asUINT64());
-      
+
     case EMANE::Any::Type::TYPE_INT32:
       return std::to_string(asINT32());
-      
+
     case EMANE::Any::Type::TYPE_UINT32:
       return std::to_string(asUINT32());
-      
+
     case EMANE::Any::Type::TYPE_INT16:
       return std::to_string(asINT16());
-      
+
     case EMANE::Any::Type::TYPE_UINT16:
       return std::to_string(asUINT16());
-      
+
     case EMANE::Any::Type::TYPE_INT8:
       return std::to_string(asINT8());
-      
+
     case EMANE::Any::Type::TYPE_UINT8:
       return std::to_string(asUINT8());
-      
+
     case EMANE::Any::Type::TYPE_FLOAT:
       return std::to_string(asFloat());
-      
+
     case EMANE::Any::Type::TYPE_DOUBLE:
       return std::to_string(asDouble());
-      
-    case EMANE::Any::Type::TYPE_INET_ADDR:
-      {
-        char buf[128];
-          
-        asINETAddr().addr_to_string(buf,
-                                    sizeof(buf));
 
-        return buf;        
-      }
+    case EMANE::Any::Type::TYPE_INET_ADDR:
+      return asINETAddr().str();
       break;
-      
+
     case EMANE::Any::Type::TYPE_BOOL:
       return std::to_string(asBool());
-      
+
     case EMANE::Any::Type::TYPE_STRING:
       return asString();
-      
+
     default:
       break;
     }
@@ -347,43 +348,43 @@ EMANE::Any EMANE::Any::create(std::string sValue, Type type)
         {
         case Any::Type::TYPE_INT64:
           return Any(Utils::ParameterConvert(sValue).toINT64());
-          
+
         case Any::Type::TYPE_UINT64:
           return Any(Utils::ParameterConvert(sValue).toUINT64());
-          
+
         case Any::Type::TYPE_INT32:
           return Any(Utils::ParameterConvert(sValue).toINT32());
-      
+
         case Any::Type::TYPE_UINT32:
           return Any(Utils::ParameterConvert(sValue).toUINT32());
-          
+
         case Any::Type::TYPE_INT16:
           return Any(Utils::ParameterConvert(sValue).toINT16());
-            
+
         case Any::Type::TYPE_UINT16:
           return Any(Utils::ParameterConvert(sValue).toUINT16());
-            
+
         case Any::Type::TYPE_INT8:
           return Any(Utils::ParameterConvert(sValue).toINT8());
-            
+
         case Any::Type::TYPE_UINT8:
           return Any(Utils::ParameterConvert(sValue).toUINT8());
-            
+
         case Any::Type::TYPE_FLOAT:
           return Any(Utils::ParameterConvert(sValue).toFloat());
-            
+
         case Any::Type::TYPE_DOUBLE:
           return Any(Utils::ParameterConvert(sValue).toDouble());
-        
+
         case Any::Type::TYPE_INET_ADDR:
           return Any(Utils::ParameterConvert(sValue).toINETAddr());
-            
+
         case Any::Type::TYPE_BOOL:
           return Any(Utils::ParameterConvert(sValue).toBool());
-      
+
         case Any::Type::TYPE_STRING:
           return Any(sValue.c_str());
-          
+
         default:
           break;
         }
@@ -422,15 +423,15 @@ bool EMANE::Any::operator<=(const EMANE::Any & rhs) const
         case Any::Type::TYPE_STRING:
           return sValue_ <= rhs.sValue_;
 
-        case Any::Type::TYPE_INET_ADDR:
-          return (addrValue_ < rhs. addrValue_) ||
-            (addrValue_ == rhs. addrValue_);
+        // case Any::Type::TYPE_INET_ADDR:
+        //   return (addrValue_ < rhs. addrValue_) ||
+        //     (addrValue_ == rhs. addrValue_);
 
         default:
           break;
         }
     }
-  
+
   throw EMANE::AnyException("Type mismatch");
 }
 
@@ -460,15 +461,15 @@ bool EMANE::Any::operator>=(const EMANE::Any & rhs) const
         case Any::Type::TYPE_STRING:
           return sValue_ >= rhs.sValue_;
 
-        case Any::Type::TYPE_INET_ADDR:
-          return (addrValue_ == rhs. addrValue_) ||
-            !(addrValue_ < rhs. addrValue_);
+        // case Any::Type::TYPE_INET_ADDR:
+        //   return (addrValue_ == rhs. addrValue_) ||
+        //     !(addrValue_ < rhs. addrValue_);
 
         default:
           break;
         }
     }
-  
+
   throw EMANE::AnyException("Type mismatch");
 }
 
@@ -498,14 +499,14 @@ bool EMANE::Any::operator<(const EMANE::Any & rhs) const
         case Any::Type::TYPE_STRING:
           return sValue_ < rhs.sValue_;
 
-        case Any::Type::TYPE_INET_ADDR:
-          return addrValue_ < rhs. addrValue_;
+        // case Any::Type::TYPE_INET_ADDR:
+        //   return addrValue_ < rhs. addrValue_;
 
         default:
           break;
         }
     }
-  
+
   throw EMANE::AnyException("Type mismatch");
 }
 
@@ -535,15 +536,15 @@ bool EMANE::Any::operator>(const EMANE::Any & rhs) const
         case Any::Type::TYPE_STRING:
           return sValue_ > rhs.sValue_;
 
-        case Any::Type::TYPE_INET_ADDR:
-          return (addrValue_ != rhs. addrValue_) &&
-            !(addrValue_ < rhs. addrValue_);
-                      
+        // case Any::Type::TYPE_INET_ADDR:
+        //   return (addrValue_ != rhs. addrValue_) &&
+        //     !(addrValue_ < rhs. addrValue_);
+
         default:
           break;
         }
     }
-  
+
   throw EMANE::AnyException("Type mismatch");
 }
 
@@ -568,7 +569,7 @@ std::string EMANE::anyTypeAsString(const Any::Type & type)
 
     case Any::Type::TYPE_UINT32:
       return "uint32";
-      
+
     case Any::Type::TYPE_UINT16:
       return "uint16";
 
@@ -584,7 +585,7 @@ std::string EMANE::anyTypeAsString(const Any::Type & type)
     case Any::Type::TYPE_DOUBLE:
       return "double";
 
-    case Any::Type::TYPE_INET_ADDR: 
+    case Any::Type::TYPE_INET_ADDR:
       return "inetaddr";
 
     case Any::Type::TYPE_STRING:
@@ -599,88 +600,87 @@ std::string EMANE::anyTypeAsString(const Any::Type & type)
 
 namespace EMANE
 {
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::uint64_t>::type()
   {
     return Any::Type::TYPE_UINT64;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::int64_t>::type()
   {
     return Any::Type::TYPE_INT64;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::uint32_t>::type()
   {
     return Any::Type::TYPE_UINT32;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::int32_t>::type()
   {
     return Any::Type::TYPE_INT32;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::uint16_t>::type()
   {
     return Any::Type::TYPE_UINT16;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::int16_t>::type()
   {
     return Any::Type::TYPE_INT16;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::uint8_t>::type()
   {
     return Any::Type::TYPE_UINT8;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::int8_t>::type()
   {
     return Any::Type::TYPE_INT8;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<bool>::type()
   {
     return Any::Type::TYPE_BOOL;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<float>::type()
   {
     return Any::Type::TYPE_FLOAT;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<double>::type()
   {
     return Any::Type::TYPE_DOUBLE;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<const char *>::type()
   {
     return Any::Type::TYPE_STRING;
   }
 
-  template <> 
+  template <>
   Any::Type AnyConvertableType<std::string>::type()
   {
     return Any::Type::TYPE_STRING;
   }
 
-  template <> 
-  Any::Type AnyConvertableType<ACE_INET_Addr>::type()
+  template <>
+  Any::Type AnyConvertableType<INETAddr>::type()
   {
     return Any::Type::TYPE_INET_ADDR;
   }
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -57,7 +57,7 @@ EMANE::TransportInstanceConfiguration::~TransportInstanceConfiguration()
 }
 
 
-ACE_UINT16 
+EMANE::NEMId
 EMANE::TransportInstanceConfiguration::getId()
 {
   return u16Id_;
@@ -71,7 +71,7 @@ EMANE::TransportInstanceConfiguration::getLayers()
 }
 
 
-void 
+void
 EMANE::TransportInstanceConfiguration::doProcessChildNode(xmlNodePtr pNode)
 {
   std::string sLayerName = reinterpret_cast<const char*>(pNode->name);

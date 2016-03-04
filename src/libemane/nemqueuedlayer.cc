@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,17 +35,13 @@
 #include "nemqueuedlayer.h"
 #include "logservice.h"
 
-#include "emane/utils/spawnmemberfunc.h"
-
 #include <exception>
-
-#include <ace/Guard_T.h>
+#include <mutex>
 
 EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatformService):
   NEMLayer{id, pPlatformService},
   pPlatformService_{pPlatformService},
   thread_{},
-  cond_{mutex_},
   bCancel_{},
   pProcessedDownstreamPacket_{},
   pProcessedUpstreamPacket_{},
@@ -56,46 +53,44 @@ EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatfo
 
 EMANE::NEMQueuedLayer::~NEMQueuedLayer()
 {
-  mutex_.acquire();
+  std::lock_guard<std::mutex> m(mutex_);
 
-  if(!bCancel_ && thread_)
+  if(!bCancel_ && thread_.joinable())
     {
       bCancel_ = true;
-      cond_.signal();
+      cond_.notify_one();
     }
-
-  mutex_.release();
 }
 
 void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 {
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
-  pProcessedDownstreamPacket_ = 
+  pProcessedDownstreamPacket_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedDownstreamPackets",
                                                       StatisticProperties::CLEARABLE);
-  
-  pProcessedUpstreamPacket_ = 
+
+  pProcessedUpstreamPacket_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedUpstreamPackets",
                                                       StatisticProperties::CLEARABLE);
-  
-  pProcessedDownstreamControl_ = 
+
+  pProcessedDownstreamControl_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedDownstreamControl",
                                                       StatisticProperties::CLEARABLE);
-  
-  pProcessedUpstreamControl_ = 
+
+  pProcessedUpstreamControl_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedUpstreamControl",
                                                       StatisticProperties::CLEARABLE);
-  pProcessedEvent_ = 
+  pProcessedEvent_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedEvents",
                                                       StatisticProperties::CLEARABLE);
-  pProcessedConfiguration_ = 
+  pProcessedConfiguration_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedConfiguration",
                                                       StatisticProperties::CLEARABLE);
-  pProcessedTimedEvent_ = 
+  pProcessedTimedEvent_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedTimedEvents",
                                                       StatisticProperties::CLEARABLE);
-  
+
   pStatisticHistogramTable_.reset(new Utils::StatisticHistogramTable<EventId>{
       statisticRegistrar,
         "EventReceptionTable",
@@ -109,7 +104,7 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
                                                 " processUpstreamControl, processDownstreamPacket,"
                                                 " processDownstreamControl, processEvent and"
                                                 " processTimedEvent in microseconds."));
-  
+
   avgQueueDepth_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgProcessAPIQueueDepth",
                                                StatisticProperties::CLEARABLE,
@@ -134,64 +129,63 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 
 void EMANE::NEMQueuedLayer::start()
 {
-  EMANE::Utils::spawn(*this,&EMANE::NEMQueuedLayer::processWorkQueue,&thread_);
+  thread_ = std::thread{&EMANE::NEMQueuedLayer::processWorkQueue,this};
 }
 
 void EMANE::NEMQueuedLayer::stop()
 {
-  mutex_.acquire();
+  mutex_.lock();
   bCancel_ = true;
-  cond_.signal();
-  mutex_.release();
-  ACE_OS::thr_join(thread_,0,0);
+  cond_.notify_one();
+  mutex_.unlock();
+  thread_.join();
   bCancel_ = false;
-  thread_ = 0;
 }
 
 void EMANE::NEMQueuedLayer::processConfiguration(const ConfigurationUpdate & update)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessConfiguration,this,Clock::now(),update));
   avgQueueDepth_.update(queue_.size());
-  cond_.signal();
+  cond_.notify_one();
 }
 
 void EMANE::NEMQueuedLayer::processDownstreamControl(const ControlMessages & msgs)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessDownstreamControl,this,Clock::now(),msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.signal();
+  cond_.notify_one();
 }
-    
+
 void EMANE::NEMQueuedLayer::processDownstreamPacket(DownstreamPacket & pkt,const ControlMessages & msgs)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessDownstreamPacket,this,Clock::now(),pkt,msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.signal();
+  cond_.notify_one();
 }
-    
+
 void EMANE::NEMQueuedLayer::processUpstreamPacket(UpstreamPacket & pkt,const ControlMessages & msgs)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessUpstreamPacket,this,Clock::now(),pkt,msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.signal();
+  cond_.notify_one();
 }
 
 void EMANE::NEMQueuedLayer::processUpstreamControl(const ControlMessages & msgs)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessUpstreamControl,this,Clock::now(),msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.signal();
+  cond_.notify_one();
 }
 
 void EMANE::NEMQueuedLayer::processEvent(const EventId & eventId,
                                          const Serialization & serialization)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessEvent,
                         this,
@@ -201,7 +195,7 @@ void EMANE::NEMQueuedLayer::processEvent(const EventId & eventId,
 
   avgQueueDepth_.update(queue_.size());
 
-  cond_.signal();
+  cond_.notify_one();
 }
 
 void EMANE::NEMQueuedLayer::processTimedEvent(TimerEventId eventId,
@@ -210,7 +204,7 @@ void EMANE::NEMQueuedLayer::processTimedEvent(TimerEventId eventId,
                                               const TimePoint & fireTime,
                                               const void * arg)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessTimedEvent,
                         this,
                         Clock::now(),
@@ -219,27 +213,26 @@ void EMANE::NEMQueuedLayer::processTimedEvent(TimerEventId eventId,
                         scheduleTime,
                         fireTime,
                         arg));
-  
+
   avgQueueDepth_.update(queue_.size());
-  
-  cond_.signal();
+
+  cond_.notify_one();
 }
 
 
-ACE_THR_FUNC_RETURN EMANE::NEMQueuedLayer::processWorkQueue()
+void EMANE::NEMQueuedLayer::processWorkQueue()
 {
   while(1)
     {
-      mutex_.acquire();
-      
+      std::unique_lock<std::mutex> lock{mutex_};
+
       while(queue_.empty() && !bCancel_)
         {
-          cond_.wait();
+          cond_.wait(lock);
         }
 
       if(bCancel_)
         {
-          mutex_.release();
           break;
         }
 
@@ -250,8 +243,8 @@ ACE_THR_FUNC_RETURN EMANE::NEMQueuedLayer::processWorkQueue()
       queue_.pop();
 
       // release the queue syncronization object
-      mutex_.release();
-      
+      lock.unlock();
+
       try
         {
           // execute the funtor
@@ -259,7 +252,7 @@ ACE_THR_FUNC_RETURN EMANE::NEMQueuedLayer::processWorkQueue()
         }
       catch(std::exception & exp)
         {
-          // cannot really do too much at this point, so we'll log it 
+          // cannot really do too much at this point, so we'll log it
           // good candidate spot to generate and error event as well
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   ERROR_LEVEL,
@@ -270,7 +263,7 @@ ACE_THR_FUNC_RETURN EMANE::NEMQueuedLayer::processWorkQueue()
         }
       catch(...)
         {
-          // cannot really do too much at this point, so we'll log it 
+          // cannot really do too much at this point, so we'll log it
           // good candidate spot to generate and error event as well
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   ERROR_LEVEL,
@@ -279,17 +272,15 @@ ACE_THR_FUNC_RETURN EMANE::NEMQueuedLayer::processWorkQueue()
                                   id_);
         }
     }
-
-  return 0;
 }
 
   void EMANE::NEMQueuedLayer::handleProcessConfiguration(TimePoint enqueueTime,
                                                          const ConfigurationUpdate update)
-{  
+{
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
 
   ++*pProcessedConfiguration_;
-  
+
   doProcessConfiguration(update);
 }
 
@@ -362,14 +353,14 @@ void EMANE::NEMQueuedLayer::handleProcessTimedEvent(TimePoint enqueueTime,
                                                     const TimePoint & scheduleTime,
                                                     const TimePoint & fireTime,
                                                     const void * arg)
-  
+
 {
   auto now = Clock::now();
 
   avgTimedEventLatency_.update(std::chrono::duration_cast<Microseconds>(now - expireTime).count());
 
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(now - enqueueTime).count());
-  
+
   auto duration = std::chrono::duration_cast<Microseconds>(expireTime - scheduleTime);
 
   if(duration.count() > 0)
@@ -381,7 +372,7 @@ void EMANE::NEMQueuedLayer::handleProcessTimedEvent(TimePoint enqueueTime,
     {
       avgTimedEventLatencyRatio_.update(1);
     }
-  
+
   ++*pProcessedTimedEvent_;
 
   doProcessTimedEvent(eventId,expireTime,scheduleTime,fireTime,arg);

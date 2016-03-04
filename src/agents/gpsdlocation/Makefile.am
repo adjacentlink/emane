@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libgpsdlocationagent.la
 
 libgpsdlocationagent_la_CPPFLAGS= \
  -I@top_srcdir@/include           \
- $(ACE_CFLAGS)                    \
  $(AM_CFLAGS)
 
 libgpsdlocationagent_la_SOURCES= \
@@ -15,12 +14,7 @@ EXTRA_DIST=                      \
 BUILT_SOURCES =                  \
  gpsdlocationagent.xml
 
-libgpsdlocationagent_la_LIBADD= \
- $(WIN32_EXTRA_LIBADD)        
-
 libgpsdlocationagent_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS)          \
- $(ACE_LIBS)                     \
  -lutil                          \
  -avoid-version
 

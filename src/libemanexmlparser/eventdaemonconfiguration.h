@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -50,9 +50,9 @@ namespace EMANE
    *
    * @brief Implementation of Configuration to properly configure the EventDaemonManager.
    *
-   * The EventDaemonConfiguration class is a concrete class implementing the 
+   * The EventDaemonConfiguration class is a concrete class implementing the
    * Configuration interface. The implementation allows for general treatment
-   * of layer configuration data for any/all config layers (including event 
+   * of layer configuration data for any/all config layers (including event
    * generators.
    *
    * @sa LayerConfiguration
@@ -68,18 +68,18 @@ namespace EMANE
      * @exception ParseException ValidateException
      */
     EventDaemonConfiguration(const std::string &sFile);
-    
+
     /**
      * Destructor
      */
     ~EventDaemonConfiguration();
-    
+
     /**
      * Gets this daemon's nem id
      *
      * @return Id of this daemon's nem
      */
-    ACE_UINT16 getNEMId();
+    NEMId getNEMId();
 
     /**
      * Returns the container with Agent Layers
@@ -87,7 +87,7 @@ namespace EMANE
      * @return Container with Layer (agent) config objects
      */
     const LayerConfigurations &getAgents();
-    
+
   protected:
     /**
      * Does processing of the root node as if it was an 'nem'
@@ -100,14 +100,14 @@ namespace EMANE
 
     /**
      * Does processing of a child node as if it was a 'layer'
-     * 
+     *
      * @param pNode Pointer to the node
      *
      * @exception ParseException ValidateException
      */
     void doProcessChildNode(xmlNodePtr pNode);
 
-  private:    
+  private:
     /**
      * Container with Daemon configurations
      */
@@ -119,5 +119,5 @@ namespace EMANE
     EMANE::NEMId nemId_;
   };
 
-} // end namespace EMANE  
+} // end namespace EMANE
 #endif /* EMANEEVENTDAEMONCONFIGURATION_HEADER */

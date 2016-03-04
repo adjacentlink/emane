@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +44,9 @@ namespace EMANE
 
   /**
    *
-   * @class  StatisticNonNumeric 
+   * @class  StatisticNonNumeric
    *
-   * @brief A non-numeric statistic can be a std::string or an ACE::INET_Addr.
+   * @brief A non-numeric statistic can be a std::string or an INETAddr.
    *
    */
   template<typename T>
@@ -65,7 +66,7 @@ namespace EMANE
      * @return statistic value
      */
     T get() const;
-    
+
     /**
      * Converts the current statistic value to an Any
      *
@@ -74,15 +75,15 @@ namespace EMANE
      * @throw AnyExpception on conversion failure
      */
     Any asAny() const override;
-    
+
     /**
      * Clears the statistic value
      */
     void clear() override;
-    
+
   private:
     T value_;
-    
+
     mutable std::mutex mutex_;
 
     StatisticNonNumeric();

@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libtdmaeventschedulerradiomodel.la
 
 libtdmaeventschedulerradiomodel_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
- $(ACE_CFLAGS)                       \
  $(AM_CFLAGS)                        \
  $(libuuid_CFLAGS)                   \
  $(libxml2_CFLAGS)
@@ -25,7 +24,6 @@ BUILT_SOURCES =                      \
  tdmaradiomodel.xml
 
 libtdmaeventschedulerradiomodel_la_LDFLAGS= \
- $(ACE_LIBS)                         \
  $(libxml2_LIBS)                     \
  -L../.libs                          \
  -ltdmabase                          \

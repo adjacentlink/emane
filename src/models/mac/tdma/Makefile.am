@@ -6,7 +6,6 @@ lib_LTLIBRARIES = libtdmabase.la
 
 libtdmabase_la_CPPFLAGS=             \
  -I@top_srcdir@/include              \
- $(ACE_CFLAGS)                       \
  $(AM_CFLAGS)                        \
  $(libuuid_CFLAGS)                   \
  $(libxml2_CFLAGS)
@@ -46,7 +45,6 @@ EXTRA_DIST=                          \
  txslotinfosformatter.h
 
 libtdmabase_la_LDFLAGS=              \
- $(ACE_LIBS)                         \
  $(libxml2_LIBS)                     \
  -avoid-version
 

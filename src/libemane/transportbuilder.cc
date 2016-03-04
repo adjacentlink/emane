@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -64,8 +65,8 @@ EMANE::Application::TransportBuilder::buildTransportManager(const uuid_t & uuid,
   RegistrarProxy registrarProxy{buildId};
 
   pManager->initialize(registrarProxy);
-  
-  // configure 
+
+  // configure
   pManager->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
 
   std::for_each(adapters.begin(),
@@ -91,16 +92,16 @@ EMANE::Application::TransportBuilder::buildTransportAdapter(std::unique_ptr<Tran
   std::unique_ptr<TransportAdapter> pAdapter{new TransportAdapterImpl{pTransport->getNEMId()}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pAdapter.get())};
-  
+
   RegistrarProxy registrarProxy{buildId};
-  
+
   pAdapter->initialize(registrarProxy);
 
-  // configure 
+  // configure
   pAdapter->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
-  
+
   pAdapter->setTransport(pTransport);
-  
+
   return pAdapter;
 }
 
@@ -111,13 +112,13 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
                                                      const ConfigurationUpdateRequest & request,
                                                      bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+                                   sLibraryFile +
+                                   ".so";
 
-  const EMANE::TransportFactory & transportFactory = 
+  const EMANE::TransportFactory & transportFactory =
     EMANE::TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
-      
+
   // new platform service
   EMANE::PlatformService *
     pPlatformService{new EMANE::PlatformService{}};
@@ -131,15 +132,15 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
 }
 
 
-EMANE::PlatformServiceProvider * 
+EMANE::PlatformServiceProvider *
 EMANE::Application::TransportBuilder::newPlatformService() const
 {
   return new EMANE::PlatformService{};
 }
 
 
-void 
-EMANE::Application::TransportBuilder::initializeTransport(Transport * pTransport, 
+void
+EMANE::Application::TransportBuilder::initializeTransport(Transport * pTransport,
                                                           PlatformServiceProvider * pProvider,
                                                           const ConfigurationUpdateRequest & request,
                                                           bool bSkipConfigure) const
@@ -150,13 +151,13 @@ EMANE::Application::TransportBuilder::initializeTransport(Transport * pTransport
   dynamic_cast<EMANE::PlatformService*>(pProvider)->setPlatformServiceUser(buildId,pTransport);
 
   RegistrarProxy registrarProxy{buildId};
-      
+
   // initialize
   pTransport->initialize(registrarProxy);
 
   if(!bSkipConfigure)
     {
-      // configure 
+      // configure
       pTransport->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
     }
 }

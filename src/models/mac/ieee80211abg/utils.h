@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,8 +38,6 @@
 
 #include <cmath>
 
-#include <ace/Time_Value.h>
-
 namespace EMANE
  {
   namespace Models
@@ -50,7 +48,7 @@ namespace EMANE
          {
            std::uint64_t val {1};
 
-           while(x > 1) 
+           while(x > 1)
             {
               val *= x--;
             }

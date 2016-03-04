@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +54,7 @@ namespace EMANE
    * returned to the registering NEM layer.
    *
    * @note Registration may only occur during Component::initialize()
-   * 
+   *
    */
   class StatisticRegistrar
   {
@@ -62,7 +63,7 @@ namespace EMANE
      * Destroys an instance
      */
     virtual ~StatisticRegistrar(){}
-    
+
     /**
      * Register a numeric statistic. The registered statistic
      * is owned by the StatisticRegistrar.
@@ -131,7 +132,7 @@ namespace EMANE
     StatisticTable<Key,Compare,scolumn> *
     registerTable(const std::string & sName,
                   const StatisticTableLabels & labels,
-                  const StatisticProperties & properties = StatisticProperties::NONE,        
+                  const StatisticProperties & properties = StatisticProperties::NONE,
                   const std::string & sDescription = "");
 
 
@@ -172,8 +173,8 @@ namespace EMANE
                   const StatisticTableLabels & labels,
                   Function clearFunc,
                   const std::string & sDescription = "");
-    
-    
+
+
   protected:
     /**
      * Register a statistic and take ownership
@@ -224,7 +225,7 @@ namespace EMANE
  * The @ref EMANE::StatisticRegistrar "StatisticRegistrar" is used by components to create
  * statistics and statistic tables. Statistics and statistic tables are owned by the emulator
  * framework so @ref EMANE::StatisticRegistrar::registerNumeric "StatisticRegistrar::registerNumeric",
- * @ref EMANE::StatisticRegistrar::registerNonNumeric "StatisticRegistrar::registerNonNumeric" and 
+ * @ref EMANE::StatisticRegistrar::registerNonNumeric "StatisticRegistrar::registerNonNumeric" and
  * @ref EMANE::StatisticRegistrar::registerTable "StatisticRegistrar::registerTable" all return
  * borrowed references. The framework takes care of cleaning these up after all component plugins
  * have been destroyed.
@@ -257,7 +258,7 @@ namespace EMANE
  * @ref EMANE::StatisticNonNumeric "StatisticNonNumeric" template instances can be instantiated with the
  * following types:
  * - std::string
- * - ACE_INET_Addr
+ * - INETAddr
  *
  * Statistics can be given the @ref EMANE::StatisticProperties::CLEARABLE "StatisticProperties::CLEARABLE"
  * property during registration. This property lets client applications clear the statistic using the
@@ -288,7 +289,7 @@ namespace EMANE
  * bool which is used to sort the table. The template parameter defaults are usually what you want.
  *
  * @snippet src/libemane/eventtablepublisher.cc statisticservice-registertable-snippet
- * 
+ *
  * Just like statistics, statistic tables can be @a clearable. Clearing a statistic table is not as
  * straight forward as clearing a statistic. In order to manage statistic table entries you will need
  * to keep track of which items are in the table and what their current values are. An external clear

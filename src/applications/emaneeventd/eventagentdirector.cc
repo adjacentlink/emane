@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,19 +34,19 @@
 #include "eventagentdirector.h"
 
 #include <sstream>
-#include <iostream>
+
 /*
  * Constructor
  *
  * @param filename reference to the base XML filename
  * @param builder reference to the EventAgentBuilder
  */
-EMANE::Application::EventAgentDirector::EventAgentDirector(const std::string & filename, 
+EMANE::Application::EventAgentDirector::EventAgentDirector(const std::string & filename,
                                                            EventAgentBuilder & builder):
   eventDaemonConfig_(filename),
   builder_(builder)
 {}
-  
+
 /*
  * Destructor
  */
@@ -66,17 +66,16 @@ EMANE::Application::EventAgentDirector::construct(const uuid_t & uuid)
 
   /* Now go through each event generator configuration and build appropriately */
   EventAgents agents;
-  
+
   for(const auto & pLayerConfig : eventDaemonConfig_.getAgents())
     {
       agents.push_back(builder_.buildEventAgent(nemId,
                                                 pLayerConfig->getLibrary(),
                                                 pLayerConfig->getConfigurationUpdateRequest()));
     }
-  
+
   /* Build Event Agent Manager */
   return builder_.buildEventAgentManager(uuid,
                                          agents,
                                          eventDaemonConfig_.getConfigurationUpdateRequest());
 }
-

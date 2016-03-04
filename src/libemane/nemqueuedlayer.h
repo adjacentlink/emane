@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,11 +39,9 @@
 
 #include <queue>
 #include <functional>
-#include <ace/Basic_Types.h>
-#include <ace/Time_Value.h>
-#include <ace/Thread.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include "emane/utils/runningaverage.h"
 #include "emane/utils/statistichistogramtable.h"
 
@@ -67,21 +66,21 @@ namespace EMANE
     void initialize(Registrar & registrar) override;
 
     void start() override;
-    
+
     void stop() override;
-   
+
     void processConfiguration(const ConfigurationUpdate & update) override;
 
     void processDownstreamControl(const ControlMessages & msgs) override;
-    
+
     void processDownstreamPacket(DownstreamPacket &pkt, const ControlMessages & msgs) override;
-    
+
     void processUpstreamPacket(UpstreamPacket &pkt, const ControlMessages & msgs) override;
-    
+
     void processUpstreamControl(const ControlMessages & msgs) override;
 
     void processEvent(const EventId &eventId, const Serialization &serialization) override;
-    
+
     void processTimedEvent(TimerEventId eventId,
                            const TimePoint & expireTime,
                            const TimePoint & scheduleTime,
@@ -90,19 +89,19 @@ namespace EMANE
 
   protected:
     NEMQueuedLayer(NEMId id, PlatformServiceProvider * pPlatformService);
-    
+
     virtual void doProcessConfiguration(const ConfigurationUpdate &) = 0;
 
     virtual void doProcessDownstreamControl(const ControlMessages &) = 0;
-    
+
     virtual void doProcessDownstreamPacket(DownstreamPacket &, const ControlMessages &) = 0;
-    
+
     virtual void doProcessUpstreamPacket(UpstreamPacket &, const ControlMessages &) = 0;
-    
+
     virtual void doProcessUpstreamControl(const ControlMessages &) = 0;
 
     virtual void doProcessEvent(const EventId &, const Serialization &) = 0;
-    
+
     virtual void doProcessTimedEvent(TimerEventId eventId,
                                      const TimePoint & expireTime,
                                      const TimePoint & scheduleTime,
@@ -112,10 +111,10 @@ namespace EMANE
   private:
     using MessageProcessingQueue = std::queue<std::function<void()>>;
     PlatformServiceProvider * pPlatformService_;
-    ACE_thread_t thread_;
+    std::thread thread_;
     MessageProcessingQueue queue_;
-    ACE_Thread_Mutex mutex_;
-    ACE_Condition<ACE_Thread_Mutex> cond_;
+    std::mutex mutex_;
+    std::condition_variable cond_;
     bool bCancel_;
 
     StatisticNumeric<std::uint64_t> * pProcessedDownstreamPacket_;
@@ -125,7 +124,7 @@ namespace EMANE
     StatisticNumeric<std::uint64_t> * pProcessedEvent_;
     StatisticNumeric<std::uint64_t> * pProcessedTimedEvent_;
     StatisticNumeric<std::uint64_t> * pProcessedConfiguration_;
-    
+
     Utils::RunningAverage<double> avgQueueWait_;
     Utils::RunningAverage<double> avgQueueDepth_;
     Utils::RunningAverage<double> avgTimedEventLatency_;
@@ -134,23 +133,23 @@ namespace EMANE
     std::unique_ptr<Utils::StatisticHistogramTable<EventId>> pStatisticHistogramTable_;
 
     NEMQueuedLayer(const NEMQueuedLayer &);
-    
-    ACE_THR_FUNC_RETURN processWorkQueue();
+
+    void processWorkQueue();
 
     void handleProcessConfiguration(TimePoint enqueueTime,
                                     const ConfigurationUpdate);
 
     void handleProcessDownstreamControl(TimePoint enqueueTime,
                                         const ControlMessages);
-    
+
     void handleProcessDownstreamPacket(TimePoint enqueueTime,
                                        DownstreamPacket,
                                        const ControlMessages);
-    
+
     void handleProcessUpstreamPacket(TimePoint enqueueTime,
                                      UpstreamPacket,
                                      const ControlMessages);
-    
+
     void handleProcessUpstreamControl(TimePoint enqueueTime,
                                       const ControlMessages);
 
@@ -164,7 +163,7 @@ namespace EMANE
                                  const TimePoint & scheduleTime,
                                  const TimePoint & fireTime,
                                  const void * arg);
-    
+
   };
 }
 

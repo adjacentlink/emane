@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,34 +30,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANECONTROLPORTSERVICEHANDLER_HEADER_
-#define EMANECONTROLPORTSERVICEHANDLER_HEADER_
+#ifndef EMANECONTROLPORTSERVICE_HEADER_
+#define EMANECONTROLPORTSERVICE_HEADER_
 
-#include <vector>
-#include <cstdint>
-
-#include <ace/Svc_Handler.h>
-#include <ace/SOCK_Stream.h>
-#include <ace/Basic_Types.h>
+#include "emane/inetaddr.h"
+#include <thread>
 
 namespace EMANE
 {
   namespace ControlPort
   {
-    class ControlPortService: 
-      public ACE_Svc_Handler<ACE_SOCK_Stream,ACE_NULL_SYNCH>
+    class Service
     {
     public:
-      ControlPortService();
-    
-      int handle_input(ACE_HANDLE fd);
-      
+      Service();
+
+      void open(const INETAddr & endpoint);
+
+      void close();
+
     private:
-      std::uint32_t u32MessageSizeBytes_;
-      std::vector<char> message_;
-      std::uint32_t u32Sequence_;
+      int iSignalEvent_;
+      int iSock_;
+      std::thread thread_;
+      void process();
+
     };
   }
 }
 
-#endif // EMANECONTROLPORTSERVICEHANDLER_HEADER_
+#endif // EMANECONTROLPORTSERVICE_HEADER_
