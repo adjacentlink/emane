@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009,2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -63,6 +63,14 @@ namespace
 
     if(u8PowerOf10 != 0)
       {
+        // strip any leading whitespace
+        std::string::size_type notWhiteSpace{sTmpParameter.find_first_not_of(" \t")};
+
+        if(notWhiteSpace != std::string::npos)
+          {
+            sTmpParameter = sTmpParameter.substr(notWhiteSpace,std::string::npos);
+          }
+
         // location of decimal point, if exists
         std::string::size_type indexPoint =  sTmpParameter.find(".",0);
 
@@ -74,8 +82,7 @@ namespace
             if(numberOfDigitsAfterPoint > u8PowerOf10)
               {
                 // need to move the decimal point, enough digits are present
-                sTmpParameter.insert(sTmpParameter.size() - (numberOfDigitsAfterPoint - u8PowerOf10),
-                                     ".");
+                sTmpParameter.insert(indexPoint + u8PowerOf10,".");
               }
             else
               {
@@ -90,6 +97,22 @@ namespace
           {
             // need to append 0s
             sTmpParameter.append(u8PowerOf10,'0');
+          }
+
+        // strip any leading zeros but be mindful of sign
+        std::string sSign{};
+
+        if(sTmpParameter.front() == '+' ||
+           sTmpParameter.front() == '-')
+          {
+            sSign = sTmpParameter.front();
+          }
+
+        std::string::size_type not0Index{sTmpParameter.find_first_not_of("0",sSign.size())};
+
+        if(not0Index != sSign.size())
+          {
+            sTmpParameter = sSign + sTmpParameter.substr(not0Index,std::string::npos);
           }
       }
 
