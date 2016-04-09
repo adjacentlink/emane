@@ -251,9 +251,8 @@ void EMANE::Utils::Timer::scheduler()
               TimePoint expireTime{};
               Duration interval{};
               Callback callback{};
-              TimePoint scheduleTime{};
-              
-              std::tie(timerId,expireTime,interval,callback,scheduleTime) = info;
+
+              std::tie(timerId,expireTime,interval,callback,std::ignore) = info;
               
               timePointMap_.erase({expireTime,timerId});
 
