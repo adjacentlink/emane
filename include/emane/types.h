@@ -40,8 +40,10 @@
 
 namespace EMANE
 {
+  using Seconds = std::chrono::seconds;
   using Milliseconds = std::chrono::milliseconds;
   using Microseconds = std::chrono::microseconds;
+  using Nanoseconds = std::chrono::nanoseconds;
   using DoubleSeconds = std::chrono::duration<double>;
   using Clock = std::chrono::system_clock;
   using Duration = Clock::duration;
