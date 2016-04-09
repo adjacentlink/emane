@@ -33,6 +33,8 @@
 #ifndef EMANEUTILSTIMER_HEADER_
 #define EMANEUTILSTIMER_HEADER_
 
+#include "emane/types.h"
+
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -53,8 +55,6 @@ namespace EMANE
     {
     public:
       using TimerId = std::size_t;
-      using TimePoint = std::chrono::high_resolution_clock::time_point;
-      using Microseconds = std::chrono::microseconds;
 
       class TimerException{};
 

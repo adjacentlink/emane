@@ -38,6 +38,7 @@
 #include <libxml/xmlschemas.h>
 #include <numeric>
 
+#include "emane/types.h"
 #include "emane/utils/parameterconvert.h"
 #include "emane/utils/spectrumwindowutils.h"
 
@@ -161,8 +162,6 @@ int main(int argc, char * argv[])
     EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pStart)).toUINT64()};
 
   xmlFree(pStart);
-
-  using TimePoint = std::chrono::high_resolution_clock::time_point;
 
   int iActionIndex{};
 
@@ -456,7 +455,7 @@ int main(int argc, char * argv[])
                             {
                               std::cout<<"["<<++iActionIndex
                                        <<"] update abs time: "
-                                       <<std::chrono::duration_cast<EMANE::Microseconds>(TimePoint{start+now}.time_since_epoch()).count()
+                                       <<std::chrono::duration_cast<EMANE::Microseconds>(EMANE::TimePoint{start+now}.time_since_epoch()).count()
                                        <<" relative time: "
                                        <<std::chrono::duration_cast<EMANE::Microseconds>(now).count()
                                        <<std::endl;
@@ -521,8 +520,8 @@ int main(int argc, char * argv[])
                                        reportablePropagation,
                                        span,
                                        reportableSegments,
-                                       bTreatAsInBand)  = spectrumMonitor.update(TimePoint{start+now},
-                                                                                 TimePoint{start+txTime},
+                                       bTreatAsInBand)  = spectrumMonitor.update(EMANE::TimePoint{start+now},
+                                                                                 EMANE::TimePoint{start+txTime},
                                                                                  propagation,
                                                                                  segments,
                                                                                  transmitterBandwidth,
@@ -618,7 +617,7 @@ int main(int argc, char * argv[])
                           if(pTime)
                             {
                               timepoint =
-                                TimePoint{start + EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTime)).toUINT64()}};
+                                EMANE::TimePoint{start + EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTime)).toUINT64()}};
 
                               xmlFree(pTime);
                             }
@@ -644,11 +643,11 @@ int main(int argc, char * argv[])
                               bool bSignalInNoise;
 
                               std::tie(bins,startOfBinTime,binSize,dReceiverSensativityMilliWatt,bSignalInNoise) =
-                                spectrumMonitor.request_i(TimePoint{start+now},frequency,duration,timepoint);
+                                spectrumMonitor.request_i(EMANE::TimePoint{start+now},frequency,duration,timepoint);
 
                               std::cout<<"["<<++iActionIndex
                                        <<"] request abs time: "
-                                       <<std::chrono::duration_cast<EMANE::Microseconds>(TimePoint{start+now}.time_since_epoch()).count()
+                                       <<std::chrono::duration_cast<EMANE::Microseconds>(EMANE::TimePoint{start+now}.time_since_epoch()).count()
                                        <<" relative time: "
                                        <<std::chrono::duration_cast<EMANE::Microseconds>(now).count()
                                        <<" bin size: "

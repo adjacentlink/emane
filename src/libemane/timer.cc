@@ -147,7 +147,7 @@ EMANE::Utils::Timer::schedule(Callback callback,
                                                       timePoint,
                                                       interval,
                                                       callback,
-                                                      std::chrono::high_resolution_clock::now())));
+                                                      Clock::now())));
   
   timerIdMap_.insert(std::make_pair(timerId_,timePoint));
 
@@ -206,7 +206,7 @@ void EMANE::Utils::Timer::scheduler()
               callback(timerId,
                        expireTime,
                        scheduleTime,
-                       std::chrono::high_resolution_clock::now());
+                       Clock::now());
             }
           catch(...)
             {}
@@ -220,8 +220,8 @@ void EMANE::Utils::Timer::scheduler()
         {
           std::unique_lock<std::mutex> lock(mutex_);
 
-          auto now = std::chrono::high_resolution_clock::now();
-          
+          auto now = Clock::now();
+
           if(!bRunning_)
             {
               break;
