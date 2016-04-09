@@ -263,16 +263,16 @@ void EMANE::Utils::Timer::scheduler()
                
               if(interval != Microseconds::zero())
                 {
-                  auto absTimePoint = now + interval;
+                  expireTime += interval;
                   
-                  timePointMap_.insert(std::make_pair(std::make_pair(absTimePoint,timerId),
+                  timePointMap_.insert(std::make_pair(std::make_pair(expireTime,timerId),
                                                       std::make_tuple(timerId,
-                                                                      absTimePoint,
+                                                                      expireTime,
                                                                       interval,
                                                                       callback,
                                                                       now)));
                   
-                  timerIdMap_.insert(std::make_pair(timerId,absTimePoint));
+                  timerIdMap_.insert(std::make_pair(timerId,expireTime));
                 }
             }
           
