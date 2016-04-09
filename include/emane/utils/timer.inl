@@ -30,21 +30,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-template <typename Clock, typename Duration, typename Function>
+template <typename Function>
 EMANE::Utils::Timer::TimerId EMANE::Utils::Timer::schedule(Function fn,
-                                                           const std::chrono::time_point<Clock,Duration> & absoluteTimePoint)
+                                                           const TimePoint & absoluteTimePoint)
 {
-  return schedule(fn,
-                  std::chrono::time_point_cast<std::chrono::microseconds>(absoluteTimePoint),
-                  std::chrono::microseconds::zero());
+  return schedule(fn, absoluteTimePoint, Microseconds::zero());
 }
 
-template <typename Clock, typename Duration, typename Rep, typename Period, typename Function>
+template <typename Function>
 EMANE::Utils::Timer::TimerId EMANE::Utils::Timer::scheduleInterval(Function fn,
-                                                                   const std::chrono::time_point<Clock,Duration> & absoluteTimePoint,
-                                                                   const std::chrono::duration<Rep,Period> & interval)
+                                                                   const TimePoint & absoluteTimePoint,
+                                                                   const Microseconds & interval)
 {
-  return schedule(fn,
-                  std::chrono::time_point_cast<std::chrono::microseconds>(absoluteTimePoint),
-                  std::chrono::duration_cast<std::chrono::microseconds>(interval));
+  return schedule(fn, absoluteTimePoint, interval);
 }

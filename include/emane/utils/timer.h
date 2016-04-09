@@ -54,6 +54,7 @@ namespace EMANE
     public:
       using TimerId = std::size_t;
       using TimePoint = std::chrono::high_resolution_clock::time_point;
+      using Microseconds = std::chrono::microseconds;
 
       class TimerException{};
 
@@ -88,9 +89,9 @@ namespace EMANE
        * @param fn A callable object that takes a single TimerId parameter
        * @param absoluteTimePoint Absolute time of the timeout
        */
-      template <typename Clock, typename Duration, typename Function>
+      template <typename Function>
       TimerId schedule(Function fn,
-                       const std::chrono::time_point<Clock,Duration> & absoluteTimePoint);
+                       const TimePoint & absoluteTimePoint);
       
       /**
        * Sechules an interval timer
@@ -99,18 +100,16 @@ namespace EMANE
        * @param absoluteTimePoint Absolute time of the timeout
        * @param interval Repeat interval
        */
-      template <typename Clock, typename Duration, typename Rep, typename Period, typename Function>
+      template <typename Function>
       TimerId scheduleInterval(Function fn,
-                               const std::chrono::time_point<Clock,Duration> & absoluteTimePoint,
-                               const std::chrono::duration<Rep,Period> & interval);
+                               const TimePoint & absoluteTimePoint,
+                               const Microseconds & interval);
       
     private:
       using Callback = std::function<void(TimerId,
                                           const TimePoint &,
                                           const TimePoint &,
                                           const TimePoint &)>;
-
-      using Microseconds = std::chrono::microseconds;
 
       using TimerInfo = std::tuple<TimerId,TimePoint,Microseconds,Callback,TimePoint>;
       using TimePointMap = std::multimap<std::pair<TimePoint,TimerId>,TimerInfo>;
