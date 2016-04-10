@@ -44,6 +44,7 @@ namespace EMANE
   using Microseconds = std::chrono::microseconds;
   using DoubleSeconds = std::chrono::duration<double>;
   using Clock = std::chrono::system_clock;
+  using Duration = Clock::duration;
   using TimePoint = Clock::time_point;
   
   using NEMId = std::uint16_t;

@@ -51,7 +51,7 @@ bool EMANE::NEMTimerServiceProxy::cancelTimedEvent(TimerEventId eventId)
 
 EMANE::TimerEventId EMANE::NEMTimerServiceProxy::scheduleTimedEvent(const TimePoint & timeout,
                                                                     const void *arg,
-                                                                    const Microseconds & interval)
+                                                                    const Duration & interval)
 {
   return TimerServiceSingleton::instance()->scheduleTimedEvent(timeout,
                                                                arg,
@@ -74,7 +74,7 @@ void EMANE::NEMTimerServiceProxy::processTimedEvent(TimerEventId eventId,
 
 EMANE::TimerEventId EMANE::NEMTimerServiceProxy::schedule_i(TimerCallback callback,
                                                             const TimePoint & timePoint,
-                                                            const Microseconds & interval)
+                                                            const Duration & interval)
 {
   return TimerServiceSingleton::instance()->schedule([this,callback](const TimePoint & expireTime,
                                                                      const TimePoint & scheduleTime,

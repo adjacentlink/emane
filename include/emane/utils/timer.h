@@ -103,7 +103,7 @@ namespace EMANE
       template <typename Function>
       TimerId scheduleInterval(Function fn,
                                const TimePoint & absoluteTimePoint,
-                               const Microseconds & interval);
+                               const Duration & interval);
       
     private:
       using Callback = std::function<void(TimerId,
@@ -111,7 +111,7 @@ namespace EMANE
                                           const TimePoint &,
                                           const TimePoint &)>;
 
-      using TimerInfo = std::tuple<TimerId,TimePoint,Microseconds,Callback,TimePoint>;
+      using TimerInfo = std::tuple<TimerId,TimePoint,Duration,Callback,TimePoint>;
       using TimePointMap = std::multimap<std::pair<TimePoint,TimerId>,TimerInfo>;
       using TimerIdMap = std::map<TimerId,TimePoint>;
       
@@ -125,7 +125,7 @@ namespace EMANE
       
       void scheduler();
       
-      TimerId schedule(Callback,const TimePoint &,const Microseconds &);
+      TimerId schedule(Callback,const TimePoint &,const Duration &);
 
       void schedule_i();
 

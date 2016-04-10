@@ -34,13 +34,13 @@ template <typename Function>
 EMANE::Utils::Timer::TimerId EMANE::Utils::Timer::schedule(Function fn,
                                                            const TimePoint & absoluteTimePoint)
 {
-  return schedule(fn, absoluteTimePoint, Microseconds::zero());
+  return schedule(fn, absoluteTimePoint, Duration::zero());
 }
 
 template <typename Function>
 EMANE::Utils::Timer::TimerId EMANE::Utils::Timer::scheduleInterval(Function fn,
                                                                    const TimePoint & absoluteTimePoint,
-                                                                   const Microseconds & interval)
+                                                                   const Duration & interval)
 {
   return schedule(fn, absoluteTimePoint, interval);
 }

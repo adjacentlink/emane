@@ -80,7 +80,7 @@ namespace EMANE
      */
     virtual TimerEventId scheduleTimedEvent(const TimePoint & timePoint,
                                             const void * arg = nullptr,
-                                            const Microseconds & interval = Microseconds::zero()) = 0;
+                                            const Duration & interval = Duration::zero()) = 0;
 
 
     /**
@@ -93,7 +93,7 @@ namespace EMANE
     template <typename Function>
     TimerEventId schedule(Function fn,
                           const TimePoint & timePoint,
-                          const Microseconds & interval = Microseconds::zero());
+                          const Duration & interval = Duration::zero());
 
     using TimerCallback = std::function<void(const TimePoint &, // expireTime,
                                              const TimePoint &, // scheduleTime,
@@ -102,7 +102,7 @@ namespace EMANE
   protected:
     virtual TimerEventId schedule_i(TimerCallback callback,
                                     const TimePoint & timePoint,
-                                    const Microseconds & interval) = 0;
+                                    const Duration & interval) = 0;
 
     TimerServiceProvider(){};
   };

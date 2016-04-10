@@ -120,7 +120,7 @@ void EMANE::Utils::Timer::cancel_i()
 EMANE::Utils::Timer::TimerId
 EMANE::Utils::Timer::schedule(Callback callback,
                               const TimePoint & timePoint,
-                              const Microseconds & interval)
+                              const Duration & interval)
 {
   std::unique_lock<std::mutex> lock(mutex_);
 
@@ -251,7 +251,7 @@ void EMANE::Utils::Timer::scheduler()
             {
               TimerId timerId{};
               TimePoint expireTime{};
-              Microseconds interval{};
+              Duration interval{};
               Callback callback{};
               TimePoint scheduleTime{};
               
@@ -261,7 +261,7 @@ void EMANE::Utils::Timer::scheduler()
 
               timerIdMap_.erase(timerId);
                
-              if(interval != Microseconds::zero())
+              if(interval != Duration::zero())
                 {
                   expireTime += interval;
                   

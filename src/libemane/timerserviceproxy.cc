@@ -53,7 +53,7 @@ bool EMANE::TimerServiceProxy::cancelTimedEvent(TimerEventId eventId)
 
 EMANE::TimerEventId EMANE::TimerServiceProxy::scheduleTimedEvent(const TimePoint & timeout,
                                                                  const void *arg,
-                                                                 const Microseconds & interval)
+                                                                 const Duration & interval)
 {
   return TimerServiceSingleton::instance()->scheduleTimedEvent(timeout,
                                                                arg,
@@ -76,7 +76,7 @@ void EMANE::TimerServiceProxy::processTimedEvent(TimerEventId eventId,
 
 EMANE::TimerEventId EMANE::TimerServiceProxy::schedule_i(TimerCallback,
                                                          const TimePoint &,
-                                                         const Microseconds &)
+                                                         const Duration &)
 {
   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                           ERROR_LEVEL,
