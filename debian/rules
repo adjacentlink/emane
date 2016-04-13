@@ -1,3 +1,4 @@
 #!/usr/bin/make -f
+export DEB_CXXFLAGS_MAINT_APPEND="-O3 -Wall -Wextra"
 %:
 	dh $@ --parallel --with autotools-dev --with python2

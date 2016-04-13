@@ -193,6 +193,7 @@ EMANE Python modules and utilities
 %setup -q
 
 %build
+export CXXFLAGS="%{optflags} -O3 -Wall -Wextra"
 %configure
 make %{?_smp_mflags}
 
