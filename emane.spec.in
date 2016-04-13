@@ -183,6 +183,7 @@ EMANE Plugin Manifests
 %setup -q
 
 %build
+export CXXFLAGS="%{optflags} -O3 -Wall -Wextra"
 %configure
 make %{?_smp_mflags}
 

@@ -40,6 +40,8 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([])
 
+: ${CXXFLAGS="-g -O3 -Wall -Wextra"}
+
 AC_PROG_CXX
 
 AC_PROG_CXXCPP
@@ -116,9 +118,6 @@ AC_C_BIGENDIAN(AC_DEFINE([__BYTE_ORDER],__BIG_ENDIAN,[Big Endian]),
 AC_DEFINE([__BYTE_ORDER],__LITTLE_ENDIAN,[Little Endian]))
 AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
-
-# compiler options
-CXXFLAGS="$CXXFLAGS -O3 -Wall -Wextra"
 
 # options for use with gprof
 if test "$with_profile" = "yes"
