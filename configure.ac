@@ -118,7 +118,7 @@ AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 
 # compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -O3"
+CXXFLAGS="$CXXFLAGS -O3 -Wall -Wextra"
 
 # options for use with gprof
 if test "$with_profile" = "yes"
