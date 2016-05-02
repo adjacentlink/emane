@@ -187,7 +187,7 @@ AC_SUBST(RELDATE,`date -I`)
 AC_SUBST(DATE_RFC2822,`date -R`)
 
 AC_SUBST(PACKAGE_VERSION_CODE,
- [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])
+ [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
 AC_OUTPUT(
  Makefile 
