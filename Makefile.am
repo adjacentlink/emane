@@ -54,13 +54,15 @@ emane.spec: emane.spec.in
 
 if HAVE_DEB
 
+JOBS=`getconf _NPROCESSORS_ONLN`
+
 deb: dist-gzip 
 	mkdir -p .debbuild
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .debbuild
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
-	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc
+	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	@echo "============================================================"
 	@echo "debs located in .debbuild"
 cleandeb:
