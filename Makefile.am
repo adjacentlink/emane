@@ -56,13 +56,15 @@ emane.spec: emane.spec.in
 
 if HAVE_DEB
 
+JOBS=`getconf _NPROCESSORS_ONLN`
+
 deb: dist-gzip 
 	mkdir -p .debbuild
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .debbuild
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
-	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc
+	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	$(MAKE) -C .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh deb && \
          cp .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh/deb_dist/emanesh_$(VERSION)-1_all.deb .debbuild
 	@echo "============================================================"
