@@ -1,4 +1,4 @@
 [DEFAULT]
 Depends: python-protobuf, python-setuptools
-Suite: @DEBIAN_VERSION@
+Suite: @DISTRIB_CODENAME@
 Package: emanesh

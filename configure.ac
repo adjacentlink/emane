@@ -149,6 +149,12 @@ AC_SUBST(libemane_LIBS,
 LANG=C
 AC_SUBST(LANG)
 
+RELDATE=`date -I`
+AC_SUBST(RELDATE)
+
+RELDATE_RFC822=`date -R`
+AC_SUBST(RELDATE_RFC822)
+
 AC_CHECK_HEADER([pty.h],
 [AM_CONDITIONAL(EMANE_HAS_PTY,true)],
 [AC_CHECK_HEADER([util.h],
@@ -176,8 +182,8 @@ AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
 AC_CHECK_PROG(HAVE_DEB, dh_clean, true, false)
 AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 
-AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
-AC_SUBST(DEBIAN_VERSION)
+AC_CHECK_FILE(/etc/lsb-release,[. /etc/lsb-release],)
+AC_SUBST(DISTRIB_CODENAME)
 
 AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])

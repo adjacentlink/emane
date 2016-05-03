@@ -1,5 +1,5 @@
-emane (@VERSION@-1) stable; urgency=low
+emane (@VERSION@-1) @DISTRIB_CODENAME@; urgency=low
 
   * For details, visit https://github.com/adjacentlink/emane/wiki/Release-Notes
 
- -- Adjacent Link LLC <emane@adjacentlink.com>  Thu, 05 Aug 2010 08:47:45 -0400
+ -- Adjacent Link LLC <emane@adjacentlink.com>  @RELDATE_RFC822@
