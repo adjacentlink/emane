@@ -176,8 +176,10 @@ AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
 AC_CHECK_PROG(HAVE_DEB, dh_clean, true, false)
 AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 
-AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
-AC_SUBST(DEBIAN_VERSION)
+AC_CHECK_FILE(/etc/lsb-release,[. /etc/lsb-release],)
+AC_SUBST(DISTRIB_CODENAME)
+
+AC_SUBST(RELDATE,`date -I`)
 
 AC_SUBST(DATE_RFC2822,`date -R`)
 

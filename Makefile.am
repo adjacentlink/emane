@@ -9,9 +9,10 @@ SUBDIRS= src                            \
          schema                         \
          test
 
-edit = sed                                \
-       -e 's|@VERSION[@]|$(VERSION)|g'    \
-       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'
+edit = sed                                               \
+       -e 's|@VERSION[@]|$(VERSION)|g'                   \
+       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
+       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
 dist-hook:
 	find $(distdir) -name "*.pb.*" -delete

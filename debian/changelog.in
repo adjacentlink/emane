@@ -1,4 +1,4 @@
-emane (@VERSION@-1) stable; urgency=low
+emane (@VERSION@-1) @DISTRIB_CODENAME@; urgency=low
 
   * package automatically created from toplevel project
 
