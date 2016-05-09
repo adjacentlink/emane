@@ -177,6 +177,8 @@ else
 AM_CONDITIONAL(HAVE_DOT,false)
 fi
 
+AM_PATH_PYTHON([2.6])
+
 # check for rpmbuild
 AC_CHECK_PROG(HAVE_RPMBUILD, rpmbuild, true, false)
 AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
