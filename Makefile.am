@@ -20,8 +20,6 @@ dist-hook:
 cleantar:
 	@(rm -f emane*.tar.gz)
 
-RPMARCH=`arch`
-
 if HAVE_RPMBUILD
 
 rpm: emane.spec dist-gzip
@@ -29,11 +27,10 @@ rpm: emane.spec dist-gzip
 	.rpmbuild/SPECS \
 	.rpmbuild/SOURCES \
 	.rpmbuild/SRPMS \
-	.rpmbuild/RPMS/$(RPMARCH) \
 	.rpmbuild/RPMS/noarch \
 	.rpmbuild/tmp
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
+	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp"
 	@echo "============================================================"
@@ -84,8 +81,6 @@ EXTRA_DIST =         \
  README.md           \
  debian              \
  autogen.sh
-
-DISTCLEANFILES = .rpmbuild
 
 install-exec-hook:	
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/$(PACKAGE)/manifest
