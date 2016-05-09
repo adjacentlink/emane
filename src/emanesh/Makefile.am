@@ -1,5 +1,3 @@
-PYTHON=python
-
 EXTRA_DIST=                      \
  AUTHORS                         \
  COPYING                         \
