@@ -674,7 +674,7 @@ class EMANEShell(cmd.Cmd):
                <nem>         ::=  [1-9] | [1-9][0-9]+
                <expressions> ::=  <expression> | <expression> <expressions>
                <expression>  ::= <name>'='<values>
-               <name>        ::= [A-Za-z0-9]+
+               <name>        ::= [.A-Za-z0-9]+
                <values>      ::= <value> | <value>','<values>
                <value>       ::= value-string
 
@@ -751,7 +751,7 @@ class EMANEShell(cmd.Cmd):
             updates = []
             if len(args) > index:
                 for expression in args[index:]:
-                    m = re.match('^([0-9A-Za-z]+)=(.+)', expression)
+                    m = re.match('^([.0-9A-Za-z]+)=(.+)', expression)
 
                     def toBool(val):
                         val = val.lower()
