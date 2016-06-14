@@ -1,6 +1,6 @@
 #!/us/bin/env python
 #
-# Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,8 +49,8 @@ class EMANEShell(cmd.Cmd):
         cmd.Cmd.__init__(self)
         self.prompt="[emanesh (%s:%d)] ## " % (host,port)
         self._client = ControlPortClient(host,port)
-        self._manifest = {}
-        self._mapping = {}
+        self._manifest = {'emulator' : [(0,'all','nemmanager')]}
+        self._mapping = {'emulator': {}}
         self._shims = set()
         self._pluginInfo = {}
 
@@ -68,9 +68,8 @@ class EMANEShell(cmd.Cmd):
                 self._mapping[nem][name] = component[0]
                 self._manifest[nem].append((component[0],name,component[2]))
 
-
         manifestpath = os.getenv('EMANEMANIFESTPATH','/usr/share/emane/manifest')
-        
+
         for directory in manifestpath.split(':'):
             for manifestXML in glob.glob("%s/*.xml" % directory):
                 try:
@@ -78,7 +77,7 @@ class EMANEShell(cmd.Cmd):
                     self._pluginInfo[manifest.getName()] = manifest
                 except ManifestException:
                     pass
-            
+
         if not len(self._pluginInfo):
             print "warning: no plugin manifest XML loaded. Check EMANEMANIFESTPATH."
 
@@ -146,10 +145,11 @@ class EMANEShell(cmd.Cmd):
 
         if not len(args):
             for (nem,components) in self._manifest.items():
-                print "nem %-3d" % nem ,
-                for component in components:
-                    print "%s(%s)" % (component[1],component[2]),
-                print
+                if nem != 'emulator':
+                    print "nem %-3d" % nem ,
+                    for component in components:
+                        print "%s(%s)" % (component[1],component[2]),
+                    print
         else:
             print 'error: too many arguements'
 
@@ -174,7 +174,7 @@ class EMANEShell(cmd.Cmd):
                <type>            ::=  'config' | 'stat' | 'table'
                <plugin>          ::=  plugin-name
                <plugin-specific> ::= <names>
-               <names>           ::= <name> | <name> <names> 
+               <names>           ::= <name> | <name> <names>
                <name>            ::= [A-Za-z0-9]+
 
                info 'manifest'
@@ -192,7 +192,7 @@ class EMANEShell(cmd.Cmd):
             return
         else:
             command = args[0].lower()
-            
+
             if command != 'config' and \
                     command != 'stat' and \
                     command != 'table' and \
@@ -251,7 +251,7 @@ class EMANEShell(cmd.Cmd):
                             if 'numeric' in info:
                                 print "     type      :",info['numeric']['type']
                                 print "     range     : [%s,%s]" % (info['numeric']['minValue'],
-                                                                    info['numeric']['maxValue'])         
+                                                                    info['numeric']['maxValue'])
                             else:
                                 print "     type      :",info['nonnumeric']['type']
 
@@ -326,7 +326,7 @@ class EMANEShell(cmd.Cmd):
                     return
 
                 else:
-                    if command == 'config': 
+                    if command == 'config':
                         print
                         print '   Available configuration parameters for',plugin
                         print
@@ -336,7 +336,7 @@ class EMANEShell(cmd.Cmd):
                             print '    ',name
                         print
 
-                    elif command == 'stat': 
+                    elif command == 'stat':
                         print
                         print '   Available statistic elements for',plugin
                         print
@@ -346,7 +346,7 @@ class EMANEShell(cmd.Cmd):
                             print '    ',name
                         print
 
-                    elif command == 'table': 
+                    elif command == 'table':
                         print
                         print '   Available statistic tables for',plugin
                         print
@@ -360,7 +360,7 @@ class EMANEShell(cmd.Cmd):
             else:
                 print "error: missing plugin name"
                 return
-                
+
 
     def complete_info(self, text, line, begidx, endidx):
         args = line.split()
@@ -368,7 +368,7 @@ class EMANEShell(cmd.Cmd):
                        'config' : self._pluginInfo.keys(),
                        'stat' : self._pluginInfo.keys(),
                        'table' : self._pluginInfo.keys()}
-        
+
         if len(args) >= 3:
             if args[2] in self._pluginInfo:
                 if args[1] == 'config':
@@ -384,8 +384,8 @@ class EMANEShell(cmd.Cmd):
                 if item.startswith(args[-1])
             ]
         else:
-            return completions[args[-1]]               
-        
+            return completions[args[-1]]
+
     def do_get(self,args):
         """
         The get command is used to get configuration, statistic and
@@ -400,19 +400,20 @@ class EMANEShell(cmd.Cmd):
 
         usage: get <type> <targets> <layer> [<target-specific>]
                <type>            ::=  'config' | 'stat' | 'table'
-               <targets>         ::=  <nem> | <nem> <nem> | '*'
+               <targets>         ::=  <nem> | <nem> <target> | 'emulator' |
+                                      'nems'| '*'
                <layer>           ::=  'all' | 'mac' | 'phy' | <shim>
                <nem>             ::=  [1-9] | [1-9][0-9]+
                <shim>            ::=  'shim'[0-9]+
                <target-specific> ::= <names> | ''
-               <names>           ::= <name> | <name> <names> 
+               <names>           ::= <name> | <name> <names>
                <name>            ::= [A-Za-z0-9]+
 
         example:
-        
+
           Get all configuration info from all NEM layers
           ## get config * all
-          
+
           Get all statistic tables from all NEM mac layers
           ## get table * mac
 
@@ -439,12 +440,13 @@ class EMANEShell(cmd.Cmd):
 
         usage: clear stat <targets> <layer> [<target-specific>]
                <type>            ::=  'stat' | 'table'
-               <targets>         ::=  <nem> | <nem> <target> | '*'
+               <targets>         ::=  <nem> | <nem> <target> | 'emulator' |
+                                      'nems'| '*'
                <layer>           ::=  'all' | 'mac' | 'phy' | <shim>
                <nem>             ::=  [1-9] | [1-9][0-9]+
                <shim>            ::=  'shim'[0-9]+
                <target-specific> ::= <names> | ''
-               <names>           ::= <name> | <name> <names> 
+               <names>           ::= <name> | <name> <names>
                <name>            ::= [A-Za-z0-9]+
 
         example:
@@ -457,7 +459,7 @@ class EMANEShell(cmd.Cmd):
           Clear two statistic items from the phy layers of NEM 1 and 2
           ## clear stat 1 2 phy processedEvents processedDownstreamControl
         """
-        return self._process('clear',args)           
+        return self._process('clear',args)
 
 
     def complete_clear(self, text, line, begidx, endidx):
@@ -468,7 +470,7 @@ class EMANEShell(cmd.Cmd):
 
     def _process(self,action,args):
         args = args.split()
-        
+
         if(action == 'get'):
             if len(args):
                 command = args[0].lower()
@@ -512,8 +514,14 @@ class EMANEShell(cmd.Cmd):
                     else:
                         targets.append(nem)
                 except:
-                    if arg.lower() == '*':
-                        targets = self._manifest.keys()
+                    if arg.lower() == 'nems':
+                        targets.extend([x for x in self._manifest.keys() if x != 'emulator'])
+
+                    elif arg.lower() == '*':
+                        targets.extend(self._manifest.keys())
+
+                    elif arg.lower() == 'emu' or arg.lower() == 'emulator':
+                        targets.append('emulator')
                     else:
                         break
 
@@ -546,7 +554,10 @@ class EMANEShell(cmd.Cmd):
         if component != "all":
             for target in set(targets):
                 if component not in self._mapping[target]:
-                    print "error: component not present in target %d: %s" % (target,component)
+                    if target != 'emulator':
+                        print "error: component not present in target %d: %s" % (target,component)
+                    else:
+                        print "error: component not present in emulator: %s" % (component)
                     return
 
         names = []
@@ -561,43 +572,55 @@ class EMANEShell(cmd.Cmd):
                         if command == "configuration":
                             try:
                                 entries =  self._client.getConfiguration(componentInfo[0],names)
-                                
+
                                 for name in sorted(entries.iterkeys()):
                                     values = entries[name]
-                                    print "nem %-3d %s "%(target,componentInfo[1]),name,"=",",".join([str(x[0]) for x in values])
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),name,"=",",".join([str(x[0]) for x in values])
+                                    else:
+                                        print "emulator",name,"=",",".join([str(x[0]) for x in values])
 
                             except ControlPortException, exp:
                                 if exp.fatal():
-                                    return self.do_exit(exp) 
+                                    return self.do_exit(exp)
                                 else:
-                                    print "nem %-3d %s "%(target,componentInfo[1]),exp 
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),exp
+                                    else:
+                                        print "emulator",exp
 
 
                         elif command == "statistic":
                             try:
                                 statistics = self._client.getStatistic(componentInfo[0],names)
- 
+
                                 for name in sorted(statistics.iterkeys()):
                                     value = statistics[name]
-                                    print "nem %-3d %s "%(target,componentInfo[1]),name,"=",value[0]
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),name,"=",value[0]
+                                    else:
+                                        print "emulator",name,"=",value[0]
 
                             except ControlPortException, exp:
                                 if exp.fatal():
-                                    return self.do_exit(exp) 
+                                    return self.do_exit(exp)
                                 else:
-                                    print "nem %-3d %s "%(target,componentInfo[1]),exp 
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),exp
+                                    else:
+                                        print "emulator",exp
 
 
                         elif command == "table":
                             try:
                                 statisticTables = self._client.getStatisticTable(componentInfo[0],names)
-                                
+
                                 for name in sorted(statisticTables.iterkeys()):
                                     widths = []
                                     (labels,rows) = statisticTables[name]
-                                    
+
                                     for label in labels:
-                                      widths.append(len(label)) 
+                                      widths.append(len(label))
 
                                     for row in rows:
                                         i = 0
@@ -605,7 +628,10 @@ class EMANEShell(cmd.Cmd):
                                             widths[i] = max(len(str(item[0])),widths[i])
                                             i += 1
 
-                                    print "nem %-3d %s %s"%(target,componentInfo[1],name)
+                                    if target != 'emulator':
+                                        print "nem %-3d %s %s"%(target,componentInfo[1],name)
+                                    else:
+                                        print "emulator", name
 
                                     i = 0
                                     for label in labels:
@@ -624,32 +650,49 @@ class EMANEShell(cmd.Cmd):
                                         print
                             except ControlPortException, exp:
                                 if exp.fatal():
-                                    return self.do_exit(exp) 
+                                    return self.do_exit(exp)
                                 else:
-                                    print "nem %-3d %s "%(target,componentInfo[1]),exp 
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),exp
+                                    else:
+                                        print "emulator",exp
 
                     elif action =="clear":
                         if command == "statistic":
                             try:
                                 self._client.clearStatistic(componentInfo[0],names)
-                                print "nem %-3d %s "%(target,componentInfo[1]),"statistics cleared"
+
+                                if target != 'emulator':
+                                    print "nem %-3d %s "%(target,componentInfo[1]),"statistics cleared"
+                                else:
+                                    print "emulator statistics cleared"
 
                             except ControlPortException, exp:
                                 if exp.fatal():
-                                    return self.do_exit(exp) 
+                                    return self.do_exit(exp)
                                 else:
-                                    print "nem %-3d %s "%(target,componentInfo[1]),exp 
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),exp
+                                    else:
+                                        print "emulator",exp
 
                         elif command == "table":
                             try:
                                 self._client.clearTable(componentInfo[0],names)
-                                print "nem %-3d %s "%(target,componentInfo[1]),"tables cleared"
+
+                                if target != 'emulator':
+                                    print "nem %-3d %s "%(target,componentInfo[1]),"tables cleared"
+                                else:
+                                    print "emulator tables cleared"
 
                             except ControlPortException, exp:
                                 if exp.fatal():
-                                    return self.do_exit(exp) 
+                                    return self.do_exit(exp)
                                 else:
-                                    print "nem %-3d %s "%(target,componentInfo[1]),exp 
+                                    if target != 'emulator':
+                                        print "nem %-3d %s "%(target,componentInfo[1]),exp
+                                    else:
+                                        print "emulator",exp
 
 
     def complete_set(self, text, line, begidx, endidx):
@@ -662,12 +705,13 @@ class EMANEShell(cmd.Cmd):
         """
         The set command is used to set configuration elements that have
         been designated as modifiable.
-        
+
         One or more configuration parameter value expressions can be
         specified.
-        
+
         usage: set config <targets> <layer> <expressions>
-               <targets>     ::=  <nem> | <nem> <nem> | '*'
+               <targets>     ::=  <nem> | <nem> <target> | 'nems' |
+                                  '*'
                <layer>       ::=  'all' | 'mac' | 'phy' | <shim>
                <nem>         ::=  [1-9] | [1-9][0-9]+
                <shim>        ::=  'shim'[0-9]+
@@ -682,11 +726,11 @@ class EMANEShell(cmd.Cmd):
           Set the txpower parameter for all NEM phy layers
           ## set config * phy txpower=20
 
-          Set the cwmin0 and cwmax0 parameters for NEM 1, 2 and 3 mac layers 
+          Set the cwmin0 and cwmax0 parameters for NEM 1, 2 and 3 mac layers
           ## set config 1 2 3 mac cwmin0=100 cwmax0=200
         """
         args = args.split()
-        
+
         if len(args):
             command = args[0].lower()
             if command == 'config':
@@ -699,7 +743,7 @@ class EMANEShell(cmd.Cmd):
             return
 
         index = 1
-        
+
         targets = []
 
         for arg in args[index:]:
@@ -713,11 +757,11 @@ class EMANEShell(cmd.Cmd):
                     targets.append(nem)
 
             except:
-                if args[index] == '*':
-                    targets = self._manifest.keys()
+                if args[index] == 'nems':
+                    targets =  [x for x in self._mapping.keys() if x != 'emulator']
                 else:
                     break
-                
+
             index+=1
         else:
             print "error: missing target"
@@ -762,7 +806,7 @@ class EMANEShell(cmd.Cmd):
                             return False
                         else:
                             raise ValueError()
-                        
+
                     convert = {'uint64' : (ControlPortClient.TYPE_UINT64,long),
                                'uint32' : (ControlPortClient.TYPE_UINT32,long),
                                'uint16' : (ControlPortClient.TYPE_UINT16,long),
@@ -796,7 +840,7 @@ class EMANEShell(cmd.Cmd):
                                     print "error: nem %hu %s unknown configuration paramater: %s" % (target,
                                                                                                      layer,
                                                                                                      name)
-                                    return  
+                                    return
 
                         values = []
 
@@ -806,30 +850,30 @@ class EMANEShell(cmd.Cmd):
 
                         except:
                             print "error: invalid conversion %s type %s : %s" % (name,dataType,item)
-                            return  
+                            return
 
                         updates.append((name,convert[dataType][0],tuple(values)))
 
                     else:
                         print "error: invalid configuration parameter format:", expression
-                        return  
+                        return
             else:
                 print "error: missing configration items"
                 return
-            
 
-            
+
+
             buildId = self._mapping[target][component]
 
             try:
                 self._client.updateConfiguration(buildId,updates)
                 print "nem %-3d %s "%(target,component),"configuration updated"
-                
+
             except ControlPortException, exp:
                 if exp.fatal():
-                    return self.do_exit(exp) 
+                    return self.do_exit(exp)
                 else:
-                    print "nem %-3d %s "%(target,component),exp 
+                    print "nem %-3d %s "%(target,component),exp
 
 
     def _completeMany(self,action,text, line, begidx, endidx,trailer,**subactions):
@@ -849,19 +893,26 @@ class EMANEShell(cmd.Cmd):
                     if args[1] in subactions:
                         subaction = args[1]
                         completions[subaction] = [str(x) for x in self._mapping.keys()]
-                        completions[subaction].extend(['*'])
+                        completions[subaction].extend(['*','nems'])
 
             elif len(args) > 2 and args[1] in subactions:
                 nems = set()
                 layers = set()
                 skip = False
+
                 for arg in args[2:]:
                     try:
                         nems.add(int(arg))
                     except:
-                        if arg == '*':
-                            nems = self._mapping.keys()
-                            skip = True
+                        if arg == 'nems':
+                            nems |= set([x for x in self._mapping.keys() if x != 'emulator'])
+
+                        elif arg == '*':
+                            nems |= set(self._mapping.keys())
+
+                        elif arg == 'emulator':
+                            nems.add('emulator')
+
                         elif arg == 'phy' or \
                                 arg == 'mac' or \
                                 arg == 'transport' or \
@@ -880,22 +931,39 @@ class EMANEShell(cmd.Cmd):
                 layers.add('all')
 
                 if not layer:
-                    completions['*'] =  list(layers)
-                   
+                    completions['nems'] = list(layers)
+                    completions['*'] = ['all']
+
                 if not skip:
-                    remaining = list(set(self._mapping.keys()) - nems)
+                    remaining = []
+
+                    possibilities = [x for x in self._mapping.keys() if x != 'emulator']
+
+                    if '*' not in args:
+                        if not ('nems' in args and 'emulator' in args):
+                            possibilities.extend(['*'])
+
+                    if 'nems' not in args:
+                        if '*' not in args:
+                            possibilities.extend(['nems'])
+
+                    if 'emulator' not in args:
+                        if '*' not in args:
+                            possibilities.extend(['emulator'])
+
+                    remaining = list(set(possibilities) - nems)
 
                     if text:
                         index = -2
                     else:
                         index = -1
 
-                    if args[index] not in layers:
+                    if args[index] not in layers and  args[index] != '*':
                         completions[args[index]] = [str(x) for x in remaining]
                         completions[args[index]].extend(list(layers))
 
                 params = set()
-                
+
                 for nem in nems:
                     for (_,l,plugin) in self._manifest[nem]:
                         if layer == 'all' or l == layer:
@@ -912,7 +980,7 @@ class EMANEShell(cmd.Cmd):
                     layer = None
 
 
-            if text:
+            if text or line[-1] != ' ':
                 if layer:
                     return [
                         item for item in params
@@ -927,22 +995,22 @@ class EMANEShell(cmd.Cmd):
                 if layer:
                     return list(params)
                 else:
-                    return completions[args[-1]]    
-        
+                    return completions[args[-1]]
+
         except Exception, err:
             pass
 
     def complete_loglevel(self, text, line, begidx, endidx):
         args = line.split()
         completions = {'loglevel' :  ['0','1','2','3','4']}
-        
+
         if text:
             return [
                 item for item in completions[args[-2]]
                 if item.startswith(args[-1])
             ]
         else:
-            return completions[args[-1]]               
+            return completions[args[-1]]
 
     def do_loglevel(self,args):
         """
@@ -968,16 +1036,16 @@ class EMANEShell(cmd.Cmd):
         try:
             self._client.setLogLevel(int(args[0]))
             print "log level updated"
-            
+
         except ControlPortException, exp:
             if exp.fatal():
-                return self.do_exit(exp) 
+                return self.do_exit(exp)
             else:
                 print "error: ",exp
         except:
             print "error: invalid log level"
-                                     
-        
+
+
 
 
 if __name__ == "__main__":
@@ -985,7 +1053,7 @@ if __name__ == "__main__":
 
     optionParser = OptionParser(usage=usage)
 
-    optionParser.add_option("-p", 
+    optionParser.add_option("-p",
                             "--port",
                             action="store",
                             type="int",
@@ -1015,5 +1083,5 @@ if __name__ == "__main__":
         except KeyboardInterrupt, exp:
             shell.onecmd('exit')
             print
-        
+
     exit(0)

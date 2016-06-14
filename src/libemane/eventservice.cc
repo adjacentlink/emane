@@ -47,6 +47,7 @@
 
 EMANE::EventService::EventService():
   bOpen_{false},
+  eventStatisticPublisher_{"EventChannel"},
   u64SequenceNumber_{}
 {
   uuid_clear(uuid_);
@@ -254,6 +255,13 @@ void EMANE::EventService::sendEvent(BuildId buildId,
                                           eventId,
                                           nemId);
                 }
+              else
+                {
+                  eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_TX,
+                                                  uuid_,
+                                                  eventId);
+
+                }
             }
         }
       catch(google::protobuf::FatalException & exp)
@@ -312,7 +320,10 @@ void EMANE::EventService::processEventMessage(NEMId nemId,
     }
 }
 
-
+void EMANE::EventService::setStatEventCountRowLimit(size_t rows)
+{
+  eventStatisticPublisher_.setRowLimit(rows);
+}
 
 void  EMANE::EventService::process()
 {
@@ -345,8 +356,11 @@ void  EMANE::EventService::process()
               if(static_cast<size_t>(len) == *pu16Length &&
                  msg.ParseFromArray(&buf[2], *pu16Length))
                 {
+                  uuid_t remoteUUID;
+                  uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(msg.uuid().data()));
+
                   // only process multicast events that were not sourced locally
-                  if(uuid_compare(uuid_,reinterpret_cast<const unsigned char *>(msg.uuid().data())))
+                  if(uuid_compare(uuid_,remoteUUID))
                     {
                       using RepeatedPtrFieldSerilaization =
                         google::protobuf::RepeatedPtrField<EMANEMessage::Event::Data::Serialization>;
@@ -374,6 +388,10 @@ void  EMANE::EventService::process()
                                                                   repeatedSerialization.data());
                                 }
                             }
+
+                          eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
+                                                          remoteUUID,
+                                                          repeatedSerialization.eventid());
                         }
                     }
                 }

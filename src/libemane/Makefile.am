@@ -78,6 +78,7 @@ libemane_la_SOURCES =                         \
  eventregistrarproxy.cc                       \
  eventservice.cc                              \
  eventserviceproxy.cc                         \
+ eventstatisticpublisher.cc                   \
  eventtablepublisher.cc                       \
  flowcontrolclient.cc                         \
  flowcontrolcontrolmessage.cc                 \
@@ -122,6 +123,7 @@ libemane_la_SOURCES =                         \
  noiserecorder.cc                             \
  orientationformatter.cc                      \
  otamanager.cc                                \
+ otastatisticpublisher.cc                     \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
  pathlosseventformatter.cc                    \
@@ -219,6 +221,7 @@ EXTRA_DIST=                                   \
  eventserviceexception.h                      \
  eventservice.h                               \
  eventserviceproxy.h                          \
+ eventstatisticpublisher.h                    \
  eventtablepublisher.h                        \
  frameworkphy.h                               \
  freespacepropagationmodelalgorithm.h         \
@@ -259,6 +262,7 @@ EXTRA_DIST=                                   \
  otaexception.h                               \
  otamanager.h                                 \
  otaprovider.h                                \
+ otastatisticpublisher.h                      \
  otauser.h                                    \
  phylayer.h                                   \
  phylayerfactory.h                            \

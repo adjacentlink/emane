@@ -333,7 +333,7 @@ EMANE::Application::NEMBuilder::buildNEMManager(const uuid_t & uuid,
 
   std::unique_ptr<Application::NEMManager> pPlatform{new NEMManagerImpl{uuid}};
 
-  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pPlatform.get())};
+  BuildId buildId{0};
 
   RegistrarProxy registrarProxy{buildId};
 

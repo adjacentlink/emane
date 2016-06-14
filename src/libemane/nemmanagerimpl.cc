@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -121,6 +121,22 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
                                                    " participating in the emulation has antennaprofileenable"
                                                    " set on, even in the case where antennaprofileenable is"
                                                    " off locally.");
+
+   configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxpacketcountrows",
+                                                  ConfigurationProperties::DEFAULT,
+                                                  {0},
+                                                  "OTA channel max packet count table rows.");
+
+   configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxeventcountrows",
+                                                  ConfigurationProperties::DEFAULT,
+                                                  {0},
+                                                  "OTA channel max event count table rows.");
+
+   configRegistrar.registerNumeric<std::uint32_t>("stats.event.maxeventcountrows",
+                                                  ConfigurationProperties::DEFAULT,
+                                                  {0},
+                                                  "Event channel max event count table rows.");
+
 }
 
 void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & update)
@@ -231,6 +247,45 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
                                   item.first.c_str(),
                                   sAntennaProfileManifestURI_.c_str());
 
+        }
+      else if(item.first == "stats.ota.maxpacketcountrows")
+        {
+          std::uint32_t u32OTAMaxPacketCountRows = item.second[0].asUINT32();
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s: %u",
+                                  item.first.c_str(),
+                                  u32OTAMaxPacketCountRows);
+
+          OTAManagerSingleton::instance()->
+            setStatPacketCountRowLimit(u32OTAMaxPacketCountRows);
+        }
+      else if(item.first == "stats.ota.maxeventcountrows")
+        {
+          std::uint32_t u32OTAMaxEventCountRows = item.second[0].asUINT32();
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s: %u",
+                                  item.first.c_str(),
+                                  u32OTAMaxEventCountRows);
+
+          OTAManagerSingleton::instance()->
+            setStatEventCountRowLimit(u32OTAMaxEventCountRows);
+        }
+      else if(item.first == "stats.event.maxeventcountrows")
+        {
+          std::uint32_t u32EventMaxEventCountRows = item.second[0].asUINT32();
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s: %u",
+                                  item.first.c_str(),
+                                  u32EventMaxEventCountRows);
+
+          EventServiceSingleton::instance()->
+            setStatEventCountRowLimit(u32EventMaxEventCountRows);
         }
       else
         {

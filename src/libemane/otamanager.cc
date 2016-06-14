@@ -48,9 +48,11 @@
 
 #include <sstream>
 #include <algorithm>
+#include <uuid.h>
 
 EMANE::OTAManager::OTAManager():
   bOpen_(false),
+  eventStatisticPublisher_{"OTAChannel"},
   u64SequenceNumber_{}
 {
   uuid_clear(uuid_);
@@ -64,6 +66,16 @@ EMANE::OTAManager::~OTAManager()
 
       thread_.join();
     }
+}
+
+void EMANE::OTAManager::setStatPacketCountRowLimit(size_t rows)
+{
+  otaStatisticPublisher_.setRowLimit(rows);
+}
+
+void EMANE::OTAManager::setStatEventCountRowLimit(size_t rows)
+{
+  eventStatisticPublisher_.setRowLimit(rows);
 }
 
 void EMANE::OTAManager::sendOTAPacket(NEMId id,
@@ -220,7 +232,20 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
                                       strerror(errno));
 
             }
+          else
+            {
+              otaStatisticPublisher_.update(OTAStatisticPublisher::Type::TYPE_DOWNSTREAM,
+                                            uuid_,
+                                            pktInfo.getSource());
 
+
+              for(const auto & entry : eventSerializations)
+                {
+                  eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_TX,
+                                                  uuid_,
+                                                  std::get<1>(entry));
+                }
+            }
         }
       else
         {
@@ -345,7 +370,10 @@ void EMANE::OTAManager::processOTAMessage()
                       std::uint16_t u16ControlIndex = u16EventIndex + otaHeader.eventlength();
                       std::uint16_t u16PacketIndex = u16ControlIndex + otaHeader.controllength();
 
-                      if(uuid_compare(uuid_,reinterpret_cast<const unsigned char *>(otaHeader.uuid().data())))
+                      uuid_t remoteUUID;
+                      uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(otaHeader.uuid().data()));
+
+                      if(uuid_compare(uuid_,remoteUUID))
                         {
                           if(otaHeader.eventlength())
                             {
@@ -362,6 +390,10 @@ void EMANE::OTAManager::processOTAMessage()
                                       EventServiceSingleton::instance()->processEventMessage(repeatedSerialization.nemid(),
                                                                                              repeatedSerialization.eventid(),
                                                                                              repeatedSerialization.data());
+
+                                      eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
+                                                                    remoteUUID,
+                                                                    repeatedSerialization.eventid());
                                     }
                                 }
                               else
@@ -376,7 +408,7 @@ void EMANE::OTAManager::processOTAMessage()
                                              otaHeader.destination(),
                                              0,
                                              now,
-                                             uuid_);
+                                             remoteUUID);
 
                           UpstreamPacket pkt(pktInfo,&buf[u16PacketIndex],otaHeader.datalength());
 
@@ -414,6 +446,9 @@ void EMANE::OTAManager::processOTAMessage()
                                 }
                             }
 
+                          otaStatisticPublisher_.update(OTAStatisticPublisher::Type::TYPE_UPSTREAM,
+                                                        remoteUUID,
+                                                        pktInfo.getSource());
 
                           // for each local NEM stack
                           for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();

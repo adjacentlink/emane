@@ -37,6 +37,8 @@
 #include "otaprovider.h"
 #include "emane/inetaddr.h"
 #include "multicastsocket.h"
+#include "otastatisticpublisher.h"
+#include "eventstatisticpublisher.h"
 
 #include "emane/utils/singleton.h"
 
@@ -87,6 +89,10 @@ namespace EMANE
               int iTTL,
               const uuid_t & uuid);
 
+    void setStatPacketCountRowLimit(size_t rows);
+
+    void setStatEventCountRowLimit(size_t rows);
+
   private:
     typedef std::map<NEMId,OTAUser *> NEMUserMap;
     std::thread thread_;
@@ -95,7 +101,8 @@ namespace EMANE
     MulticastSocket mcast_;
     bool bOpen_;
     uuid_t uuid_;
-
+    mutable OTAStatisticPublisher otaStatisticPublisher_;
+    mutable EventStatisticPublisher eventStatisticPublisher_;
     mutable std::atomic<std::uint64_t> u64SequenceNumber_;
 
     void processOTAMessage();

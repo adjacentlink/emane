@@ -43,6 +43,7 @@
 #include "emane/serializable.h"
 #include "emane/utils/singleton.h"
 #include "multicastsocket.h"
+#include "eventstatisticpublisher.h"
 
 #include <map>
 #include <tuple>
@@ -88,6 +89,8 @@ namespace EMANE
                              const Serialization & serialization,
                              NEMId ignoreNEM = {}) const;
 
+    void setStatEventCountRowLimit(size_t rows);
+
   protected:
     EventService();
 
@@ -107,6 +110,7 @@ namespace EMANE
     bool bCancel_;
     uuid_t uuid_;
 
+    mutable EventStatisticPublisher eventStatisticPublisher_;
     mutable std::atomic<std::uint64_t> u64SequenceNumber_;
 
     void process();
