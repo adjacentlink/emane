@@ -134,6 +134,22 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
         }
     }
 
+  /*
+   * UpstreamPacket data is shared (reference counted).  The same
+   * packet can be used in multiple calls to OTAUser::processOTAPacket
+   * since the resulting action is to enqueue a referenced counted
+   * copy on each NEM queue. Each copy will share the same packet data
+   * but have unique index counters used for stripping packet data.
+   */
+  auto now = Clock::now();
+
+  UpstreamPacket upstreamPacket({pktInfo.getSource(),
+        pktInfo.getDestination(),
+        pktInfo.getPriority(),
+        now,
+        uuid_},
+    pkt.getVectorIO());
+
   // bounce a copy of the pkt back up to our local NEM stack(s)
   for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
       iter != end;
@@ -149,19 +165,6 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
         }
       else
         {
-          /*
-           * each NEM needs is own copy of the packet,
-           * you can not share between NEM(s), so create and send an Upstream pkt for each NEM
-           */
-          auto now = Clock::now();
-
-          UpstreamPacket upstreamPacket({pktInfo.getSource(),
-                pktInfo.getDestination(),
-                pktInfo.getPriority(),
-                now,
-                uuid_},
-            pkt.getVectorIO());
-
           iter->second->processOTAPacket(upstreamPacket,ControlMessages());
         }
     }
@@ -392,8 +395,8 @@ void EMANE::OTAManager::processOTAMessage()
                                                                                              repeatedSerialization.data());
 
                                       eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
-                                                                    remoteUUID,
-                                                                    repeatedSerialization.eventid());
+                                                                      remoteUUID,
+                                                                      repeatedSerialization.eventid());
                                     }
                                 }
                               else
@@ -478,8 +481,8 @@ void EMANE::OTAManager::processOTAMessage()
                 }
               else
                 {
-                   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                           ERROR_LEVEL,"OTAManager message header could not be deserialized");
+                  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                          ERROR_LEVEL,"OTAManager message header could not be deserialized");
                 }
             }
           else
@@ -490,7 +493,7 @@ void EMANE::OTAManager::processOTAMessage()
         }
       else
         {
-           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   ERROR_LEVEL,"OTAManager Packet Received error");
           break;
         }

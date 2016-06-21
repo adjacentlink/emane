@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -87,7 +88,7 @@ namespace EMANE
      * Destroys an instance
      */
     ~DownstreamPacket();
-    
+
     /**
      * Prepends @a bytes of @a buf to the beginning of packet.  This method is used
      * to add layer specific headers to a packet
@@ -106,11 +107,11 @@ namespace EMANE
      * @note Value prepended in network byte order
      */
     void prependLengthPrefixFraming(std::uint16_t u16Length);
-    
+
     /**
      * Gets a vectored IO representation of the packet.
      *
-     * @return vectored IO instance 
+     * @return vectored IO instance
      *
      * @note Packet data is not copied.
      */
@@ -123,7 +124,7 @@ namespace EMANE
      * @return size in bytes
      */
     size_t length() const;
-    
+
     /**
      * Get a reference to the packet information
      *
@@ -139,7 +140,7 @@ namespace EMANE
      */
     void attachEvent(NEMId nemId, const Event & event);
 
-    using EventSerializations = 
+    using EventSerializations =
       std::list<std::tuple<EMANE::NEMId,EMANE::EventId, Serialization>>;
 
     /**
@@ -151,7 +152,7 @@ namespace EMANE
 
   private:
     class Implementation;
-    std::unique_ptr<Implementation> pImpl_;
+    std::shared_ptr<Implementation> pImpl_;
   };
 }
 

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -45,7 +46,7 @@ public:
   Implementation():
     totalLengthBytes_{},
     info_{0,0,0,{}}{}
-  
+
   Implementation(const PacketInfo & info, const void * buf, size_t size):
     totalLengthBytes_{},
     info_{info}
@@ -56,24 +57,24 @@ public:
   void prepend(const void * buf, size_t size)
   {
     const unsigned char * c = static_cast<const unsigned char *>(buf);
-  
+
     segmentList_.push_front(PacketSegment(&c[0],&c[size]));
-  
+
     totalLengthBytes_ += size;
   }
-  
+
   void prependLengthPrefixFraming(std::uint16_t u16Length)
   {
     std::uint16_t u16LengthNet{HTONS(u16Length)};
-  
+
     auto c = reinterpret_cast<const std::uint8_t *>(&u16LengthNet);
 
     segmentList_.push_front(PacketSegment{&c[0],&c[sizeof(u16Length)]});
-  
+
     totalLengthBytes_ += sizeof(u16Length);
   }
 
- 
+
   const void * get()
   {
     if(!segmentList_.empty() && segmentList_.begin()->size())
@@ -81,32 +82,32 @@ public:
         if(segmentList_.size() > 1)
           {
             PacketSegment combinedSeg;
-            
+
             combinedSeg.reserve(totalLengthBytes_);
-            
+
             SegmentList::iterator iter = segmentList_.begin();
-            
+
             for(;iter !=  segmentList_.end(); ++iter)
               {
                 combinedSeg.insert(combinedSeg.end(),iter->begin(),iter->end());
               }
-            
-            segmentList_.erase(++segmentList_.begin(),segmentList_.end()); 
-            
+
+            segmentList_.erase(++segmentList_.begin(),segmentList_.end());
+
             segmentList_.begin()->swap(combinedSeg);
           }
-        
+
         return &(*segmentList_.begin())[0];
       }
-    
+
     return 0;
   }
-  
+
   size_t length() const
   {
     return totalLengthBytes_;
   }
-  
+
   const PacketInfo & getPacketInfo() const
   {
     return info_;
@@ -115,9 +116,9 @@ public:
   Utils::VectorIO getVectorIO() const
   {
     Utils::VectorIO vectorIO{};
-    
+
     vectorIO.reserve(segmentList_.size());
-    
+
     for(const auto & segment : segmentList_)
       {
         vectorIO.push_back({const_cast<std::uint8_t *>(&segment[0]),segment.size()});
@@ -155,26 +156,22 @@ EMANE::DownstreamPacket::DownstreamPacket(const  EMANE::PacketInfo & info,
 
 
 EMANE::DownstreamPacket::DownstreamPacket(const DownstreamPacket & pkt):
-  pImpl_{new Implementation{*pkt.pImpl_}}{}
+  pImpl_{pkt.pImpl_}{}
 
 EMANE::DownstreamPacket::DownstreamPacket(DownstreamPacket && pkt):
-  pImpl_{pkt.pImpl_.release()}
-{
-  pkt.pImpl_.reset(new Implementation{});
-}
+  pImpl_{std::move(pkt.pImpl_)}{}
 
 EMANE::DownstreamPacket::~DownstreamPacket(){}
 
 EMANE::DownstreamPacket & EMANE::DownstreamPacket::operator=(const DownstreamPacket & pkt)
 {
-  pImpl_.reset(new Implementation{*pkt.pImpl_});
+  pImpl_ = pkt.pImpl_;
   return *this;
 }
 
 EMANE::DownstreamPacket & EMANE::DownstreamPacket::operator=(DownstreamPacket && pkt)
 {
-  pImpl_.reset(pkt.pImpl_.release());
-  pkt.pImpl_.reset(new Implementation{});
+  pImpl_ = std::move(pkt.pImpl_);
   return *this;
 }
 
