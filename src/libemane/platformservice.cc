@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -59,6 +60,10 @@ EMANE::LogServiceProvider & EMANE::PlatformService::logService()
   return *LogServiceSingleton::instance();
 }
 
+EMANE::FileDescriptorServiceProvider & EMANE::PlatformService::fileDescriptorService()
+{
+  return *pFileDescriptorService_;
+}
 
 void EMANE::PlatformService::setPlatformServiceUser(BuildId buildId,
                                                     PlatformServiceUser * pPlatformServiceUser)
@@ -67,3 +72,8 @@ void EMANE::PlatformService::setPlatformServiceUser(BuildId buildId,
   eventServiceProxy_.setBuildId(buildId);
 }
 
+void EMANE::PlatformService::setFileDescriptorServiceProvider(FileDescriptorServiceProvider *
+                                                              pFileDescriptorServiceProvider)
+{
+  pFileDescriptorService_ = pFileDescriptorServiceProvider;
+}

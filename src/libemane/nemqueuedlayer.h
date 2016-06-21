@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,14 +36,15 @@
 #define EMANENEMQUEUEDLAYER_HEADER_
 
 #include "emane/nemlayer.h"
+#include "emane/filedescriptorserviceprovider.h"
+#include "emane/utils/runningaverage.h"
+#include "emane/utils/statistichistogramtable.h"
 
 #include <queue>
 #include <functional>
 #include <thread>
 #include <mutex>
-#include <condition_variable>
-#include "emane/utils/runningaverage.h"
-#include "emane/utils/statistichistogramtable.h"
+#include <unordered_map>
 
 namespace EMANE
 {
@@ -58,7 +59,8 @@ namespace EMANE
    * processing packets, control, and events in a thread safe sequential
    * manner.
    */
-  class NEMQueuedLayer :  public NEMLayer
+  class NEMQueuedLayer :  public NEMLayer,
+                          public FileDescriptorServiceProvider
   {
   public:
     ~NEMQueuedLayer();
@@ -114,8 +116,14 @@ namespace EMANE
     std::thread thread_;
     MessageProcessingQueue queue_;
     std::mutex mutex_;
-    std::condition_variable cond_;
+    int iFd_;
+    int iepollFd_;
     bool bCancel_;
+
+    using FileDescriptorStore = std::unordered_map<int,
+                                                   std::pair<DescriptorType,
+                                                             Callback>>;
+    FileDescriptorStore fileDescriptorStore_;
 
     StatisticNumeric<std::uint64_t> * pProcessedDownstreamPacket_;
     StatisticNumeric<std::uint64_t> * pProcessedUpstreamPacket_;
@@ -143,11 +151,11 @@ namespace EMANE
                                         const ControlMessages);
 
     void handleProcessDownstreamPacket(TimePoint enqueueTime,
-                                       DownstreamPacket,
+                                       DownstreamPacket &,
                                        const ControlMessages);
 
     void handleProcessUpstreamPacket(TimePoint enqueueTime,
-                                     UpstreamPacket,
+                                     UpstreamPacket &,
                                      const ControlMessages);
 
     void handleProcessUpstreamControl(TimePoint enqueueTime,
@@ -164,6 +172,11 @@ namespace EMANE
                                  const TimePoint & fireTime,
                                  const void * arg);
 
+    void removeFileDescriptor(int iFd) override;
+
+    void addFileDescriptor_i(int iFd,
+                             DescriptorType type,
+                             Callback callback) override;
   };
 }
 

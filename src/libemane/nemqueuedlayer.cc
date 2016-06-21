@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,10 +38,21 @@
 #include <exception>
 #include <mutex>
 
+#include <sys/eventfd.h>
+#include <sys/epoll.h>
+#include <unistd.h>
+
+namespace
+{
+  const uint64_t one{1};
+}
+
 EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatformService):
   NEMLayer{id, pPlatformService},
   pPlatformService_{pPlatformService},
   thread_{},
+  iFd_{},
+  iepollFd_{},
   bCancel_{},
   pProcessedDownstreamPacket_{},
   pProcessedUpstreamPacket_{},
@@ -49,7 +60,27 @@ EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatfo
   pProcessedUpstreamControl_{},
   pProcessedEvent_{},
   pProcessedTimedEvent_{},
-  pProcessedConfiguration_{}{}
+  pProcessedConfiguration_{}
+{
+  iFd_ = eventfd(0,0);
+
+  iepollFd_ = epoll_create1(0);
+
+  // add the eventfd socket to the epoll instance
+  struct epoll_event ev;
+  ev.events = EPOLLIN;
+  ev.data.fd = iFd_;
+
+  if(epoll_ctl(iepollFd_,EPOLL_CTL_ADD,iFd_,&ev) == -1)
+    {
+      // cannot really do too much at this point, so we'll log it
+      LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                              ERROR_LEVEL,
+                              "%03hu NEMQueuedLayer::NEMQueuedLayer:"
+                              " unable to add eventfd to epoll",
+                              id_);
+    }
+}
 
 EMANE::NEMQueuedLayer::~NEMQueuedLayer()
 {
@@ -58,8 +89,10 @@ EMANE::NEMQueuedLayer::~NEMQueuedLayer()
   if(!bCancel_ && thread_.joinable())
     {
       bCancel_ = true;
-      cond_.notify_one();
+      write(iFd_,&one,sizeof(one));
     }
+
+  close(iFd_);
 }
 
 void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
@@ -107,11 +140,11 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 
   avgQueueDepth_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgProcessAPIQueueDepth",
-                                               StatisticProperties::CLEARABLE,
-                                               "Average API queue depth for a processUpstreamPacket,"
-                                               " processUpstreamControl, processDownstreamPacket,"
-                                               " processDownstreamControl, processEvent and"
-                                               " processTimedEvent."));
+                                                StatisticProperties::CLEARABLE,
+                                                "Average API queue depth for a processUpstreamPacket,"
+                                                " processUpstreamControl, processDownstreamPacket,"
+                                                " processDownstreamControl, processEvent and"
+                                                " processTimedEvent."));
 
   avgTimedEventLatency_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgTimedEventLatency",
@@ -136,7 +169,7 @@ void EMANE::NEMQueuedLayer::stop()
 {
   mutex_.lock();
   bCancel_ = true;
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
   mutex_.unlock();
   thread_.join();
   bCancel_ = false;
@@ -147,7 +180,7 @@ void EMANE::NEMQueuedLayer::processConfiguration(const ConfigurationUpdate & upd
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessConfiguration,this,Clock::now(),update));
   avgQueueDepth_.update(queue_.size());
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processDownstreamControl(const ControlMessages & msgs)
@@ -155,7 +188,7 @@ void EMANE::NEMQueuedLayer::processDownstreamControl(const ControlMessages & msg
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessDownstreamControl,this,Clock::now(),msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processDownstreamPacket(DownstreamPacket & pkt,const ControlMessages & msgs)
@@ -163,7 +196,7 @@ void EMANE::NEMQueuedLayer::processDownstreamPacket(DownstreamPacket & pkt,const
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessDownstreamPacket,this,Clock::now(),pkt,msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processUpstreamPacket(UpstreamPacket & pkt,const ControlMessages & msgs)
@@ -171,7 +204,7 @@ void EMANE::NEMQueuedLayer::processUpstreamPacket(UpstreamPacket & pkt,const Con
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessUpstreamPacket,this,Clock::now(),pkt,msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processUpstreamControl(const ControlMessages & msgs)
@@ -179,7 +212,7 @@ void EMANE::NEMQueuedLayer::processUpstreamControl(const ControlMessages & msgs)
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push(std::bind(&NEMQueuedLayer::handleProcessUpstreamControl,this,Clock::now(),msgs));
   avgQueueDepth_.update(queue_.size());
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processEvent(const EventId & eventId,
@@ -195,7 +228,7 @@ void EMANE::NEMQueuedLayer::processEvent(const EventId & eventId,
 
   avgQueueDepth_.update(queue_.size());
 
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 void EMANE::NEMQueuedLayer::processTimedEvent(TimerEventId eventId,
@@ -216,66 +249,104 @@ void EMANE::NEMQueuedLayer::processTimedEvent(TimerEventId eventId,
 
   avgQueueDepth_.update(queue_.size());
 
-  cond_.notify_one();
+  write(iFd_,&one,sizeof(one));
 }
 
 
 void EMANE::NEMQueuedLayer::processWorkQueue()
 {
-  while(1)
+  std::uint64_t u64Expired{};
+#define MAX_EVENTS 32
+  struct epoll_event events[MAX_EVENTS];
+  int nfds{};
+
+  while(!bCancel_)
     {
-      std::unique_lock<std::mutex> lock{mutex_};
+      nfds = epoll_wait(iepollFd_,events,MAX_EVENTS,-1);
 
-      while(queue_.empty() && !bCancel_)
+      if(nfds == -1)
         {
-          cond_.wait(lock);
-        }
-
-      if(bCancel_)
-        {
-          break;
-        }
-
-      // retrieve the next funtion to execute
-      auto f = queue_.front();
-
-      // remove the functor from the top of the queue
-      queue_.pop();
-
-      // release the queue syncronization object
-      lock.unlock();
-
-      try
-        {
-          // execute the funtor
-          f();
-        }
-      catch(std::exception & exp)
-        {
-          // cannot really do too much at this point, so we'll log it
-          // good candidate spot to generate and error event as well
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                 "%03hu NEMQueuedLayer::processWorkQueue:"
-                                 " Exception caught %s",
-                                 id_,
-                                 exp.what());
-        }
-      catch(...)
-        {
-          // cannot really do too much at this point, so we'll log it
-          // good candidate spot to generate and error event as well
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   ERROR_LEVEL,
                                   "%03hu NEMQueuedLayer::processWorkQueue:"
-                                  " Exception caught",
+                                  " epoll_wait error",
                                   id_);
+          break;
+        }
+
+      for(int n = 0; n < nfds; ++n)
+        {
+          if(events[n].data.fd == iFd_)
+            {
+              // wait for an interval timer to expire
+              if(read(iFd_,&u64Expired,sizeof(u64Expired)) > 0)
+                {
+                  if(bCancel_)
+                    {
+                      break;
+                    }
+
+                  MessageProcessingQueue queue{};
+
+                  // syncronize access to queue
+                  {
+                    std::unique_lock<std::mutex> lock(mutex_);
+
+                    queue.swap(queue_);
+                  }
+
+                  while(!queue.empty())
+                    {
+                      // retrieve the next funtion to execute
+                      auto f = queue.front();
+
+                      // remove the functor from the top of the queue
+                      queue.pop();
+
+                      try
+                        {
+                          // execute the funtor
+                          f();
+                        }
+                      catch(std::exception & exp)
+                        {
+                          // cannot really do too much at this point, so we'll log it
+                          // good candidate spot to generate and error event as well
+                          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                                  ERROR_LEVEL,
+                                                  "%03hu NEMQueuedLayer::processWorkQueue:"
+                                                  " Exception caught %s",
+                                                  id_,
+                                                  exp.what());
+                        }
+                      catch(...)
+                        {
+                          // cannot really do too much at this point, so we'll log it
+                          // good candidate spot to generate and error event as well
+                          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                                  ERROR_LEVEL,
+                                                  "%03hu NEMQueuedLayer::processWorkQueue:"
+                                                  " Exception caught",
+                                                  id_);
+                        }
+                    }
+                }
+            }
+          else
+            {
+              auto iter = fileDescriptorStore_.find(events[n].data.fd);
+
+              if(iter != fileDescriptorStore_.end())
+                {
+                  iter->second.second(events[n].data.fd);
+                }
+            }
         }
     }
 }
 
-  void EMANE::NEMQueuedLayer::handleProcessConfiguration(TimePoint enqueueTime,
-                                                         const ConfigurationUpdate update)
+void EMANE::NEMQueuedLayer::handleProcessConfiguration(TimePoint enqueueTime,
+                                                       const ConfigurationUpdate update)
 {
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
 
@@ -284,8 +355,8 @@ void EMANE::NEMQueuedLayer::processWorkQueue()
   doProcessConfiguration(update);
 }
 
-    void EMANE::NEMQueuedLayer::handleProcessDownstreamControl(TimePoint enqueueTime,
-                                                               const ControlMessages msgs)
+void EMANE::NEMQueuedLayer::handleProcessDownstreamControl(TimePoint enqueueTime,
+                                                           const ControlMessages msgs)
 {
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
 
@@ -297,7 +368,7 @@ void EMANE::NEMQueuedLayer::processWorkQueue()
 }
 
 void EMANE::NEMQueuedLayer::handleProcessDownstreamPacket(TimePoint enqueueTime,
-                                                          DownstreamPacket pkt,
+                                                          DownstreamPacket & pkt,
                                                           const ControlMessages msgs)
 {
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
@@ -309,9 +380,9 @@ void EMANE::NEMQueuedLayer::handleProcessDownstreamPacket(TimePoint enqueueTime,
   std::for_each(msgs.begin(),msgs.end(),[](const ControlMessage * p){delete p;});
 }
 
-  void EMANE::NEMQueuedLayer::handleProcessUpstreamPacket(TimePoint enqueueTime,
-                                                          UpstreamPacket pkt,
-                                                          const ControlMessages msgs)
+void EMANE::NEMQueuedLayer::handleProcessUpstreamPacket(TimePoint enqueueTime,
+                                                        UpstreamPacket & pkt,
+                                                        const ControlMessages msgs)
 {
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
 
@@ -334,9 +405,9 @@ void EMANE::NEMQueuedLayer::handleProcessUpstreamControl(TimePoint enqueueTime,
   std::for_each(msgs.begin(),msgs.end(),[](const ControlMessage * p){delete p;});
 }
 
-  void EMANE::NEMQueuedLayer::handleProcessEvent(TimePoint enqueueTime,
-                                                 const EventId eventId,
-                                                 const Serialization serialization)
+void EMANE::NEMQueuedLayer::handleProcessEvent(TimePoint enqueueTime,
+                                               const EventId eventId,
+                                               const Serialization serialization)
 {
   avgQueueWait_.update(std::chrono::duration_cast<Microseconds>(Clock::now() - enqueueTime).count());
 
@@ -376,4 +447,70 @@ void EMANE::NEMQueuedLayer::handleProcessTimedEvent(TimePoint enqueueTime,
   ++*pProcessedTimedEvent_;
 
   doProcessTimedEvent(eventId,expireTime,scheduleTime,fireTime,arg);
+}
+
+void EMANE::NEMQueuedLayer::removeFileDescriptor(int iFd)
+{
+  auto iter = fileDescriptorStore_.find(iFd);
+
+  if(iter != fileDescriptorStore_.end())
+    {
+      if(epoll_ctl(iepollFd_,EPOLL_CTL_DEL,iFd,nullptr) == -1)
+        {
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  ERROR_LEVEL,
+                                  "%03hu NEMQueuedLayer::NEMQueuedLayer:"
+                                  " unable to add fd to epoll",
+                                  id_);
+        }
+
+      fileDescriptorStore_.erase(iter);
+    }
+}
+
+void EMANE::NEMQueuedLayer::addFileDescriptor_i(int iFd,
+                                                DescriptorType type,
+                                                Callback callback)
+{
+  auto iter = fileDescriptorStore_.find(iFd);
+
+  if(iter == fileDescriptorStore_.end())
+    {
+      fileDescriptorStore_.insert(std::make_pair(iFd,std::make_pair(type,callback)));
+
+      struct epoll_event ev;
+      ev.events = type == DescriptorType::READ ? EPOLLIN : EPOLLOUT;
+      ev.data.fd = iFd;
+
+      if(epoll_ctl(iepollFd_,EPOLL_CTL_ADD,iFd,&ev) == -1)
+        {
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  ERROR_LEVEL,
+                                  "%03hu NEMQueuedLayer::NEMQueuedLayer:"
+                                  " unable to add fd to epoll",
+                                  id_);
+        }
+    }
+  else
+    {
+      if(iter->second.first != type)
+        {
+          iter->second.first = type;
+
+          struct epoll_event ev;
+          ev.events = type == DescriptorType::READ ? EPOLLIN : EPOLLOUT;
+          ev.data.fd = iFd;
+
+          if(epoll_ctl(iepollFd_,EPOLL_CTL_MOD,iFd,&ev) == -1)
+            {
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "%03hu NEMQueuedLayer::NEMQueuedLayer:"
+                                      " unable to add fd to epoll",
+                                      id_);
+            }
+        }
+
+      iter->second.second = callback;
+    }
 }

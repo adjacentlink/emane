@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -75,13 +75,13 @@ namespace EMANE
 
       void processDownstreamControl(const ControlMessages & msgs);
 
-      void setTransport(std::unique_ptr<Transport> & pTransport) override;
+      void setTransport(std::unique_ptr<NEMLayer> & pTransport) override;
 
       NEMId getNEMId() const;
 
     private:
       NEMId id_;
-      std::unique_ptr<Transport> pTransport_;
+      std::unique_ptr<NEMLayer> pTransport_;
       INETAddr transportEndpointAddr_;
       INETAddr platformEndpointAddr_;
 

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
- * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -31,24 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-template<typename T>
-std::pair<T *,std::unique_ptr<EMANE::Application::TransportAdapter>>
-EMANE::Application::TransportBuilder::buildTransportWithAdapter(const NEMId id,
-                                                                const ConfigurationUpdateRequest& request,
-                                                                const std::string & sPlatformEndpoint,
-                                                                const std::string & sTransportEndpoint) const
+template <typename Function>
+void EMANE::FileDescriptorServiceProvider::addFileDescriptor(int iFd,
+                                                             DescriptorType type,
+                                                             Function fn)
 {
-  // new platform service
-  EMANE::PlatformServiceProvider * pPlatformService{newPlatformService()};
-
-  // create transport
-  T * pInstance{new T{id, pPlatformService}};
-
-  auto pTransportAdapater = buildTransportWithAdapter_i(pInstance,
-                                                        pPlatformService,
-                                                        request,
-                                                        sPlatformEndpoint,
-                                                        sTransportEndpoint);
-
-  return std::make_pair(pInstance,std::move(pTransportAdapater));
+  addFileDescriptor_i(iFd,type,fn);
 }

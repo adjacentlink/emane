@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -69,7 +70,7 @@ namespace EMANE
        * @param pTransport pointer to the Transport instance to be
        *                   
        */
-      virtual void setTransport(std::unique_ptr<Transport> & pTransport) = 0;
+      virtual void setTransport(std::unique_ptr<NEMLayer> & pTransport) = 0;
 
       /**
        * Gets the NEM Id

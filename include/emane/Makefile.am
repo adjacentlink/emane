@@ -44,6 +44,8 @@ emaneinc_HEADERS =                       \
  eventserviceprovider.h                  \
  eventserviceuser.h                      \
  exception.h                             \
+ filedescriptorserviceprovider.h         \
+ filedescriptorserviceprovider.inl       \
  flowcontrolclient.h                     \
  flowcontrolmanager.h                    \
  frequencysegment.h                      \

@@ -121,6 +121,7 @@ libemane_la_SOURCES =                         \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
  noiserecorder.cc                             \
+ nopfiledescriptorservice.cc                  \
  orientationformatter.cc                      \
  otamanager.cc                                \
  otastatisticpublisher.cc                     \
@@ -259,6 +260,7 @@ EXTRA_DIST=                                   \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
  noiserecorder.h                              \
+ nopfiledescriptorservice.h                   \
  otaexception.h                               \
  otamanager.h                                 \
  otaprovider.h                                \

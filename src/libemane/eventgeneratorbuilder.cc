@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -42,8 +42,7 @@
 #include "timerserviceproxy.h"
 #include "buildidservice.h"
 #include "registrarproxy.h"
-
-
+#include "nopfiledescriptorservice.h"
 
 EMANE::Application::EventGeneratorBuilder::EventGeneratorBuilder(){}
 
@@ -85,9 +84,9 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
                                                                const ConfigurationUpdateRequest& request,
                                                                bool bSkipConfigure)
 {
-   std::string sNativeLibraryFile = "lib" +
-                                    sLibraryFile +
-                                    ".so";
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
   const EMANE::EventGeneratorFactory & eventGeneratorFactory =
     EMANE::EventGeneratorFactoryManagerSingleton::instance()->getEventGeneratorFactory(sNativeLibraryFile);
@@ -104,6 +103,9 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
 
   // pass generator to platform service
   pPlatformService->setPlatformServiceUser(buildId,pGenerator.get());
+
+  // set the NOPFileDescriptorService (not available to generators)
+  pPlatformService->setFileDescriptorServiceProvider(NOPFileDescriptorService::instance());
 
   // register event service user with event service
   // event generators will get any event they register for

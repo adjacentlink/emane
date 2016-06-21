@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -90,8 +90,8 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
                                               bool bSkipConfigure)
 {
   std::string sNativeLibraryFile = "lib" +
-                                   sLibraryFile +
-                                   ".so";
+    sLibraryFile +
+    ".so";
 
   // new platform service
   PlatformService *
@@ -120,9 +120,11 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
       sRegistrationName = sLibraryFile;
     }
 
+  PHYLayer * pPHYLayer = new PHYLayer{id, pImpl, pPlatformService};
+
   // new concrete layer
   std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        new PHYLayer(id, pImpl, pPlatformService),
+        pPHYLayer,
         pPlatformService}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -135,6 +137,9 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
 
   // pass nem to platform service
   pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+
+  // set the FileDescriptor Service
+  pPlatformService->setFileDescriptorServiceProvider(pPHYLayer);
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -162,8 +167,8 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
                                               bool bSkipConfigure)
 {
   std::string sNativeLibraryFile = "lib" +
-                                   sLibraryFile +
-                                   ".so";
+    sLibraryFile +
+    ".so";
 
   const MACLayerFactory & macLayerFactory =
     LayerFactoryManagerSingleton::instance()->getMACLayerFactory(sNativeLibraryFile);
@@ -178,9 +183,11 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
   MACLayerImplementor * impl =
     macLayerFactory.createLayer(id, pPlatformService,pRadioService);
 
+  MACLayer * pMACLayer = new MACLayer{id, impl, pPlatformService};
+
   // new concreate layer
   std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        new MACLayer{id, impl, pPlatformService},
+        pMACLayer,
         pPlatformService}};
 
   // register to the component map
@@ -194,6 +201,9 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
 
   // pass nem to platform service
   pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+
+  // set the FileDescriptor Service
+  pPlatformService->setFileDescriptorServiceProvider(pMACLayer);
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -222,8 +232,8 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
                                                bool bSkipConfigure)
 {
   std::string sNativeLibraryFile = "lib" +
-                                   sLibraryFile +
-                                   ".so";
+    sLibraryFile +
+    ".so";
 
 
 
@@ -241,9 +251,11 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
   ShimLayerImplementor * impl =
     shimLayerFactory.createLayer(id, pPlatformService,pRadioService);
 
+  ShimLayer * pShimLayer = new ShimLayer{id, impl, pPlatformService};
+
   // new concreate layer
   std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        new ShimLayer{id, impl, pPlatformService},
+        pShimLayer,
         pPlatformService}};
 
 
@@ -257,6 +269,9 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
 
   // pass nem to platform service
   pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+
+  // set the FileDescriptor Service
+  pPlatformService->setFileDescriptorServiceProvider(pShimLayer);
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -373,9 +388,11 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
   Transport * impl =
     transportLayerFactory.createTransport(id, pPlatformService);
 
+  TransportLayer * pTransportLayer = new TransportLayer{id, impl, pPlatformService};
+
   // new concreate layer
   std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        new TransportLayer{id, impl, pPlatformService},
+        pTransportLayer,
         pPlatformService}};
 
 
@@ -389,6 +406,9 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
 
   // pass nem to platform service
   pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+
+  // set the FileDescriptor Service
+  pPlatformService->setFileDescriptorServiceProvider(pTransportLayer);
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,

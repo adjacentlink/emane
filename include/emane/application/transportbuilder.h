@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,11 +34,12 @@
 
 #ifndef EMANETRANSPORTBUILDER_HEADER_
 #define EMANETRANSPORTBUILDER_HEADER_
- 
+
 #include "emane/types.h"
 #include "emane/application/transportmanager.h"
 #include "emane/application/transportadapter.h"
 #include "emane/transport.h"
+#include "emane/nemlayer.h"
 #include "emane/configurationupdate.h"
 
 #include <string>
@@ -63,12 +65,12 @@ namespace EMANE
        * Creates a TransportBuilder instance
        */
       TransportBuilder();
-    
+
       /**
        * Destorys an instance
        */
       ~TransportBuilder();
-    
+
       /**
        * Builds a TransportManager
        *
@@ -88,7 +90,7 @@ namespace EMANE
       std::unique_ptr<TransportManager>
       buildTransportManager(const uuid_t & uuid,
                             TransportAdapters & adapters,
-                            const ConfigurationUpdateRequest& request);
+                            const ConfigurationUpdateRequest& request) const;
 
 
       /**
@@ -108,11 +110,11 @@ namespace EMANE
        * configure.
        */
       std::unique_ptr<TransportAdapter>
-      buildTransportAdapter(std::unique_ptr<Transport> & pTransport,
-                            const ConfigurationUpdateRequest & request);
-        
+      buildTransportAdapter(std::unique_ptr<NEMLayer> & pTransport,
+                            const ConfigurationUpdateRequest & request) const;
+
       /**
-       * Builds a Transport 
+       * Builds a Transport
        *
        * @param id NEMId of the NEM associated with this transport
        * @param sLibraryFile Name of the dll containing the generator
@@ -128,18 +130,18 @@ namespace EMANE
        * @throw ConfigureException when an error occurs during
        * configure.
        */
-      std::unique_ptr<Transport>
+      std::unique_ptr<NEMLayer>
       buildTransport(NEMId id,
                      const std::string & sLibraryFile,
                      const ConfigurationUpdateRequest & request,
-                     bool bSkipConfigure = false);
+                     bool bSkipConfigure = false) const;
 
-    
+
       /**
-       * Builds a Transport 
+       * Builds a Transport and TransportAdapter
        *
-       * @brief Build an instance of the transport named by the template 
-       * parameter. T must be a subclass of EMANE::Transport and provide 
+       * @brief Build an instance of the transport named by the template
+       * parameter. T must be a subclass of EMANE::Transport and provide
        * a constructor with signature:
        * T(EMANE::NEMId id, EMANE::PlatformServiceProvider * p)
        * T will be instantiated via this constructor.
@@ -148,6 +150,13 @@ namespace EMANE
        *
        * @param id NEMId of the NEM associated with this transport
        * @param request configuration update
+       * @param sPlatformEndpoint Platform endpoint
+       * @param sTransportEndpoint Transport endpoint
+       *
+       * @return std::pair with first being a borrowed reference to
+       * the newly created transport and second being a
+       * unique_ptr<TransportAdapter> that should used (moved) when
+       * building a TransportManager.
        *
        * @throw InitializeException when an error occurs during
        * initialization.
@@ -155,17 +164,21 @@ namespace EMANE
        * configure.
        */
       template<typename T>
-      T *
-      buildTransport(const NEMId id,
-                     const ConfigurationUpdateRequest& request);
+      std::pair<T *,std::unique_ptr<TransportAdapter>>
+        buildTransportWithAdapter(const NEMId id,
+                                  const ConfigurationUpdateRequest& request,
+                                  const std::string & sPlatformEndpoint,
+                                  const std::string & sTransportEndpoint) const;
 
     private:
       PlatformServiceProvider * newPlatformService() const;
-      
-      void initializeTransport(Transport * pTransport, 
-                               PlatformServiceProvider * pProvider,
-                               const ConfigurationUpdateRequest & request,
-                               bool bSkipConfigure = false) const;
+
+      std::unique_ptr<TransportAdapter>
+      buildTransportWithAdapter_i(Transport * pTransport,
+                                  PlatformServiceProvider * pProvider,
+                                  const ConfigurationUpdateRequest & request,
+                                  const std::string & sPlatformEndpoint,
+                                  const std::string & sTransportEndpoint) const;
     };
   }
 }

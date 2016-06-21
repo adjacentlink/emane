@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
- * New Jersey
- * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +13,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -32,61 +31,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPLATFORMSERVICEPROVIDER_HEADER_
-#define EMANEPLATFORMSERVICEPROVIDER_HEADER_
+#ifndef EMANENOPFILEDESCRIPTORSERVICE_HEADER_
+#define EMANENOPFILEDESCRIPTORSERVICE_HEADER_
 
-#include "emane/logserviceprovider.h"
-#include "emane/eventserviceprovider.h"
-#include "emane/timerserviceprovider.h"
 #include "emane/filedescriptorserviceprovider.h"
+#include "emane/utils/singleton.h"
 
 namespace EMANE
 {
-  /**
-   * @class PlatformServiceProvider
-   *
-   * @brief The PlatformServiceProvider interface provides
-   * access to emulator services.
-   *
-   * @note Service references are not valid until Component::initialize().
-   * Very bad things will happen if services are accessed prior the
-   * initialization transition.
-   */
-  class PlatformServiceProvider
+  class NOPFileDescriptorService: public FileDescriptorServiceProvider,
+                                  public Utils::Singleton<NOPFileDescriptorService>
   {
   public:
-    /**
-     * Destroys an instance
-     */
-    virtual ~PlatformServiceProvider(){};
+    ~NOPFileDescriptorService();
 
-    /**
-     * Gets a reference to the TimerServiceProvider
-     *
-     * @return TimerServiceProvider reference
-     */
-    virtual TimerServiceProvider & timerService() = 0;
-
-    /**
-     * Gets a reference to the LogServiceProvider
-     *
-     * @return LogServiceProvider reference
-     */
-    virtual LogServiceProvider & logService() = 0;
-
-    /**
-     * Gets a reference to the EventServiceProvider
-     *
-     * @return EventServiceProvider reference
-     */
-    virtual EventServiceProvider & eventService() = 0;
-
-    virtual FileDescriptorServiceProvider &
-    fileDescriptorService() = 0;
+    void removeFileDescriptor(int iFd) override;
 
   protected:
-    PlatformServiceProvider() = default;
+    void addFileDescriptor_i(int iFd,
+                             DescriptorType type,
+                             Callback callback) override;
   };
 }
 
-#endif //EMANEPLATFORMSERVICEPROVIDER_HEADER_
+
+#endif // EMANENOPFILEDESCRIPTORSERVICE_HEADER_
