@@ -81,7 +81,7 @@ EMANE::Transports::Virtual::TunTap::open(const char *sDevicePath, const char *sD
   int result;
 
   // open tuntap device
-  if((tunHandle_ = ::open(sDevicePath, O_RDWR)) == -1)
+  if((tunHandle_ = ::open(sDevicePath, O_RDWR|O_NONBLOCK)) == -1)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               ABORT_LEVEL,
@@ -453,16 +453,6 @@ int EMANE::Transports::Virtual::TunTap::readv(struct iovec *iov, size_t iov_len)
   int result;
 
   result = ::readv(tunHandle_, iov, iov_len);
-
-  // check result
-  if(result < 0)
-    {
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              ABORT_LEVEL,
-                              "TunTap::%s:read:error %s",
-                              __func__,
-                              strerror(errno));
-    }
 
   // return result
   return result;
