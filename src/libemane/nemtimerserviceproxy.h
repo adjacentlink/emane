@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
- * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -31,61 +30,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEOTAPROVIDER_HEADER_
-#define EMANEOTAPROVIDER_HEADER_
+#ifndef EMANENEMTIMERSERVICEPROXY_HEADER_
+#define EMANENEMTIMERSERVICEPROXY_HEADER_
 
-#include "emane/downstreampacket.h"
-#include "emane/controlmessage.h"
+#include "emane/timerserviceprovider.h"
+#include "nemqueuedlayer.h"
+
 
 namespace EMANE
 {
-  class OTAUser;
 
-  /**
-   * @class OTAProvider
-   *
-   * @brief Interface for OTA
-   */
-  class OTAProvider
+  class NEMTimerServiceProxy : public TimerServiceProvider,
+                               public TimerServiceUser
   {
   public:
-    virtual ~OTAProvider(){}
+    NEMTimerServiceProxy();
 
-    /**
-     * Send OTA packet
-     *
-     * @param id NEM identifier
-     * @param pkt Downstream packet
-     * @param msg Control Message
-     */
-    virtual void sendOTAPacket(NEMId id,
-                               const DownstreamPacket & pkt,
-                               const ControlMessages & msg) const = 0;
+    ~NEMTimerServiceProxy();
 
-    /**
-     * Register an OTA user
-     *
-     * @param id NEM identifier
-     * @param pOTAUser OTAUser reference
-     *
-     * @throw OTAEception when an error occurs during unregister
-     */
-    virtual void registerOTAUser(NEMId id, OTAUser * pOTAUser) = 0;
+    bool cancelTimedEvent(TimerEventId eventId) override;
 
+    TimerEventId scheduleTimedEvent(const TimePoint & timeout,
+                                    const void *arg,
+                                    const Microseconds & interval) override;
 
-    /**
-     * Unregister an OTA user
-     *
-     * @param id NEM identifier
-     *
-     * @throw OTAEception when an error occurs during unregister
-     */
-    virtual void unregisterOTAUser(NEMId id) = 0;
+    void processTimedEvent(TimerEventId eventId,
+                           const TimePoint & requestedExpireTime,
+                           const TimePoint & scheduleTime,
+                           const TimePoint & fireTime,
+                           const void * arg) override;
 
+    void setNEMLayer(NEMQueuedLayer * pNEMQueuedLayer_);
 
   protected:
-    OTAProvider(){}
+    NEMQueuedLayer * pNEMQueuedLayer_;
+
+    TimerEventId schedule_i(TimerCallback callback,
+                            const TimePoint & timePoint,
+                            const Microseconds & interval) override;
   };
 }
 
-#endif //EMANEOTAPROVIDER_HEADER_
+#endif // EMANETIMERSERVICEPROXY_HEADER_

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,7 +35,7 @@
 #include "phylayer.h"
 
 EMANE::PHYLayer::PHYLayer(NEMId id,
-                          PHYLayerImplementor * pImplementor,
+                          NEMLayer * pImplementor,
                           PlatformServiceProvider * pPlatformService) :
   NEMQueuedLayer{id, pPlatformService},
   pImplementor_{pImplementor},

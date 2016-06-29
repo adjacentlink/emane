@@ -40,7 +40,7 @@
 #include "logservice.h"
 #include "timerserviceproxy.h"
 #include "eventservice.h"
-#include "platformservice.h"
+#include "nemplatformservice.h"
 #include "buildidservice.h"
 #include "registrarproxy.h"
 #include "transportlayer.h"
@@ -122,20 +122,17 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
     TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
 
   // new platform service
-  PlatformService *
-    pPlatformService{new PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // create plugin
-  Transport * impl =
+  Transport * pImpl =
     transportLayerFactory.createTransport(id, pPlatformService);
 
-  TransportLayer * pTransportLayer = new TransportLayer{id, impl, pPlatformService};
-
-  // new concreate layer
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        pTransportLayer,
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
         pPlatformService}};
-
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -145,11 +142,10 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
 
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
-  // set the FileDescriptor Service
-  pPlatformService->setFileDescriptorServiceProvider(pTransportLayer);
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -174,7 +170,7 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
 EMANE::PlatformServiceProvider *
 EMANE::Application::TransportBuilder::newPlatformService() const
 {
-  return new EMANE::PlatformService{};
+  return new EMANE::NEMPlatformService{};
 }
 
 
@@ -186,15 +182,14 @@ EMANE::Application::TransportBuilder::buildTransportWithAdapter_i(Transport * pT
                                                                   const std::string & sTransportEndpoint) const
 {
   // pass transport to platform service
-  EMANE::PlatformService * pPlatformService{dynamic_cast<EMANE::PlatformService*>(pProvider)};
+  EMANE::NEMPlatformService * pPlatformService{dynamic_cast<EMANE::NEMPlatformService*>(pProvider)};
 
   NEMId id{pTransport->getNEMId()};
 
-  TransportLayer * pTransportLayer = new TransportLayer{id,pTransport, pPlatformService};
-
-  // new concreate layer
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id,
-        pTransportLayer,
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
+        new NEMStatefulLayer{id,
+          pTransport,
+          pPlatformService},
         pPlatformService}};
 
   // register to the component map
@@ -204,11 +199,9 @@ EMANE::Application::TransportBuilder::buildTransportWithAdapter_i(Transport * pT
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
 
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
-
-  // set the FileDescriptor Service
-  pPlatformService->setFileDescriptorServiceProvider(pTransportLayer);
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -222,8 +215,9 @@ EMANE::Application::TransportBuilder::buildTransportWithAdapter_i(Transport * pT
 
   pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
                                                                                request));
+  std::unique_ptr<NEMLayer> p{pNEMLayer.release()};
 
-  auto pTransportAdapter = buildTransportAdapter(pNEMLayer,
+  auto pTransportAdapter = buildTransportAdapter(p,
                                                  {
                                                    {"platformendpoint",{sPlatformEndpoint}},
                                                      {"transportendpoint",{sTransportEndpoint}}

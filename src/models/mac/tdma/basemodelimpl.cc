@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -381,13 +381,10 @@ EMANE::Models::TDMA::BaseModel::Implementation::postStart()
     }
 
   pPlatformService_->timerService().
-    scheduleTimedEvent(Clock::now() + neighborMetricUpdateInterval_,
-                       new std::function<bool()>{[this]()
-                           {
-                             neighborMetricManager_.updateNeighborStatus();
-                             return false;
-                           }},
-                       neighborMetricUpdateInterval_);
+    schedule(std::bind(&NeighborMetricManager::updateNeighborStatus,
+                       &neighborMetricManager_),
+             Clock::now() + neighborMetricUpdateInterval_,
+             neighborMetricUpdateInterval_);
 }
 
 
@@ -585,14 +582,10 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                          hdr.getSequenceNumber()))
                 {
                   pPlatformService_->timerService().
-                    scheduleTimedEvent(entry.first.timePoint_+ slotDuration_,
-                                       new std::function<bool()>{std::bind([](ReceiveManager  & receiveManager,
-                                                                              std::uint64_t u64AbsoluteSlotIndex)
-                                                                           {
-                                                                             receiveManager.process(u64AbsoluteSlotIndex);
-                                                                             return true;
-                                                                           },std::ref(receiveManager_),
-                                                                           entry.first.u64AbsoluteSlotIndex_+1)});
+                    schedule(std::bind(&ReceiveManager::process,
+                                       &receiveManager_,
+                                       entry.first.u64AbsoluteSlotIndex_+1),
+                             entry.first.timePoint_+ slotDuration_);
                 }
             }
           else
@@ -861,20 +854,6 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processEvent(const EventId 
 
 }
 
-void EMANE::Models::TDMA::BaseModel::Implementation::processTimedEvent(TimerEventId,
-                                                                       const TimePoint &,
-                                                                       const TimePoint &,
-                                                                       const TimePoint &,
-                                                                       const void * arg)
-{
-  auto pCallBack = reinterpret_cast<const std::function<bool()> *>(arg);
-
-  if((*pCallBack)())
-    {
-      delete pCallBack;
-    }
-}
-
 
 void EMANE::Models::TDMA::BaseModel::Implementation::processConfiguration(const ConfigurationUpdate & update)
 {
@@ -969,13 +948,12 @@ void EMANE::Models::TDMA::BaseModel::Implementation::notifyScheduleChange(const 
 
       transmitTimedEventId_ =
         pPlatformService_->timerService().
-        scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
-                           new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                               this,
-                                                               u64ScheduleIndex_)});
+        schedule(std::bind(&Implementation::processTxOpportunity,
+                           this,
+                           u64ScheduleIndex_),
+                 pendingTxSlotInfo_.timePoint_);
     }
 }
-
 
 void EMANE::Models::TDMA::BaseModel::Implementation::processSchedulerPacket(DownstreamPacket & pkt)
 {
@@ -1131,7 +1109,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
     }
 }
 
-bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::uint64_t u64ScheduleIndex)
+void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::uint64_t u64ScheduleIndex)
 {
   // check for scheduled timer functor after new schedule, if so disregard
   if(u64ScheduleIndex != u64ScheduleIndex_)
@@ -1144,7 +1122,7 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
                               __func__,
                               u64ScheduleIndex,
                               u64ScheduleIndex_);
-      return true;
+      return;
     }
 
   auto now = Clock::now();
@@ -1200,11 +1178,10 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
 
               transmitTimedEventId_ =
                 pPlatformService_->timerService().
-                scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
-                                   new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                                       this,
-                                                                       u64ScheduleIndex_)});
-
+                schedule(std::bind(&Implementation::processTxOpportunity,
+                                   this,
+                                   u64ScheduleIndex_),
+                         pendingTxSlotInfo_.timePoint_);
 
               bFoundTXSlot = true;
               break;
@@ -1249,5 +1226,5 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
         }
     }
 
-  return true;
+  return;
 }

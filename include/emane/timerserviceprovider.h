@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,6 +37,9 @@
 
 #include "emane/types.h"
 
+#include <functional>
+#include <chrono>
+
 namespace EMANE
 {
 
@@ -48,8 +52,8 @@ namespace EMANE
    */
   class TimerServiceProvider
   {
-   public:
-     virtual ~TimerServiceProvider(){};
+  public:
+    virtual ~TimerServiceProvider(){};
 
 
     /**
@@ -61,7 +65,7 @@ namespace EMANE
      * has already occured.
      *
      */
-     virtual bool cancelTimedEvent(TimerEventId eventId) = 0;
+    virtual bool cancelTimedEvent(TimerEventId eventId) = 0;
 
 
     /**
@@ -75,14 +79,36 @@ namespace EMANE
      *
      */
     virtual TimerEventId scheduleTimedEvent(const TimePoint & timePoint,
-                                            const void * arg = nullptr, 
+                                            const void * arg = nullptr,
                                             const Microseconds & interval = Microseconds::zero()) = 0;
-    
-    
+
+
+    /**
+     * Schedules an generic interval timer callable
+     *
+     * @param fn A callable object
+     * @param absoluteTimePoint Absolute time of the timeout
+     * @param interval Repeat interval
+     */
+    template <typename Function>
+    TimerEventId schedule(Function fn,
+                          const TimePoint & timePoint,
+                          const Microseconds & interval = Microseconds::zero());
+
+    using TimerCallback = std::function<void(const TimePoint &, // expireTime,
+                                             const TimePoint &, // scheduleTime,
+                                             const TimePoint &)>;// fireTime
+
   protected:
-     TimerServiceProvider(){};
+    virtual TimerEventId schedule_i(TimerCallback callback,
+                                    const TimePoint & timePoint,
+                                    const Microseconds & interval) = 0;
+
+    TimerServiceProvider(){};
   };
 }
+
+#include "emane/timerserviceprovider.inl"
 
 #endif //EMNAETIMERSERVICEPROVIDER_HEADER_
 
@@ -124,7 +150,7 @@ namespace EMANE
  *
  * The following example uses the opaque data pointer parameter to create a generic mechanism for
  * executing arbitrary callbacks. There are many ways to process timed events. An alternative is to
- * use an object passed via the opaque data pointer to interpret the required action and handle it 
+ * use an object passed via the opaque data pointer to interpret the required action and handle it
  * accordingly.
  *
  * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-processtimedevent-snippet

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,7 +36,7 @@
 #include "logservice.h"
 
 EMANE::MACLayer::MACLayer(NEMId id,
-                          MACLayerImplementor * pImplementor,
+                          NEMLayer * pImplementor,
                           PlatformServiceProvider *pPlatformService):
   NEMQueuedLayer{id, pPlatformService},
   pImplementor_{pImplementor},
@@ -120,7 +121,7 @@ void EMANE::MACLayer::setDownstreamTransport(DownstreamTransport * pDownstreamTr
   pImplementor_->setDownstreamTransport(pDownstreamTransport);
 }
 
-void EMANE::MACLayer::doProcessEvent(const EventId & eventId, 
+void EMANE::MACLayer::doProcessEvent(const EventId & eventId,
                                      const Serialization & serialization)
 {
   pImplementor_->processEvent(eventId,serialization);

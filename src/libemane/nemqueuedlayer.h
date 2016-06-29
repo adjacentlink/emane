@@ -39,8 +39,9 @@
 #include "emane/filedescriptorserviceprovider.h"
 #include "emane/utils/runningaverage.h"
 #include "emane/utils/statistichistogramtable.h"
+#include "emane/timerserviceprovider.h"
 
-#include <queue>
+#include <deque>
 #include <functional>
 #include <thread>
 #include <mutex>
@@ -89,6 +90,13 @@ namespace EMANE
                            const TimePoint & fireTime,
                            const void * arg) override;
 
+
+    template <typename Function>
+    void processTimer(Function fn,
+                      const TimePoint & expireTime,
+                      const TimePoint & scheduleTime,
+                      const TimePoint & fireTime);
+
   protected:
     NEMQueuedLayer(NEMId id, PlatformServiceProvider * pPlatformService);
 
@@ -110,8 +118,10 @@ namespace EMANE
                                      const TimePoint & fireTime,
                                      const void * arg) = 0;
 
+
   private:
-    using MessageProcessingQueue = std::queue<std::function<void()>>;
+    using QCallback = std::function<void()>;
+    using MessageProcessingQueue = std::deque<QCallback>;
     PlatformServiceProvider * pPlatformService_;
     std::thread thread_;
     MessageProcessingQueue queue_;
@@ -177,7 +187,21 @@ namespace EMANE
     void addFileDescriptor_i(int iFd,
                              DescriptorType type,
                              Callback callback) override;
+
+    void enqueue_i(QCallback && callback);
+
+    void processTimer_i(TimerServiceProvider::TimerCallback callback,
+                        const TimePoint & expireTime,
+                        const TimePoint & scheduleTime,
+                        const TimePoint & fireTime);
+
+    void updateTimerStats(TimePoint enqueueTime,
+                          const TimePoint & expireTime,
+                          const TimePoint & scheduleTime,
+                          const TimePoint & fireTime);
   };
 }
+
+#include "nemqueuedlayer.inl"
 
 #endif //EMANENEMQUEUEDLAYER_HEADER_

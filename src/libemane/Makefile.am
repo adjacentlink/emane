@@ -118,8 +118,10 @@ libemane_la_SOURCES =                         \
  nemmanagerimpl.cc                            \
  nemnetworkadapter.cc                         \
  nemotaadapter.cc                             \
+ nemplatformservice.cc                        \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
+ nemtimerserviceproxy.cc                      \
  noiserecorder.cc                             \
  nopfiledescriptorservice.cc                  \
  orientationformatter.cc                      \

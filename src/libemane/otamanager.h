@@ -67,7 +67,7 @@ namespace EMANE
     ~OTAManager();
 
     void sendOTAPacket(NEMId id,
-                       DownstreamPacket & pkt,
+                       const DownstreamPacket & pkt,
                        const ControlMessages & msgs) const override;
 
     void registerOTAUser(NEMId id, OTAUser * pOTAUser) override;

@@ -79,7 +79,7 @@ void EMANE::OTAManager::setStatEventCountRowLimit(size_t rows)
 }
 
 void EMANE::OTAManager::sendOTAPacket(NEMId id,
-                                      DownstreamPacket & pkt,
+                                      const DownstreamPacket & pkt,
                                       const ControlMessages & msgs) const
 {
   // get the pkt info
@@ -141,31 +141,34 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
    * copy on each NEM queue. Each copy will share the same packet data
    * but have unique index counters used for stripping packet data.
    */
-  auto now = Clock::now();
-
-  UpstreamPacket upstreamPacket({pktInfo.getSource(),
-        pktInfo.getDestination(),
-        pktInfo.getPriority(),
-        now,
-        uuid_},
-    pkt.getVectorIO());
-
-  // bounce a copy of the pkt back up to our local NEM stack(s)
-  for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
-      iter != end;
-      ++iter)
+  if(nemUserMap_.size() > 1)
     {
-      if(iter->first == id)
+      auto now = Clock::now();
+
+      UpstreamPacket upstreamPacket({pktInfo.getSource(),
+            pktInfo.getDestination(),
+            pktInfo.getPriority(),
+            now,
+            uuid_},
+        pkt.getVectorIO());
+
+      // bounce a copy of the pkt back up to our local NEM stack(s)
+      for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
+          iter != end;
+          ++iter)
         {
-          // skip our own transmisstion
-        }
-      else if(otaTransmitters.count(iter->first) > 0)
-        {
-          // skip NEM(s) in the additional transmitter set (ATS)
-        }
-      else
-        {
-          iter->second->processOTAPacket(upstreamPacket,ControlMessages());
+          if(iter->first == id)
+            {
+              // skip our own transmisstion
+            }
+          else if(otaTransmitters.count(iter->first) > 0)
+            {
+              // skip NEM(s) in the additional transmitter set (ATS)
+            }
+          else
+            {
+              iter->second->processOTAPacket(upstreamPacket,ControlMessages());
+            }
         }
     }
 
@@ -482,19 +485,22 @@ void EMANE::OTAManager::processOTAMessage()
               else
                 {
                   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                          ERROR_LEVEL,"OTAManager message header could not be deserialized");
+                                          ERROR_LEVEL,
+                                          "OTAManager message header could not be deserialized");
                 }
             }
           else
             {
               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                      ERROR_LEVEL,"OTAManager message missing header missing prefix length encoding");
+                                      ERROR_LEVEL,
+                                      "OTAManager message missing header missing prefix length encoding");
             }
         }
       else
         {
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,"OTAManager Packet Received error");
+                                  ERROR_LEVEL,
+                                  "OTAManager Packet Received error");
           break;
         }
     }

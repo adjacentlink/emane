@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -86,17 +86,17 @@ namespace
   const std::uint16_t DROP_CODE_RX_HIDDEN_BUSY     = 10;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS
-   { "SINR",
-     "Reg Id",
-     "Dst MAC",
-     "Queue Overflow",
-     "Bad Control",
-     "Bad Spectrum Query",
-     "Flow Control",
-     "Duplicate",
-     "Rx During Tx",
-     "Hidden Busy"
-   };
+  { "SINR",
+      "Reg Id",
+      "Dst MAC",
+      "Queue Overflow",
+      "Bad Control",
+      "Bad Spectrum Query",
+      "Flow Control",
+      "Duplicate",
+      "Rx During Tx",
+      "Hidden Busy"
+      };
 }
 
 
@@ -111,10 +111,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::MACLayer(NEMId id,
   downstreamQueue_{id},
   pTxState_{IdleTxStateSingleton::instance()},
   pcrManager_{id_, pPlatformService_},
-  neighborManager_{id_, pPlatformService_, this}, 
+  neighborManager_{id_, pPlatformService_, this},
   neighborMetricManager_{id},
   queueMetricManager_{id},
-  flowControlManager_{*this}, 
+  flowControlManager_{*this},
   u64SequenceNumber_{},
   u16EntrySequenceNumber_{},
   modeTiming_{macConfig_},
@@ -149,8 +149,8 @@ void
 EMANE::Models::IEEE80211ABG::MACLayer::initialize(Registrar & registrar)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "MACI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "MACI %03hu %s::%s",
                           id_, pzLayerName, __func__);
 
   /** [configurationregistrar-registervalidator-snippet] */
@@ -176,11 +176,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::initialize(Registrar & registrar)
       iter->registerStatistics(statisticRegistrar);
     }
 
-   neighborMetricManager_.registerStatistics(statisticRegistrar);
+  neighborMetricManager_.registerStatistics(statisticRegistrar);
 
-   auto & eventRegistrar = registrar.eventRegistrar();
+  auto & eventRegistrar = registrar.eventRegistrar();
 
-   eventRegistrar.registerEvent(OneHopNeighborsEvent::IDENTIFIER);
+  eventRegistrar.registerEvent(OneHopNeighborsEvent::IDENTIFIER);
 }
 
 
@@ -189,7 +189,7 @@ void
 EMANE::Models::IEEE80211ABG::MACLayer::configure(const ConfigurationUpdate & update)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
+                          DEBUG_LEVEL,
                           "MACI %03hu %s::%s",
                           id_, pzLayerName, __func__);
 
@@ -238,7 +238,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::start()
 
   // the the neighbor delete time (age)
   neighborMetricManager_.setNeighborDeleteTimeMicroseconds(
-    macConfig_.getNeighborMetricDeleteTimeMicroseconds());
+                                                           macConfig_.getNeighborMetricDeleteTimeMicroseconds());
 }
 
 
@@ -251,79 +251,63 @@ EMANE::Models::IEEE80211ABG::MACLayer::postStart()
   if(macConfig_.getFlowControlEnable())
     {
       flowControlManager_.start(macConfig_.getFlowControlTokens());
-      
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
                               "MACI %03hu %s::%s sent a flow control token update,"
                               " a handshake response is required to process packets",
-                              id_, 
-                              pzLayerName, 
+                              id_,
+                              pzLayerName,
                               __func__);
     }
 
   neighborManager_.start();
 
-  pChannelUsageCallback_.reset(new std::function<bool()>{
-      [this]()
-        {
-          // reset statistics
-          neighborManager_.resetStatistics();
-          
-          // do not delete after executing
-          return false;
-        }
-    });
-
-    
   channelUsageTimedEventId_ =
     pPlatformService_->timerService().
-    scheduleTimedEvent(timeNow + 
-                       macConfig_.getChannelActivityIntervalMicroseconds(),
-                       pChannelUsageCallback_.get(), 
-                       macConfig_.getChannelActivityIntervalMicroseconds());
+    schedule(std::bind(&NeighborManager::resetStatistics,
+                       &neighborManager_),
+             timeNow +
+             macConfig_.getChannelActivityIntervalMicroseconds(),
+             macConfig_.getChannelActivityIntervalMicroseconds());
 
 
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s: added channel activity timed eventId %zu", 
-                          id_, 
+                          "MACI %03hu %s::%s: added channel activity timed eventId %zu",
+                          id_,
                           pzLayerName,
                           __func__,
                           channelUsageTimedEventId_);
 
-  pRadioMetricCallback_.reset(new std::function<bool()>{
-      [this]()
-        {
-          if(! macConfig_.getRadioMetricEnable())
-            {
-              neighborMetricManager_.updateNeighborStatus();
-            }
-          else
-            {
-              sendUpstreamControl({
-                Controls::R2RISelfMetricControlMessage::create(
-                  macConfig_.getBroadcastDataRateKbps() * 1000ULL,
-                  macConfig_.getMaxDataRateKbps() * 1000ULL,
-                  macConfig_.getRadioMetricReportIntervalMicroseconds()),
-                Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
-                Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())});
-            }
-                
-            // do not delete after executing
-            return false;
-          }
-    });
-        
-  radioMetricTimedEventId_ = 
+  radioMetricTimedEventId_ =
     pPlatformService_->timerService().
-    scheduleTimedEvent(timeNow + macConfig_.getRadioMetricReportIntervalMicroseconds(),
-                       pRadioMetricCallback_.get(), 
-                       macConfig_.getRadioMetricReportIntervalMicroseconds());
-    
+    schedule([this](const TimePoint &,
+                    const TimePoint &,
+                    const TimePoint &)
+             {
+               if(!macConfig_.getRadioMetricEnable())
+                 {
+                   neighborMetricManager_.updateNeighborStatus();
+                 }
+               else
+                 {
+                   sendUpstreamControl({
+                       Controls::R2RISelfMetricControlMessage::create(
+                                                                      macConfig_.getBroadcastDataRateKbps() * 1000ULL,
+                                                                      macConfig_.getMaxDataRateKbps() * 1000ULL,
+                                                                      macConfig_.getRadioMetricReportIntervalMicroseconds()),
+                         Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
+                         Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())});
+                 }
+             },
+             timeNow + macConfig_.getRadioMetricReportIntervalMicroseconds(),
+             macConfig_.getRadioMetricReportIntervalMicroseconds());
+
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
-                          id_, 
+                          "MACI %03hu %s::%s: added radio metric timed eventId %zu",
+                          id_,
                           pzLayerName,
                           __func__,
                           radioMetricTimedEventId_);
@@ -406,7 +390,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s downstream control message id %hu", 
+                             "MACI %03hu %s::%s downstream control message id %hu",
                              id_,
                              pzLayerName,
                              __func__,
@@ -422,11 +406,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
 
             if(macConfig_.getFlowControlEnable())
               {
-                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                         DEBUG_LEVEL,
                                         "MACI %03hu %s::%s received a flow control token request/response",
-                                        id_, 
-                                        pzLayerName, 
+                                        id_,
+                                        pzLayerName,
                                         __func__);
 
                 flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
@@ -436,7 +420,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
                 LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                         ERROR_LEVEL,
                                         "MACI %03hu %s::%s received a flow control token request but"
-                                        " flow control is not enabled", 
+                                        " flow control is not enabled",
                                         id_,
                                         pzLayerName,
                                         __func__);
@@ -448,23 +432,23 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
         case Controls::SerializedControlMessage::IDENTIFIER:
           {
             const auto pSerializedControlMessage =
-              static_cast<const Controls::SerializedControlMessage *>(pMessage); 
-        
+              static_cast<const Controls::SerializedControlMessage *>(pMessage);
+
             switch(pSerializedControlMessage->getSerializedId())
               {
               case Controls::FlowControlControlMessage::IDENTIFIER:
                 {
-                  std::unique_ptr<Controls::FlowControlControlMessage> 
+                  std::unique_ptr<Controls::FlowControlControlMessage>
                     pFlowControlControlMessage{Controls::FlowControlControlMessage::create
                       (pSerializedControlMessage->getSerialization())};
 
                   if(macConfig_.getFlowControlEnable())
                     {
-                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
                                               "MACI %03hu %s::%s received a flow control token request/response",
-                                              id_, 
-                                              pzLayerName, 
+                                              id_,
+                                              pzLayerName,
                                               __func__);
 
                       flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
@@ -474,13 +458,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamControl(const ControlMes
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               ERROR_LEVEL,
                                               "MACI %03hu %s::%s received a flow control token request but"
-                                              " flow control is not enabled", 
+                                              " flow control is not enabled",
                                               id_,
                                               pzLayerName,
                                               __func__);
                     }
                 }
-                
+
                 break;
               }
           }
@@ -529,8 +513,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                              registrationId_);
 
       commonLayerStatistics_[u8Category]->processOutbound(
-                                                          pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+                                                          pkt,
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                           DROP_CODE_REGISTRATION_ID);
 
       // drop
@@ -540,7 +524,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
   const Controls::ReceivePropertiesControlMessage * pReceivePropertiesControlMessage{};
 
   const Controls::FrequencyControlMessage * pFrequencyControlMessage{};
-      
+
   for(auto & pControlMessage : msgs)
     {
       switch(pControlMessage->getId())
@@ -548,7 +532,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
         case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
           {
             pReceivePropertiesControlMessage =
-              static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage); 
+              static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage);
 
             LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                             DEBUG_LEVEL,
@@ -559,11 +543,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                             __func__);
           }
           break;
-              
+
         case Controls::FrequencyControlMessage::IDENTIFIER:
           {
             pFrequencyControlMessage =
-              static_cast<const Controls::FrequencyControlMessage *>(pControlMessage); 
+              static_cast<const Controls::FrequencyControlMessage *>(pControlMessage);
 
             LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                             DEBUG_LEVEL,
@@ -572,29 +556,29 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
                                             id_,
                                             pzLayerName,
                                             __func__);
-                  
+
           }
-                
+
           break;
         }
     }
-  
-  if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage ||  
+
+  if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage ||
      pFrequencyControlMessage->getFrequencySegments().empty())
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               ERROR_LEVEL,
                               "MACI %03hu %s::%s: phy control message not"
                               " provided from src %hu, drop",
-                              id_, 
+                              id_,
                               pzLayerName,
                               __func__,
                               pktInfo.getSource());
 
-      commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+      commonLayerStatistics_[u8Category]->processOutbound(pkt,
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                           DROP_CODE_BAD_CONTROL_INFO);
-     
+
       //drop
       return;
     }
@@ -608,125 +592,122 @@ EMANE::Models::IEEE80211ABG::MACLayer::processUpstreamPacket(const CommonMACHead
 
       Microseconds span{pReceivePropertiesControlMessage->getSpan()};
 
-      auto pCallback =
-        new std::function<bool()>{std::bind([this,
-                                             startOfReception,
-                                             frequencySegments,
-                                             span,
-                                             timeNow](UpstreamPacket & pkt,
-                                                      std::uint64_t u64SequenceNumber,
-                                                      std::uint8_t u8Category)
-        {
-          const PacketInfo & pktInfo{pkt.getPacketInfo()};
-              
-          const FrequencySegment & frequencySegment{*frequencySegments.begin()};
-              
-          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                 DEBUG_LEVEL,
-                                 "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, len %zu, freq %ju, offset %ju, duration %ju",
-                                 id_,
-                                 pzLayerName,
-                                 pktInfo.getSource(),
-                                 pktInfo.getDestination(),
-                                 pkt.length(),
-                                 frequencySegment.getFrequencyHz(),
-                                 frequencySegment.getOffset().count(),
-                                 frequencySegment.getDuration().count());
-              
-              
-          double dNoiseFloordB{};
-              
-          try
-            {
-              // get the spectrum info for the entire span, where a span
-              // is the total time between the start of the signal of the
-              // earliest segment and the end of the signal of the latest
-              // segment. This is not necessarily the signal duration.
-              auto window = pRadioService_->spectrumService().request(frequencySegment.getFrequencyHz(),
-                                                                      span,
-                                                                      startOfReception);
-                  
-              // since we only have a single segment the span will equal the segment duration.
-              // For simple noise processing we will just pull out the max noise segment, we can
-              // use the maxBinNoiseFloor utility function for this. More elaborate noise window analysis
-              // will require a more complex algorithm, although you should get a lot of mileage out of 
-              // this utility function.
-              bool bSignalInNoise{};
+      auto callback =std::bind([this,
+                                startOfReception,
+                                frequencySegments,
+                                span,
+                                timeNow](UpstreamPacket & pkt,
+                                         std::uint64_t u64SequenceNumber,
+                                         std::uint8_t u8Category)
+                               {
+                                 const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
-              std::tie(dNoiseFloordB,bSignalInNoise) =
-                Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
-                 
-              if(bSignalInNoise)
-                {
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         ERROR_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: spectrum service reporting signal in noise."
-                                         " This is an unallowable noise mode. Valid PHY noise modes are: none and outofband.",
-                                         id_,
-                                         pzLayerName);
-                  
-                  commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                      std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
-                                                                      DROP_CODE_BAD_CONTROL_INFO);
-                  
-                  return true;
+                                 const FrequencySegment & frequencySegment{*frequencySegments.begin()};
 
-                }
-                  
-            }
-          catch(SpectrumServiceException & exp)
-            {
-              LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                     ERROR_LEVEL,
-                                     "MACI %03hu %s upstream EOR processing: spectrum service request error: %s",
-                                     id_,
-                                     pzLayerName,
-                                     exp.what());
-              commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
-                                                                  DROP_CODE_BAD_SPECTRUM_QUERY);
-              // drop
-              return true;
-            }
-              
-          handleUpstreamPacket(pkt, 
-                               frequencySegment.getRxPowerdBm(),
-                               dNoiseFloordB,
-                               u64SequenceNumber,
-                               timeNow,
-                               u8Category);
+                                 LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                        DEBUG_LEVEL,
+                                                        "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, len %zu, freq %ju, offset %ju, duration %ju",
+                                                        id_,
+                                                        pzLayerName,
+                                                        pktInfo.getSource(),
+                                                        pktInfo.getDestination(),
+                                                        pkt.length(),
+                                                        frequencySegment.getFrequencyHz(),
+                                                        frequencySegment.getOffset().count(),
+                                                        frequencySegment.getDuration().count());
 
-          return true;
 
-        },pkt,commonMACHeader.getSequenceNumber(),u8Category)};
-    
- 
+                                 double dNoiseFloordB{};
+
+                                 try
+                                   {
+                                     // get the spectrum info for the entire span, where a span
+                                     // is the total time between the start of the signal of the
+                                     // earliest segment and the end of the signal of the latest
+                                     // segment. This is not necessarily the signal duration.
+                                     auto window = pRadioService_->spectrumService().request(frequencySegment.getFrequencyHz(),
+                                                                                             span,
+                                                                                             startOfReception);
+
+                                     // since we only have a single segment the span will equal the segment duration.
+                                     // For simple noise processing we will just pull out the max noise segment, we can
+                                     // use the maxBinNoiseFloor utility function for this. More elaborate noise window analysis
+                                     // will require a more complex algorithm, although you should get a lot of mileage out of
+                                     // this utility function.
+                                     bool bSignalInNoise{};
+
+                                     std::tie(dNoiseFloordB,bSignalInNoise) =
+                                       Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
+
+                                     if(bSignalInNoise)
+                                       {
+                                         LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                                ERROR_LEVEL,
+                                                                "MACI %03hu %s upstream EOR processing: spectrum service reporting signal in noise."
+                                                                " This is an unallowable noise mode. Valid PHY noise modes are: none and outofband.",
+                                                                id_,
+                                                                pzLayerName);
+
+                                         commonLayerStatistics_[u8Category]->processOutbound(pkt,
+                                                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
+                                                                                             DROP_CODE_BAD_CONTROL_INFO);
+
+                                         return true;
+
+                                       }
+
+                                   }
+                                 catch(SpectrumServiceException & exp)
+                                   {
+                                     LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                            ERROR_LEVEL,
+                                                            "MACI %03hu %s upstream EOR processing: spectrum service request error: %s",
+                                                            id_,
+                                                            pzLayerName,
+                                                            exp.what());
+                                     commonLayerStatistics_[u8Category]->processOutbound(pkt,
+                                                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
+                                                                                         DROP_CODE_BAD_SPECTRUM_QUERY);
+                                     // drop
+                                     return true;
+                                   }
+
+                                 handleUpstreamPacket(pkt,
+                                                      frequencySegment.getRxPowerdBm(),
+                                                      dNoiseFloordB,
+                                                      u64SequenceNumber,
+                                                      timeNow,
+                                                      u8Category);
+
+                                 return true;
+
+                               },pkt,commonMACHeader.getSequenceNumber(),u8Category);
+
+
       auto eor = startOfReception + frequencySegments.begin()->getDuration();
 
       if(eor > timeNow)
         {
           // wait for end of reception to complete processing
-          pPlatformService_->timerService().scheduleTimedEvent(eor,pCallback);
+          pPlatformService_->timerService().schedule(callback,eor);
         }
       else
         {
           // we can process now, end of reception has past
-          (*pCallback)();
-          
-          delete pCallback;
+          callback();
         }
     }
 }
 
 
-void 
-EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt, 
-                                                            double dRxPowerdBm, 
+void
+EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt,
+                                                            double dRxPowerdBm,
                                                             double dNoiseFloordBm,
                                                             std::uint64_t u64SequenceNumber,
                                                             const TimePoint & timeNow,
                                                             std::uint8_t u8Category)
-{ 
+{
   size_t len{pkt.stripLengthPrefixFraming()};
 
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
@@ -749,7 +730,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                  "MACI %03hu %s::%s: cts pkt from %hu, mac seq %ju entry seq %hu",
                                  id_,
                                  pzLayerName,
-                                 __func__, 
+                                 __func__,
                                  macHeaderParams.getSrcNEM(),
                                  u64SequenceNumber,
                                  macHeaderParams.getSequenceNumber());
@@ -786,10 +767,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
               DownstreamPacket ctsPkt{ctsinfo, nullptr, 0};
 
-              DownstreamQueueEntry entry{ctsPkt, 
-                  timeNow, 
-                  macConfig_.getTxOpMicroseconds(0), 
-                  0, 
+              DownstreamQueueEntry entry{ctsPkt,
+                  timeNow,
+                  macConfig_.getTxOpMicroseconds(0),
+                  0,
                   0};
 
               entry.durationMicroseconds_ = macHeaderParams.getDurationMicroseconds();
@@ -802,7 +783,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
         }
 
       // get overhead if enabled
-      Microseconds overheadMicroseconds{ENABLE_WMM_OVERHEAD ? 
+      Microseconds overheadMicroseconds{ENABLE_WMM_OVERHEAD ?
           modeTiming_.getOverheadMicroseconds(u8Category) :
           Microseconds::zero()};
 
@@ -811,7 +792,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                                  macHeaderParams.getMessageType(),             // msg type
                                                  dRxPowermW,                                   // rx power
                                                  timeNow,                                      // time
-                                                 macHeaderParams.getDurationMicroseconds() +   // duration 
+                                                 macHeaderParams.getDurationMicroseconds() +   // duration
                                                  overheadMicroseconds,
                                                  u8Category);                                  // categroy
 
@@ -822,18 +803,18 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
           if(!checkUpstremReception(pkt,
                                     timeNow,
                                     u64SequenceNumber,
-                                    dRxPowerdBm, 
+                                    dRxPowerdBm,
                                     dNoiseFloordBm,
-                                    macHeaderParams, 
+                                    macHeaderParams,
                                     macHeaderParams.getNumRetries(),
                                     u8Category).first)
-            {  
+            {
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
-                                     "MACI %03hu %s::%s: src %hu, dst %hu, reception failed, drop", 
-                                     id_, 
+                                     "MACI %03hu %s::%s: src %hu, dst %hu, reception failed, drop",
+                                     id_,
                                      pzLayerName,
-                                     __func__,  
+                                     __func__,
                                      macHeaderParams.getSrcNEM(),
                                      macHeaderParams.getDstNEM());
 
@@ -851,12 +832,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                                      "MACI %03hu %s::%s: duplicate pkt from %hu, entry seq %hu, drop",
                                      id_,
                                      pzLayerName,
-                                     __func__, 
+                                     __func__,
                                      macHeaderParams.getSrcNEM(),
                                      macHeaderParams.getSequenceNumber());
 
-              commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+              commonLayerStatistics_[u8Category]->processOutbound(pkt,
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                                   DROP_CODE_DUPLICATE);
 
               // drop
@@ -872,21 +853,21 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
           for(tryNum = 0; (tryNum <= macHeaderParams.getNumRetries()) && !result.first; ++tryNum)
             {
               // did the pkt pass
-              result = checkUpstremReception(pkt, 
+              result = checkUpstremReception(pkt,
                                              timeNow,
                                              u64SequenceNumber,
-                                             dRxPowerdBm, 
+                                             dRxPowerdBm,
                                              dNoiseFloordBm,
-                                             macHeaderParams, 
+                                             macHeaderParams,
                                              tryNum,
                                              u8Category);
               if(result.first)
                 {
                   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception passed, retires %d", 
+                                         DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception passed, retires %d",
                                          id_,
                                          pzLayerName,
-                                         __func__, 
+                                         __func__,
                                          macHeaderParams.getSrcNEM(),
                                          macHeaderParams.getDstNEM(),
                                          tryNum);
@@ -896,23 +877,23 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
           if(!result.first)
             {
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                     DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception failed in %d tries", 
+                                     DEBUG_LEVEL, "MACI %03hu %s::%s: src %hu, dst %hu, reception failed in %d tries",
                                      id_,
                                      pzLayerName,
-                                     __func__,  
+                                     __func__,
                                      macHeaderParams.getSrcNEM(),
                                      macHeaderParams.getDstNEM(),
                                      tryNum);
 
-              commonLayerStatistics_[u8Category]->processOutbound(pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+              commonLayerStatistics_[u8Category]->processOutbound(pkt,
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                                   result.second);
 
               // drop
               return;
             }
         }
-   
+
 
 
       // check dst
@@ -922,15 +903,15 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
             {
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                      DEBUG_LEVEL,
-                                     "MACI %03hu %s::%s: nexthop %hu, not this nem, promiscous mode disabled, drop", 
+                                     "MACI %03hu %s::%s: nexthop %hu, not this nem, promiscous mode disabled, drop",
                                      id_,
                                      pzLayerName,
                                      __func__,
                                      macHeaderParams.getDstNEM());
 
               commonLayerStatistics_[u8Category]->processOutbound(
-                                                                  pkt, 
-                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+                                                                  pkt,
+                                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                                   DROP_CODE_DST_MAC);
 
               // drop
@@ -940,16 +921,16 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
 
       commonLayerStatistics_[dscpToCategory(pkt.getPacketInfo().getPriority())]->
         processOutbound(pkt,std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow));
-      
+
       sendUpstreamPacket(pkt);
-      
+
       LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       MACHeaderParamsFormatter(&macHeaderParams),
-                                      "MACI %03hu %s::%s: send upsream packet tx state %s", 
+                                      "MACI %03hu %s::%s: send upsream packet tx state %s",
                                       id_,
                                       pzLayerName,
-                                      __func__, 
+                                      __func__,
                                       pTxState_->statename());
 
     }
@@ -963,7 +944,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::handleUpstreamPacket(UpstreamPacket & pkt
                              pzLayerName,
                              pkt.length(),
                              len);
-    } 
+    }
 }
 
 
@@ -986,8 +967,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
   // check for rx collision, use num retries from pkt
-  COLLISION_TYPE collisionType {checkForRxCollision(rMACHeaderParams.getSrcNEM(), 
-                                                    u8Category, 
+  COLLISION_TYPE collisionType {checkForRxCollision(rMACHeaderParams.getSrcNEM(),
+                                                    u8Category,
                                                     tryNum)};
 
   // clobbered rx during tx
@@ -1090,7 +1071,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
                              id_,
                              pzLayerName,
                              __func__,
-                             dRxPowerdBm, 
+                             dRxPowerdBm,
                              dNoiseFloorAdjusteddBm,
                              rMACHeaderParams.getDataRateIndex());
 
@@ -1112,22 +1093,22 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkUpstremReception(UpstreamPacket & pk
                              id_,
                              pzLayerName,
                              __func__,
-                             dRxPowerdBm, 
+                             dRxPowerdBm,
                              dNoiseFloorAdjusteddBm,
                              dSINR,
                              rMACHeaderParams.getDataRateIndex());
 
       neighborMetricManager_.updateNeighborRxMetric(
-        pktInfo.getSource(),                                           // nbr (src)
-        u64SequenceNumber,                                             // seq
-        pktInfo.getUUID(),                                             // uuid
-        dSINR,                                                         // sinr
-        dNoiseFloorAdjusteddBm,                                        // noise floor in dBm
-        timeNow,                                                       // rx time
-        rMACHeaderParams.getDurationMicroseconds(),                    // duration
-        rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
-        macConfig_.getBroadcastDataRateKbps(rMACHeaderParams.getDataRateIndex()) * 1000ULL :
-        macConfig_.getUnicastDataRateKbps(rMACHeaderParams.getDataRateIndex())   * 1000ULL);
+                                                    pktInfo.getSource(),                                           // nbr (src)
+                                                    u64SequenceNumber,                                             // seq
+                                                    pktInfo.getUUID(),                                             // uuid
+                                                    dSINR,                                                         // sinr
+                                                    dNoiseFloorAdjusteddBm,                                        // noise floor in dBm
+                                                    timeNow,                                                       // rx time
+                                                    rMACHeaderParams.getDurationMicroseconds(),                    // duration
+                                                    rMACHeaderParams.getMessageType() == MSG_TYPE_BROADCAST_DATA ? // data rate bps
+                                                    macConfig_.getBroadcastDataRateKbps(rMACHeaderParams.getDataRateIndex()) * 1000ULL :
+                                                    macConfig_.getUnicastDataRateKbps(rMACHeaderParams.getDataRateIndex())   * 1000ULL);
 
       // pass
       return std::pair<bool, std::uint16_t>(true, {});
@@ -1151,8 +1132,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
   if(!removeToken())
     {
       commonLayerStatistics_[u8Category]->processOutbound(
-                                                          pkt, 
-                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow), 
+                                                          pkt,
+                                                          std::chrono::duration_cast<Microseconds>(Clock::now() - timeNow),
                                                           DROP_CODE_FLOW_CONTROL_ERROR);
 
       // drop
@@ -1163,10 +1144,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
       std::uint8_t{} : macConfig_.getRetryLimit(u8Category)};
 
   // this moves pkt, making it invalid, use entry.pkt_ from now on
-  DownstreamQueueEntry entry{pkt, 
-      timeNow, 
-      macConfig_.getTxOpMicroseconds(u8Category), 
-      u8Category, 
+  DownstreamQueueEntry entry{pkt,
+      timeNow,
+      macConfig_.getTxOpMicroseconds(u8Category),
+      u8Category,
       u8Retries};
 
   // check rts cts enable
@@ -1184,10 +1165,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
       for(auto & iter : result)
         {
           commonLayerStatistics_[u8Category]->
-            processOutbound(iter.pkt_, 
-                            std::chrono::duration_cast<Microseconds>(Clock::now() - iter.acquireTime_), 
+            processOutbound(iter.pkt_,
+                            std::chrono::duration_cast<Microseconds>(Clock::now() - iter.acquireTime_),
                             DROP_CODE_QUEUE_OVERFLOW);
-          
+
           // drop, replace token
           addToken();
         }
@@ -1208,12 +1189,12 @@ EMANE::Models::IEEE80211ABG::MACLayer::processDownstreamPacket(DownstreamPacket 
 
       if(optionalWait.second)
         {
-          downstreamQueueTimedEventId_ = 
+          downstreamQueueTimedEventId_ =
             pPlatformService_->timerService().
-            scheduleTimedEvent(optionalWait.first,
-                               new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                   this,
-                                                                   u64SequenceNumber_)});
+            schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                               this,
+                               u64SequenceNumber_),
+                     optionalWait.first);
         }
       else
         {
@@ -1231,7 +1212,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::processEvent(const EventId & eventId,
 {
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "MACI %03hu %s::%s: event id %hu", 
+                         "MACI %03hu %s::%s: event id %hu",
                          id_,
                          pzLayerName,
                          __func__,
@@ -1266,7 +1247,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamBroadcastData(DownstreamQue
       entry.u16Seq_,                                // sequence number
       id_,                                          // src
       entry.pkt_.getPacketInfo().getDestination(),  // dst
-      entry.durationMicroseconds_};                 // duration 
+      entry.durationMicroseconds_};                 // duration
 
 
   entry.u64DataRatebps_ = macConfig_.getBroadcastDataRateKbps() * 1000ULL;
@@ -1285,8 +1266,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamUnicastData(DownstreamQueue
   // check retry logic enable
   std::uint8_t numRetries{ENABLE_TX_RETRY ? entry.numRetries_ : entry.maxRetries_};
 
-  MACHeaderParams macHeaderParams{entry.bRtsCtsEnable_ ? 
-      MSG_TYPE_UNICAST_RTS_CTS_DATA : 
+  MACHeaderParams macHeaderParams{entry.bRtsCtsEnable_ ?
+      MSG_TYPE_UNICAST_RTS_CTS_DATA :
       MSG_TYPE_UNICAST_DATA,                       // msg type
       numRetries,                                  // num retries
       macConfig_.getUnicastDataRateIndex(),        // data rate index
@@ -1327,7 +1308,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamUnicastCts(DownstreamQueueE
   LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
                                   MACHeaderParamsFormatter(&macHeaderParams),
-                                  "MACI %03hu %s::%s", 
+                                  "MACI %03hu %s::%s",
                                   id_,
                                   pzLayerName,
                                   __func__);
@@ -1339,13 +1320,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamUnicastCts(DownstreamQueueE
 
 
 void
-EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntry & entry, 
+EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntry & entry,
                                                              MACHeaderParams & rMACHeaderParams)
 {
   TimePoint currentTime{Clock::now()};
 
   // get overhead if enabled
-  Microseconds overheadMicroseconds{ENABLE_WMM_OVERHEAD ? 
+  Microseconds overheadMicroseconds{ENABLE_WMM_OVERHEAD ?
       modeTiming_.getOverheadMicroseconds(entry.u8Category_) :
       Microseconds::zero()};
 
@@ -1357,7 +1338,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
                                              currentTime,                                         // current time
                                              entry.durationMicroseconds_ + overheadMicroseconds,  // duration
                                              entry.u8Category_);                                  // category
-                                  
+
 
 
   // update queue metrics
@@ -1369,7 +1350,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
                                         (currentTime - entry.acquireTime_));                    // time in queue
 
   // update nbr tx metrics
-  neighborMetricManager_.updateNeighborTxMetric(entry.pkt_.getPacketInfo().getDestination(),  // dst 
+  neighborMetricManager_.updateNeighborTxMetric(entry.pkt_.getPacketInfo().getDestination(),  // dst
                                                 entry.u64DataRatebps_,                        // data rate bps
                                                 currentTime);                                 // current time
 
@@ -1380,7 +1361,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
       rMACHeaderParams.getSequenceNumber(),                          // sequence number
       rMACHeaderParams.getSrcNEM(),                                  // src
       rMACHeaderParams.getDstNEM(),                                  // dst
-      rMACHeaderParams.getDurationMicroseconds()};                   // duration 
+      rMACHeaderParams.getDurationMicroseconds()};                   // duration
 
   Serialization serialization{ieeeMACHeader.serialize()};
 
@@ -1391,17 +1372,17 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
   entry.pkt_.prependLengthPrefixFraming(serialization.size());
 
   commonLayerStatistics_[entry.u8Category_]->
-    processOutbound(entry.pkt_, 
+    processOutbound(entry.pkt_,
                     std::chrono::duration_cast<Microseconds>(Clock::now() - entry.acquireTime_),
                     rMACHeaderParams.getMessageType() == MSG_TYPE_UNICAST_CTS_CTRL);
 
   // send the packet
-  sendDownstreamPacket(CommonMACHeader{registrationId_, u64SequenceNumber_++},           
-                       entry.pkt_,                                       
+  sendDownstreamPacket(CommonMACHeader{registrationId_, u64SequenceNumber_++},
+                       entry.pkt_,
                        {Controls::FrequencyControlMessage::create(
-                         0,                                                 // bandwidth (0 uses phy default)
-                         {{0,rMACHeaderParams.getDurationMicroseconds()}}), // freq (0 uses phy default)
-                       Controls::TimeStampControlMessage::create(entry.txTime_)});
+                                                                  0,                                                 // bandwidth (0 uses phy default)
+                                                                  {{0,rMACHeaderParams.getDurationMicroseconds()}}), // freq (0 uses phy default)
+                           Controls::TimeStampControlMessage::create(entry.txTime_)});
 
   currentEndOfTransmissionTime_ = currentTime + entry.durationMicroseconds_ + overheadMicroseconds;
 }
@@ -1412,9 +1393,9 @@ EMANE::Models::IEEE80211ABG::MACLayer::sendDownstreamMessage(DownstreamQueueEntr
 /**
  *
  * @brief callback to change current tx state
- * 
+ *
  * @param pState new state
- * 
+ *
  */
 void
 EMANE::Models::IEEE80211ABG::MACLayer::changeDownstreamState(TransmissionTxState * pState)
@@ -1424,8 +1405,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::changeDownstreamState(TransmissionTxState
                          "MACI %03hu %s::%s:  %s => %s",
                          id_,
                          pzLayerName,
-                         __func__, 
-                         pTxState_->statename(), 
+                         __func__,
+                         pTxState_->statename(),
                          pState->statename());
 
   // change state
@@ -1435,7 +1416,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::changeDownstreamState(TransmissionTxState
 
 
 
-EMANE::NEMId 
+EMANE::NEMId
 EMANE::Models::IEEE80211ABG::MACLayer::getId() const
 {
   return id_;
@@ -1488,8 +1469,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
   if(fNumEstimatedOneAndTwoHopNeighbors > 1)
     {
       // calcuating excess overhead per neighbor in excess of 2 for the estimated average message duration
-      Microseconds messageDurationOverheadExtraMicroseconds{ 
-        static_cast<Microseconds::rep>((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) * 
+      Microseconds messageDurationOverheadExtraMicroseconds{
+        static_cast<Microseconds::rep>((fNumEstimatedOneAndTwoHopNeighbors - 2.0f) *
                                        ((iCW * modeTiming_.getSlotSizeMicroseconds().count()) / 2.0f))};
 
       // probability of additional deley required
@@ -1505,11 +1486,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
       if(X1 <= fDelayTimeFactor)
         {
           // get pre delay
-          auto nodeDelayMicroseconds = 
+          auto nodeDelayMicroseconds =
             Microseconds{static_cast<Microseconds::rep>(floorf(X2 * fNumEstimatedOneAndTwoHopNeighbors))};
-          
+
           // add to the pre dealy
-          preDelayMicroseconds += 
+          preDelayMicroseconds +=
             Microseconds{nodeDelayMicroseconds.count() * averageMessageDurationMicroseconds.count()};
 
           if(preDelayMicroseconds > messageDurationOverheadExtraMicroseconds)
@@ -1520,7 +1501,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
         }
 
       // set post delay
-      postDelayMicroseconds = 
+      postDelayMicroseconds =
         Microseconds{static_cast<Microseconds::rep>(powf(fDelayTimeFactor, 2.0f) *
                                                     (fNumEstimatedOneAndTwoHopNeighbors - 1.0f) *
                                                     averageMessageDurationMicroseconds.count())};
@@ -1556,13 +1537,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
       Microseconds localUtilizationMicroseconds{neighborManager_.getAllUtilizationMicroseconds(id_)};
 
       Microseconds remoteUtilizationMicroseconds{neighborManager_.getAllUtilizationMicroseconds(
-                                                 entry.pkt_.getPacketInfo().getDestination())};
+                                                                                                entry.pkt_.getPacketInfo().getDestination())};
 
       Microseconds deltaT{macConfig_.getChannelActivityIntervalMicroseconds()};
 
-      float fUtilizationFactorAdjusted{getRatio((totalOneHopUtilizationMicroseconds - 
-                                             localUtilizationMicroseconds - 
-                                             remoteUtilizationMicroseconds), deltaT)};
+      float fUtilizationFactorAdjusted{getRatio((totalOneHopUtilizationMicroseconds -
+                                                 localUtilizationMicroseconds -
+                                                 remoteUtilizationMicroseconds), deltaT)};
 
       // bump adjusted utilization
       if(fUtilizationFactorAdjusted > 1.0f)
@@ -1571,7 +1552,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
         }
 
       float fPreTran = (fUtilizationFactorAdjusted * fUtilizationFactorAdjusted) *
-                         (1.0 - A) * (fNumEstimatedOneHopNeighbors / iCW);
+        (1.0 - A) * (fNumEstimatedOneHopNeighbors / iCW);
 
       // check probability
       if(X3 < fPreTran)
@@ -1599,7 +1580,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
             {
               H =(1.0f - C2);
             }
-   
+
           // check probability
           if(X4 < H)
             {
@@ -1608,26 +1589,26 @@ EMANE::Models::IEEE80211ABG::MACLayer::setDelayTime(DownstreamQueueEntry & entry
             }
         }
     }
- 
-  // set pre delay time 
+
+  // set pre delay time
   entry.preTxDelayTime_ = timeNow + preDelayMicroseconds;
 
   // set post delay duration
   entry.postTxDelayMicroseconds_ = postDelayMicroseconds;
- 
+
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                         DEBUG_LEVEL, 
+                         DEBUG_LEVEL,
                          "MACI %03hu %s::%s: est nbrs 1 hop %3.2f, "
                          "2 hop %3.2f, bw %lf, avg duration %lf,"
                          " pre delay %lf,  post delay %lf, tx collision %s",
                          id_,
                          pzLayerName,
-                         __func__, 
-                         fNumEstimatedOneHopNeighbors, 
-                         fNumEstimatedTwoHopNeighbors, 
-                         std::chrono::duration_cast<DoubleSeconds>(totalOneAndTwoHopUtilizationMicroseconds).count(), 
-                         std::chrono::duration_cast<DoubleSeconds>(averageMessageDurationMicroseconds).count(), 
-                         std::chrono::duration_cast<DoubleSeconds>(preDelayMicroseconds).count(), 
+                         __func__,
+                         fNumEstimatedOneHopNeighbors,
+                         fNumEstimatedTwoHopNeighbors,
+                         std::chrono::duration_cast<DoubleSeconds>(totalOneAndTwoHopUtilizationMicroseconds).count(),
+                         std::chrono::duration_cast<DoubleSeconds>(averageMessageDurationMicroseconds).count(),
+                         std::chrono::duration_cast<DoubleSeconds>(preDelayMicroseconds).count(),
                          std::chrono::duration_cast<DoubleSeconds>(postDelayMicroseconds).count(),
                          entry.bCollisionOccured_ ? "true" : "false");
 }
@@ -1658,8 +1639,8 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
 
   Microseconds deltaT{macConfig_.getChannelActivityIntervalMicroseconds()};
 
-  float fUtilizationFactorAdjusted{getRatio((totalOneHopUtilizationMicroseconds - 
-                                             localUtilizationMicroseconds - 
+  float fUtilizationFactorAdjusted{getRatio((totalOneHopUtilizationMicroseconds -
+                                             localUtilizationMicroseconds -
                                              remoteUtilizationMicroseconds), deltaT)};
 
   float fUtilizationFactorActual{getRatio(totalOneHopUtilizationMicroseconds, deltaT)};
@@ -1690,11 +1671,11 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
       fUtilizationFactorActual = 1.0f;
     }
 
-  // check for estimated nbrs 
+  // check for estimated nbrs
   if(fNumEstimatedOneHopNeighbors > 0.0f)
     {
       P1 = fUtilizationFactorAdjusted * fUtilizationFactorAdjusted * A *(fNumEstimatedOneHopNeighbors / iCW);
-    
+
       if(X1 < P1)
         {
           // set rx during tx collision clobber, no need to continue
@@ -1702,7 +1683,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
         }
     }
 
-  // check for estimated nbrs 
+  // check for estimated nbrs
   if(fNumEstimatedOneHopNeighbors > 0.0f)
     {
       for(size_t u8Category = 0; u8Category < macConfig_.getNumAccessCategories(); ++u8Category)
@@ -1724,7 +1705,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
         }
 
       P1 = fUtilizationFactorActual * fUtilizationFactorActual * PP1;
-    
+
       if(X1 < P1)
         {
           // set rx during tx collision clobber, no need to continue
@@ -1780,7 +1761,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
                                      "MACI %03hu %s::%s: idx %zu, PP2 %4.3f, TBWU %4.3f, CWMINR %3.2f, CWMIN %hhu",
                                      id_,
                                      pzLayerName,
-                                     __func__, 
+                                     __func__,
                                      u8Category,
                                      PP2,
                                      utilizationRatioVector[u8Category].first,
@@ -1809,7 +1790,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkForRxCollision(NEMId src, std::uint8
                          "utilization [one hop %lf, local %lf, remote %lf] "
                          "CW %d, X1 %5.3f, X2 %5.3f, X3 %5.3f, C1 %5.3f, P1 %5.3f, P2 %5.3f, P3 %5.3f P4 %5.3f, "
                          "PP1 %5.3f, PP2 %5.3f, 0x%02X",
-                         id_, pzLayerName, __func__, 
+                         id_, pzLayerName, __func__,
                          src,
                          neighborManager_.getTotalActiveOneHopNeighbors(),
                          fNumEstimatedOneHopNeighbors,
@@ -1859,10 +1840,10 @@ bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry(std::uint
                 {
                   downstreamQueueTimedEventId_ =
                     pPlatformService_->timerService().
-                    scheduleTimedEvent(optionalWait.first,
-                                       new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                           this,
-                                                                           u64SequenceNumber_)});
+                    schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                       this,
+                                       u64SequenceNumber_),
+                             optionalWait.first);
 
                   // we are finished handling the queue entry (for now)
                   break;
@@ -1870,28 +1851,13 @@ bool EMANE::Models::IEEE80211ABG::MACLayer::handleDownstreamQueueEntry(std::uint
             }
         }
     }
-  
+
   // delete after executing
   return true;
 }
 
-void 
-EMANE::Models::IEEE80211ABG::MACLayer::processTimedEvent(TimerEventId,
-                                                         const TimePoint &,
-                                                         const TimePoint &,
-                                                         const TimePoint &,
-                                                         const void *arg)
-{
-  auto pCallBack = reinterpret_cast<const std::function<bool()> *>(arg);
-  
-  if((*pCallBack)())
-    {
-      delete pCallBack;
-    }
-}
 
-
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
 {
   TimePoint timeNow {Clock::now()};
@@ -1976,13 +1942,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::isDuplicate(NEMId src, std::uint16_t seq)
 
 
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACLayer::addToken()
 {
   if(macConfig_.getFlowControlEnable())
     {
       auto status = flowControlManager_.addToken();
-      
+
       if(!status.second)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -1992,7 +1958,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::addToken()
                                   pzLayerName,
                                   __func__,
                                   status.first);
-          
+
           // failed
           return false;
         }
@@ -2004,13 +1970,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::addToken()
 
 
 
-bool 
+bool
 EMANE::Models::IEEE80211ABG::MACLayer::removeToken()
 {
   if(macConfig_.getFlowControlEnable())
     {
       auto status = flowControlManager_.removeToken();
-      
+
       if(!status.second)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -2047,10 +2013,10 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkPOR(float fSINR, size_t packetSize, 
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "MACI %03hu %s::%s: sinr %3.2f, pcr %3.2f %s rand %3.3f", 
-                         id_, 
+                         "MACI %03hu %s::%s: sinr %3.2f, pcr %3.2f %s rand %3.3f",
+                         id_,
                          pzLayerName,
-                         __func__, 
+                         __func__,
                          fSINR,
                          fPCR,
                          bResult ? ">=" : "<",
@@ -2062,7 +2028,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::checkPOR(float fSINR, size_t packetSize, 
 
 
 
-std::uint8_t 
+std::uint8_t
 EMANE::Models::IEEE80211ABG::MACLayer::dscpToCategory(std::uint8_t dscp) const
 {
   // default value is 0
@@ -2100,7 +2066,7 @@ EMANE::Models::IEEE80211ABG::MACLayer::dscpToCategory(std::uint8_t dscp) const
 
 
 
-EMANE::Models::IEEE80211ABG::MACStatistics & 
+EMANE::Models::IEEE80211ABG::MACStatistics &
 EMANE::Models::IEEE80211ABG::MACLayer::getStatistics()
 {
   return macStatistics_;
@@ -2108,13 +2074,13 @@ EMANE::Models::IEEE80211ABG::MACLayer::getStatistics()
 
 
 
-EMANE::Models::IEEE80211ABG::ModeTimingParameters & 
+EMANE::Models::IEEE80211ABG::ModeTimingParameters &
 EMANE::Models::IEEE80211ABG::MACLayer::getModeTiming()
 {
   return modeTiming_;
 }
 
-void 
+void
 EMANE::Models::IEEE80211ABG::MACLayer::setEntrySequenceNumber(DownstreamQueueEntry &entry)
 {
   // set sequence number on first try, else retain current seq number

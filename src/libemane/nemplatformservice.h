@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
- * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -31,61 +30,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEOTAPROVIDER_HEADER_
-#define EMANEOTAPROVIDER_HEADER_
+#ifndef EMANENEMPLATFORMSERVICE_HEADER_
+#define EMANENEMPLATFORMSERVICE_HEADER_
 
-#include "emane/downstreampacket.h"
-#include "emane/controlmessage.h"
+#include "emane/componenttypes.h"
+#include "emane/platformserviceprovider.h"
+#include "nemqueuedlayer.h"
+#include "nemtimerserviceproxy.h"
+#include "eventserviceproxy.h"
+
+#include <memory>
 
 namespace EMANE
 {
-  class OTAUser;
+
+  class PlatformServiceUser;
 
   /**
-   * @class OTAProvider
+   * @class NEMPlatformService
    *
-   * @brief Interface for OTA
+   * @brief NEM platform service
    */
-  class OTAProvider
+  class NEMPlatformService : public PlatformServiceProvider
   {
   public:
-    virtual ~OTAProvider(){}
+    NEMPlatformService();
 
-    /**
-     * Send OTA packet
-     *
-     * @param id NEM identifier
-     * @param pkt Downstream packet
-     * @param msg Control Message
-     */
-    virtual void sendOTAPacket(NEMId id,
-                               const DownstreamPacket & pkt,
-                               const ControlMessages & msg) const = 0;
+    ~NEMPlatformService();
 
-    /**
-     * Register an OTA user
-     *
-     * @param id NEM identifier
-     * @param pOTAUser OTAUser reference
-     *
-     * @throw OTAEception when an error occurs during unregister
-     */
-    virtual void registerOTAUser(NEMId id, OTAUser * pOTAUser) = 0;
+    TimerServiceProvider & timerService() override;
 
+    LogServiceProvider & logService() override;
 
-    /**
-     * Unregister an OTA user
-     *
-     * @param id NEM identifier
-     *
-     * @throw OTAEception when an error occurs during unregister
-     */
-    virtual void unregisterOTAUser(NEMId id) = 0;
+    EventServiceProvider & eventService() override;
 
+    FileDescriptorServiceProvider & fileDescriptorService() override;
 
-  protected:
-    OTAProvider(){}
+    void setNEMLayer(BuildId buildId,
+                     NEMQueuedLayer * pLayer);
+
+  private:
+    NEMTimerServiceProxy timerServiceProxy_;
+    EventServiceProxy eventServiceProxy_;
+    NEMQueuedLayer * pNEMQueuedLayer_;
   };
 }
 
-#endif //EMANEOTAPROVIDER_HEADER_
+
+#endif // EMANENEMPLATFORMSERVICE_HEADER_
