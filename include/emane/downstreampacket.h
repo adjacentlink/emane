@@ -152,7 +152,7 @@ namespace EMANE
 
   private:
     class Implementation;
-    std::shared_ptr<Implementation> pImpl_;
+    std::unique_ptr<Implementation> pImpl_;
   };
 }
 

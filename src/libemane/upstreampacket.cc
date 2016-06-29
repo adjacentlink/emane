@@ -144,10 +144,7 @@ EMANE::UpstreamPacket::UpstreamPacket(const UpstreamPacket & pkt):
   pImpl_{new Implementation{*pkt.pImpl_}}{}
 
 EMANE::UpstreamPacket::UpstreamPacket(UpstreamPacket && pkt):
-  pImpl_{std::move(pkt.pImpl_)}
- {
-   pkt.pImpl_.reset(new Implementation{});
- }
+  pImpl_{std::move(pkt.pImpl_)}{}
 
 EMANE::UpstreamPacket::~UpstreamPacket(){}
 
@@ -160,7 +157,6 @@ EMANE::UpstreamPacket & EMANE::UpstreamPacket::operator=(const UpstreamPacket & 
 EMANE::UpstreamPacket & EMANE::UpstreamPacket::operator=(UpstreamPacket && pkt)
 {
   pImpl_ = std::move(pkt.pImpl_);
-  pkt.pImpl_.reset(new Implementation{});
   return *this;
 }
 

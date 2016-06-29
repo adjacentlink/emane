@@ -44,14 +44,15 @@ class EMANE::DownstreamPacket::Implementation
 {
 public:
   Implementation():
-    totalLengthBytes_{},
-    info_{0,0,0,{}}{}
+    pShared_{std::make_shared<Shared>()}{}
 
   Implementation(const PacketInfo & info, const void * buf, size_t size):
-    totalLengthBytes_{},
-    info_{info}
+    pShared_{std::make_shared<Shared>()}
   {
-    prepend(buf,size);
+    const unsigned char * c = static_cast<const unsigned char *>(buf);
+    pShared_->segment_ = PacketSegment(&c[0],&c[size]);
+    pShared_->info_ = info;
+    totalLengthBytes_ += size;
   }
 
   void prepend(const void * buf, size_t size)
@@ -74,35 +75,6 @@ public:
     totalLengthBytes_ += sizeof(u16Length);
   }
 
-
-  const void * get()
-  {
-    if(!segmentList_.empty() && segmentList_.begin()->size())
-      {
-        if(segmentList_.size() > 1)
-          {
-            PacketSegment combinedSeg;
-
-            combinedSeg.reserve(totalLengthBytes_);
-
-            SegmentList::iterator iter = segmentList_.begin();
-
-            for(;iter !=  segmentList_.end(); ++iter)
-              {
-                combinedSeg.insert(combinedSeg.end(),iter->begin(),iter->end());
-              }
-
-            segmentList_.erase(++segmentList_.begin(),segmentList_.end());
-
-            segmentList_.begin()->swap(combinedSeg);
-          }
-
-        return &(*segmentList_.begin())[0];
-      }
-
-    return 0;
-  }
-
   size_t length() const
   {
     return totalLengthBytes_;
@@ -110,19 +82,22 @@ public:
 
   const PacketInfo & getPacketInfo() const
   {
-    return info_;
+    return pShared_->info_;
   }
 
   Utils::VectorIO getVectorIO() const
   {
     Utils::VectorIO vectorIO{};
 
-    vectorIO.reserve(segmentList_.size());
+    vectorIO.reserve(segmentList_.size() + 1);
 
     for(const auto & segment : segmentList_)
       {
         vectorIO.push_back({const_cast<std::uint8_t *>(&segment[0]),segment.size()});
       }
+
+    vectorIO.push_back({const_cast<std::uint8_t *>(&pShared_->segment_[0]),
+          pShared_->segment_.size()});
 
     return vectorIO;
   }
@@ -143,10 +118,18 @@ private:
   typedef std::vector<std::uint8_t> PacketSegment;
   typedef std::list<PacketSegment> SegmentList;
   typedef std::list<std::tuple<NEMId,EventId,std::string>> AttachedEvents;
-  SegmentList segmentList_;
-  PacketSegment::size_type totalLengthBytes_;
-  PacketInfo info_;
-  AttachedEvents attachedEvents_;
+
+  class Shared
+  {
+  public:
+    PacketSegment segment_{};
+    PacketInfo info_{0,0,0,{}};
+  };
+
+  SegmentList segmentList_{};
+  PacketSegment::size_type totalLengthBytes_{};
+  AttachedEvents attachedEvents_{};
+  std::shared_ptr<Shared> pShared_;
 };
 
 EMANE::DownstreamPacket::DownstreamPacket(const  EMANE::PacketInfo & info,
@@ -156,7 +139,7 @@ EMANE::DownstreamPacket::DownstreamPacket(const  EMANE::PacketInfo & info,
 
 
 EMANE::DownstreamPacket::DownstreamPacket(const DownstreamPacket & pkt):
-  pImpl_{pkt.pImpl_}{}
+  pImpl_{new Implementation{*pkt.pImpl_}}{}
 
 EMANE::DownstreamPacket::DownstreamPacket(DownstreamPacket && pkt):
   pImpl_{std::move(pkt.pImpl_)}{}
@@ -165,7 +148,7 @@ EMANE::DownstreamPacket::~DownstreamPacket(){}
 
 EMANE::DownstreamPacket & EMANE::DownstreamPacket::operator=(const DownstreamPacket & pkt)
 {
-  pImpl_ = pkt.pImpl_;
+  pImpl_.reset(new Implementation{*pkt.pImpl_});
   return *this;
 }
 
