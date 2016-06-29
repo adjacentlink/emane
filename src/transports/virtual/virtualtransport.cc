@@ -437,19 +437,22 @@ void EMANE::Transports::Virtual::VirtualTransport::processUpstreamPacket(Upstrea
       commonLayerStatistics_.processOutbound(pkt,
                                              std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
-      // drain the bit pool
-      const size_t sizePending = pBitPool_->get(pkt.length() * 8);
-
-      // check for bitpool error
-      if(sizePending != 0)
+      if(u64BitRate_)
         {
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL,
-                                  "TRANSPORTI %03hu VirtualTransport::%s bitpool request error %zd of %zd",
-                                  id_,
-                                  __func__,
-                                  sizePending,
-                                  pkt.length() * 8);
+          // drain the bit pool
+          const size_t sizePending = pBitPool_->get(pkt.length() * 8);
+
+          // check for bitpool error
+          if(sizePending != 0)
+            {
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      ERROR_LEVEL,
+                                      "TRANSPORTI %03hu VirtualTransport::%s bitpool request error %zd of %zd",
+                                      id_,
+                                      __func__,
+                                      sizePending,
+                                      pkt.length() * 8);
+            }
         }
     }
 }
@@ -767,20 +770,23 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice(int)
                   // send to downstream transport
                   sendDownstreamPacket(pkt);
 
-                  // drain the bit pool
-                  std::uint64_t sizePending {pBitPool_->get(len * 8)};
-
-                  // check for bitpool error
-                  if(sizePending > 0)
+                  if(u64BitRate_)
                     {
-                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                              ERROR_LEVEL,
-                                              "TRANSPORTI %03hu VirtualTransport::%s bitpool "
-                                              "request error %jd of %zd",
-                                              id_,
-                                              __func__,
-                                              sizePending,
-                                              len * 8);
+                      // drain the bit pool
+                      std::uint64_t sizePending {pBitPool_->get(len * 8)};
+
+                      // check for bitpool error
+                      if(sizePending > 0)
+                        {
+                          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                                  ERROR_LEVEL,
+                                                  "TRANSPORTI %03hu VirtualTransport::%s bitpool "
+                                                  "request error %jd of %zd",
+                                                  id_,
+                                                  __func__,
+                                                  sizePending,
+                                                  len * 8);
+                        }
                     }
                 }
             }
