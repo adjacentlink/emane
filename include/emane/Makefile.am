@@ -104,6 +104,7 @@ emaneinc_HEADERS =                       \
  statistictable.inl                      \
  statistictablepublisher.h               \
  timerserviceprovider.h                  \
+ timerserviceprovider.inl                \
  timerserviceuser.h                      \
  transmitter.h                           \
  transmitter.inl                         \

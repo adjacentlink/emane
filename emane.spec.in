@@ -179,6 +179,16 @@ Group: Applications/System
 %description manifest
 EMANE Plugin Manifests
 
+%package python
+Requires: python-setuptools protobuf-python
+Summary: EMANE Python modules and utilities
+Group: Development/Libraries
+Obsoletes: emanesh
+BuildArch: noarch
+
+%description python
+EMANE Python modules and utilities
+
 %prep
 %setup -q
 
@@ -491,3 +501,14 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
+%files python
+%{_bindir}/emanecommand-eel
+%{_bindir}/emaneevent-antennaprofile
+%{_bindir}/emaneevent-commeffect
+%{_bindir}/emaneevent-dump
+%{_bindir}/emaneevent-location
+%{_bindir}/emaneevent-pathloss
+%{_bindir}/emaneevent-tdmaschedule
+%{_bindir}/emaneota-publisher
+%{_bindir}/emanesh
+%{prefix}/lib*/python*/site-packages/emanesh*

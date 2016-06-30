@@ -36,8 +36,7 @@ EXTRA_DIST=                      \
  scripts/emaneevent-tdmaschedule \
  scripts/emaneota-publisher      \
  scripts/emanecommand-eel        \
- setup.py.in                     \
- stdeb.cfg.in
+ setup.py.in                     
 
 BUILT_SOURCES =                  \
  emanesh/events/antennaprofileevent_pb2.py \
@@ -72,8 +71,6 @@ clean-local: setup.py
 	-rm -f emanesh/ota/commonphyheader_pb2.py
 	-rm -f emanesh/schema/manifest.xsd
 	-rm -rf dist
-	-rm -rf deb_dist
-	-rm -f stdeb.cfg
 	-find . -name "*.pyc" -delete
 
 DISTCLEANFILES=setup.py
@@ -83,8 +80,7 @@ sdist:
 
 edit = sed                              \
         -e 's|@VERSION[@]|$(VERSION)|g' \
-        -e 's|@PYTHON[@]|$(PYTHON)|g'   \
-        -e 's|@DEBIAN_VERSION[@]|$(DEBIAN_VERSION)|g'
+        -e 's|@PYTHON[@]|$(PYTHON)|g'   
 
 emanesh/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emanesh  $<
@@ -124,15 +120,7 @@ setup.py:	setup.py.in
 	$(edit) $< > $@
 	chmod g-w,u-w $@
 
-rpm: $(BUILT_SOURCES)
-	$(PYTHON) setup.py bdist_rpm  \
-   --vendor "Adjacent Link LLC" \
-   --requires "protobuf-python python-lxml"
-
-stdeb.cfg: stdeb.cfg.in
-	if test -f $@; then chmod u+w $@; fi
-	$(edit) $< > $@
-	chmod g-w,u-w $@
-
-deb: $(BUILT_SOURCES) stdeb.cfg
-	$(PYTHON) setup.py --command-packages=stdeb.command bdist_deb
+install-exec-hook: $(BUILT_SOURCES)
+	$(PYTHON) setup.py install \
+    -O1 \
+    --root=$(DESTDIR)

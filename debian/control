@@ -130,3 +130,10 @@ Section: extra
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE PLugin Manifests
+
+Package: emane-python
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-setuptools, python-protobuf
+Replaces: emanesh
+Description: EMANE Python modules and utilities

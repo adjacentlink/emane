@@ -257,8 +257,11 @@ EXTRA_DIST=                                   \
  nemmanagerimpl.h                             \
  nemnetworkadapter.h                          \
  nemotaadapter.h                              \
+ nemplatformservice.h                         \
  nemqueuedlayer.h                             \
+ nemqueuedlayer.inl                           \
  nemstatefullayer.h                           \
+ nemtimerserviceproxy.h                       \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
  noiserecorder.h                              \
@@ -298,6 +301,7 @@ EXTRA_DIST=                                   \
  statistictablequeryhandler.h                 \
  timerserviceexception.h                      \
  timerservice.h                               \
+ timerservice.inl                             \
  timerserviceproxy.h                          \
  transportadapterimpl.h                       \
  transportfactory.h                           \

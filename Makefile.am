@@ -10,7 +10,8 @@ SUBDIRS= src                            \
          test
 
 edit = sed                                \
-       -e 's|@VERSION[@]|$(VERSION)|g'      
+       -e 's|@VERSION[@]|$(VERSION)|g'    \
+       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'
 
 dist-hook:
 	find $(distdir) -name "*.pb.*" -delete
@@ -35,9 +36,6 @@ rpm: emane.spec dist-gzip
 	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp"
-	$(MAKE) -C src/emanesh rpm &&\
-    cp src/emanesh/dist/emanesh-$(VERSION)-1.noarch.rpm .rpmbuild/RPMS/noarch && \
-    cp src/emanesh/dist/emanesh-$(VERSION)-1.src.rpm .rpmbuild/SRPMS
 	@echo "============================================================"
 	@echo "RPMs located in .rpmbuild/RPMS and .rpmbuild/SRPMS"
 
@@ -63,8 +61,6 @@ deb: dist-gzip
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
 	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc
-	$(MAKE) -C .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh deb && \
-         cp .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh/deb_dist/emanesh_$(VERSION)-1_all.deb .debbuild
 	@echo "============================================================"
 	@echo "debs located in .debbuild"
 cleandeb:
