@@ -152,7 +152,7 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<NEMLayer>(pNEMLayer.release());
 }
 
 std::unique_ptr<EMANE::NEMLayer>
@@ -212,7 +212,7 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }
 
 
@@ -273,7 +273,7 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }
 
 
@@ -405,5 +405,5 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }

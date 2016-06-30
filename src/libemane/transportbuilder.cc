@@ -163,7 +163,7 @@ EMANE::Application::TransportBuilder::buildTransport(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }
 
 
