@@ -201,7 +201,7 @@ void EMANE::LogService::processControlMessages(void)
 
   while(!bDone)
     {
-      nfds = epoll_wait(iepollFd_,events,sizeof(events),-1);
+      nfds = epoll_wait(iepollFd_,events,2,-1);
 
       if(nfds == -1)
         {
