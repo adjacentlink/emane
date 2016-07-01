@@ -79,11 +79,5 @@ then
     find . -name 'Makefile.in' -delete
     
 else
-    libtoolize --force --copy
-
-    aclocal --force
-
-    automake --add-missing --copy
-
-    autoreconf --force
+    autoreconf --force --install
 fi
