@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,16 @@ class EMANE::Models::RFPipe::MACHeaderMessage::Implementation
 {
 public:
   Implementation(std::uint64_t u64DataRate) :
-   u64DataRate_{u64DataRate}
-    { }
+    u64DataRate_{u64DataRate}
+  { }
 
-   std::uint64_t getDataRate() const
-    {
-       return u64DataRate_;
-    }
+  std::uint64_t getDataRate() const
+  {
+    return u64DataRate_;
+  }
 
 private:
-  const std::uint64_t u64DataRate_; 
+  const std::uint64_t u64DataRate_;
 };
 
 
@@ -56,23 +56,16 @@ EMANE::Models::RFPipe::MACHeaderMessage::MACHeaderMessage(std::uint64_t u64DataR
 { }
 
 
-EMANE::Models::RFPipe::MACHeaderMessage::MACHeaderMessage(const void * p, size_t len) 
+EMANE::Models::RFPipe::MACHeaderMessage::MACHeaderMessage(const void * p, size_t len)
 {
   EMANEMessage::RFPipeMACHeader message;
 
-  try
-    {
-      if(!message.ParseFromArray(p, len))
-        {
-          throw SerializationException("unable to deserialize MACHeaderMessage");
-        }
-
-       pImpl_.reset(new Implementation{static_cast<std::uint64_t>(message.datarate())});
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!message.ParseFromArray(p, len))
     {
       throw SerializationException("unable to deserialize MACHeaderMessage");
     }
+
+  pImpl_.reset(new Implementation{static_cast<std::uint64_t>(message.datarate())});
 }
 
 
@@ -91,21 +84,14 @@ EMANE::Serialization EMANE::Models::RFPipe::MACHeaderMessage::serialize() const
 {
   Serialization serialization;
 
-  try
-    {
-      EMANEMessage::RFPipeMACHeader message;
+  EMANEMessage::RFPipeMACHeader message;
 
-      message.set_datarate(pImpl_->getDataRate());
+  message.set_datarate(pImpl_->getDataRate());
 
-      if(!message.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize MACHeaderMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!message.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize MACHeaderMessage");
     }
-  
+
   return serialization;
 }

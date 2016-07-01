@@ -220,11 +220,31 @@ void EMANE::EventService::sendEvent(BuildId buildId,
 
       msg.set_sequencenumber(++u64SequenceNumber_);
 
-      try
-        {
-          std::string sSerialization;
+      std::string sSerialization;
 
-          if(!msg.SerializeToString(&sSerialization))
+      if(!msg.SerializeToString(&sSerialization))
+        {
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  ERROR_LEVEL,
+                                  "EventService sendEvent "
+                                  "unable to send event id:%hu for NEM:%hu\n",
+                                  eventId,
+                                  nemId);
+        }
+      else
+        {
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  DEBUG_LEVEL,
+                                  "Event %03hu EMANE::EventService::sendEvent",
+                                  eventId);
+
+          std::uint16_t u16Length = HTONS(sSerialization.size());
+
+          Utils::VectorIO vectorIO{
+            {reinterpret_cast<char *>(&u16Length),sizeof(u16Length)},
+              {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}};
+
+          if(mcast_.send(&vectorIO[0],static_cast<int>(vectorIO.size())) == -1)
             {
               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                       ERROR_LEVEL,
@@ -235,43 +255,11 @@ void EMANE::EventService::sendEvent(BuildId buildId,
             }
           else
             {
-              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                      DEBUG_LEVEL,
-                                      "Event %03hu EMANE::EventService::sendEvent",
-                                      eventId);
+              eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_TX,
+                                              uuid_,
+                                              eventId);
 
-              std::uint16_t u16Length = HTONS(sSerialization.size());
-
-              Utils::VectorIO vectorIO{
-                {reinterpret_cast<char *>(&u16Length),sizeof(u16Length)},
-                  {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}};
-
-              if(mcast_.send(&vectorIO[0],static_cast<int>(vectorIO.size())) == -1)
-                {
-                  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                          ERROR_LEVEL,
-                                          "EventService sendEvent "
-                                          "unable to send event id:%hu for NEM:%hu\n",
-                                          eventId,
-                                          nemId);
-                }
-              else
-                {
-                  eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_TX,
-                                                  uuid_,
-                                                  eventId);
-
-                }
             }
-        }
-      catch(google::protobuf::FatalException & exp)
-        {
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                  "EventService sendEvent unable to send "
-                                  "event id:%hu for NEM:%hu\n",
-                                  eventId,
-                                  nemId);
         }
     }
   else
@@ -351,58 +339,45 @@ void  EMANE::EventService::process()
 
           EMANEMessage::Event msg;
 
-          try
+          if(static_cast<size_t>(len) == *pu16Length &&
+             msg.ParseFromArray(&buf[2], *pu16Length))
             {
-              if(static_cast<size_t>(len) == *pu16Length &&
-                 msg.ParseFromArray(&buf[2], *pu16Length))
+              uuid_t remoteUUID;
+              uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(msg.uuid().data()));
+
+              // only process multicast events that were not sourced locally
+              if(uuid_compare(uuid_,remoteUUID))
                 {
-                  uuid_t remoteUUID;
-                  uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(msg.uuid().data()));
-
-                  // only process multicast events that were not sourced locally
-                  if(uuid_compare(uuid_,remoteUUID))
+                  for(const auto & serialization : msg.data().serializations())
                     {
-                      using RepeatedPtrFieldSerilaization =
-                        google::protobuf::RepeatedPtrField<EMANEMessage::Event::Data::Serialization>;
+                      NEMId nemId{static_cast<NEMId>(serialization.nemid())};
 
-                      for(const auto & repeatedSerialization :
-                            RepeatedPtrFieldSerilaization(msg.data().serializations()))
+                      const auto ret = eventRegistrationMap_.equal_range(static_cast<EventId>(serialization.eventid()));
+
+                      for(EventRegistrationMap::const_iterator iter = ret.first;
+                          iter != ret.second;
+                          ++iter)
                         {
-                          NEMId nemId{static_cast<NEMId>(repeatedSerialization.nemid())};
+                          BuildId registeredBuildId{};
+                          NEMId registeredNEMId{};
+                          EventServiceUser * pEventServiceUser{};
 
-                          const auto ret = eventRegistrationMap_.equal_range(static_cast<EventId>(repeatedSerialization.eventid()));
+                          std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
 
-                          for(EventRegistrationMap::const_iterator iter = ret.first;
-                              iter != ret.second;
-                              ++iter)
+                          if(!nemId || !registeredNEMId || registeredNEMId == nemId)
                             {
-                              BuildId registeredBuildId{};
-                              NEMId registeredNEMId{};
-                              EventServiceUser * pEventServiceUser{};
-
-                              std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
-
-                              if(!nemId || !registeredNEMId || registeredNEMId == nemId)
-                                {
-                                  pEventServiceUser->processEvent(static_cast<EventId>(repeatedSerialization.eventid()),
-                                                                  repeatedSerialization.data());
-                                }
+                              pEventServiceUser->processEvent(static_cast<EventId>(serialization.eventid()),
+                                                              serialization.data());
                             }
-
-                          eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
-                                                          remoteUUID,
-                                                          repeatedSerialization.eventid());
                         }
+
+                      eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
+                                                      remoteUUID,
+                                                      serialization.eventid());
                     }
                 }
-              else
-                {
-                  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                          ERROR_LEVEL,
-                                          "EventService unable to deserialize event");
-                }
             }
-          catch(google::protobuf::FatalException & exp)
+          else
             {
               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                       ERROR_LEVEL,

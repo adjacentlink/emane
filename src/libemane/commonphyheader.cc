@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ public:
     frequencySegments_{frequencySegments},
     transmitters_{transmitters},
     optionalFixedAntennaGaindBi_{optionalFixedAntennaGaindBi}{}
-    
+
   RegistrationId getRegistrationId() const
   {
     return registrationId_;
@@ -62,37 +62,37 @@ public:
   {
     return u16SubId_;
   }
-  
-const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const
+
+  const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const
   {
     return optionalFixedAntennaGaindBi_;
   }
-  
+
   const TimePoint & getTxTime() const
   {
     return txTime_;
   }
-  
+
   std::uint64_t getBandwidthHz() const
   {
     return u64BandwidthHz_;
   }
-  
+
   std::uint16_t getSequenceNumber() const
   {
     return u16SequenceNumber_;
   }
-  
+
   const FrequencySegments & getFrequencySegments() const
   {
     return frequencySegments_;
   }
-  
+
   const Transmitters & getTransmitters() const
   {
     return transmitters_;
   }
-  
+
 private:
   RegistrationId registrationId_;
   std::uint16_t u16SubId_;
@@ -113,38 +113,23 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
       if(pkt.length() >= u16HeaderLength)
         {
           EMANEMessage::CommonPHYHeader msg;
-          
-          try
-            {
-              if(!msg.ParseFromArray(pkt.get(),u16HeaderLength))
-                {
-                  throw SerializationException("unable to deserialize CommonPHYHeader");
-                }
-            }
-          catch(google::protobuf::FatalException & exp)
+
+          if(!msg.ParseFromArray(pkt.get(),u16HeaderLength))
             {
               throw SerializationException("unable to deserialize CommonPHYHeader");
             }
-          
-          using RepeatedPtrFieldTransmitter = 
-            google::protobuf::RepeatedPtrField<EMANEMessage::CommonPHYHeader::Transmitter>;
-          
+
           Transmitters transmitters{};
-          
-          for(const auto & repeatedTransmitter :
-                RepeatedPtrFieldTransmitter(msg.transmitters()))
+
+          for(const auto & transmitter : msg.transmitters())
             {
-              transmitters.push_back({static_cast<NEMId>(repeatedTransmitter.nemid()),
-                    repeatedTransmitter.powerdbm()});
+              transmitters.push_back({static_cast<NEMId>(transmitter.nemid()),
+                    transmitter.powerdbm()});
             }
-          
-          using RepeatedPtrFieldFrequencySegment = 
-             google::protobuf::RepeatedPtrField<EMANEMessage::CommonPHYHeader::FrequencySegment>;
-          
+
           FrequencySegments frequencySegments{};
-          
-          for(const auto & segment :
-                RepeatedPtrFieldFrequencySegment(msg.frequencysegments()))
+
+          for(const auto & segment : msg.frequencysegments())
             {
               if(segment.has_powerdbm())
                 {
@@ -181,13 +166,13 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
                 frequencySegments,
                 transmitters,
                 optionalFixedAntennaGaindBi});
-              
+
         }
       else
         {
-           throw SerializationException("CommonPHYHeader not large enough for header data");
+          throw SerializationException("CommonPHYHeader not large enough for header data");
         }
-      
+
       // strip common phy header from pkt
       pkt.strip(u16HeaderLength);
     }
@@ -198,7 +183,7 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
 }
 
 
-EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId, 
+EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId,
                                         std::uint16_t u16SubId,
                                         std::uint16_t u16SequenceNumber,
                                         std::uint64_t u64BandwidthHz,
@@ -206,7 +191,7 @@ EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId,
                                         const FrequencySegments & frequencySegments,
                                         const Transmitters & transmitters,
                                         const std::pair<double,bool> & optionalFixedAntennaGaindBi):
-pImpl_{new Implementation{registrationId, 
+  pImpl_{new Implementation{registrationId,
       u16SubId,
       u16SequenceNumber,
       u64BandwidthHz,
@@ -232,7 +217,7 @@ std::uint16_t EMANE::CommonPHYHeader::getSubId() const
 {
   return pImpl_->getSubId();
 }
-    
+
 const std::pair<double,bool> & EMANE::CommonPHYHeader::getOptionalFixedAntennaGaindBi() const
 {
   return pImpl_->getOptionalFixedAntennaGaindBi();
@@ -244,7 +229,7 @@ const EMANE::TimePoint & EMANE::CommonPHYHeader::getTxTime() const
   return pImpl_->getTxTime();
 }
 
-    
+
 EMANE::Microseconds EMANE::CommonPHYHeader::getDuration() const
 {
   Microseconds start = Microseconds::zero();
@@ -255,16 +240,16 @@ EMANE::Microseconds EMANE::CommonPHYHeader::getDuration() const
       // the offset
       const auto & offset = segment.getOffset();
       const auto & duration = segment.getDuration();
-      
+
       // duration position
       const auto relative = offset + duration;
-      
+
       // get the begin time
       if(offset < start)
         {
           start = offset;
         }
-      
+
       // get the end time
       if(relative > end)
         {
@@ -276,7 +261,7 @@ EMANE::Microseconds EMANE::CommonPHYHeader::getDuration() const
   return end - start;
 }
 
-    
+
 std::uint64_t EMANE::CommonPHYHeader::getBandwidthHz() const
 {
   return pImpl_->getBandwidthHz();
@@ -294,23 +279,23 @@ const EMANE::FrequencySegments & EMANE::CommonPHYHeader::getFrequencySegments() 
   return pImpl_->getFrequencySegments();
 }
 
-    
+
 const EMANE::Transmitters & EMANE::CommonPHYHeader::getTransmitters() const
 {
   return pImpl_->getTransmitters();
 }
-    
+
 void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
 {
   EMANEMessage::CommonPHYHeader msg{};
   msg.set_registrationid(pImpl_->getRegistrationId());
   msg.set_subid(pImpl_->getSubId());
   msg.set_sequencenumber(pImpl_->getSequenceNumber());
-  msg.set_bandwidthhz(pImpl_->getBandwidthHz());   
+  msg.set_bandwidthhz(pImpl_->getBandwidthHz());
   msg.set_txtimemicroseconds(std::chrono::duration_cast<Microseconds>(pImpl_->getTxTime().time_since_epoch()).count());
 
   const auto & optionalFixedAntennaGaindBi = pImpl_->getOptionalFixedAntennaGaindBi();
-  
+
   if(optionalFixedAntennaGaindBi.second)
     {
       msg.set_fixedantennagain(optionalFixedAntennaGaindBi.first);
@@ -322,7 +307,7 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
       pTransmitter->set_nemid(transmitter.getNEMId());
       pTransmitter->set_powerdbm(transmitter.getPowerdBm());
     }
-  
+
   for(const auto & segment : pImpl_->getFrequencySegments())
     {
       auto pSegment = msg.add_frequencysegments();
@@ -337,37 +322,30 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
     }
 
   std::string sSerialization;
-  
-  try
-    {
-      if(!msg.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize CommonPHYHeader");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize CommonPHYHeader");
     }
-  
+
   // prepend order is important
   pkt.prepend(sSerialization.c_str(),sSerialization.size());
-  
-  pkt.prependLengthPrefixFraming(sSerialization.size());  
+
+  pkt.prependLengthPrefixFraming(sSerialization.size());
 }
 
 EMANE::Strings EMANE::CommonPHYHeader::format() const
 {
   const auto & optionalFixedAntennaGaindBi =
     pImpl_->getOptionalFixedAntennaGaindBi();
-  
+
   Strings sFormat{{"regid: " + std::to_string( pImpl_->getRegistrationId())},
       {"seq: " + std::to_string(pImpl_->getSequenceNumber())},
         {"bandwidth: " + std::to_string(pImpl_->getBandwidthHz())},
           {"fixed antenna gain: " + std::string(optionalFixedAntennaGaindBi.second ? "on" : "off")},
             {"fixed antenna gain: " + std::to_string(optionalFixedAntennaGaindBi.first)},
               {"tx time: " +  std::to_string(std::chrono::duration_cast<DoubleSeconds>(pImpl_->getTxTime().time_since_epoch()).count())}};
-  
+
   for(const auto & segment : pImpl_->getFrequencySegments())
     {
       sFormat.push_back("freq: " + std::to_string(segment.getFrequencyHz()));

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,54 +54,44 @@ EMANE::Events::PathlossEvent::PathlossEvent(const Serialization & serialization)
 {
   EMANEMessage::PathlossEvent msg;
 
-  try
-    {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize PathlossEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.ParseFromString(serialization))
     {
       throw SerializationException("unable to deserialize PathlossEvent");
     }
 
-  using RepeatedPtrFieldPathloss = 
-    google::protobuf::RepeatedPtrField<EMANEMessage::PathlossEvent::Pathloss>;
-  
   Pathlosses pathlosses;
-  
-  for(const auto & repeatedPathloss : RepeatedPtrFieldPathloss(msg.pathlosses()))
+
+  for(const auto & pathloss : msg.pathlosses())
     {
-      pathlosses.push_back({static_cast<EMANE::NEMId>(repeatedPathloss.nemid()),
-            repeatedPathloss.forwardpathlossdb(),
-            repeatedPathloss.reversepathlossdb()});
+      pathlosses.push_back({static_cast<EMANE::NEMId>(pathloss.nemid()),
+            pathloss.forwardpathlossdb(),
+            pathloss.reversepathlossdb()});
     }
 
   pImpl_.reset(new Implementation{pathlosses});
 }
-    
+
 EMANE::Events::PathlossEvent::PathlossEvent(const Pathlosses & pathlosses):
   Event{IDENTIFIER},
   pImpl_{new Implementation{pathlosses}}{}
-    
+
 EMANE::Events::PathlossEvent::PathlossEvent(const PathlossEvent & rhs):
   Event{IDENTIFIER},
   pImpl_{new Implementation{rhs.getPathlosses()}}{}
-   
+
 EMANE::Events::PathlossEvent & EMANE::Events::PathlossEvent::operator=(const PathlossEvent & rhs)
 {
   pImpl_.reset(new Implementation{rhs.getPathlosses()});
   return *this;
 }
-    
+
 EMANE::Events::PathlossEvent::PathlossEvent(PathlossEvent && rval):
   Event{IDENTIFIER},
   pImpl_{new Implementation{{}}}
 {
   rval.pImpl_.swap(pImpl_);
 }
-    
+
 EMANE::Events::PathlossEvent & EMANE::Events::PathlossEvent::operator=(PathlossEvent && rval)
 {
   rval.pImpl_.swap(pImpl_);
@@ -108,7 +99,7 @@ EMANE::Events::PathlossEvent & EMANE::Events::PathlossEvent::operator=(PathlossE
 }
 
 EMANE::Events::PathlossEvent::~PathlossEvent(){}
-    
+
 const EMANE::Events::Pathlosses & EMANE::Events::PathlossEvent::getPathlosses() const
 {
   return pImpl_->getPathlosses();
@@ -127,18 +118,11 @@ EMANE::Serialization EMANE::Events::PathlossEvent::serialize() const
       pPathlossMessage->set_nemid(pathloss.getNEMId());
 
       pPathlossMessage->set_forwardpathlossdb(pathloss.getForwardPathlossdB());
-      
+
       pPathlossMessage->set_reversepathlossdb(pathloss.getReversePathlossdB());
     }
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize PathlossEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize PathlossEvent");
     }

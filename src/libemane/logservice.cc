@@ -217,53 +217,41 @@ void EMANE::LogService::processControlMessages(void)
                 {
                   EMANEMessage::LoggerMessage loggerMessage;
 
-                  try
+                  if(!loggerMessage.ParseFromArray(buf + sizeof(*pu16HeaderLength),
+                                                   ntohs(*pu16HeaderLength)))
                     {
-                      if(!loggerMessage.ParseFromArray(buf + sizeof(*pu16HeaderLength),
-                                                       ntohs(*pu16HeaderLength)))
-                        {
-                          snprintf(errmsg,
-                                   sizeof(errmsg),
-                                   "!!! logger message failed ParseFromArray !!!");
+                      snprintf(errmsg,
+                               sizeof(errmsg),
+                               "!!! logger message failed ParseFromArray !!!");
 
-                          writeLogString(errmsg);
-                        }
-                      else
+                      writeLogString(errmsg);
+                    }
+                  else
+                    {
+                      if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
                         {
-                          if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
+                          if(loggerMessage.has_record())
                             {
-                              if(loggerMessage.has_record())
-                                {
-                                  writeLogString(loggerMessage.record().record().c_str());
-                                }
-                              else
-                                {
-                                  snprintf(errmsg,
-                                           sizeof(errmsg),
-                                           "!!! logger message type RECORD does NOT have record !!!");
-
-                                  writeLogString(errmsg);
-                                }
+                              writeLogString(loggerMessage.record().record().c_str());
                             }
                           else
                             {
                               snprintf(errmsg,
                                        sizeof(errmsg),
-                                       "!!! unhandled logger message type %d !!!",
-                                       loggerMessage.type());
+                                       "!!! logger message type RECORD does NOT have record !!!");
 
                               writeLogString(errmsg);
                             }
                         }
-                    }
-                  catch(google::protobuf::FatalException & exp)
-                    {
-                      snprintf(errmsg,
-                               sizeof(errmsg),
-                               "!!! caught exception (%s) !!!",
-                               exp.what());
+                      else
+                        {
+                          snprintf(errmsg,
+                                   sizeof(errmsg),
+                                   "!!! unhandled logger message type %d !!!",
+                                   loggerMessage.type());
 
-                      writeLogString(errmsg);
+                          writeLogString(errmsg);
+                        }
                     }
                 }
               else if(iRxLength < 0)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,14 +58,11 @@ EMANE::Models::TDMA::BaseModelMessage::BaseModelMessage(const void * p, size_t l
   u64AbsoluteSlotIndex_ = message.absslotindex();
   u64DataRatebps_ = message.dataratebps();
 
-  using RepeatedPtrFieldMessage =
-    google::protobuf::RepeatedPtrField<EMANEMessage::TDMABaseModelMessage::Message>;
-
-  for(const auto & repeatedMessage : RepeatedPtrFieldMessage(message.messages()))
+  for(const auto & msg : message.messages())
     {
       MessageComponent::Type type;
 
-      switch(repeatedMessage.type())
+      switch(msg.type())
         {
         case EMANEMessage::TDMABaseModelMessage::Message::DATA:
           type = MessageComponent::Type::DATA;
@@ -77,15 +74,15 @@ EMANE::Models::TDMA::BaseModelMessage::BaseModelMessage(const void * p, size_t l
           throw SerializationException("TDMABaseModelMessage unkown type");
         }
 
-      if(repeatedMessage.has_fragment())
+      if(msg.has_fragment())
         {
-          const auto & fragment = repeatedMessage.fragment();
+          const auto & fragment = msg.fragment();
 
           messages_.push_back({type,
-                static_cast<NEMId>(repeatedMessage.destination()),
-                static_cast<Priority>(repeatedMessage.priority()),
-                  {Utils::make_iovec(const_cast<char *>(repeatedMessage.data().c_str()),
-                                     repeatedMessage.data().size())},
+                static_cast<NEMId>(msg.destination()),
+                static_cast<Priority>(msg.priority()),
+                  {Utils::make_iovec(const_cast<char *>(msg.data().c_str()),
+                                     msg.data().size())},
                 fragment.index(),
                   fragment.offset(),
                   fragment.sequence(),
@@ -94,10 +91,10 @@ EMANE::Models::TDMA::BaseModelMessage::BaseModelMessage(const void * p, size_t l
       else
         {
           messages_.push_back({type,
-                static_cast<NEMId>(repeatedMessage.destination()),
-                static_cast<Priority>(repeatedMessage.priority()),
-                  {Utils::make_iovec(const_cast<char *>(repeatedMessage.data().c_str()),
-                                     repeatedMessage.data().size())}});
+                static_cast<NEMId>(msg.destination()),
+                static_cast<Priority>(msg.priority()),
+                  {Utils::make_iovec(const_cast<char *>(msg.data().c_str()),
+                                     msg.data().size())}});
         }
     }
 }

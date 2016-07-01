@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,28 +37,28 @@
 class EMANE::Models::TimingAnalysis::ShimHeaderMessage::Implementation
 {
 public:
-  Implementation(const EMANE::TimePoint & txTime, 
-                 std::uint16_t source, 
+  Implementation(const EMANE::TimePoint & txTime,
+                 std::uint16_t source,
                  std::uint16_t packetId):
-   txTime_{txTime},
-   source_{source},
-   packetId_{packetId}
-   { }
+    txTime_{txTime},
+    source_{source},
+    packetId_{packetId}
+  { }
 
-   const EMANE::TimePoint & getTxTime() const
-    {
-       return txTime_;
-    }
+  const EMANE::TimePoint & getTxTime() const
+  {
+    return txTime_;
+  }
 
-   std::uint16_t getSource() const
-    {
-       return source_;
-    }
+  std::uint16_t getSource() const
+  {
+    return source_;
+  }
 
-   std::uint16_t getPacketId() const
-    {
-       return packetId_;
-    }
+  std::uint16_t getPacketId() const
+  {
+    return packetId_;
+  }
 
 private:
   const EMANE::TimePoint txTime_;
@@ -68,33 +68,25 @@ private:
 
 
 EMANE::Models::TimingAnalysis::ShimHeaderMessage::ShimHeaderMessage(
-                                                  const EMANE::TimePoint & txTime, 
-                                                  std::uint16_t source, 
-                                                  std::uint16_t packetId) :
+                                                                    const EMANE::TimePoint & txTime,
+                                                                    std::uint16_t source,
+                                                                    std::uint16_t packetId) :
   pImpl_{new Implementation{txTime, source, packetId}}
 { }
 
 
-EMANE::Models::TimingAnalysis::ShimHeaderMessage::ShimHeaderMessage(const void * p, size_t len) 
+EMANE::Models::TimingAnalysis::ShimHeaderMessage::ShimHeaderMessage(const void * p, size_t len)
 {
   EMANEMessage::SHIMHeader message;
 
-  try
-    {
-      if(!message.ParseFromArray(p, len))
-        {
-          throw SerializationException("unable to deserialize ShimHeaderMessage");
-        }
-
-       pImpl_.reset(new Implementation{TimePoint{static_cast<Microseconds>(message.txtimemicroseconds())},
-                                       static_cast<std::uint16_t>(message.source()),
-                                       static_cast<std::uint16_t>(message.packetid())});
-
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!message.ParseFromArray(p, len))
     {
       throw SerializationException("unable to deserialize ShimHeaderMessage");
     }
+
+  pImpl_.reset(new Implementation{TimePoint{static_cast<Microseconds>(message.txtimemicroseconds())},
+        static_cast<std::uint16_t>(message.source()),
+          static_cast<std::uint16_t>(message.packetid())});
 }
 
 
@@ -105,17 +97,17 @@ EMANE::Models::TimingAnalysis::ShimHeaderMessage::~ShimHeaderMessage()
 
 const EMANE::TimePoint & EMANE::Models::TimingAnalysis::ShimHeaderMessage::getTxTime() const
 {
-   return pImpl_->getTxTime();
+  return pImpl_->getTxTime();
 }
 
 std::uint16_t EMANE::Models::TimingAnalysis::ShimHeaderMessage::getSource() const
 {
-   return pImpl_->getSource();
+  return pImpl_->getSource();
 }
 
 std::uint16_t EMANE::Models::TimingAnalysis::ShimHeaderMessage::getPacketId() const
 {
-   return pImpl_->getPacketId();
+  return pImpl_->getPacketId();
 }
 
 
@@ -123,25 +115,20 @@ EMANE::Serialization EMANE::Models::TimingAnalysis::ShimHeaderMessage::serialize
 {
   Serialization serialization;
 
-  try
-    {
-      EMANEMessage::SHIMHeader message;
+  EMANEMessage::SHIMHeader message;
 
-      message.set_txtimemicroseconds(std::chrono::duration_cast<Microseconds>(
-                         pImpl_->getTxTime().time_since_epoch()).count());
+  message.
+    set_txtimemicroseconds(std::chrono::duration_cast<Microseconds>(pImpl_->getTxTime().
+                                                                    time_since_epoch()).count());
 
-      message.set_source(pImpl_->getSource());
-      message.set_packetid(pImpl_->getPacketId());
+  message.set_source(pImpl_->getSource());
 
-      if(!message.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize ShimHeaderMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  message.set_packetid(pImpl_->getPacketId());
+
+  if(!message.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize ShimHeaderMessage");
     }
-  
+
   return serialization;
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,18 +41,18 @@ public:
                  std::uint64_t u64SequenceNumber):
     registrationId_{registrationId},
     u64SequenceNumber_{u64SequenceNumber}
-    {}
-    
+  {}
+
   RegistrationId getRegistrationId() const
   {
     return registrationId_;
   }
-  
+
   std::uint64_t getSequenceNumber() const
   {
     return u64SequenceNumber_;
   }
-  
+
 private:
   RegistrationId registrationId_;
   std::uint64_t u64SequenceNumber_;
@@ -62,32 +63,25 @@ EMANE::CommonMACHeader::CommonMACHeader(UpstreamPacket & pkt)
   if(pkt.length() >= sizeof(decltype(pkt.stripLengthPrefixFraming())))
     {
       std::uint16_t u16HeaderLength{pkt.stripLengthPrefixFraming()};
-      
+
       if(pkt.length() >= u16HeaderLength)
         {
           EMANEMessage::CommonMACHeader msg;
-          
-          try
-            {
-              if(!msg.ParseFromArray(pkt.get(),u16HeaderLength))
-                {
-                  throw SerializationException("unable to deserialize CommonMACHeader");
-                }
-            }
-          catch(google::protobuf::FatalException & exp)
+
+          if(!msg.ParseFromArray(pkt.get(),u16HeaderLength))
             {
               throw SerializationException("unable to deserialize CommonMACHeader");
             }
-          
+
           pImpl_.reset(new Implementation{static_cast<RegistrationId>(msg.registrationid()),
                 msg.sequencenumber()});
 
         }
       else
         {
-           throw SerializationException("CommonMACHeader not large enough for header data");
+          throw SerializationException("CommonMACHeader not large enough for header data");
         }
-      
+
       // strip common mac header from pkt
       pkt.strip(u16HeaderLength);
     }
@@ -98,10 +92,10 @@ EMANE::CommonMACHeader::CommonMACHeader(UpstreamPacket & pkt)
 }
 
 
-EMANE::CommonMACHeader::CommonMACHeader(RegistrationId registrationId, 
+EMANE::CommonMACHeader::CommonMACHeader(RegistrationId registrationId,
                                         std::uint64_t u64SequenceNumber):
-pImpl_{new Implementation{registrationId, 
-                          u64SequenceNumber}}
+  pImpl_{new Implementation{registrationId,
+      u64SequenceNumber}}
 {}
 
 
@@ -115,13 +109,13 @@ EMANE::RegistrationId EMANE::CommonMACHeader::getRegistrationId() const
 {
   return pImpl_->getRegistrationId();
 }
-    
+
 std::uint64_t EMANE::CommonMACHeader::getSequenceNumber() const
 {
   return pImpl_->getSequenceNumber();
 }
 
-    
+
 void EMANE::CommonMACHeader::prependTo(DownstreamPacket & pkt) const
 {
   EMANEMessage::CommonMACHeader msg{};
@@ -130,22 +124,15 @@ void EMANE::CommonMACHeader::prependTo(DownstreamPacket & pkt) const
   msg.set_sequencenumber(pImpl_->getSequenceNumber());
 
   std::string sSerialization;
-  
-  try
-    {
-      if(!msg.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize CommonMACHeader");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize CommonMACHeader");
     }
-  
+
   // prepend order is important
   pkt.prepend(sSerialization.c_str(),sSerialization.size());
-  
+
   pkt.prependLengthPrefixFraming(sSerialization.size());
 }
 
@@ -155,6 +142,6 @@ EMANE::Strings EMANE::CommonMACHeader::format() const
       std::to_string(pImpl_->getRegistrationId()),
       "seq",
       std::to_string(pImpl_->getSequenceNumber())};
-        
+
   return sFormat;
 }

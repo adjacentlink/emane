@@ -387,19 +387,15 @@ void EMANE::OTAManager::processOTAMessage()
 
                               if(data.ParseFromArray(&buf[u16EventIndex],otaHeader.eventlength()))
                                 {
-                                  using RepeatedPtrFieldSerilaization =
-                                    google::protobuf::RepeatedPtrField<EMANEMessage::Event::Data::Serialization>;
-
-                                  for(const auto & repeatedSerialization :
-                                        RepeatedPtrFieldSerilaization(data.serializations()))
+                                  for(const auto & serialization : data.serializations())
                                     {
-                                      EventServiceSingleton::instance()->processEventMessage(repeatedSerialization.nemid(),
-                                                                                             repeatedSerialization.eventid(),
-                                                                                             repeatedSerialization.data());
+                                      EventServiceSingleton::instance()->processEventMessage(serialization.nemid(),
+                                                                                             serialization.eventid(),
+                                                                                             serialization.data());
 
                                       eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
                                                                       remoteUUID,
-                                                                      repeatedSerialization.eventid());
+                                                                      serialization.eventid());
                                     }
                                 }
                               else
