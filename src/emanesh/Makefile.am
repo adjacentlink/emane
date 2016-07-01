@@ -1,5 +1,3 @@
-PYTHON=python
-
 EXTRA_DIST=                      \
  AUTHORS                         \
  COPYING                         \
@@ -84,7 +82,7 @@ sdist:
 edit = sed                              \
         -e 's|@VERSION[@]|$(VERSION)|g' \
         -e 's|@PYTHON[@]|$(PYTHON)|g'   \
-        -e 's|@DEBIAN_VERSION[@]|$(DEBIAN_VERSION)|g'
+        -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
 emanesh/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emanesh  $<
