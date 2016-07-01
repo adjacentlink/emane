@@ -73,7 +73,7 @@ namespace EMANE
      */
     TimerEventId scheduleTimedEvent(const TimePoint & timePoint,
                                     const void *arg,
-                                    const Microseconds & interval,
+                                    const Duration & interval,
                                     TimerServiceUser *pTimerServiceUser);
 
 
@@ -87,7 +87,7 @@ namespace EMANE
     template <typename Function>
     TimerEventId schedule(Function fn,
                           const TimePoint & timePoint,
-                          const Microseconds & interval = Microseconds::zero());
+                          const Duration & interval = Duration::zero());
 
 
   protected:

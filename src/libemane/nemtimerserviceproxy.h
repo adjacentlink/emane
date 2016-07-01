@@ -52,7 +52,7 @@ namespace EMANE
 
     TimerEventId scheduleTimedEvent(const TimePoint & timeout,
                                     const void *arg,
-                                    const Microseconds & interval) override;
+                                    const Duration & interval) override;
 
     void processTimedEvent(TimerEventId eventId,
                            const TimePoint & requestedExpireTime,
@@ -67,7 +67,7 @@ namespace EMANE
 
     TimerEventId schedule_i(TimerCallback callback,
                             const TimePoint & timePoint,
-                            const Microseconds & interval) override;
+                            const Duration & interval) override;
   };
 }
 

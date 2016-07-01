@@ -120,7 +120,7 @@ void EMANE::Utils::Timer::cancel_i()
 EMANE::Utils::Timer::TimerId
 EMANE::Utils::Timer::schedule(Callback callback,
                               const TimePoint & timePoint,
-                              const Microseconds & interval)
+                              const Duration & interval)
 {
   std::unique_lock<std::mutex> lock(mutex_);
 
@@ -147,7 +147,7 @@ EMANE::Utils::Timer::schedule(Callback callback,
                                                       timePoint,
                                                       interval,
                                                       callback,
-                                                      std::chrono::high_resolution_clock::now())));
+                                                      Clock::now())));
   
   timerIdMap_.insert(std::make_pair(timerId_,timePoint));
 
@@ -166,19 +166,17 @@ void EMANE::Utils::Timer::schedule_i()
   // only schedule the earliest time if one is present
   if(!timePointMap_.empty())
     {
-      auto timeout = timePointMap_.begin()->first.first;
-      
-      timespec ts;
+      auto & timePoint = timePointMap_.begin()->first.first;
 
-      Microseconds timeusec{std::chrono::duration_cast<Microseconds>(timeout.time_since_epoch())};
-      
-      ts.tv_sec = timeusec.count() / 1000000;
-      
-      ts.tv_nsec = (timeusec.count() % 1000000) * 1000;
-      
+      auto timeSinceEpoch = timePoint.time_since_epoch();
+
+      auto sec = std::chrono::duration_cast<Seconds>(timeSinceEpoch);
+
+      auto nsec = std::chrono::duration_cast<Nanoseconds>(timeSinceEpoch % Seconds{1});
+
       // schedule the interval timer
-      itimerspec spec{{0,0},ts};
-      
+      itimerspec spec{{0,0},{sec.count(),nsec.count()}};
+
       timerfd_settime(iFd_,TFD_TIMER_ABSTIME,&spec,nullptr);
     }
 }
@@ -206,7 +204,7 @@ void EMANE::Utils::Timer::scheduler()
               callback(timerId,
                        expireTime,
                        scheduleTime,
-                       std::chrono::high_resolution_clock::now());
+                       Clock::now());
             }
           catch(...)
             {}
@@ -220,8 +218,8 @@ void EMANE::Utils::Timer::scheduler()
         {
           std::unique_lock<std::mutex> lock(mutex_);
 
-          auto now = std::chrono::high_resolution_clock::now();
-          
+          auto now = Clock::now();
+
           if(!bRunning_)
             {
               break;
@@ -251,28 +249,27 @@ void EMANE::Utils::Timer::scheduler()
             {
               TimerId timerId{};
               TimePoint expireTime{};
-              Microseconds interval{};
+              Duration interval{};
               Callback callback{};
-              TimePoint scheduleTime{};
-              
-              std::tie(timerId,expireTime,interval,callback,scheduleTime) = info;
+
+              std::tie(timerId,expireTime,interval,callback,std::ignore) = info;
               
               timePointMap_.erase({expireTime,timerId});
 
               timerIdMap_.erase(timerId);
                
-              if(interval != Microseconds::zero())
+              if(interval != Duration::zero())
                 {
-                  auto absTimePoint = now + interval;
+                  expireTime += interval;
                   
-                  timePointMap_.insert(std::make_pair(std::make_pair(absTimePoint,timerId),
+                  timePointMap_.insert(std::make_pair(std::make_pair(expireTime,timerId),
                                                       std::make_tuple(timerId,
-                                                                      absTimePoint,
+                                                                      expireTime,
                                                                       interval,
                                                                       callback,
                                                                       now)));
                   
-                  timerIdMap_.insert(std::make_pair(timerId,absTimePoint));
+                  timerIdMap_.insert(std::make_pair(timerId,expireTime));
                 }
             }
           
