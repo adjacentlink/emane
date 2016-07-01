@@ -33,7 +33,7 @@
 template <typename Function>
 EMANE::TimerEventId EMANE::TimerServiceProvider::schedule(Function fn,
                                                           const TimePoint & timePoint,
-                                                          const Microseconds & interval)
+                                                          const Duration & interval)
 {
   return schedule_i(fn,timePoint,interval);
 }

@@ -33,11 +33,11 @@
 template <typename Function>
 EMANE::TimerEventId EMANE::TimerService::schedule(Function fn,
                                                   const TimePoint & timePoint,
-                                                  const Microseconds & interval)
+                                                  const Duration & interval)
 {
   TimerEventId timerId{};
 
-  if(interval == Microseconds::zero())
+  if(interval == Duration::zero())
     {
       timerId =
         timer_.schedule([fn](Utils::Timer::TimerId,
