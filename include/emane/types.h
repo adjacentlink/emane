@@ -42,9 +42,9 @@ namespace EMANE
 {
   using Milliseconds = std::chrono::milliseconds;
   using Microseconds = std::chrono::microseconds;
-  using TimePoint = std::chrono::high_resolution_clock::time_point;
-  using Clock = std::chrono::high_resolution_clock;
   using DoubleSeconds = std::chrono::duration<double>;
+  using Clock = std::chrono::system_clock;
+  using TimePoint = Clock::time_point;
   
   using NEMId = std::uint16_t;
   using EventId = std::uint16_t;
