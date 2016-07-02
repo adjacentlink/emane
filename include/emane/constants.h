@@ -33,11 +33,6 @@
 #ifndef EMANE_CONSTANTS_HEADER_
 #define EMANE_CONSTANTS_HEADER_
 
-// Need for Win32 and OS X
-#ifndef M_PIl
-#define M_PIl 3.1415926535897932384626433832795029L
-#endif
-
 namespace EMANE
 {
   // min/max dBm power levels

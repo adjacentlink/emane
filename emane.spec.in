@@ -231,7 +231,6 @@ rm -rf $RPM_BUILD_ROOT
 %files utils
 %defattr(-, root, root)
 %{_bindir}/emanegentransportxml
-%{_bindir}/emaneconvertdtdpath
 %{_mandir}/man1/emanegentransportxml.1.gz
 
 %doc %{_pkgdocdir}

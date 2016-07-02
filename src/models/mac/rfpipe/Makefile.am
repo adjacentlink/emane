@@ -30,11 +30,9 @@ BUILT_SOURCES =                  \
  rfpipemacheader.pb.cc           \
  rfpipemacheader.pb.h
 
-librfpipemaclayer_la_LIBADD=     \
- $(WIN32_EXTRA_LIBADD)        
+librfpipemaclayer_la_LIBADD=     
 
 librfpipemaclayer_la_LDFLAGS=    \
- $(WIN32_EXTRA_LDFLAGS)          \
  $(libxml2_LIBS)                 \
  -avoid-version
 

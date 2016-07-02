@@ -18,7 +18,6 @@ BUILT_SOURCES =                \
  bypassmac.xml                   
 
 libbypassmaclayer_la_LDFLAGS=  \
- $(WIN32_EXTRA_LDFLAGS)        \
  -avoid-version
 
 edit = sed                     \
