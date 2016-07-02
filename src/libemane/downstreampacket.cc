@@ -37,7 +37,8 @@
 #include "emane/net.h"
 #include "emane/event.h"
 
-#include <vector>
+#include <string>
+#include <deque>
 #include <list>
 
 class EMANE::DownstreamPacket::Implementation
@@ -59,7 +60,7 @@ public:
   {
     const unsigned char * c = static_cast<const unsigned char *>(buf);
 
-    segmentList_.push_front(PacketSegment(&c[0],&c[size]));
+    segments_.emplace_front(&c[0],&c[size]);
 
     totalLengthBytes_ += size;
   }
@@ -70,7 +71,7 @@ public:
 
     auto c = reinterpret_cast<const std::uint8_t *>(&u16LengthNet);
 
-    segmentList_.push_front(PacketSegment{&c[0],&c[sizeof(u16Length)]});
+    segments_.emplace_front(&c[0],&c[sizeof(u16Length)]);
 
     totalLengthBytes_ += sizeof(u16Length);
   }
@@ -89,14 +90,15 @@ public:
   {
     Utils::VectorIO vectorIO{};
 
-    vectorIO.reserve(segmentList_.size() + 1);
+    vectorIO.reserve(segments_.size() + 1);
 
-    for(const auto & segment : segmentList_)
+    for(const auto & segment : segments_)
       {
-        vectorIO.push_back({const_cast<std::uint8_t *>(&segment[0]),segment.size()});
+        vectorIO.push_back({reinterpret_cast<std::uint8_t *>(const_cast<char *>(segment.c_str())),
+              segment.size()});
       }
 
-    vectorIO.push_back({const_cast<std::uint8_t *>(&pShared_->segment_[0]),
+    vectorIO.push_back({reinterpret_cast<std::uint8_t *>(const_cast<char *>(pShared_->segment_.c_str())),
           pShared_->segment_.size()});
 
     return vectorIO;
@@ -115,9 +117,9 @@ public:
   }
 
 private:
-  typedef std::vector<std::uint8_t> PacketSegment;
-  typedef std::list<PacketSegment> SegmentList;
-  typedef std::list<std::tuple<NEMId,EventId,std::string>> AttachedEvents;
+  using PacketSegment = std::string;
+  using Segments = std::deque<PacketSegment>;
+  using AttachedEvents = std::list<std::tuple<NEMId,EventId,std::string>>;
 
   class Shared
   {
@@ -126,7 +128,7 @@ private:
     PacketInfo info_{0,0,0,{}};
   };
 
-  SegmentList segmentList_{};
+  Segments segments_{};
   PacketSegment::size_type totalLengthBytes_{};
   AttachedEvents attachedEvents_{};
   std::shared_ptr<Shared> pShared_;
