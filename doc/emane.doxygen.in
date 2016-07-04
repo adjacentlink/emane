@@ -819,7 +819,8 @@ EXAMPLE_PATH           = ../include/emane               \
                          ../src/models/mac/rfpipe       \
                          ../src/models/mac/ieee80211abg \
                          ../src/models/shim/phyapitest  \
-                         ../src/libemane                
+                         ../src/libemane                \
+                         ../src/transports/virtual
                          
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the

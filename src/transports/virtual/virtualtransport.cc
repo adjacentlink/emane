@@ -332,11 +332,15 @@ void EMANE::Transports::Virtual::VirtualTransport::start()
 
   pBitPool_->setMaxSize(u64BitRate_);
 
+  /** [filedescriptorservice-registerfd-snippet] */
+  
   pPlatformService_->fileDescriptorService().addFileDescriptor(pTunTap_->get_handle(),
                                                                FileDescriptorServiceProvider::DescriptorType::READ,
                                                                std::bind(&VirtualTransport::readDevice,
                                                                          this,
                                                                          std::placeholders::_1));
+
+  /** [filedescriptorservice-registerfd-snippet] */
 }
 
 void EMANE::Transports::Virtual::VirtualTransport::postStart()
@@ -358,8 +362,12 @@ void EMANE::Transports::Virtual::VirtualTransport::postStart()
 
 void EMANE::Transports::Virtual::VirtualTransport::stop()
 {
+  /** [filedescriptorservice-unregisterfd-snippet] */
+  
   pPlatformService_->fileDescriptorService().removeFileDescriptor(pTunTap_->get_handle());
 
+  /** [filedescriptorservice-unregisterfd-snippet] */
+  
   if(bFlowControlEnable_)
     {
       flowControlClient_.stop();

@@ -38,6 +38,13 @@
 
 namespace EMANE
 {
+  /**
+   * @class FileDescriptorServiceProvider
+   *
+   * @brief File Descriptor service interface allows for adding
+   * arbitrary file descriptors for read or write processing on the
+   * NEMQueuedLayer functor queue
+   */
   class FileDescriptorServiceProvider
   {
   public:
@@ -45,15 +52,29 @@ namespace EMANE
 
     enum class DescriptorType
     {
+      /** Process when data is ready to read */
       READ,
-        WRITE,
+      /** Process when data is ready to write */
+        WRITE, 
         };
 
+    /**
+     * Adds a file descriptor for processing
+     *
+     * @param iFd File descriptor
+     * @param type Type of descriptor processing 
+     * @param fn A callable object
+     */
     template <typename Function>
     void  addFileDescriptor(int iFd,
                             DescriptorType type,
                             Function fn);
 
+    /**
+     * Removed a file descriptor from processing
+     *
+     * @param  iFd File descriptor
+     */
     virtual void removeFileDescriptor(int iFd) = 0;
 
   protected:
@@ -70,3 +91,35 @@ namespace EMANE
 #include "emane/filedescriptorserviceprovider.inl"
 
 #endif // EMANEFILEDESCRIPTORSERVICEPROVIDER_HEADER_
+
+/**
+ * @page FileDescriptorService File Descriptor Service
+ *
+ * The @ref EMANE::FileDescriptorServiceProvider "FileDescriptorServiceProvider" is used by NEM
+ * layer components to register file descriptors for servicing by the NEM layer functor queue.
+ *
+ * @section RegisteringATFileDescriptor Registering a File Descriptor
+ *
+ * @ref EMANE::FileDescriptorServiceProvider::addFileDescriptor
+ * "FileDescriptorServiceProvider::addFileDescriptor" is a template method that associates a
+ * callable and a type, either read or write, with a file descriptor.
+ *
+ * @snippet src/transports/virtual/virtualtransport.cc filedescriptorservice-registerfd-snippet
+ *
+ * The @ref EMANE::FileDescriptorServiceProvider "FileDescriptorServiceProvider" is accessed via the
+ * @ref EMANE::PlatformServiceProvider "PlatformServiceProvider". All components are given a reference
+ * to the @ref EMANE::PlatformServiceProvider "PlatformServiceProvider" when they are constructed.
+ *
+ * @section ServicingAFileDescriptor Servicing A File Descriptor
+ *
+ * The @ref EMANE::NEMQueuedLayer "NEMQueuedLayer" uses epoll with level-triggered events to service
+ * registered file descriptors using their associated callables.
+ *
+ * @section UnregisteringATFileDescriptor Unregistering a File Descriptor
+ *
+ * A file descriptor can be removed from processing by using 
+ * @ref EMANE::FileDescriptorServiceProvider::removeFileDescriptor
+ * "FileDescriptorServiceProvider::removeFileDescriptor."
+ *
+ * @snippet src/transports/virtual/virtualtransport.cc filedescriptorservice-unregisterfd-snippet
+ */

@@ -434,7 +434,7 @@ EMANE::Models::RFPipe::MACLayer::postStart()
     }
 
   // set the timer timeout (absolute time), arg, interval
-  /** [timerservice-scheduletimedevent-snippet] */
+  /** [timerservice-scheduletimedevent-1-snippet] */
   radioMetricTimedEventId_ =
     pPlatformService_->timerService().
     schedule([this](const TimePoint &,
@@ -459,7 +459,7 @@ EMANE::Models::RFPipe::MACLayer::postStart()
              },
              Clock::now() + radioMetricReportIntervalMicroseconds_,
              radioMetricReportIntervalMicroseconds_);
-  /** [timerservice-scheduletimedevent-snippet] */
+  /** [timerservice-scheduletimedevent-1-snippet] */
 
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
@@ -1086,6 +1086,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
         }
       else
         {
+          /** [timerservice-scheduletimedevent-2-snippet] */
           downstreamQueueTimedEventId_ =
             pPlatformService_->timerService().
             schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
@@ -1093,6 +1094,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
                                currentEndOfTransmissionTime_,
                                u64TxSequenceNumber_),
                      currentEndOfTransmissionTime_);
+          /** [timerservice-scheduletimedevent-2-snippet] */
         }
     }
 }
