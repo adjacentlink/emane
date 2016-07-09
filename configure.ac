@@ -122,15 +122,19 @@ AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 # options for use with gprof
 if test "$with_profile" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -pg"
+CXXFLAGS="$CXXFLAGS -g -pg"
 LDFLAGS="$LDFLAGS -g -pg"
 fi
 
 # options for use with debug
 if test "$with_debug" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -O0"
-LDFLAGS="$LDFLAGS -g -O0"
+AX_CHECK_COMPILE_FLAG([-Og],
+ [CXXFLAGS="$CXXFLAGS -g -Og"],
+ [CXXFLAGS="$CXXFLAGS -g -O0"])
+AX_CHECK_LINK_FLAG([-Og],
+ [LDFLAGS="$LDFLAGS -g -Og"],
+ [LDFLAGS="$LDFLAGS -g -O0"])
 fi
 
 # options for use with verbose logging

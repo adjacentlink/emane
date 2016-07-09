@@ -71,6 +71,8 @@ then
        Makefile.in \
        missing 
     find m4 -type f \
+       ! -name 'ax_check_compile_flag.m4' \
+       ! -name 'ax_check_link_flag.m4' \
        ! -name 'ax_cxx_compile_stdcxx.m4' \
        ! -name 'ax_cxx_compile_stdcxx_11.m4' \
        -delete
