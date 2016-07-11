@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -232,7 +232,14 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
       break;
     }
 
-  double dSlotPassedRatio = 1 - dSlotRemainingRatio;
+  // ratio is either how much is left (< 1) or how much went over
+  double dSlotPassedRatio{dSlotRemainingRatio};
+
+  if(dSlotRemainingRatio < 1)
+    {
+      dSlotPassedRatio = 1 - dSlotRemainingRatio;
+    }
+
   int iQuantileIndex {};
 
   if(dSlotPassedRatio <= 0.25)

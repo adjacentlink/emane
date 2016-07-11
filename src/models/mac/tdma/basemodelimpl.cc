@@ -625,7 +625,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
         {
           auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
 
-          Microseconds timeRemainingInSlot{slotDuration_ -
+          Microseconds timeRemainingInSlot{slotDuration_ +
               std::chrono::duration_cast<Microseconds>(now -
                                                        slotInfo.timePoint_)};
           double dSlotRemainingRatio =
