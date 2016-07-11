@@ -40,6 +40,8 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([])
 
+: ${CXXFLAGS="-g -O3 -Wall -Wextra"}
+
 AC_PROG_CXX
 
 AC_PROG_CXXCPP
@@ -117,21 +119,22 @@ AC_DEFINE([__BYTE_ORDER],__LITTLE_ENDIAN,[Little Endian]))
 AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 
-# compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -O3"
-
 # options for use with gprof
 if test "$with_profile" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -pg"
+CXXFLAGS="$CXXFLAGS -g -pg"
 LDFLAGS="$LDFLAGS -g -pg"
 fi
 
 # options for use with debug
 if test "$with_debug" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -O0"
-LDFLAGS="$LDFLAGS -g -O0"
+AX_CHECK_COMPILE_FLAG([-Og],
+ [CXXFLAGS="$CXXFLAGS -g -Og"],
+ [CXXFLAGS="$CXXFLAGS -g -O0"])
+AX_CHECK_LINK_FLAG([-Og],
+ [LDFLAGS="$LDFLAGS -g -Og"],
+ [LDFLAGS="$LDFLAGS -g -O0"])
 fi
 
 # options for use with verbose logging
@@ -168,6 +171,8 @@ else
 AM_CONDITIONAL(HAVE_DOT,false)
 fi
 
+AM_PATH_PYTHON([2.6])
+
 # check for rpmbuild
 AC_CHECK_PROG(HAVE_RPMBUILD, rpmbuild, true, false)
 AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
@@ -176,13 +181,15 @@ AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
 AC_CHECK_PROG(HAVE_DEB, dh_clean, true, false)
 AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 
-AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
-AC_SUBST(DEBIAN_VERSION)
+AC_CHECK_FILE(/etc/lsb-release,[. /etc/lsb-release],)
+AC_SUBST(DISTRIB_CODENAME)
+
+AC_SUBST(RELDATE,`date -I`)
 
 AC_SUBST(DATE_RFC2822,`date -R`)
 
 AC_SUBST(PACKAGE_VERSION_CODE,
- [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])
+ [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
 AC_OUTPUT(
  Makefile 

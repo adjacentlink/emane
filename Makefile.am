@@ -9,9 +9,10 @@ SUBDIRS= src                            \
          schema                         \
          test
 
-edit = sed                                \
-       -e 's|@VERSION[@]|$(VERSION)|g'    \
-       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'
+edit = sed                                               \
+       -e 's|@VERSION[@]|$(VERSION)|g'                   \
+       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
+       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
 dist-hook:
 	find $(distdir) -name "*.pb.*" -delete
@@ -20,8 +21,6 @@ dist-hook:
 cleantar:
 	@(rm -f emane*.tar.gz)
 
-RPMARCH=`arch`
-
 if HAVE_RPMBUILD
 
 rpm: emane.spec dist-gzip
@@ -29,11 +28,10 @@ rpm: emane.spec dist-gzip
 	.rpmbuild/SPECS \
 	.rpmbuild/SOURCES \
 	.rpmbuild/SRPMS \
-	.rpmbuild/RPMS/$(RPMARCH) \
 	.rpmbuild/RPMS/noarch \
 	.rpmbuild/tmp
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
+	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp"
 	@echo "============================================================"
@@ -54,13 +52,15 @@ emane.spec: emane.spec.in
 
 if HAVE_DEB
 
+JOBS=`getconf _NPROCESSORS_ONLN`
+
 deb: dist-gzip 
 	mkdir -p .debbuild
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .debbuild
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
-	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc
+	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	@echo "============================================================"
 	@echo "debs located in .debbuild"
 cleandeb:
@@ -82,8 +82,6 @@ EXTRA_DIST =         \
  README.md           \
  debian              \
  autogen.sh
-
-DISTCLEANFILES = .rpmbuild
 
 install-exec-hook:	
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/$(PACKAGE)/manifest
