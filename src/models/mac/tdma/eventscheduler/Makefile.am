@@ -32,7 +32,7 @@ libtdmaeventschedulerradiomodel_la_LDFLAGS= \
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  
 
-tdmanem.xml: tdmaradiomodel.xml.in
+tdmanem.xml: tdmanem.xml.in
 	$(edit) $< > $@
 
 tdmaradiomodel.xml: tdmaradiomodel.xml.in
