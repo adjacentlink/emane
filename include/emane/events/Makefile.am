@@ -3,6 +3,8 @@ emaneincdir = $(includedir)/emane/events/
 emaneinc_HEADERS =                       \
  antennaprofileevent.h                   \
  antennaprofileeventformatter.h          \
+ antennaprofile.h                        \
+ antennaprofile.inl                      \
  commeffectevent.h                       \
  commeffecteventformatter.h              \
  commeffect.h                            \

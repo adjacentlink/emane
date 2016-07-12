@@ -31,11 +31,11 @@
  */
 
 inline
-EMANE::AntennaProfile::AntennaProfile():
+EMANE::Events::AntennaProfile::AntennaProfile():
   bValid_{false}{}
 
 inline
-EMANE::AntennaProfile::AntennaProfile(NEMId nemId,
+EMANE::Events::AntennaProfile::AntennaProfile(NEMId nemId,
                                               AntennaProfileId antennaProfileId,
                                               double dAntennaAzimuthDegrees,
                                               double dAntennaElevationDegrees):
@@ -44,33 +44,33 @@ EMANE::AntennaProfile::AntennaProfile(NEMId nemId,
   dAntennaAzimuthDegrees_{dAntennaAzimuthDegrees},
   dAntennaElevationDegrees_{dAntennaElevationDegrees},
   bValid_{true}{}
-  
-inline    
-EMANE::NEMId EMANE::AntennaProfile::getNEMId() const
+
+inline
+EMANE::NEMId EMANE::Events::AntennaProfile::getNEMId() const
 {
   return nemId_;
 }
 
-inline    
-EMANE::AntennaProfileId EMANE::AntennaProfile::getAntennaProfileId() const
+inline
+EMANE::AntennaProfileId EMANE::Events::AntennaProfile::getAntennaProfileId() const
 {
   return antennaProfileId_;
 }
 
 inline
-double EMANE::AntennaProfile::getAntennaAzimuthDegrees() const
+double EMANE::Events::AntennaProfile::getAntennaAzimuthDegrees() const
 {
   return dAntennaAzimuthDegrees_;
 }
 
 inline
-double EMANE::AntennaProfile::getAntennaElevationDegrees() const
+double EMANE::Events::AntennaProfile::getAntennaElevationDegrees() const
 {
   return dAntennaElevationDegrees_;
 }
 
 inline
-bool EMANE::AntennaProfile::operator==(const AntennaProfile & rhs) const
+bool EMANE::Events::AntennaProfile::operator==(const AntennaProfile & rhs) const
 {
   return (nemId_ == rhs.nemId_ &&
           antennaProfileId_ == rhs.antennaProfileId_ &&
