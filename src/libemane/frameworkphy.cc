@@ -611,7 +611,7 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
               reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
             
             /** [eventservice-sendevent-snippet] */ 
-            AntennaProfiles profiles{{id_,
+            Events::AntennaProfiles profiles{{id_,
                   pAntennaProfileControlMessage->getAntennaProfileId(),
                   pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
                   pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
@@ -792,7 +792,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                    pAntennaProfileControlMessage->getAntennaElevationDegrees());
 
             /** [physicallayer-attachevent-snippet] */
-            AntennaProfiles profiles{{id_,
+            Events::AntennaProfiles profiles{{id_,
                   pAntennaProfileControlMessage->getAntennaProfileId(),
                   pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
                   pAntennaProfileControlMessage->getAntennaElevationDegrees()}};

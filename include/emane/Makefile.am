@@ -10,8 +10,6 @@ emaneincdir = $(includedir)/emane/
 
 emaneinc_HEADERS =                       \
  antennamode.h                           \
- antennaprofile.h                        \
- antennaprofile.inl                      \
  anyexception.h                          \
  any.h                                   \
  buildable.h                             \

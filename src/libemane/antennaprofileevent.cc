@@ -101,7 +101,7 @@ EMANE::Events::AntennaProfileEvent & EMANE::Events::AntennaProfileEvent::operato
 
 EMANE::Events::AntennaProfileEvent::~AntennaProfileEvent(){}
 
-const EMANE::AntennaProfiles & EMANE::Events::AntennaProfileEvent::getAntennaProfiles() const
+const EMANE::Events::AntennaProfiles & EMANE::Events::AntennaProfileEvent::getAntennaProfiles() const
 {
   return pImpl_->getAntennaProfiles();
 }

@@ -522,7 +522,7 @@ int main(int argc, char * argv[])
                                 }
 
 
-                              EMANE::AntennaProfiles profiles;
+                              EMANE::Events::AntennaProfiles profiles;
                               ++iActionIndex;
 
                               for(xmlNodePtr pProfileNode = pActionNode->children;

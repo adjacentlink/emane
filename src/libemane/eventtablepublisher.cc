@@ -138,7 +138,7 @@ void EMANE::EventTablePublisher::update(const Events::Pathlosses & pathlosses)
     }
 }
 
-void EMANE::EventTablePublisher::update(const AntennaProfiles & profiles)
+void EMANE::EventTablePublisher::update(const Events::AntennaProfiles & profiles)
 {
   
   for(const auto & profile : profiles)

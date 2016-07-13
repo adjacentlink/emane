@@ -34,7 +34,7 @@
 #define EMANEEVENTSANTENNAPROFILEEVENT_HEADER_
 
 #include "emane/event.h"
-#include "emane/antennaprofile.h"
+#include "emane/events/antennaprofile.h"
 #include "emane/events/eventids.h"
 
 #include <memory>
