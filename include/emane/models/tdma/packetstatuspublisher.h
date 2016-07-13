@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,8 @@ namespace EMANE
           DROP_SPECTRUM_SERVICE,/**< Dropped due to Spectrum service query error*/
           DROP_SINR,/**< Dropped due to SINR*/
           DROP_REGISTRATION_ID,/**< Dropped not for this radio model*/
-          DROP_DESTINATION_MAC/**< Dropped not for this NEM*/
+          DROP_DESTINATION_MAC,/**< Dropped not for this NEM*/
+          DROP_TOO_LONG/**< Dropped packet propagation plus duration more than a slot*/
         };
 
         /**

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,14 +112,14 @@ EMANE::FrameworkPHY::~FrameworkPHY(){}
 void EMANE::FrameworkPHY::initialize(Registrar & registrar)
 {
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNumeric<double>("fixedantennagain",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                          {0},
                                          "Defines the antenna gain in dBi and is valid only when"
                                           " fixedantennagainenable is enabled.");
-  
+
   configRegistrar.registerNumeric<bool>("fixedantennagainenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
@@ -131,7 +132,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  "Defines receiver bandwidth in Hz and also serves as the"
                                                  " default bandwidth for OTA transmissions when not provided"
                                                  " by the MAC.",
-                                                 1);  
+                                                 1);
 
   configRegistrar.registerNumeric<std::uint64_t>("frequency",
                                                  EMANE::ConfigurationProperties::DEFAULT,
@@ -140,7 +141,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  " provided by the MAC. This value is included in the Common PHY"
                                                  " Header of all transmitted OTA packets.",
                                                  1);
-  
+
   configRegistrar.registerNumeric<std::uint64_t>("frequencyofinterest",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {2347000000},
@@ -160,7 +161,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                   1,
                                                   "^(none|all|outofband)$");
 
-  
+
   configRegistrar.registerNumeric<std::uint64_t>("noisebinsize",
                                                  EMANE::ConfigurationProperties::DEFAULT,
                                                  {20},
@@ -208,7 +209,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  " This allows the emulator to be used across distributed nodes"
                                                  " without time sync.",
                                                  1);
- 
+
   configRegistrar.registerNonNumeric<std::string>("propagationmodel",
                                                   EMANE::ConfigurationProperties::DEFAULT,
                                                   {"precomputed"},
@@ -217,7 +218,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                   1,
                                                   1,
                                                   "^(precomputed|2ray|freespace)$");
-  
+
   configRegistrar.registerNumeric<double>("systemnoisefigure",
                                           EMANE::ConfigurationProperties::DEFAULT,
                                           {4.0},
@@ -235,7 +236,7 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  " Registration Id, emulator PHY subid and packet center"
                                                  " frequency.",
                                                  1);
- 
+
   configRegistrar.registerNumeric<double>("txpower",
                                          EMANE::ConfigurationProperties::DEFAULT |
                                          EMANE::ConfigurationProperties::MODIFIABLE,
@@ -243,11 +244,11 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                           "Defines the transmit power in dBm.");
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
-  
+
   eventRegistrar.registerEvent(Events::PathlossEvent::IDENTIFIER);
 
   eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
-  
+
   eventRegistrar.registerEvent(Events::AntennaProfileEvent::IDENTIFIER);
   /** [eventservice-registerevent-snippet] */
 
@@ -258,6 +259,10 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   eventTablePublisher_.registerStatistics(statisticRegistrar);
 
   receivePowerTablePublisher_.registerStatistics(statisticRegistrar);
+
+  pTimeSyncThresholdRewrite_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numTimeSyncThresholdRewrite",
+                                                      StatisticProperties::CLEARABLE);
 }
 
 void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
@@ -268,8 +273,8 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
     {
       if(item.first == "bandwidth")
         {
-          u64BandwidthHz_ = item.second[0].asUINT64(); 
-          
+          u64BandwidthHz_ = item.second[0].asUINT64();
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %ju Hz",
@@ -281,7 +286,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "fixedantennagain")
         {
           optionalFixedAntennaGaindBi_.first = item.second[0].asDouble();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBi",
@@ -289,7 +294,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   __func__,
                                   item.first.c_str(),
                                    optionalFixedAntennaGaindBi_.first);
-          
+
         }
       else if(item.first == "fixedantennagainenable")
         {
@@ -320,7 +325,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
             {
               pPropagationModelAlgorithm_.reset(new FreeSpacePropagationModelAlgorithm{id_});
             }
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %s",
@@ -332,7 +337,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "noisemode")
         {
           std::string sNoiseMode{item.second[0].asString()};
-          
+
           // regex has already validated values
           if(sNoiseMode == "all")
             {
@@ -406,7 +411,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "noisemaxsegmentduration")
         {
           maxSegmentDuration_ = Microseconds{item.second[0].asUINT64()};
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %ju usec",
@@ -418,7 +423,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "timesyncthreshold")
         {
           timeSyncThreshold_ = Microseconds{item.second[0].asUINT64()};
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %ju usec",
@@ -430,7 +435,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "systemnoisefigure")
         {
           dSystemNoiseFiguredB_ = item.second[0].asDouble();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dB",
@@ -452,7 +457,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                           INFO_LEVEL,
                                           "PHYI %03hu FrameworkPHY::%s: %s = %ju Hz",
-                                          id_, 
+                                          id_,
                                           __func__,
                                           item.first.c_str(),
                                           u64Value);
@@ -461,7 +466,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                 {
                   throw makeException<ConfigureException>("FrameworkPHY duplicate frequency of interest found: %ju",
                                                           u64Value);
-                  
+
                 }
             }
         }
@@ -470,7 +475,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
       else if(item.first == "txpower")
         {
           dTxPowerdBm_ = item.second[0].asDouble();
-   
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBm",
@@ -568,7 +573,7 @@ void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & updat
       if(item.first == "fixedantennagain")
         {
           optionalFixedAntennaGaindBi_.first = item.second[0].asDouble();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBi",
@@ -576,12 +581,12 @@ void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & updat
                                   __func__,
                                   item.first.c_str(),
                                   optionalFixedAntennaGaindBi_.first);
-          
+
         }
       else if(item.first == "txpower")
         {
           dTxPowerdBm_ = item.second[0].asDouble();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "PHYI %03hu FrameworkPHY::%s: %s = %3.2f dBm",
@@ -598,7 +603,7 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "PHYI %03hu FrameworkPHY::%s",
-                          id_, 
+                          id_,
                           __func__);
 
   for(const auto & pMessage : msgs)
@@ -609,20 +614,20 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
           {
             const auto pAntennaProfileControlMessage =
               reinterpret_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
-            
-            /** [eventservice-sendevent-snippet] */ 
+
+            /** [eventservice-sendevent-snippet] */
             Events::AntennaProfiles profiles{{id_,
                   pAntennaProfileControlMessage->getAntennaProfileId(),
                   pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
                   pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
-            
+
             gainManager_.update(profiles);
-            
+
             pPlatformService_->eventService().sendEvent(0,Events::AntennaProfileEvent{profiles});
-            /** [eventservice-sendevent-snippet] */ 
+            /** [eventservice-sendevent-snippet] */
           }
           break;
-        
+
         case Controls::FrequencyOfInterestControlMessage::IDENTIFIER:
           {
             const auto pFrequencyOfInterestControlMessage =
@@ -636,10 +641,10 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                             __func__);
 
             u64BandwidthHz_ = pFrequencyOfInterestControlMessage->getBandwidthHz();
-              
-            dReceiverSensitivitydBm_ = 
+
+            dReceiverSensitivitydBm_ =
               THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
-            
+
             pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
                                           u64BandwidthHz_,
                                           Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
@@ -652,13 +657,13 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                           bNoiseMaxClamp_);
 
           }
-          
+
           break;
-     
+
         default:
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                  DEBUG_LEVEL,
-                                 "PHYI %03hu FrameworkPHY::%s, unexpected contoll message, ignore", 
+                                 "PHYI %03hu FrameworkPHY::%s, unexpected contoll message, ignore",
                                  id_,
                                  __func__);
         }
@@ -713,10 +718,10 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                             __func__);
 
             transmitters = pTransmitterControlMessage->getTransmitters();
-             
+
             // build the list of OTA transmitters
             std::for_each(transmitters.begin(),
-                          transmitters.end(), 
+                          transmitters.end(),
                           [&otaTransmitters](const Transmitter & transmitter)
                           {
                             otaTransmitters.insert(transmitter.getNEMId());
@@ -724,12 +729,12 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
           }
 
           break;
-           
+
         case Controls::FrequencyControlMessage::IDENTIFIER:
           {
             const auto pFrequencyControlMessage =
-              static_cast<const Controls::FrequencyControlMessage *>(pMessage); 
-        
+              static_cast<const Controls::FrequencyControlMessage *>(pMessage);
+
             // the mac will be supplying frequency segment info so lets clear the defaults
             frequencySegments.clear();
 
@@ -759,7 +764,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                   }
               }
 
-            // if bandwidth provided is not 0, use the provided value, 
+            // if bandwidth provided is not 0, use the provided value,
             // otherwise keep our default value from above
             if(pFrequencyControlMessage->getBandwidthHz() != 0)
               {
@@ -773,14 +778,14 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                             id_,
                                             __func__);
           }
-           
+
           break;
 
         case Controls::AntennaProfileControlMessage::IDENTIFIER:
           {
             const auto pAntennaProfileControlMessage =
               static_cast<const Controls::AntennaProfileControlMessage *>(pMessage);
-            
+
             LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                    DEBUG_LEVEL,
                                    "PHYI %03hu FrameworkPHY::%s Antenna Profile Control Message "
@@ -798,11 +803,11 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                   pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
             gainManager_.update(profiles);
-            
+
             pkt.attachEvent(0,Events::AntennaProfileEvent{profiles});
             /** [physicallayer-attachevent-snippet] */
           }
-          
+
           break;
 
         case Controls::TimeStampControlMessage::IDENTIFIER:
@@ -828,7 +833,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
           {
             const auto pFrequencyOfInterestControlMessage =
               reinterpret_cast<const Controls::FrequencyOfInterestControlMessage *>(pMessage);
-            
+
             LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                             DEBUG_LEVEL,
                                             Controls::FrequencyOfInterestControlMessageFormatter(pFrequencyOfInterestControlMessage),
@@ -837,10 +842,10 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                             __func__);
 
             u64BandwidthHz_ = pFrequencyOfInterestControlMessage->getBandwidthHz();
-              
-            dReceiverSensitivitydBm_ = 
+
+            dReceiverSensitivitydBm_ =
               THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
-            
+
             pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
                                           u64BandwidthHz_,
                                           Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
@@ -852,9 +857,9 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                           timeSyncThreshold_,
                                           bNoiseMaxClamp_);
 
-            
+
           }
-          
+
           break;
         }
     }
@@ -875,7 +880,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
   CommonPHYHeader phyHeader{REGISTERED_EMANE_PHY_FRAMEWORK, // phy registration id
       u16SubId_,
       u16TxSequenceNumber_++,
-      u64BandwidthHz,   
+      u64BandwidthHz,
       txTimeStamp,
       frequencySegments,
       transmitters,
@@ -887,9 +892,9 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                   "PHYI %03hu FrameworkPHY::%s Common PHY Header",
                                   id_,
                                   __func__);
-              
+
   ControlMessages downstreamControlMessages{};
-  
+
   if(!otaTransmitters.empty())
     {
       downstreamControlMessages.
@@ -924,7 +929,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                   __func__);
 
   commonLayerStatistics_.processInbound(pkt);
- 
+
   const  auto & pktInfo = pkt.getPacketInfo();
 
   bool bInBand{commonPHYHeader.getRegistrationId() == REGISTERED_EMANE_PHY_FRAMEWORK &&
@@ -935,13 +940,13 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
   if(bInBand || noiseMode_ != SpectrumMonitor::NoiseMode::NONE)
     {
       bool bDrop{};
-      
+
       const auto & frequencySegments = commonPHYHeader.getFrequencySegments();
 
       std::vector<double> rxPowerSegments(frequencySegments.size(),0);
 
       Microseconds propagation{};
-  
+
       bool bHavePropagationDelay{};
 
       std::vector<NEMId> transmitters{};
@@ -949,7 +954,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
       for(const auto & transmitter :  commonPHYHeader.getTransmitters())
         {
           transmitters.push_back(transmitter.getNEMId());
-          
+
           // get the location info for a pair of nodes
           auto locationPairInfoRet = locationManager_.getLocationInfo(transmitter.getNEMId());
 
@@ -973,7 +978,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               if(gainInfodBi.second == EMANE::GainManager::GainStatus::SUCCESS)
                 {
                   using ReceivePowerPubisherUpdate = std::tuple<NEMId,std::uint64_t,double>;
-                  
+
                   // set to prevent multiple ReceivePowerTablePublisher updates
                   // for the same NEM frequency pair in a frequency segment list
                   std::set<ReceivePowerPubisherUpdate> receivePowerTableUpdate{};
@@ -994,13 +999,13 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                        transmitter.getPowerdBm()) +
                           gainInfodBi.first -
                           dPathlossdB};
-                      
+
                       receivePowerTableUpdate.insert(ReceivePowerPubisherUpdate{transmitter.getNEMId(),
                             freqIter->getFrequencyHz(),
                             powerdBm});
 
                       ++freqIter;
-                      
+
                       rxPowerSegments[i++] += Utils::DB_TO_MILLIWATT(powerdBm);
                     }
 
@@ -1015,7 +1020,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
 
 
                   // calculate propagation delay from 1 of the transmitters
-                  //  note: these are collaborative (constructive) transmissions, all 
+                  //  note: these are collaborative (constructive) transmissions, all
                   //        the messages are arriving at or near the same time. Destructive
                   //        transmission should be sent as multiple messages
                   if(locationPairInfoRet.second && !bHavePropagationDelay)
@@ -1025,7 +1030,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                           propagation =
                             Microseconds{static_cast<std::uint64_t>(std::round(locationPairInfoRet.first.getDistanceMeters() / SOL_MPS * 1000000))};
                         }
-                      
+
                       bHavePropagationDelay = true;
                     }
                 }
@@ -1057,8 +1062,8 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                       break;
                     }
 
-                  commonLayerStatistics_.processOutbound(pkt, 
-                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                  commonLayerStatistics_.processOutbound(pkt,
+                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                          u16Code);
 
                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -1070,7 +1075,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                           pktInfo.getSource(),
                                           pktInfo.getDestination(),
                                           pzReason);
-                  
+
 
                   break;
                 }
@@ -1080,8 +1085,8 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               // drop due to PropagationModelAlgorithm not enough info
               bDrop = true;
 
-              commonLayerStatistics_.processOutbound(pkt, 
-                                                     std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+              commonLayerStatistics_.processOutbound(pkt,
+                                                     std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                       DROP_CODE_PROPAGATIONMODEL);
 
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -1096,10 +1101,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               break;
             }
         }
-      
+
       if(!bDrop)
         {
-          
+
           // update the spectrum monitor with the signal information
           // note: spectrum monitor will remove any frequency segments that are
           //       below the receiver sensitivity. Any frequency segment not in
@@ -1116,27 +1121,27 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                             rxPowerSegments,
                                                             bInBand,
                                                             transmitters);
-              
+
               TimePoint sot{};
               Microseconds propagationDelay{};
               Microseconds span{};
               FrequencySegments resultingFrequencySegments{};
               bool bTreatAsInBand{};
-          
+
               std::tie(sot,
                        propagationDelay,
                        span,
                        resultingFrequencySegments,
                        bTreatAsInBand) = spectrumInfo;
-              
+
               if(bTreatAsInBand)
                 {
                   if(!resultingFrequencySegments.empty())
                     {
-                      commonLayerStatistics_.processOutbound(pkt, 
-                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now)); 
-                      
-                      
+                      commonLayerStatistics_.processOutbound(pkt,
+                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now));
+
+
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
                                               "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1145,7 +1150,12 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                               __func__,
                                               pktInfo.getSource(),
                                               pktInfo.getDestination());
-                      
+
+                      if(sot != commonPHYHeader.getTxTime())
+                        {
+                          ++*pTimeSyncThresholdRewrite_;
+                        }
+
                       /** [physicallayer-sendupstreampacket-snippet] */
                       // send to mac with associated control messages
                       sendUpstreamPacket(pkt,
@@ -1159,10 +1169,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                     }
                   else
                     {
-                      commonLayerStatistics_.processOutbound(pkt, 
-                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                      commonLayerStatistics_.processOutbound(pkt,
+                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                           DROP_CODE_RX_SENSITIVITY);
-                      
+
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
                                               "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1171,7 +1181,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                               __func__,
                                               pktInfo.getSource(),
                                               pktInfo.getDestination());
-                      
+
                     }
                 }
               else
@@ -1179,10 +1189,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                   // was this packet actually in-band, if so at least 1 freq was not in the foi
                   if(bInBand)
                     {
-                      commonLayerStatistics_.processOutbound(pkt, 
-                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                      commonLayerStatistics_.processOutbound(pkt,
+                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                              DROP_CODE_NOT_FOI);
-                      
+
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
                                               "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1195,10 +1205,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                   else
                     {
                       // must be subid
-                      commonLayerStatistics_.processOutbound(pkt, 
-                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+                      commonLayerStatistics_.processOutbound(pkt,
+                                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                              DROP_CODE_OUT_OF_BAND);
-                      
+
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
                                               "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1208,15 +1218,15 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                               pktInfo.getSource(),
                                               pktInfo.getDestination());
                     }
-                  
+
                 }
             }
           catch(SpectrumServiceException & exp)
             {
-              commonLayerStatistics_.processOutbound(pkt, 
-                                                     std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+              commonLayerStatistics_.processOutbound(pkt,
+                                                     std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                                      DROP_CODE_SPECTRUM_CLAMP);
-              
+
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
                                       "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1231,10 +1241,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
     }
   else
     {
-      commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now), 
+      commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - now),
                                              DROP_CODE_OUT_OF_BAND);
-      
+
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
                               "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu,"
@@ -1264,14 +1274,14 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
         Events::AntennaProfileEvent antennaProfile{serialization};
         gainManager_.update(antennaProfile.getAntennaProfiles());
         eventTablePublisher_.update(antennaProfile.getAntennaProfiles());
-        
+
         LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                          DEBUG_LEVEL,
                                          Events::AntennaProfileEventFormatter(antennaProfile),
                                          "PHYI %03hu FrameworkPHY::%s antenna profile event: ",
                                          id_,
                                          __func__);
-                                
+
       }
       break;
 

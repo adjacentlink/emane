@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,8 @@ namespace
       "Bad Control",
       "Bad Spectrum Query",
       "Flow Control",
-      "Too Big",
+      "Big",
+      "Long",
       "Slot Error",
       "Miss Fragment"
     };
@@ -75,8 +76,9 @@ namespace
       DROP_COLUMN_BAD_SPECTRUM_QUERY = 6,
       DROP_COLUMN_FLOW_CONTROL = 7,
       DROP_COLUMN_TOO_BIG = 8,
-      DROP_COLUMN_SLOT_ERROR = 9,
-      DROP_COLUMN_MISS_FRAGMENT = 10
+      DROP_COLUMN_TOO_LONG = 9,
+      DROP_COLUMN_SLOT_ERROR = 10,
+      DROP_COLUMN_MISS_FRAGMENT = 11
     };
 
 }
@@ -247,8 +249,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
                                                              Any{0L},
                                                                Any{0L},
                                                                  Any{0L},
-                                                                   Any{0L},
-                                                                     Any{0L}});
+                                                                    Any{0L},
+                                                                      Any{0L},
+                                                                        Any{0L}});
         }
 
       switch(action)
@@ -334,6 +337,17 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
 
             (*pDropTables)[u8QueueIndex]->setCell(src,
                                                   DROP_COLUMN_DST_MAC,
+                                                  Any{bytes});
+          }
+          break;
+        case InboundAction::DROP_TOO_LONG:
+          {
+            auto & bytes = std::get<DROP_COLUMN_TOO_LONG-1>(iter->second);
+
+            bytes += size;
+
+            (*pDropTables)[u8QueueIndex]->setCell(src,
+                                                  DROP_COLUMN_TOO_LONG,
                                                   Any{bytes});
           }
           break;
@@ -431,8 +445,9 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
                                                              Any{0L},
                                                                Any{0L},
                                                                  Any{0L},
-                                                                   Any{0L},
-                                                                     Any{0L}});
+                                                                    Any{0L},
+                                                                      Any{0L},
+                                                                        Any{0L}});
         }
 
       switch(action)

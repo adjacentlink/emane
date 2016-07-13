@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,6 +97,7 @@ namespace EMANE
                                                          std::uint64_t, // Bad Control
                                                          std::uint64_t, // Bad Spectrum Query
                                                          std::uint64_t, // Flow Control
+                                                         std::uint64_t, // Too Big
                                                          std::uint64_t, // Too Big
                                                          std::uint64_t, // Slot Error
                                                          std::uint64_t>>; // Miss Fragment
