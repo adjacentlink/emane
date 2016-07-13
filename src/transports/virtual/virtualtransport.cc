@@ -39,7 +39,6 @@
 #include "emane/startexception.h"
 
 #include "emane/utils/netutils.h"
-#include "emane/utils/threadutils.h"
 
 #include "emane/controls/serializedcontrolmessage.h"
 #include "emane/controls/flowcontrolcontrolmessage.h"
@@ -69,7 +68,6 @@ EMANE::Transports::Virtual::VirtualTransport::VirtualTransport(NEMId id,
   EthernetTransport(id, pPlatformService),
   pTunTap_{},
   pBitPool_{},
-  thread_{},
   bCanceled_{},
   flowControlClient_{*this},
   bFlowControlEnable_{},
@@ -334,8 +332,15 @@ void EMANE::Transports::Virtual::VirtualTransport::start()
 
   pBitPool_->setMaxSize(u64BitRate_);
 
-  // start tuntap read thread
-  thread_ = std::thread{&VirtualTransport::readDevice,this};
+  /** [filedescriptorservice-registerfd-snippet] */
+  
+  pPlatformService_->fileDescriptorService().addFileDescriptor(pTunTap_->get_handle(),
+                                                               FileDescriptorServiceProvider::DescriptorType::READ,
+                                                               std::bind(&VirtualTransport::readDevice,
+                                                                         this,
+                                                                         std::placeholders::_1));
+
+  /** [filedescriptorservice-registerfd-snippet] */
 }
 
 void EMANE::Transports::Virtual::VirtualTransport::postStart()
@@ -357,19 +362,18 @@ void EMANE::Transports::Virtual::VirtualTransport::postStart()
 
 void EMANE::Transports::Virtual::VirtualTransport::stop()
 {
-  if(thread_.joinable())
+  /** [filedescriptorservice-unregisterfd-snippet] */
+  
+  pPlatformService_->fileDescriptorService().removeFileDescriptor(pTunTap_->get_handle());
+
+  /** [filedescriptorservice-unregisterfd-snippet] */
+  
+  if(bFlowControlEnable_)
     {
-      if(bFlowControlEnable_)
-        {
-          flowControlClient_.stop();
-        }
-
-      bCanceled_ = true;
-
-      ThreadUtils::cancel(thread_);
-
-      thread_.join();
+      flowControlClient_.stop();
     }
+
+  bCanceled_ = true;
 
   pTunTap_->deactivate();
 
@@ -441,19 +445,22 @@ void EMANE::Transports::Virtual::VirtualTransport::processUpstreamPacket(Upstrea
       commonLayerStatistics_.processOutbound(pkt,
                                              std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
-      // drain the bit pool
-      const size_t sizePending = pBitPool_->get(pkt.length() * 8);
-
-      // check for bitpool error
-      if(sizePending != 0)
+      if(u64BitRate_)
         {
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL,
-                                  "TRANSPORTI %03hu VirtualTransport::%s bitpool request error %zd of %zd",
-                                  id_,
-                                  __func__,
-                                  sizePending,
-                                  pkt.length() * 8);
+          // drain the bit pool
+          const size_t sizePending = pBitPool_->get(pkt.length() * 8);
+
+          // check for bitpool error
+          if(sizePending != 0)
+            {
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      ERROR_LEVEL,
+                                      "TRANSPORTI %03hu VirtualTransport::%s bitpool request error %zd of %zd",
+                                      id_,
+                                      __func__,
+                                      sizePending,
+                                      pkt.length() * 8);
+            }
         }
     }
 }
@@ -660,7 +667,7 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
 }
 
 
-void EMANE::Transports::Virtual::VirtualTransport::readDevice()
+void EMANE::Transports::Virtual::VirtualTransport::readDevice(int)
 {
   std::uint8_t buf[Utils::IP_MAX_PACKET];
 
@@ -678,14 +685,17 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice()
       // read from tuntap
       if((len = pTunTap_->readv(&iov, 1)) < 0)
         {
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL,
-                                  "TRANSPORTI %03hu VirtualTransport::%s %s",
-                                  id_,
-                                  __func__,
-                                  strerror(errno));
+          if(errno != EAGAIN)
+            {
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      ERROR_LEVEL,
+                                      "TRANSPORTI %03hu VirtualTransport::%s %s",
+                                      id_,
+                                      __func__,
+                                      strerror(errno));
+            }
 
-          break;
+          return;
         }
       else
         {
@@ -749,7 +759,7 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice()
                                                  __func__,
                                                  status.first);
                           // done
-                          break;
+                          return;
                         }
                       else
                         {
@@ -768,20 +778,23 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice()
                   // send to downstream transport
                   sendDownstreamPacket(pkt);
 
-                  // drain the bit pool
-                  std::uint64_t sizePending {pBitPool_->get(len * 8)};
-
-                  // check for bitpool error
-                  if(sizePending > 0)
+                  if(u64BitRate_)
                     {
-                      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                              ERROR_LEVEL,
-                                              "TRANSPORTI %03hu VirtualTransport::%s bitpool "
-                                              "request error %jd of %zd",
-                                              id_,
-                                              __func__,
-                                              sizePending,
-                                              len * 8);
+                      // drain the bit pool
+                      std::uint64_t sizePending {pBitPool_->get(len * 8)};
+
+                      // check for bitpool error
+                      if(sizePending > 0)
+                        {
+                          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                                  ERROR_LEVEL,
+                                                  "TRANSPORTI %03hu VirtualTransport::%s bitpool "
+                                                  "request error %jd of %zd",
+                                                  id_,
+                                                  __func__,
+                                                  sizePending,
+                                                  len * 8);
+                        }
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,29 +36,22 @@
 #include "anyutils.h"
 
 std::string
-EMANE::ControlPort::ConfigurationUpdateHandler::process(const EMANERemoteControlPortAPI::Request::Update::Configuration & configuration,
-                                                       std::uint32_t u32Sequence,
-                                                       std::uint32_t u32Reference)
+EMANE::ControlPort::ConfigurationUpdateHandler::
+process(const EMANERemoteControlPortAPI::Request::Update::Configuration & configuration,
+        std::uint32_t u32Sequence,
+        std::uint32_t u32Reference)
 {
   bool bUpdate{true};
 
   ConfigurationUpdate updates;
-                      
-  using RepeatedPtrFieldParameters = 
-    google::protobuf::RepeatedPtrField<EMANERemoteControlPortAPI::Request::Update::Configuration::Parameter>;
 
   EMANERemoteControlPortAPI::Response response;
-  
-  for(const auto & parameter :
-        RepeatedPtrFieldParameters(configuration.parameters()))
+
+  for(const auto & parameter : configuration.parameters())
     {
       std::vector<Any> anys;
-      
-      using RepeatedPtrFieldAnys = 
-        google::protobuf::RepeatedPtrField<EMANERemoteControlPortAPI::Any>;
-      
-      for(const auto & any :
-            RepeatedPtrFieldAnys(parameter.values()))
+
+      for(const auto & any : parameter.values())
         {
           try
             {
@@ -67,11 +60,11 @@ EMANE::ControlPort::ConfigurationUpdateHandler::process(const EMANERemoteControl
           catch(AnyException & exp)
             {
               response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-              
+
               auto pError = response.mutable_error();
-              
+
               pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-              
+
               pError->set_description(exp.what());
 
               bUpdate = false;
@@ -79,44 +72,37 @@ EMANE::ControlPort::ConfigurationUpdateHandler::process(const EMANERemoteControl
               break;
             }
         }
-      
+
       updates.push_back(std::make_pair(parameter.name(),std::move(anys)));
     }
-  
+
   if(bUpdate)
     {
       try
         {
           ConfigurationServiceSingleton::instance()->update(configuration.buildid(),updates);
-          
-          response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_UPDATE);      
+
+          response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_UPDATE);
         }
       catch(ConfigurationException & exp)
         {
           response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-          
+
           auto pError = response.mutable_error();
-          
+
           pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-          
+
           pError->set_description(exp.what());
         }
     }
 
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
-  
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize configuration update response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize configuration update response");
     }

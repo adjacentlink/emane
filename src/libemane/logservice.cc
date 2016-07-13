@@ -40,14 +40,15 @@
 #include "loggerlevelconvert.h"
 #include "loggermessage.pb.h"
 
-#include "emane/utils/threadutils.h"
-
 #include <cstdarg>
 #include <cstdio>
 #include <chrono>
 #include <thread>
 #include <iostream>
 #include <algorithm>
+#include <sys/eventfd.h>
+#include <sys/epoll.h>
+#include <unistd.h>
 
 namespace
 {
@@ -71,13 +72,30 @@ EMANE::LogService::LogService():
   level_{ABORT_LEVEL},
   bOpenBackend_{false},
   u32LogSequenceNumber_{},
-  pStream_{&std::cout}
+  pStream_{&std::cout},
+  iEventFd_{},
+  iepollFd_{}
 {
   bOpenBackend_ = true;
 
   udpLoggerTxSocket_.open(INETAddr{"127.0.0.1",0});
 
   localSocketAddress_ = udpLoggerTxSocket_.getLocalAddress();
+
+  iEventFd_ = eventfd(0,0);
+
+  iepollFd_ = epoll_create1(0);
+
+  // add the eventfd socket to the epoll instance
+  struct epoll_event ev;
+  ev.events = EPOLLIN;
+  ev.data.fd = iEventFd_;
+  epoll_ctl(iepollFd_,EPOLL_CTL_ADD,iEventFd_,&ev);
+
+  // add the backend logger socket to the epoll instance
+  ev.events = EPOLLIN;
+  ev.data.fd =  udpLoggerTxSocket_.getHandle();
+  epoll_ctl(iepollFd_,EPOLL_CTL_ADD,udpLoggerTxSocket_.getHandle(),&ev);
 
   thread_ = std::thread{&LogService::processControlMessages, this};
 };
@@ -86,12 +104,14 @@ EMANE::LogService::~LogService()
 {
   std::this_thread::sleep_for(DoubleSeconds(0.5));
 
-  if(thread_.joinable())
-    {
-      ThreadUtils::cancel(thread_);
+  // signal thread procedure shutdown
+  const uint64_t one{1};
+  write(iEventFd_,&one,sizeof(one));
 
-      thread_.join();
-    }
+  thread_.join();
+
+  close(iepollFd_);
+  close(iEventFd_);
 };
 
 void EMANE::LogService::log(LogLevel level, const char *fmt, ...)
@@ -173,78 +193,107 @@ void EMANE::LogService::processControlMessages(void)
 
   int iMinExpectedLength = static_cast<int> (sizeof(*pu16HeaderLength));
 
-  while(1)
+  struct epoll_event events[2];
+
+  int nfds{};
+
+  bool bDone{};
+
+  while(!bDone)
     {
-      // wait for message here, the header len is the fisrt 2 bytes in network byte order
-      if((iRxLength = udpLoggerTxSocket_.recv(buf,sizeof(buf),0)) > iMinExpectedLength)
+      nfds = epoll_wait(iepollFd_,events,2,-1);
+
+      if(nfds == -1)
         {
-          EMANEMessage::LoggerMessage loggerMessage;
+          break;
+        }
 
-          try
+      for(int n = 0; n < nfds; ++n)
+        {
+          if(events[n].data.fd == udpLoggerTxSocket_.getHandle())
             {
-              if(!loggerMessage.ParseFromArray(buf + sizeof(*pu16HeaderLength),
-                                               ntohs(*pu16HeaderLength)))
+              // wait for message here, the header len is the fisrt 2 bytes in network byte order
+              if((iRxLength = udpLoggerTxSocket_.recv(buf,sizeof(buf),0)) > iMinExpectedLength)
                 {
-                  snprintf(errmsg, sizeof(errmsg), "!!! logger message failed ParseFromArray !!!");
+                  EMANEMessage::LoggerMessage loggerMessage;
 
-                  writeLogString(errmsg);
-                }
-              else
-                {
-                  if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
+                  if(!loggerMessage.ParseFromArray(buf + sizeof(*pu16HeaderLength),
+                                                   ntohs(*pu16HeaderLength)))
                     {
-                      if(loggerMessage.has_record())
+                      snprintf(errmsg,
+                               sizeof(errmsg),
+                               "!!! logger message failed ParseFromArray !!!");
+
+                      writeLogString(errmsg);
+                    }
+                  else
+                    {
+                      if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
                         {
-                          writeLogString(loggerMessage.record().record().c_str());
+                          if(loggerMessage.has_record())
+                            {
+                              writeLogString(loggerMessage.record().record().c_str());
+                            }
+                          else
+                            {
+                              snprintf(errmsg,
+                                       sizeof(errmsg),
+                                       "!!! logger message type RECORD does NOT have record !!!");
+
+                              writeLogString(errmsg);
+                            }
                         }
                       else
                         {
-                          snprintf(errmsg, sizeof(errmsg), "!!! logger message type RECORD does NOT have record !!!");
+                          snprintf(errmsg,
+                                   sizeof(errmsg),
+                                   "!!! unhandled logger message type %d !!!",
+                                   loggerMessage.type());
 
                           writeLogString(errmsg);
                         }
                     }
-                  else
-                    {
-                      snprintf(errmsg, sizeof(errmsg), "!!! unhandled logger message type %d !!!", loggerMessage.type());
+                }
+              else if(iRxLength < 0)
+                {
+                  // socket read error
+                  snprintf(errmsg,
+                           sizeof(errmsg),
+                           "!!! socket read error (%s) !!!",
+                           strerror(errno));
 
-                      writeLogString(errmsg);
-                    }
+                  writeLogString(errmsg);
+
+                  bDone = true;
+
+                  break;
+                }
+              else if(iRxLength == 0)
+                {
+                  // socket empty
+                  snprintf(errmsg, sizeof(errmsg), "socket empty, bye");
+
+                  writeLogString(errmsg);
+
+                  bDone = true;
+
+                  break;
+                }
+              else
+                {
+                  // socket read length short
+                  snprintf(errmsg, sizeof(errmsg),
+                           "!!! socket read len of %d, msg length must be greater than %d, ignore !!!",
+                           iRxLength, iMinExpectedLength);
+
+                  writeLogString(errmsg);
                 }
             }
-          catch(google::protobuf::FatalException & exp)
+          else
             {
-              snprintf(errmsg, sizeof(errmsg), "!!! caught exception (%s) !!!", exp.what());
-
-              writeLogString(errmsg);
+              bDone = true;
+              break;
             }
-        }
-      else if(iRxLength < 0)
-        {
-          // socket read error
-          snprintf(errmsg, sizeof(errmsg), "!!! socket read error (%s) !!!", strerror(errno));
-
-          writeLogString(errmsg);
-
-          break;
-        }
-      else if(iRxLength == 0)
-        {
-          // socket empty
-          snprintf(errmsg, sizeof(errmsg), "socket empty, bye");
-
-          writeLogString(errmsg);
-
-          break;
-        }
-      else
-        {
-          // socket read length short
-          snprintf(errmsg, sizeof(errmsg),
-                   "!!! socket read len of %d, msg length must be greater than %d, ignore !!!",
-                   iRxLength, iMinExpectedLength);
-
-          writeLogString(errmsg);
         }
     }
 }
@@ -320,23 +369,23 @@ void EMANE::LogService::vlog_i(LogLevel level, const char *fmt, va_list ap)
 
   Utils::VectorIO outputVector(2);
 
-      // set buff, len, level and seq num in msg hdr, len does not include terminationg byte
-      EMANE::Messages::LoggerRecordMessage msg {buff,
-          static_cast<size_t>(iLen),
-          level,
-          u32LogSequenceNumber_++};
+  // set buff, len, level and seq num in msg hdr, len does not include terminationg byte
+  EMANE::Messages::LoggerRecordMessage msg {buff,
+      static_cast<size_t>(iLen),
+      level,
+      u32LogSequenceNumber_++};
 
-      Serialization serialization{msg.serialize()};
+  Serialization serialization{msg.serialize()};
 
-      // the header len in net byte order
-      std::uint16_t u16HeaderLen = htons(serialization.size());
+  // the header len in net byte order
+  std::uint16_t u16HeaderLen = htons(serialization.size());
 
-      outputVector[0] = Utils::make_iovec((void *) &u16HeaderLen, sizeof(u16HeaderLen));
-      outputVector[1] = Utils::make_iovec((void *) serialization.c_str(), serialization.size());
+  outputVector[0] = Utils::make_iovec((void *) &u16HeaderLen, sizeof(u16HeaderLen));
+  outputVector[1] = Utils::make_iovec((void *) serialization.c_str(), serialization.size());
 
-      udpLoggerTxSocket_.send(static_cast<const iovec*>(&outputVector[0]),
-                              static_cast<int>(outputVector.size()),
-                              localSocketAddress_);
+  udpLoggerTxSocket_.send(static_cast<const iovec*>(&outputVector[0]),
+                          static_cast<int>(outputVector.size()),
+                          localSocketAddress_);
 }
 
 

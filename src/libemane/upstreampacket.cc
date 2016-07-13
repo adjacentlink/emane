@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,46 +34,51 @@
 #include "emane/upstreampacket.h"
 #include "emane/net.h"
 
+#include <memory>
+
 class EMANE::UpstreamPacket::Implementation
 {
 public:
   Implementation():
     head_{},
-    info_{0,0,0,{}}{}
+    pShared_{std::make_shared<Shared>()}{}
 
   Implementation(const PacketInfo & info, const void * buf, size_t len):
     head_{},
-    info_{info}
+    pShared_{std::make_shared<Shared>()}
   {
     const unsigned char * c = static_cast<const unsigned char *>(buf);
-    packetSegment_.reserve(len);
-    packetSegment_.insert(packetSegment_.end(),&c[0],&c[len]);
+    pShared_->info_ = info;
+    pShared_->packetSegment_.reserve(len);
+    pShared_->packetSegment_.insert(pShared_->packetSegment_.end(),&c[0],&c[len]);
   }
 
   Implementation(const PacketInfo & info,const Utils::VectorIO & vectorIO):
     head_{},
-    info_{info}
+    pShared_{std::make_shared<Shared>()}
   {
+    pShared_->info_ = info;
+
     for(const auto & iov : vectorIO)
       {
-        packetSegment_.insert(packetSegment_.end(),
-                              &static_cast<const std::uint8_t *>(iov.iov_base)[0],
-                              &static_cast<const std::uint8_t *>(iov.iov_base)[iov.iov_len]);
+        pShared_->packetSegment_.insert(pShared_->packetSegment_.end(),
+                                        &static_cast<const std::uint8_t *>(iov.iov_base)[0],
+                                        &static_cast<const std::uint8_t *>(iov.iov_base)[iov.iov_len]);
       }
   }
-    
+
   size_t strip(size_t size)
   {
-    if(head_ + size < packetSegment_.size())
+    if(head_ + size < pShared_->packetSegment_.size())
       {
         head_ += size;
       }
     else
       {
-        size =  packetSegment_.size() - head_;
+        size = pShared_->packetSegment_.size() - head_;
         head_ += size;
       }
-    
+
     return size;
   }
 
@@ -81,41 +86,48 @@ public:
   std::uint16_t stripLengthPrefixFraming()
   {
     std::uint16_t u16LengthPrefixFraming{};
-    
-    if(head_ + sizeof(uint16_t) < packetSegment_.size())
+
+    if(head_ + sizeof(uint16_t) < pShared_->packetSegment_.size())
       {
         u16LengthPrefixFraming =
-          NTOHS(*reinterpret_cast<const std::uint16_t *>(&packetSegment_[head_]));
-        
+          NTOHS(*reinterpret_cast<const std::uint16_t *>(&pShared_->packetSegment_[head_]));
+
         head_ += sizeof(uint16_t);
       }
-    
+
     return u16LengthPrefixFraming;
   }
-  
+
 
   const void * get() const
   {
-    return(head_ <  packetSegment_.size()) ? &packetSegment_[head_] : 0;
-  }
-  
-  
-  size_t length() const
-  {
-    return packetSegment_.size() - head_;
+    return(head_ <  pShared_->packetSegment_.size()) ? &pShared_->packetSegment_[head_] : 0;
   }
 
-  
+
+  size_t length() const
+  {
+    return pShared_->packetSegment_.size() - head_;
+  }
+
+
   const PacketInfo &  getPacketInfo() const
   {
-    return  info_;
+    return pShared_->info_;
   }
 
 private:
   typedef std::vector<unsigned char> PacketSegment;
+
+  class Shared
+  {
+  public:
+    PacketSegment packetSegment_;
+    PacketInfo info_{0,0,0,{}};
+  };
+
   PacketSegment::size_type head_;
-  PacketSegment packetSegment_;
-  PacketInfo info_;
+  std::shared_ptr<Shared> pShared_;
 };
 
 
@@ -132,10 +144,7 @@ EMANE::UpstreamPacket::UpstreamPacket(const UpstreamPacket & pkt):
   pImpl_{new Implementation{*pkt.pImpl_}}{}
 
 EMANE::UpstreamPacket::UpstreamPacket(UpstreamPacket && pkt):
-  pImpl_{pkt.pImpl_.release()}
-{
-  pkt.pImpl_.reset(new Implementation{});
-}
+  pImpl_{std::move(pkt.pImpl_)}{}
 
 EMANE::UpstreamPacket::~UpstreamPacket(){}
 
@@ -147,8 +156,7 @@ EMANE::UpstreamPacket & EMANE::UpstreamPacket::operator=(const UpstreamPacket & 
 
 EMANE::UpstreamPacket & EMANE::UpstreamPacket::operator=(UpstreamPacket && pkt)
 {
-  pImpl_.reset(pkt.pImpl_.release());
-  pkt.pImpl_.reset(new Implementation{});
+  pImpl_ = std::move(pkt.pImpl_);
   return *this;
 }
 
@@ -169,14 +177,14 @@ const void * EMANE::UpstreamPacket::get() const
 {
   return pImpl_->get();
 }
-  
-  
+
+
 size_t EMANE::UpstreamPacket::length() const
 {
   return pImpl_->length();
 }
 
-  
+
 const EMANE::PacketInfo &  EMANE::UpstreamPacket::getPacketInfo() const
 {
   return pImpl_->getPacketInfo();

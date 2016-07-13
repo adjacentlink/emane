@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ EMANE::ControlPort::StatisticTableQueryHandler::process(const EMANERemoteControl
                                                         std::uint32_t u32Reference)
 {
   std::vector<std::string> names;
-  
+
   for(int i = 0; i < statisticTable.names_size(); ++i)
     {
       names.push_back(statisticTable.names(i));
@@ -54,23 +54,23 @@ EMANE::ControlPort::StatisticTableQueryHandler::process(const EMANERemoteControl
     {
       auto statisticTableInfo =
         StatisticServiceSingleton::instance()->queryTable(statisticTable.buildid(),names);
-      
+
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_QUERY);
-      
+
       auto pQuery = response.mutable_query();
-      
+
       pQuery->set_type(EMANERemoteControlPortAPI::TYPE_QUERY_STATISTICTABLE);
-      
+
       auto pStatisticTable = pQuery->mutable_statistictable();
-      
+
       pStatisticTable->set_buildid(statisticTable.buildid());
-      
+
       for(const auto & table : statisticTableInfo)
         {
           auto pTable = pStatisticTable->add_tables();
-      
+
           pTable->set_name(table.first);
-          
+
           for(const auto & row : table.second.second)
             {
               auto pRow = pTable->add_rows();
@@ -95,28 +95,21 @@ EMANE::ControlPort::StatisticTableQueryHandler::process(const EMANERemoteControl
   catch(RegistrarException & exp)
     {
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-      
+
       auto pError = response.mutable_error();
-      
+
       pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-      
+
       pError->set_description(exp.what());
     }
-    
+
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize statistic table query response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize statistic table query response");
     }

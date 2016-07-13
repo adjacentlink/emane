@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,60 +54,50 @@ EMANE::Events::CommEffectEvent::CommEffectEvent(const Serialization & serializat
 {
   EMANEMessage::CommEffectEvent msg;
 
-  try
-    {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize CommEffectEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.ParseFromString(serialization))
     {
       throw SerializationException("unable to deserialize CommEffectEvent");
     }
 
-  using RepeatedPtrFieldCommEffect = 
-    google::protobuf::RepeatedPtrField<EMANEMessage::CommEffectEvent::CommEffect>;
-  
   CommEffects commEffects;
-  
-  for(const auto & repeatedCommEffect : RepeatedPtrFieldCommEffect(msg.commeffects()))
+
+  for(const auto & effect : msg.commeffects())
     {
-      commEffects.push_back({static_cast<EMANE::NEMId>(repeatedCommEffect.nemid()),
-            std::chrono::duration_cast<Microseconds>(DoubleSeconds{repeatedCommEffect.latencyseconds()}),
-            std::chrono::duration_cast<Microseconds>(DoubleSeconds{repeatedCommEffect.jitterseconds()}),
-            repeatedCommEffect.probabilityloss(),
-            repeatedCommEffect.probabilityduplicate(),
-            repeatedCommEffect.unicastbitratebps(),
-            repeatedCommEffect.broadcastbitratebps(),
+      commEffects.push_back({static_cast<EMANE::NEMId>(effect.nemid()),
+            std::chrono::duration_cast<Microseconds>(DoubleSeconds{effect.latencyseconds()}),
+            std::chrono::duration_cast<Microseconds>(DoubleSeconds{effect.jitterseconds()}),
+            effect.probabilityloss(),
+            effect.probabilityduplicate(),
+            effect.unicastbitratebps(),
+            effect.broadcastbitratebps(),
             });
     }
 
   pImpl_.reset(new Implementation{commEffects});
 }
-    
+
 EMANE::Events::CommEffectEvent::CommEffectEvent(const CommEffects & commEffects):
   Event{IDENTIFIER},
   pImpl_{new Implementation{commEffects}}{}
-    
+
 EMANE::Events::CommEffectEvent::CommEffectEvent(const CommEffectEvent & rhs):
   Event{IDENTIFIER},
   pImpl_{new Implementation{rhs.getCommEffects()}}{}
-   
+
 EMANE::Events::CommEffectEvent & EMANE::Events::CommEffectEvent::operator=(const CommEffectEvent & rhs)
 {
   pImpl_.reset(new Implementation{rhs.getCommEffects()});
   return *this;
 }
-    
+
 EMANE::Events::CommEffectEvent::CommEffectEvent(CommEffectEvent && rval):
   Event{IDENTIFIER},
   pImpl_{new Implementation{{}}}
 {
   rval.pImpl_.swap(pImpl_);
 }
-    
-EMANE::Events::CommEffectEvent & 
+
+EMANE::Events::CommEffectEvent &
 EMANE::Events::CommEffectEvent::operator=(CommEffectEvent && rval)
 {
   rval.pImpl_.swap(pImpl_);
@@ -114,8 +105,8 @@ EMANE::Events::CommEffectEvent::operator=(CommEffectEvent && rval)
 }
 
 EMANE::Events::CommEffectEvent::~CommEffectEvent(){}
-    
-const EMANE::Events::CommEffects & 
+
+const EMANE::Events::CommEffects &
 EMANE::Events::CommEffectEvent::getCommEffects() const
 {
   return pImpl_->getCommEffects();
@@ -140,16 +131,9 @@ EMANE::Serialization EMANE::Events::CommEffectEvent::serialize() const
       pCommEffectMessage->set_broadcastbitratebps(commEffect.getBroadcastBitRate());
     }
 
-  try
+  if(!msg.SerializeToString(&serialization))
     {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize CommEffectEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to serialize CommEffect<Event");
+      throw SerializationException("unable to serialize CommEffectEvent");
     }
 
   return serialization;

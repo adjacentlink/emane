@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -44,8 +44,6 @@
 #include "emane/utils/commonlayerstatistics.h"
 
 #include "tuntap.h"
-
-#include <thread>
 
 namespace EMANE
 {
@@ -99,8 +97,6 @@ namespace EMANE
 
         Utils::BitPool * pBitPool_;
 
-        std::thread thread_;
-
         bool bCanceled_;
 
         FlowControlClient flowControlClient_;
@@ -111,7 +107,7 @@ namespace EMANE
 
         Utils::CommonLayerStatistics commonLayerStatistics_;
 
-        void readDevice();
+        void readDevice(int);
 
         void handleUpstreamControl(const ControlMessages & msgs);
       };

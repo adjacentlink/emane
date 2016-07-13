@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +38,13 @@
 #include "anyutils.h"
 
 std::string
-EMANE::ControlPort::ConfigurationQueryHandler::process(const EMANERemoteControlPortAPI::Request::Query::Configuration & configuration,
-                                                       std::uint32_t u32Sequence,
-                                                       std::uint32_t u32Reference)
+EMANE::ControlPort::ConfigurationQueryHandler::
+process(const EMANERemoteControlPortAPI::Request::Query::Configuration & configuration,
+        std::uint32_t u32Sequence,
+        std::uint32_t u32Reference)
 {
   std::vector<std::string> names;
-  
+
   for(int i = 0; i < configuration.names_size(); ++i)
     {
       names.push_back(configuration.names(i));
@@ -52,30 +54,30 @@ EMANE::ControlPort::ConfigurationQueryHandler::process(const EMANERemoteControlP
 
   try
     {
-      auto configurationValues = 
+      auto configurationValues =
         ConfigurationServiceSingleton::instance()->queryConfiguration(configuration.buildid(),
                                                                       names);
-      
+
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_QUERY);
-      
+
       auto pQuery = response.mutable_query();
-      
+
       pQuery->set_type(EMANERemoteControlPortAPI::TYPE_QUERY_CONFIGURATION);
-      
+
       auto pConfiguration = pQuery->mutable_configuration();
-      
+
       pConfiguration->set_buildid(configuration.buildid());
-      
+
       for(const auto & value : configurationValues)
         {
           auto pParameter = pConfiguration->add_parameters();
-          
+
           pParameter->set_name(value.first);
-          
+
           for(const auto & any : value.second)
             {
               auto pValue = pParameter->add_values();
-              
+
               convertToAny(pValue,any);
             }
         }
@@ -83,28 +85,21 @@ EMANE::ControlPort::ConfigurationQueryHandler::process(const EMANERemoteControlP
   catch(RegistrarException & exp)
     {
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-      
+
       auto pError = response.mutable_error();
-      
+
       pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-      
+
       pError->set_description(exp.what());
     }
-  
+
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize configuration query response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize configuration query response");
     }

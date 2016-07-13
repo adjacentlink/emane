@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,51 +30,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-inline
-EMANE::AntennaProfile::AntennaProfile():
-  bValid_{false}{}
+#ifndef EMANENEMPLATFORMSERVICE_HEADER_
+#define EMANENEMPLATFORMSERVICE_HEADER_
 
-inline
-EMANE::AntennaProfile::AntennaProfile(NEMId nemId,
-                                              AntennaProfileId antennaProfileId,
-                                              double dAntennaAzimuthDegrees,
-                                              double dAntennaElevationDegrees):
-  nemId_{nemId},
-  antennaProfileId_{antennaProfileId},
-  dAntennaAzimuthDegrees_{dAntennaAzimuthDegrees},
-  dAntennaElevationDegrees_{dAntennaElevationDegrees},
-  bValid_{true}{}
-  
-inline    
-EMANE::NEMId EMANE::AntennaProfile::getNEMId() const
+#include "emane/componenttypes.h"
+#include "emane/platformserviceprovider.h"
+#include "nemqueuedlayer.h"
+#include "nemtimerserviceproxy.h"
+#include "eventserviceproxy.h"
+
+#include <memory>
+
+namespace EMANE
 {
-  return nemId_;
+
+  class PlatformServiceUser;
+
+  /**
+   * @class NEMPlatformService
+   *
+   * @brief NEM platform service
+   */
+  class NEMPlatformService : public PlatformServiceProvider
+  {
+  public:
+    NEMPlatformService();
+
+    ~NEMPlatformService();
+
+    TimerServiceProvider & timerService() override;
+
+    LogServiceProvider & logService() override;
+
+    EventServiceProvider & eventService() override;
+
+    FileDescriptorServiceProvider & fileDescriptorService() override;
+
+    void setNEMLayer(BuildId buildId,
+                     NEMQueuedLayer * pLayer);
+
+  private:
+    NEMTimerServiceProxy timerServiceProxy_;
+    EventServiceProxy eventServiceProxy_;
+    NEMQueuedLayer * pNEMQueuedLayer_;
+  };
 }
 
-inline    
-EMANE::AntennaProfileId EMANE::AntennaProfile::getAntennaProfileId() const
-{
-  return antennaProfileId_;
-}
 
-inline
-double EMANE::AntennaProfile::getAntennaAzimuthDegrees() const
-{
-  return dAntennaAzimuthDegrees_;
-}
-
-inline
-double EMANE::AntennaProfile::getAntennaElevationDegrees() const
-{
-  return dAntennaElevationDegrees_;
-}
-
-inline
-bool EMANE::AntennaProfile::operator==(const AntennaProfile & rhs) const
-{
-  return (nemId_ == rhs.nemId_ &&
-          antennaProfileId_ == rhs.antennaProfileId_ &&
-          dAntennaAzimuthDegrees_  == rhs.dAntennaAzimuthDegrees_ &&
-          dAntennaElevationDegrees_ == rhs.dAntennaElevationDegrees_);
-}
-
+#endif // EMANENEMPLATFORMSERVICE_HEADER_

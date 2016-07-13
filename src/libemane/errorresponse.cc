@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,13 +33,14 @@
 #include "errorresponse.h"
 #include "emane/serializationexception.h"
 
-std::string EMANE::ControlPort::ErrorResponse::serialize(EMANERemoteControlPortAPI::Response::Error::ErrorType type,
-                                                         const std::string & sDescription,
-                                                         std::uint32_t u32Sequence,
-                                                         std::uint32_t u32Reference)
+std::string EMANE::ControlPort::ErrorResponse::
+serialize(EMANERemoteControlPortAPI::Response::Error::ErrorType type,
+          const std::string & sDescription,
+          std::uint32_t u32Sequence,
+          std::uint32_t u32Reference)
 {
   EMANERemoteControlPortAPI::Response response;
-  
+
   response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
 
   auto pError = response.mutable_error();
@@ -49,19 +50,12 @@ std::string EMANE::ControlPort::ErrorResponse::serialize(EMANERemoteControlPortA
   pError->set_description(sDescription);
 
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
- 
+
   std::string sSerialization;
- 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize error response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize error response");
     }

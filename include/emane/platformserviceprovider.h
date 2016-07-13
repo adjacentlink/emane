@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,13 +38,14 @@
 #include "emane/logserviceprovider.h"
 #include "emane/eventserviceprovider.h"
 #include "emane/timerserviceprovider.h"
+#include "emane/filedescriptorserviceprovider.h"
 
 namespace EMANE
 {
   /**
    * @class PlatformServiceProvider
-   *  
-   * @brief The PlatformServiceProvider interface provides 
+   *
+   * @brief The PlatformServiceProvider interface provides
    * access to emulator services.
    *
    * @note Service references are not valid until Component::initialize().
@@ -52,34 +54,37 @@ namespace EMANE
    */
   class PlatformServiceProvider
   {
-   public:
+  public:
     /**
      * Destroys an instance
      */
     virtual ~PlatformServiceProvider(){};
-    
+
     /**
-     * Gets a reference to the TimerServiceProvider 
+     * Gets a reference to the TimerServiceProvider
      *
      * @return TimerServiceProvider reference
      */
     virtual TimerServiceProvider & timerService() = 0;
-    
+
     /**
-     * Gets a reference to the LogServiceProvider 
+     * Gets a reference to the LogServiceProvider
      *
      * @return LogServiceProvider reference
      */
     virtual LogServiceProvider & logService() = 0;
 
     /**
-     * Gets a reference to the EventServiceProvider 
+     * Gets a reference to the EventServiceProvider
      *
      * @return EventServiceProvider reference
      */
     virtual EventServiceProvider & eventService() = 0;
 
-   protected:
+    virtual FileDescriptorServiceProvider &
+    fileDescriptorService() = 0;
+
+  protected:
     PlatformServiceProvider() = default;
   };
 }

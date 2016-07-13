@@ -43,12 +43,12 @@ bool EMANE::TimerService::cancelTimedEvent(TimerEventId eventId)
 
 EMANE::TimerEventId EMANE::TimerService::scheduleTimedEvent(const TimePoint & timePoint, 
                                                             const void * arg, 
-                                                            const Microseconds & interval,
+                                                            const Duration & interval,
                                                             TimerServiceUser * pTimerServiceUser)
 {
   TimerEventId timerId{};
 
-  if(interval == Microseconds::zero())
+  if(interval == Duration::zero())
     {
       timerId =
         timer_.schedule([arg,pTimerServiceUser](Utils::Timer::TimerId timerId,

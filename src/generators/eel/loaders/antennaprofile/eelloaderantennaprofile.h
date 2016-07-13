@@ -36,7 +36,7 @@
 #define EMANEGENERATORSEELLOADERANTENNAPROFILE_HEADER_
 
 #include "emane/generators/eel/loaderplugin.h"
-#include "emane/antennaprofile.h"
+#include "emane/events/antennaprofile.h"
 
 #include <map>
 
@@ -61,7 +61,7 @@ namespace EMANE
         EventInfoList getEvents(EventPublishMode mode) override;
         
       private:
-        typedef std::map<ModuleId,AntennaProfile> AntennaProfileEntryMap;
+        typedef std::map<ModuleId,Events::AntennaProfile> AntennaProfileEntryMap;
         AntennaProfileEntryMap antennaProfileEntryMap_;
         AntennaProfileEntryMap antennaProfileEntryDeltaMap_;
       };

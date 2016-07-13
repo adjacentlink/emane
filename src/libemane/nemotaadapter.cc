@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -101,7 +101,7 @@ void EMANE::NEMOTAAdapter::processDownstreamPacket(DownstreamPacket & pkt,
 {
   std::lock_guard<std::mutex> m(mutex_);
 
-  queue_.push(DownstreamQueueEntry(std::move(pkt), msgs));
+  queue_.emplace_back(pkt, msgs);
 
   cond_.notify_one();
 
@@ -123,32 +123,35 @@ void EMANE::NEMOTAAdapter::processPacketQueue()
           break;
         }
 
-      DownstreamQueueEntry entry{std::move(queue_.front())};
+      DownstreamPacketQueue queue{};
 
-      queue_.pop();
+      queue.swap(queue_);
 
       lock.unlock();
 
-      try
-        { // id, pkt, ctrl
-          OTAManagerSingleton::instance()->sendOTAPacket(id_, entry.first, entry.second);
-        }
-      catch(std::exception & exp)
+      for(auto & entry : queue)
         {
-          // cannot really do too much at this point, so we'll log it
-          // good candidate spot to generate and error event as well
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                  "NEMOTAAdapter::processPacketQueue Excepetion caught: %s",
-                                  exp.what());
+          try
+            { // id, pkt, ctrl
+              OTAManagerSingleton::instance()->sendOTAPacket(id_, entry.first, entry.second);
+            }
+          catch(std::exception & exp)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "NEMOTAAdapter::processPacketQueue Excepetion caught: %s",
+                                      exp.what());
+            }
+          catch(...)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "NEMOTAAdapter::processPacketQueue Excepetion caught");
+            }
         }
-      catch(...)
-        {
-          // cannot really do too much at this point, so we'll log it
-          // good candidate spot to generate and error event as well
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                  "NEMOTAAdapter::processPacketQueue Excepetion caught");
-        }
+
+      queue.clear();
     }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,7 +39,7 @@
 
 #include "emane/downstreamtransport.h"
 
-#include <queue>
+#include <deque>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -77,7 +77,7 @@ namespace EMANE
      * @param msgs referenceto the ControlMessage
      *
      */
-    void processDownstreamPacket(DownstreamPacket     & pkt,
+    void processDownstreamPacket(DownstreamPacket & pkt,
                                  const ControlMessages & msgs);
 
     void open();
@@ -85,9 +85,9 @@ namespace EMANE
     void close();
 
   private:
-    typedef std::pair<DownstreamPacket, ControlMessages> DownstreamQueueEntry;
+    using DownstreamQueueEntry = std::pair<DownstreamPacket, ControlMessages>;
 
-    typedef std::queue<DownstreamQueueEntry> DownstreamPacketQueue;
+    using DownstreamPacketQueue = std::deque<DownstreamQueueEntry>;
 
     NEMId id_;
     std::thread thread_;

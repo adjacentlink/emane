@@ -54,7 +54,7 @@ namespace EMANE
 
     void update(const Events::Pathlosses & pathlosses);
 
-    void update(const AntennaProfiles & profiles);
+    void update(const Events::AntennaProfiles & profiles);
 
   private:
     NEMId nemId_;

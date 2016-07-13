@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,15 +98,8 @@ int EMANE::ControlPort::Session::process(int iFd)
       if(message_.size() == u32MessageSizeBytes_)
         {
           EMANERemoteControlPortAPI::Request request{};
-          try
-            {
-              if(!request.ParseFromArray(&message_[0],message_.size()))
-                {
-                  // invalid message - terminate the connection
-                  return -1;
-                }
-            }
-          catch(google::protobuf::FatalException & exp)
+
+          if(!request.ParseFromArray(&message_[0],message_.size()))
             {
               // invalid message - terminate the connection
               return -1;

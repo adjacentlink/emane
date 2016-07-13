@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ EMANE::ControlPort::StatisticQueryHandler::process(const EMANERemoteControlPortA
                                                    std::uint32_t u32Reference)
 {
   std::vector<std::string> names;
-  
+
   for(int i = 0; i < statistic.names_size(); ++i)
     {
       names.push_back(statistic.names(i));
@@ -54,54 +54,47 @@ EMANE::ControlPort::StatisticQueryHandler::process(const EMANERemoteControlPortA
     {
       auto statisticValues =
         StatisticServiceSingleton::instance()->queryStatistic(statistic.buildid(),names);
-                                            
- 
+
+
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_QUERY);
-      
+
       auto pQuery = response.mutable_query();
-      
+
       pQuery->set_type(EMANERemoteControlPortAPI::TYPE_QUERY_STATISTIC);
-      
+
       auto pStatistic = pQuery->mutable_statistic();
-      
+
       pStatistic->set_buildid(statistic.buildid());
-      
+
       for(const auto & entry : statisticValues)
         {
           auto pElement = pStatistic->add_elements();
-          
+
           pElement->set_name(entry.first);
-          
+
           auto pValue = pElement->mutable_value();
-          
+
           convertToAny(pValue,entry.second);
         }
     }
   catch(RegistrarException & exp)
     {
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-      
+
       auto pError = response.mutable_error();
-      
+
       pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-      
+
       pError->set_description(exp.what());
     }
-  
+
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize statistic query response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize statistic query response");
     }

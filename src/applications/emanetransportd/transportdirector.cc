@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -40,12 +41,12 @@
  * @param filename reference to the base XML filename
  * @param builder reference to the TransportBuilder
  */
-EMANE::Application::TransportDirector::TransportDirector(const std::string &filename, 
+EMANE::Application::TransportDirector::TransportDirector(const std::string &filename,
                                                          TransportBuilder &builder):
   transportConfig_(filename),
   rTransportBuilder_(builder)
 {}
-  
+
 /*
  * Destructor
  */
@@ -60,14 +61,14 @@ std::unique_ptr<EMANE::Application::TransportManager>
 EMANE::Application::TransportDirector::construct(const uuid_t & uuid)
 {
   /* Now go through configuration of each instance and build appropriately */
-  EMANE::TransportInstanceConfigurations::const_iterator instanceIter = 
+  EMANE::TransportInstanceConfigurations::const_iterator instanceIter =
     transportConfig_.getInstances().begin();
-  
+
   TransportAdapters adapters;
   for ( ; instanceIter != transportConfig_.getInstances().end(); ++instanceIter)
     {
       /* Create the adapter for this transport */
-     
+
       auto pTransport = createTransport(*instanceIter);
 
       adapters.push_back(rTransportBuilder_.buildTransportAdapter(pTransport,
@@ -88,10 +89,10 @@ EMANE::Application::TransportDirector::construct(const uuid_t & uuid)
  *
  * @exception ConfigureException
  */
-std::unique_ptr<EMANE::Transport>
+std::unique_ptr<EMANE::NEMLayer>
 EMANE::Application::TransportDirector::createTransport(TransportInstanceConfiguration *pTIConfig)
 {
-  EMANE::LayerConfigurations::const_iterator transportIter = 
+  EMANE::LayerConfigurations::const_iterator transportIter =
     pTIConfig->getLayers().begin();
 
   EMANE::LayerConfiguration *pTransportConfig = (*transportIter);
@@ -100,13 +101,12 @@ EMANE::Application::TransportDirector::createTransport(TransportInstanceConfigur
     {
       std::stringstream excStream;
       excStream << "Transport inside instance "
-                << pTIConfig->getId() << " is NOT properly configured!" 
+                << pTIConfig->getId() << " is NOT properly configured!"
                 << std::ends;
-      throw ConfigureException(excStream.str());    
+      throw ConfigureException(excStream.str());
     }
-  
-  return rTransportBuilder_.buildTransport(
-                                 pTIConfig->getId(),
-                                 pTransportConfig->getLibrary(),
-                                 pTransportConfig->getConfigurationUpdateRequest());
+
+  return rTransportBuilder_.buildTransport(pTIConfig->getId(),
+                                           pTransportConfig->getLibrary(),
+                                           pTransportConfig->getConfigurationUpdateRequest());
 }

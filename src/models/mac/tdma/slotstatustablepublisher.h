@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,8 @@ namespace EMANE
             RX_GOOD,
             RX_MISSED,
             RX_IDLE,
-            RX_TX};
+            RX_TX,
+            RX_TOOLONG};
 
         void registerStatistics(StatisticRegistrar & registrar);
 
@@ -90,6 +91,7 @@ namespace EMANE
                                                      std::uint64_t, // missed
                                                      std::uint64_t, // rx during idle
                                                      std::uint64_t, // rx during tx
+                                                     std::uint64_t, // rx too long for slot
                                                      std::array<std::uint64_t,8>>>;
         TxSlotCounterMap txSlotCounterMap_;
         RxSlotCounterMap rxSlotCounterMap_;

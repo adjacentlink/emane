@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,12 +97,6 @@ namespace EMANE
 
         void processEvent(const EventId &, const Serialization &) override;
 
-        void processTimedEvent(TimerEventId eventId,
-                               const TimePoint & expireTime,
-                               const TimePoint & scheduleTime,
-                               const TimePoint & fireTime,
-                               const void * arg) override;
-
         void processConfiguration(const ConfigurationUpdate & update) override;
 
         void notifyScheduleChange(const Frequencies & frequencies,
@@ -145,7 +139,7 @@ namespace EMANE
 
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
-        bool processTxOpportunity(std::uint64_t u64ScheduleIndex);
+        void processTxOpportunity(std::uint64_t u64ScheduleIndex);
       };
     }
   }

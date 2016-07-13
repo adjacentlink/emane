@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -381,13 +381,10 @@ EMANE::Models::TDMA::BaseModel::Implementation::postStart()
     }
 
   pPlatformService_->timerService().
-    scheduleTimedEvent(Clock::now() + neighborMetricUpdateInterval_,
-                       new std::function<bool()>{[this]()
-                           {
-                             neighborMetricManager_.updateNeighborStatus();
-                             return false;
-                           }},
-                       neighborMetricUpdateInterval_);
+    schedule(std::bind(&NeighborMetricManager::updateNeighborStatus,
+                       &neighborMetricManager_),
+             Clock::now() + neighborMetricUpdateInterval_,
+             neighborMetricUpdateInterval_);
 }
 
 
@@ -482,6 +479,129 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
     {
       BaseModelMessage baseModelMessage{pkt.get(), len};
 
+
+      const Controls::ReceivePropertiesControlMessage * pReceivePropertiesControlMessage{};
+
+      const Controls::FrequencyControlMessage * pFrequencyControlMessage{};
+
+      for(auto & pControlMessage : msgs)
+        {
+          switch(pControlMessage->getId())
+            {
+            case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
+              {
+                pReceivePropertiesControlMessage =
+                  static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage);
+
+                LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                DEBUG_LEVEL,
+                                                Controls::ReceivePropertiesControlMessageFormatter(pReceivePropertiesControlMessage),
+                                                "MACI %03hu TDMA::BaseModel::%s Receiver Properties Control Message",
+                                                id_,
+                                                __func__);
+              }
+              break;
+
+            case Controls::FrequencyControlMessage::IDENTIFIER:
+              {
+                pFrequencyControlMessage =
+                  static_cast<const Controls::FrequencyControlMessage *>(pControlMessage);
+
+                LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                                DEBUG_LEVEL,
+                                                Controls::FrequencyControlMessageFormatter(pFrequencyControlMessage),
+                                                "MACI %03hu TDMA::BaseModel::%s Frequency Control Message",
+                                                id_,
+                                                __func__);
+
+              }
+
+              break;
+            }
+        }
+
+      if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage ||
+         pFrequencyControlMessage->getFrequencySegments().empty())
+        {
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s: phy control "
+                                  "message not provided from src %hu, drop",
+                                  id_,
+                                  __func__,
+                                  pktInfo.getSource());
+
+          packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                         baseModelMessage.getMessages(),
+                                         PacketStatusPublisher::InboundAction::DROP_BAD_CONTROL);
+
+          // drop
+          return;
+        }
+
+      const auto & frequencySegments = pFrequencyControlMessage->getFrequencySegments();
+
+      const FrequencySegment & frequencySegment{*frequencySegments.begin()};
+
+      TimePoint startOfReception{pReceivePropertiesControlMessage->getTxTime() +
+          pReceivePropertiesControlMessage->getPropagationDelay() +
+          frequencySegment.getOffset()};
+
+
+      // if EOR slot does not match the SOT slot drop the packet
+      auto eorSlotInfo = pScheduler_->getSlotInfo(startOfReception +
+                                                  frequencySegment.getDuration());
+
+      // message is too long for slot
+      if(eorSlotInfo.u64AbsoluteSlotIndex_ != baseModelMessage.getAbsoluteSlotIndex())
+        {
+          // determine current slot based on now time to update rx slot status table
+          auto slotInfo = pScheduler_->getSlotInfo(now);
+
+          Microseconds timeRemainingInSlot{};
+
+          // ratio calcualtion for slot status tables
+          if(slotInfo.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
+            {
+              timeRemainingInSlot = slotDuration_ -
+                std::chrono::duration_cast<Microseconds>(now -
+                                                         slotInfo.timePoint_);
+            }
+          else
+            {
+              timeRemainingInSlot = slotDuration_ +
+                std::chrono::duration_cast<Microseconds>(now -
+                                                         slotInfo.timePoint_);
+            }
+
+          double dSlotRemainingRatio =
+            timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
+
+          slotStatusTablePublisher_.update(slotInfo.u32RelativeIndex_,
+                                           slotInfo.u32RelativeFrameIndex_,
+                                           slotInfo.u32RelativeSlotIndex_,
+                                           SlotStatusTablePublisher::Status::RX_TOOLONG,
+                                           dSlotRemainingRatio);
+
+          packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                         baseModelMessage.getMessages(),
+                                         PacketStatusPublisher::InboundAction::DROP_TOO_LONG);
+
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  DEBUG_LEVEL,
+                                  "MACI %03hu TDMA::BaseModel::%s eor rx slot:"
+                                  " %zu does not match sot slot: %zu, drop long",
+                                  id_,
+                                  __func__,
+                                  eorSlotInfo.u64AbsoluteSlotIndex_,
+                                  baseModelMessage.getAbsoluteSlotIndex());
+
+          // drop
+          return;
+        }
+
+      // rx slot info for now
       auto entry = pScheduler_->getRxSlotInfo(now);
 
       if(entry.first.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
@@ -495,68 +615,6 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
 
           if(entry.second)
             {
-              const Controls::ReceivePropertiesControlMessage * pReceivePropertiesControlMessage{};
-
-              const Controls::FrequencyControlMessage * pFrequencyControlMessage{};
-
-              for(auto & pControlMessage : msgs)
-                {
-                  switch(pControlMessage->getId())
-                    {
-                    case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
-                      {
-                        pReceivePropertiesControlMessage =
-                          static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage);
-
-                        LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
-                                                        DEBUG_LEVEL,
-                                                        Controls::ReceivePropertiesControlMessageFormatter(pReceivePropertiesControlMessage),
-                                                        "MACI %03hu TDMA::BaseModel::%s Receiver Properties Control Message",
-                                                        id_,
-                                                        __func__);
-                      }
-                      break;
-
-                    case Controls::FrequencyControlMessage::IDENTIFIER:
-                      {
-                        pFrequencyControlMessage =
-                          static_cast<const Controls::FrequencyControlMessage *>(pControlMessage);
-
-                        LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
-                                                        DEBUG_LEVEL,
-                                                        Controls::FrequencyControlMessageFormatter(pFrequencyControlMessage),
-                                                        "MACI %03hu TDMA::BaseModel::%s Frequency Control Message",
-                                                        id_,
-                                                        __func__);
-
-                      }
-
-                      break;
-                    }
-                }
-
-              if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage ||
-                 pFrequencyControlMessage->getFrequencySegments().empty())
-                {
-                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                          ERROR_LEVEL,
-                                          "MACI %03hu TDMA::BaseModel::%s: phy control "
-                                          "message not provided from src %hu, drop",
-                                          id_,
-                                          __func__,
-                                          pktInfo.getSource());
-
-                  packetStatusPublisher_.inbound(pktInfo.getSource(),
-                                                 baseModelMessage.getMessages(),
-                                                 PacketStatusPublisher::InboundAction::DROP_BAD_CONTROL);
-
-                  // drop
-                  return;
-                }
-              const auto & frequencySegments = pFrequencyControlMessage->getFrequencySegments();
-
-              const FrequencySegment & frequencySegment{*frequencySegments.begin()};
-
               if(entry.first.u64FrequencyHz_ == frequencySegment.getFrequencyHz())
                 {
                   // we are in an RX Slot
@@ -566,12 +624,6 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                                    SlotStatusTablePublisher::Status::RX_GOOD,
                                                    dSlotRemainingRatio);
                 }
-
-
-              TimePoint startOfReception{pReceivePropertiesControlMessage->getTxTime() +
-                  pReceivePropertiesControlMessage->getPropagationDelay() +
-                  frequencySegment.getOffset()};
-
 
               Microseconds span{pReceivePropertiesControlMessage->getSpan()};
 
@@ -585,14 +637,10 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                          hdr.getSequenceNumber()))
                 {
                   pPlatformService_->timerService().
-                    scheduleTimedEvent(entry.first.timePoint_+ slotDuration_,
-                                       new std::function<bool()>{std::bind([](ReceiveManager  & receiveManager,
-                                                                              std::uint64_t u64AbsoluteSlotIndex)
-                                                                           {
-                                                                             receiveManager.process(u64AbsoluteSlotIndex);
-                                                                             return true;
-                                                                           },std::ref(receiveManager_),
-                                                                           entry.first.u64AbsoluteSlotIndex_+1)});
+                    schedule(std::bind(&ReceiveManager::process,
+                                       &receiveManager_,
+                                       entry.first.u64AbsoluteSlotIndex_+1),
+                             entry.first.timePoint_+ slotDuration_);
                 }
             }
           else
@@ -632,7 +680,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
         {
           auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
 
-          Microseconds timeRemainingInSlot{slotDuration_ -
+          Microseconds timeRemainingInSlot{slotDuration_ +
               std::chrono::duration_cast<Microseconds>(now -
                                                        slotInfo.timePoint_)};
           double dSlotRemainingRatio =
@@ -861,20 +909,6 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processEvent(const EventId 
 
 }
 
-void EMANE::Models::TDMA::BaseModel::Implementation::processTimedEvent(TimerEventId,
-                                                                       const TimePoint &,
-                                                                       const TimePoint &,
-                                                                       const TimePoint &,
-                                                                       const void * arg)
-{
-  auto pCallBack = reinterpret_cast<const std::function<bool()> *>(arg);
-
-  if((*pCallBack)())
-    {
-      delete pCallBack;
-    }
-}
-
 
 void EMANE::Models::TDMA::BaseModel::Implementation::processConfiguration(const ConfigurationUpdate & update)
 {
@@ -969,13 +1003,12 @@ void EMANE::Models::TDMA::BaseModel::Implementation::notifyScheduleChange(const 
 
       transmitTimedEventId_ =
         pPlatformService_->timerService().
-        scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
-                           new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                               this,
-                                                               u64ScheduleIndex_)});
+        schedule(std::bind(&Implementation::processTxOpportunity,
+                           this,
+                           u64ScheduleIndex_),
+                 pendingTxSlotInfo_.timePoint_);
     }
 }
-
 
 void EMANE::Models::TDMA::BaseModel::Implementation::processSchedulerPacket(DownstreamPacket & pkt)
 {
@@ -1131,7 +1164,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
     }
 }
 
-bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::uint64_t u64ScheduleIndex)
+void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::uint64_t u64ScheduleIndex)
 {
   // check for scheduled timer functor after new schedule, if so disregard
   if(u64ScheduleIndex != u64ScheduleIndex_)
@@ -1144,7 +1177,7 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
                               __func__,
                               u64ScheduleIndex,
                               u64ScheduleIndex_);
-      return true;
+      return;
     }
 
   auto now = Clock::now();
@@ -1200,11 +1233,10 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
 
               transmitTimedEventId_ =
                 pPlatformService_->timerService().
-                scheduleTimedEvent(pendingTxSlotInfo_.timePoint_,
-                                   new std::function<bool()>{std::bind(&Implementation::processTxOpportunity,
-                                                                       this,
-                                                                       u64ScheduleIndex_)});
-
+                schedule(std::bind(&Implementation::processTxOpportunity,
+                                   this,
+                                   u64ScheduleIndex_),
+                         pendingTxSlotInfo_.timePoint_);
 
               bFoundTXSlot = true;
               break;
@@ -1249,5 +1281,5 @@ bool  EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::
         }
     }
 
-  return true;
+  return;
 }

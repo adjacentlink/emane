@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "antennaprofiles"))
                             {
-                              EMANE::AntennaProfiles profiles;
+                              EMANE::Events::AntennaProfiles profiles;
                               ++iActionIndex;
 
                               for(xmlNodePtr pProfileNode = pActionNode->children;

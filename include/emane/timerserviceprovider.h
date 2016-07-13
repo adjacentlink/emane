@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,6 +37,9 @@
 
 #include "emane/types.h"
 
+#include <functional>
+#include <chrono>
+
 namespace EMANE
 {
 
@@ -48,8 +52,8 @@ namespace EMANE
    */
   class TimerServiceProvider
   {
-   public:
-     virtual ~TimerServiceProvider(){};
+  public:
+    virtual ~TimerServiceProvider(){};
 
 
     /**
@@ -61,7 +65,7 @@ namespace EMANE
      * has already occured.
      *
      */
-     virtual bool cancelTimedEvent(TimerEventId eventId) = 0;
+    virtual bool cancelTimedEvent(TimerEventId eventId) = 0;
 
 
     /**
@@ -75,14 +79,36 @@ namespace EMANE
      *
      */
     virtual TimerEventId scheduleTimedEvent(const TimePoint & timePoint,
-                                            const void * arg = nullptr, 
-                                            const Microseconds & interval = Microseconds::zero()) = 0;
-    
-    
+                                            const void * arg = nullptr,
+                                            const Duration & interval = Duration::zero()) = 0;
+
+
+    /**
+     * Schedules an generic interval timer callable
+     *
+     * @param fn A callable object
+     * @param absoluteTimePoint Absolute time of the timeout
+     * @param interval Repeat interval
+     */
+    template <typename Function>
+    TimerEventId schedule(Function fn,
+                          const TimePoint & timePoint,
+                          const Duration & interval = Duration::zero());
+
+    using TimerCallback = std::function<void(const TimePoint &, // expireTime,
+                                             const TimePoint &, // scheduleTime,
+                                             const TimePoint &)>;// fireTime
+
   protected:
-     TimerServiceProvider(){};
+    virtual TimerEventId schedule_i(TimerCallback callback,
+                                    const TimePoint & timePoint,
+                                    const Duration & interval) = 0;
+
+    TimerServiceProvider(){};
   };
 }
+
+#include "emane/timerserviceprovider.inl"
 
 #endif //EMNAETIMERSERVICEPROVIDER_HEADER_
 
@@ -95,15 +121,28 @@ namespace EMANE
  *
  * @section SchedulingATimedEvent Scheduling a Timed Event
  *
- * To schedule a timed event a component uses the @ref EMANE::TimerServiceProvider::scheduleTimedEvent
- * "TimerServiceProvider::scheduleTimedEvent" method. An optional opaque data pointer and reschedule
- * interval can be specified.
+ * To schedule a timed event a component uses one of two @ref EMANE::TimerServiceProvider methods:
+ * @ref EMANE::TimerServiceProvider::scheduleTimedEvent "scheduleTimedEvent" or
+ * @ref EMANE::TimerServiceProvider::schedule "schedule".
+ *
+ * @ref EMANE::TimerServiceProvider::scheduleTimedEvent "TimerServiceProvider::scheduleTimedEvent"
+ * results in a call to @ref EMANE::TimerServiceUser::processTimedEvent
+ * "TimerServiceUser::processTimedEvent". An optional opaque data pointer and reschedule interval
+ * can be specified.
+ *
+ * The @ref EMANE::TimerServiceProvider::schedule "TimerServiceProvider::schedule" method is used
+ * to schedule an arbirtray callable. The callable will execute on the same @ref EMANE::NEMQueuedLayer
+ * "functor queue" as all the API messages. An optional reschedule interval can be specified.
  *
  * The @ref EMANE::TimerServiceProvider "TimerServiceProvider" is accessed via the
  * @ref EMANE::PlatformServiceProvider "PlatformServiceProvider". All components are given a reference
  * to the @ref EMANE::PlatformServiceProvider "PlatformServiceProvider" when they are constructed.
  *
- * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-scheduletimedevent-snippet
+ * Timer schedule example using a lamda:
+ * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-scheduletimedevent-1-snippet
+ *
+ * Timer schedule example using std::bind:
+ * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-scheduletimedevent-2-snippet
  *
  * An attempt to schedule a timed event will always succeed. If the requested expiration time is in the
  * past it will be scheduled to immediately fire.
@@ -111,23 +150,25 @@ namespace EMANE
  * @section HandlingATimedEvent Handling a Timed Event
  *
  * When a timed event expires it is pushed onto the NEM's functor queue as a
- * @ref EMANE::TimerServiceUser::processTimedEvent "TimerServiceUser::processTimedEvent" method. The
- * @ref EMANE::TimerServiceUser::processTimedEvent "processTimedEvent" method arguments contain:
+ * @ref EMANE::TimerServiceUser::processTimedEvent "TimerServiceUser::processTimedEvent" method or
+ * callable depending on the interface used to scedule the timer.
+ *
+ * The @ref EMANE::TimerServiceUser::processTimedEvent "processTimedEvent" method arguments contain:
  * - The Timer Id of the expired timer
  * - The requested expiration time of the timer
  * - The actual time the timer was scheduled by the framework
  * - The actual time the timer fired and was handled by the framework
  * - The opaque data pointer used when the timer was scheduled
  *
+ * A scheduled callable contains the following arguments:
+ * - The requested expiration time of the timer
+ * - The actual time the timer was scheduled by the framework
+ * - The actual time the timer fired and was handled by the framework
+ *
+ * Use std::placeholders to access these parameters when using std::bind.
+ *
  * The three time arguments are used by the framework to track timer service performance but may be of
  * interest to the component.
- *
- * The following example uses the opaque data pointer parameter to create a generic mechanism for
- * executing arbitrary callbacks. There are many ways to process timed events. An alternative is to
- * use an object passed via the opaque data pointer to interpret the required action and handle it 
- * accordingly.
- *
- * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-processtimedevent-snippet
  *
  * @section CancelingATimedEvent Canceling a Timed Event
  *
@@ -138,4 +179,8 @@ namespace EMANE
  * the cancel attempt.
  *
  * @snippet src/models/mac/rfpipe/maclayer.cc timerservice-canceltimedevent-snippet
+ *
+ * It is possible that an attempt to cancel a timed event will return @a false indicating the event expired
+ * prior to it being executed. This can occur when the timed event message is placed on the functor queue
+ * but has not yet been serviced.
  */

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,12 +41,12 @@ public:
 
   Implementation(const OTATransmitters & otaTransmitters):
     otaTransmitters_{otaTransmitters}{}
-  
+
   const OTATransmitters & getOTATransmitters() const
   {
     return otaTransmitters_;
   }
-  
+
 private:
   const OTATransmitters otaTransmitters_;
 };
@@ -58,10 +59,11 @@ OTATransmitterControlMessage(const OTATransmitterControlMessage & msg):
 
 EMANE::Controls::OTATransmitterControlMessage::~OTATransmitterControlMessage(){}
 
-EMANE::Controls::OTATransmitterControlMessage::OTATransmitterControlMessage(const OTATransmitters & otaTransmitters):
+EMANE::Controls::OTATransmitterControlMessage::
+OTATransmitterControlMessage(const OTATransmitters & otaTransmitters):
   ControlMessage{IDENTIFIER},
   pImpl_{new Implementation{otaTransmitters}}{}
-  
+
 const EMANE::Controls::OTATransmitters &
 EMANE::Controls::OTATransmitterControlMessage::getOTATransmitters() const
 {
@@ -77,16 +79,9 @@ EMANE::Controls::OTATransmitterControlMessage::create(const Serialization & seri
 
   msg.ParseFromString(serialization);
 
-  try
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : OTATransmitterControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : OTATransmitterControlMessage");
+      throw SerializationException("unable to deserialize : OTATransmitterControlMessage");
     }
 
   for(int i = 0; i < msg.nemid_size(); ++i)
@@ -119,18 +114,11 @@ EMANE::Serialization EMANE::Controls::OTATransmitterControlMessage::serialize() 
       msg.add_nemid(*iter);
     }
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize OTATransmitterControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize OTATransmitterControlMessage");
     }
-  
+
   return serialization;
 }
 

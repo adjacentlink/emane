@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,7 +36,6 @@
 #define EMANEMACLAYER_HEADER_
 
 #include "nemqueuedlayer.h"
-#include "emane/maclayerimpl.h"
 
 #include <memory>
 
@@ -52,11 +52,11 @@ namespace EMANE
   {
   public:
     MACLayer(NEMId id,
-             MACLayerImplementor * pImplementor,
+             NEMLayer * pImplementor,
              PlatformServiceProvider *pPlatformService);
 
     ~MACLayer();
-   
+
     void initialize(Registrar & registrar) override;
 
     void configure(const ConfigurationUpdate & update) override;
@@ -66,27 +66,27 @@ namespace EMANE
     void postStart() override;
 
     void stop() override;
-    
+
     void destroy() throw() override;
-    
+
     void setDownstreamTransport(DownstreamTransport *)override;
 
     void setUpstreamTransport(UpstreamTransport *)override;
-    
+
   private:
-    std::unique_ptr<MACLayerImplementor> pImplementor_;
+    std::unique_ptr<NEMLayer> pImplementor_;
 
     std::unique_ptr<PlatformServiceProvider> pPlatformService_;
 
     void doProcessConfiguration(const ConfigurationUpdate &) override;
 
     void doProcessUpstreamControl(const ControlMessages &) override;
-    
+
     void doProcessUpstreamPacket(UpstreamPacket &,
                                  const ControlMessages &) override;
 
     void doProcessDownstreamControl(const ControlMessages &) override;
-    
+
     void doProcessDownstreamPacket(DownstreamPacket &,
                                    const ControlMessages   &) override;
 

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -49,7 +50,7 @@ namespace EMANE
   /**
    * @class PlatformService
    *
-   * @brief platform service 
+   * @brief platform service
    */
   class PlatformService : public PlatformServiceProvider
   {
@@ -64,18 +65,30 @@ namespace EMANE
 
     EventServiceProvider & eventService() override;
 
+    FileDescriptorServiceProvider & fileDescriptorService() override;
+
     /**
      * set the platform service user
      *
      * @param buildId PlatformServiceUser build id
-     * @param pPlatformServiceUser pointer to the PlatformServiceUser 
+     * @param pPlatformServiceUser pointer to the PlatformServiceUser
      */
     void setPlatformServiceUser(BuildId buildId,
                                 PlatformServiceUser * pPlatformServiceUser);
 
+    /**
+     * set the FileDescriptorServiceProvider
+     *
+     * @param pFileDescriptorServiceProvider pointer to the
+     * FileDescriptorServiceProvider
+     */
+    void setFileDescriptorServiceProvider(FileDescriptorServiceProvider *
+                                          pFileDescriptorServiceProvider);
+
   private:
     TimerServiceProxy timerServiceProxy_;
     EventServiceProxy eventServiceProxy_;
+    FileDescriptorServiceProvider * pFileDescriptorService_;
   };
 }
 

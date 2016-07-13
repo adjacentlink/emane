@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 #include "transportlayer.h"
 
 EMANE::TransportLayer::TransportLayer(NEMId id,
-                                      Transport * pImplementor,
+                                      NEMLayer * pImplementor,
                                       PlatformServiceProvider * pPlatformService) :
   NEMQueuedLayer{id, pPlatformService},
   pImplementor_{pImplementor},
@@ -46,7 +46,7 @@ EMANE::TransportLayer::~TransportLayer()
 void EMANE::TransportLayer::initialize(Registrar & registrar)
 {
   NEMQueuedLayer::initialize(registrar);
-  
+
   pImplementor_->initialize(registrar);
 }
 
@@ -97,7 +97,7 @@ void EMANE::TransportLayer::doProcessConfiguration(const ConfigurationUpdate & u
 }
 
 void EMANE::TransportLayer::doProcessUpstreamPacket(UpstreamPacket & pkt,
-                                              const ControlMessages & ctrl)
+                                                    const ControlMessages & ctrl)
 {
   static_cast<UpstreamTransport *>(pImplementor_.get())->processUpstreamPacket(pkt,ctrl);
 }
@@ -110,17 +110,17 @@ void EMANE::TransportLayer::doProcessUpstreamControl(const ControlMessages & msg
 
 
 void EMANE::TransportLayer::doProcessEvent(const EventId & eventId,
-                                     const Serialization & serialization)
+                                           const Serialization & serialization)
 {
   pImplementor_->processEvent(eventId,serialization);
 }
 
 
 void EMANE::TransportLayer::doProcessTimedEvent(TimerEventId eventId,
-                                          const TimePoint & expireTime,
-                                          const TimePoint & scheduleTime,
-                                          const TimePoint & fireTime,
-                                          const void * arg)
+                                                const TimePoint & expireTime,
+                                                const TimePoint & scheduleTime,
+                                                const TimePoint & fireTime,
+                                                const void * arg)
 {
   pImplementor_->processTimedEvent(eventId,expireTime,scheduleTime,fireTime,arg);
 }

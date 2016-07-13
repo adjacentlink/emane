@@ -96,6 +96,10 @@ namespace EMANE
 
     std::ostream * pStream_;
 
+    int iEventFd_;
+
+    int iepollFd_;
+
     void processControlMessages();
 
     bool isLogAllowed(LogLevel level) const;

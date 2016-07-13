@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,15 +38,15 @@ class EMANE::Controls::R2RINeighborMetricControlMessage::Implementation
 {
 public:
   Implementation(){}
-  
+
   Implementation(const R2RINeighborMetrics & neighborMetrics):
     neighborMetrics_{neighborMetrics}{}
-  
+
   const R2RINeighborMetrics & getNeighborMetrics() const
   {
     return neighborMetrics_;
   }
-  
+
 private:
   const R2RINeighborMetrics neighborMetrics_;
 };
@@ -57,7 +58,8 @@ R2RINeighborMetricControlMessage(const R2RINeighborMetricControlMessage & msg):
 {}
 
 
-EMANE::Controls::R2RINeighborMetricControlMessage::R2RINeighborMetricControlMessage(const R2RINeighborMetrics & neighborMetrics):
+EMANE::Controls::R2RINeighborMetricControlMessage::
+R2RINeighborMetricControlMessage(const R2RINeighborMetrics & neighborMetrics):
   ControlMessage(IDENTIFIER),
   pImpl_{new Implementation{neighborMetrics}}{}
 
@@ -106,45 +108,28 @@ EMANE::Serialization EMANE::Controls::R2RINeighborMetricControlMessage::serializ
       pNeighborMetric->set_rxavgdataratebps(iter->getRxAvgDataRatebps());
       pNeighborMetric->set_txavgdataratebps(iter->getTxAvgDataRatebps());
     }
-  
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable the serialize RadioToRouterNeighborMetrics");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable the serialize RadioToRouterNeighborMetrics");
     }
-  
+
   return serialization;
 }
-    
+
 EMANE::Controls::R2RINeighborMetricControlMessage *
 EMANE::Controls::R2RINeighborMetricControlMessage::create(const Serialization & serialization)
 {
   EMANEMessage::RadioToRouterNeighborMetrics msg;
-  
-  try
+
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : R2RINeighborMetricControlMessage");
-        }
+      throw SerializationException("unable to deserialize : R2RINeighborMetricControlMessage");
     }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : R2RINeighborMetricControlMessage");
-    }
-    
+
   R2RINeighborMetrics metrics;
 
-  google::protobuf::RepeatedPtrField<EMANEMessage::RadioToRouterNeighborMetrics::NeighborMetric> 
-    repeatedPtrField(msg.metrics());
-
-  for(const auto & neighbor : repeatedPtrField)
+  for(const auto & neighbor : msg.metrics())
     {
       metrics.push_back(R2RINeighborMetric{static_cast<std::uint16_t>(neighbor.neighborid()),
             neighbor.numrxframes(),

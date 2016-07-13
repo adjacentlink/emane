@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -43,14 +43,14 @@ namespace EMANE
 
   /**
    * @class OTAProvider
-   * 
-   * @brief Interface for OTA 
+   *
+   * @brief Interface for OTA
    */
   class OTAProvider
   {
   public:
     virtual ~OTAProvider(){}
-    
+
     /**
      * Send OTA packet
      *
@@ -59,9 +59,9 @@ namespace EMANE
      * @param msg Control Message
      */
     virtual void sendOTAPacket(NEMId id,
-                               DownstreamPacket & pkt, 
+                               const DownstreamPacket & pkt,
                                const ControlMessages & msg) const = 0;
-    
+
     /**
      * Register an OTA user
      *
@@ -72,17 +72,17 @@ namespace EMANE
      */
     virtual void registerOTAUser(NEMId id, OTAUser * pOTAUser) = 0;
 
-    
+
     /**
      * Unregister an OTA user
      *
      * @param id NEM identifier
-     * 
+     *
      * @throw OTAEception when an error occurs during unregister
      */
     virtual void unregisterOTAUser(NEMId id) = 0;
 
-    
+
   protected:
     OTAProvider(){}
   };

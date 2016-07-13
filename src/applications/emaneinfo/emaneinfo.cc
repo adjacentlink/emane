@@ -48,6 +48,7 @@
 #include "eventagentmanagerimpl.h"
 #include "registrarproxy.h"
 #include "buildidservice.h"
+#include "otamanager.h"
 #include <sstream>
 #include <iostream>
 #include <tuple>
@@ -62,7 +63,7 @@ T * createManager()
   uuid_t uuid{};
   uuid_generate(uuid);
   T *  pManager{new T{uuid}};
-  auto buildId = EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pManager);
+  EMANE::BuildId buildId{0};
   EMANE::RegistrarProxy registrarProxy{buildId};
   pManager->initialize(registrarProxy);
   return pManager;
@@ -158,6 +159,7 @@ int main(int argc, char * argv[])
           auto pManager = createManager<EMANE::Application::NEMManagerImpl>();
           buildId = pManager->getBuildId();
           pComponent.reset(pManager);
+          EMANE::OTAManagerSingleton::instance();
         }
       else if(sPluginName == "transportmanager")
         {
@@ -278,6 +280,7 @@ void usage()
   std::cout<<std::endl;
   std::cout<<"options:"<<std::endl;
   std::cout<<"  -h, --help                     Print this message and exit."<<std::endl;
+  std::cout<<"  -m, --manifest                 Print manifest."<<std::endl;
   std::cout<<"  -v, --version                  Print version and exit."<<std::endl;
   std::cout<<std::endl;
 }

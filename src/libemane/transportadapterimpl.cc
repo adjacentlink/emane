@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -45,7 +45,7 @@ EMANE::Application::TransportAdapterImpl::TransportAdapterImpl(NEMId nemId):
 
 EMANE::Application::TransportAdapterImpl::~TransportAdapterImpl(){}
 
-void EMANE::Application::TransportAdapterImpl::setTransport(std::unique_ptr<Transport> & pTransport)
+void EMANE::Application::TransportAdapterImpl::setTransport(std::unique_ptr<NEMLayer> & pTransport)
 {
   pTransport_ = std::move(pTransport);
   setUpstreamTransport(pTransport_.get());

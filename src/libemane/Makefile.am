@@ -78,6 +78,7 @@ libemane_la_SOURCES =                         \
  eventregistrarproxy.cc                       \
  eventservice.cc                              \
  eventserviceproxy.cc                         \
+ eventstatisticpublisher.cc                   \
  eventtablepublisher.cc                       \
  flowcontrolclient.cc                         \
  flowcontrolcontrolmessage.cc                 \
@@ -117,11 +118,15 @@ libemane_la_SOURCES =                         \
  nemmanagerimpl.cc                            \
  nemnetworkadapter.cc                         \
  nemotaadapter.cc                             \
+ nemplatformservice.cc                        \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
+ nemtimerserviceproxy.cc                      \
  noiserecorder.cc                             \
+ nopfiledescriptorservice.cc                  \
  orientationformatter.cc                      \
  otamanager.cc                                \
+ otastatisticpublisher.cc                     \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
  pathlosseventformatter.cc                    \
@@ -219,6 +224,7 @@ EXTRA_DIST=                                   \
  eventserviceexception.h                      \
  eventservice.h                               \
  eventserviceproxy.h                          \
+ eventstatisticpublisher.h                    \
  eventtablepublisher.h                        \
  frameworkphy.h                               \
  freespacepropagationmodelalgorithm.h         \
@@ -251,14 +257,19 @@ EXTRA_DIST=                                   \
  nemmanagerimpl.h                             \
  nemnetworkadapter.h                          \
  nemotaadapter.h                              \
+ nemplatformservice.h                         \
  nemqueuedlayer.h                             \
+ nemqueuedlayer.inl                           \
  nemstatefullayer.h                           \
+ nemtimerserviceproxy.h                       \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
  noiserecorder.h                              \
+ nopfiledescriptorservice.h                   \
  otaexception.h                               \
  otamanager.h                                 \
  otaprovider.h                                \
+ otastatisticpublisher.h                      \
  otauser.h                                    \
  phylayer.h                                   \
  phylayerfactory.h                            \
@@ -290,6 +301,7 @@ EXTRA_DIST=                                   \
  statistictablequeryhandler.h                 \
  timerserviceexception.h                      \
  timerservice.h                               \
+ timerservice.inl                             \
  timerserviceproxy.h                          \
  transportadapterimpl.h                       \
  transportfactory.h                           \

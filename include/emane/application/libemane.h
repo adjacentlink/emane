@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,10 +84,11 @@ namespace EMANE
  *    -# @ref RadioModelPlugin "Radio Models" emulate the lowest layers of a waveform. Functionality
  *       typically includes: Channel access protocols (TDMA, CSMA/CA, FDMA, CDMA) and QoS features
  *       (Queuing, Acknowledgments, Retries, Fragmentation, Segmentation).\n
- *        - The %EMANE distribution contains two Radio Models:
+ *        - The %EMANE distribution contains three Radio Models:
  *            - @ref EMANE::Models::RFPipe::MACLayer "RF Pipe Model"
  *            - @ref EMANE::Models::IEEE80211ABG::MACLayer "IEEE 802.11abg Model"
-              .
+ *            - @ref EMANE::Models::TDMAEventSchedulerRadioModel "TDMA Event Scheduler Model"
+ *            .
  *        - The distribution contains one Utility Model
  *            - @ref EMANE::Models::CommEffect::Shim::Shim "Comm Effect Model"\n
  *             A Utility Model is not a Radio Model. It uses the features of
@@ -143,6 +145,7 @@ namespace EMANE
  *   - @ref LogService "Log Service" used to emit log messages.
  *   - @ref StatisticService "Statistic Service" used to create numeric and non numeric statistics and statistic tables which are accessible from outside the emulator.
  *   - @ref TimerService "Timer Service" used to schedule timed events.
+ *   - @ref EMANE::FileDescriptorServiceProvider "File Descriptor Service" used to register file descriptors for functor queue servicing.
  *
  * <hr>
  * <a name="Emulator Physical Layer"><h2>Emulator Physical Layer</h2></a>
@@ -226,22 +229,20 @@ namespace EMANE
  * // create a transport builder
  * EMANE::Application::TransportBuilder transportBuilder;
  *     
- * // create an instance of YOUR transport
- * MyWaveform::Transport * pTransport = 
- *   transportBuilder.buildTransport<MyWaveform::Transport>(id, // nem id
- *     {{"yourconfigparamname",{"yourconfigparamvalue"}}}); // EMANE::ConfigurationUpdateRequest
- *     
- * // ownership will be transferred to TransportAdapter
- * std::unique_ptr<EMANE::Transport> ptr{pTransport}; 
- *     
- * EMANE::Application::TransportAdapters adapters;
- *     
- * adapters.push_back(transportBuilder.buildTransportAdapter(ptr, 
- *                                                           {
- *                                                             {"platformendpoint",{"localhost:8181"}},
- *                                                             {"transportendpoint",{"localhost:8281"}}
- *                                                            }
- *                                                            ));
+ * // build YOUR transport along with an adapter
+ * auto items =
+ *   transportBuilder.buildTransportWithAdapter<MyWaveform::Transport>(id, // nem id
+ *        {{"yourconfigparamname",{"yourconfigparamvalue"}}}, //ConfigurationUpdateRequest
+ *        "localhost:8181", // platform endpoint
+ *        "localhost:8281"); // transport endpoint
+ *
+ * // store a borrowed reference to YOUR transport instance for your use
+ * MyWaveform::Transport * pTransport{std::get<0>(items)};
+ *
+ * EMANE::Application::TransportAdapters adapters{};
+ *
+ * // move ownership of the TransportAdapter
+ * adapters.push_back(std::move(std::get<1>(items)));
  *     
  * // create application instance UUID 
  * uuid_t uuid;

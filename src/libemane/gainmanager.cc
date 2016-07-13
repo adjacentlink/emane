@@ -47,7 +47,7 @@ EMANE::GainManager::GainManager(NEMId nemId):
    dLocalAntennaElevationDegrees_{},
    bHasLocalAntennaProfile_{false}{}
 
-void EMANE::GainManager::update(const AntennaProfiles & antennaProfiles)
+void EMANE::GainManager::update(const Events::AntennaProfiles & antennaProfiles)
 {
   for(const auto & antennaProfile : antennaProfiles)
     {

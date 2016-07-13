@@ -48,9 +48,11 @@
 
 #include <sstream>
 #include <algorithm>
+#include <uuid.h>
 
 EMANE::OTAManager::OTAManager():
   bOpen_(false),
+  eventStatisticPublisher_{"OTAChannel"},
   u64SequenceNumber_{}
 {
   uuid_clear(uuid_);
@@ -66,8 +68,18 @@ EMANE::OTAManager::~OTAManager()
     }
 }
 
+void EMANE::OTAManager::setStatPacketCountRowLimit(size_t rows)
+{
+  otaStatisticPublisher_.setRowLimit(rows);
+}
+
+void EMANE::OTAManager::setStatEventCountRowLimit(size_t rows)
+{
+  eventStatisticPublisher_.setRowLimit(rows);
+}
+
 void EMANE::OTAManager::sendOTAPacket(NEMId id,
-                                      DownstreamPacket & pkt,
+                                      const DownstreamPacket & pkt,
                                       const ControlMessages & msgs) const
 {
   // get the pkt info
@@ -122,35 +134,41 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
         }
     }
 
-  // bounce a copy of the pkt back up to our local NEM stack(s)
-  for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
-      iter != end;
-      ++iter)
+  /*
+   * UpstreamPacket data is shared (reference counted).  The same
+   * packet can be used in multiple calls to OTAUser::processOTAPacket
+   * since the resulting action is to enqueue a referenced counted
+   * copy on each NEM queue. Each copy will share the same packet data
+   * but have unique index counters used for stripping packet data.
+   */
+  if(nemUserMap_.size() > 1)
     {
-      if(iter->first == id)
-        {
-          // skip our own transmisstion
-        }
-      else if(otaTransmitters.count(iter->first) > 0)
-        {
-          // skip NEM(s) in the additional transmitter set (ATS)
-        }
-      else
-        {
-          /*
-           * each NEM needs is own copy of the packet,
-           * you can not share between NEM(s), so create and send an Upstream pkt for each NEM
-           */
-          auto now = Clock::now();
+      auto now = Clock::now();
 
-          UpstreamPacket upstreamPacket({pktInfo.getSource(),
-                pktInfo.getDestination(),
-                pktInfo.getPriority(),
-                now,
-                uuid_},
-            pkt.getVectorIO());
+      UpstreamPacket upstreamPacket({pktInfo.getSource(),
+            pktInfo.getDestination(),
+            pktInfo.getPriority(),
+            now,
+            uuid_},
+        pkt.getVectorIO());
 
-          iter->second->processOTAPacket(upstreamPacket,ControlMessages());
+      // bounce a copy of the pkt back up to our local NEM stack(s)
+      for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
+          iter != end;
+          ++iter)
+        {
+          if(iter->first == id)
+            {
+              // skip our own transmisstion
+            }
+          else if(otaTransmitters.count(iter->first) > 0)
+            {
+              // skip NEM(s) in the additional transmitter set (ATS)
+            }
+          else
+            {
+              iter->second->processOTAPacket(upstreamPacket,ControlMessages());
+            }
         }
     }
 
@@ -220,7 +238,20 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
                                       strerror(errno));
 
             }
+          else
+            {
+              otaStatisticPublisher_.update(OTAStatisticPublisher::Type::TYPE_DOWNSTREAM,
+                                            uuid_,
+                                            pktInfo.getSource());
 
+
+              for(const auto & entry : eventSerializations)
+                {
+                  eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_TX,
+                                                  uuid_,
+                                                  std::get<1>(entry));
+                }
+            }
         }
       else
         {
@@ -345,7 +376,10 @@ void EMANE::OTAManager::processOTAMessage()
                       std::uint16_t u16ControlIndex = u16EventIndex + otaHeader.eventlength();
                       std::uint16_t u16PacketIndex = u16ControlIndex + otaHeader.controllength();
 
-                      if(uuid_compare(uuid_,reinterpret_cast<const unsigned char *>(otaHeader.uuid().data())))
+                      uuid_t remoteUUID;
+                      uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(otaHeader.uuid().data()));
+
+                      if(uuid_compare(uuid_,remoteUUID))
                         {
                           if(otaHeader.eventlength())
                             {
@@ -353,15 +387,15 @@ void EMANE::OTAManager::processOTAMessage()
 
                               if(data.ParseFromArray(&buf[u16EventIndex],otaHeader.eventlength()))
                                 {
-                                  using RepeatedPtrFieldSerilaization =
-                                    google::protobuf::RepeatedPtrField<EMANEMessage::Event::Data::Serialization>;
-
-                                  for(const auto & repeatedSerialization :
-                                        RepeatedPtrFieldSerilaization(data.serializations()))
+                                  for(const auto & serialization : data.serializations())
                                     {
-                                      EventServiceSingleton::instance()->processEventMessage(repeatedSerialization.nemid(),
-                                                                                             repeatedSerialization.eventid(),
-                                                                                             repeatedSerialization.data());
+                                      EventServiceSingleton::instance()->processEventMessage(serialization.nemid(),
+                                                                                             serialization.eventid(),
+                                                                                             serialization.data());
+
+                                      eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
+                                                                      remoteUUID,
+                                                                      serialization.eventid());
                                     }
                                 }
                               else
@@ -376,7 +410,7 @@ void EMANE::OTAManager::processOTAMessage()
                                              otaHeader.destination(),
                                              0,
                                              now,
-                                             uuid_);
+                                             remoteUUID);
 
                           UpstreamPacket pkt(pktInfo,&buf[u16PacketIndex],otaHeader.datalength());
 
@@ -414,6 +448,9 @@ void EMANE::OTAManager::processOTAMessage()
                                 }
                             }
 
+                          otaStatisticPublisher_.update(OTAStatisticPublisher::Type::TYPE_UPSTREAM,
+                                                        remoteUUID,
+                                                        pktInfo.getSource());
 
                           // for each local NEM stack
                           for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
@@ -443,20 +480,23 @@ void EMANE::OTAManager::processOTAMessage()
                 }
               else
                 {
-                   LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                           ERROR_LEVEL,"OTAManager message header could not be deserialized");
+                  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                          ERROR_LEVEL,
+                                          "OTAManager message header could not be deserialized");
                 }
             }
           else
             {
               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                      ERROR_LEVEL,"OTAManager message missing header missing prefix length encoding");
+                                      ERROR_LEVEL,
+                                      "OTAManager message missing header missing prefix length encoding");
             }
         }
       else
         {
-           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,"OTAManager Packet Received error");
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  ERROR_LEVEL,
+                                  "OTAManager Packet Received error");
           break;
         }
     }

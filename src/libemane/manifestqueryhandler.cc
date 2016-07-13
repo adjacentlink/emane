@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,9 +40,9 @@ EMANE::ControlPort::ManifestQueryHandler::process(std::uint32_t u32Sequence,
                                                   std::uint32_t u32Reference)
 {
   auto componentMap = BuildIdServiceSingleton::instance()->getNEMLayerComponentBuildIdMap();
-  
+
   EMANERemoteControlPortAPI::Response response;
-  
+
   response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_QUERY);
 
   auto pQuery = response.mutable_query();
@@ -62,15 +63,15 @@ EMANE::ControlPort::ManifestQueryHandler::process(std::uint32_t u32Sequence,
       for(const auto & component : nem.second)
         {
           auto pComponent = pNEM->add_components();
-          
+
           pComponent->set_buildid(std::get<0>(component));
 
           ComponentType componentType{std::get<1>(component)};
-          
-          pComponent->set_type(componentType == ComponentType::COMPONENT_PHYILAYER ? 
-                               Component::TYPE_COMPONENT_PHY : 
+
+          pComponent->set_type(componentType == ComponentType::COMPONENT_PHYILAYER ?
+                               Component::TYPE_COMPONENT_PHY :
                                componentType == ComponentType::COMPONENT_MACILAYER ?
-                               Component::TYPE_COMPONENT_MAC : 
+                               Component::TYPE_COMPONENT_MAC :
                                componentType == ComponentType::COMPONENT_SHIMILAYER ?
                                Component::TYPE_COMPONENT_SHIM:
                                Component::TYPE_COMPONENT_TRANSPORT);
@@ -78,21 +79,14 @@ EMANE::ControlPort::ManifestQueryHandler::process(std::uint32_t u32Sequence,
           pComponent->set_plugin(std::get<2>(component));
         }
     }
-  
+
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
 
   std::string sSerialization;
-  
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize manifest query response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize manifest query response");
     }

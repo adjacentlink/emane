@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,19 +126,6 @@ void EMANE::Models::TDMA::BaseModel::processEvent(const EventId & eventId,
                                                   const Serialization & serialization)
 {
   pImpl_->processEvent(eventId,serialization);
-}
-
-void EMANE::Models::TDMA::BaseModel::processTimedEvent(TimerEventId eventId,
-                                            const TimePoint & expireTime,
-                                            const TimePoint & scheduleTime,
-                                            const TimePoint & fireTime,
-                                            const void * arg)
-{
-  pImpl_->processTimedEvent(eventId,
-                            expireTime,
-                            scheduleTime,
-                            fireTime,
-                            arg);
 }
 
 

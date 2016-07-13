@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,20 +38,20 @@ class EMANE::Messages::LoggerRecordMessage::Implementation
 {
 public:
   Implementation(std::string sLogRecord, LogLevel logLevel, uint32_t u32LogSequenceNumber) :
-   sLogRecord_{sLogRecord},
-   logLevel_{logLevel},
-   u32LogSequenceNumber_{u32LogSequenceNumber}{}
+    sLogRecord_{sLogRecord},
+    logLevel_{logLevel},
+    u32LogSequenceNumber_{u32LogSequenceNumber}{}
 
   LogLevel getLogLevel() const
   {
     return logLevel_;
   }
- 
+
   std::uint32_t getLogSequenceNumber() const
   {
     return u32LogSequenceNumber_;
   }
- 
+
   const std::string & getLogRecord() const
   {
     return sLogRecord_;
@@ -64,50 +64,42 @@ private:
 };
 
 EMANE::Messages::LoggerRecordMessage::LoggerRecordMessage(const char * p,
-                                              size_t len,
-                                              LogLevel logLevel, 
-                                              std::uint32_t u32LogSequenceNumber):
+                                                          size_t len,
+                                                          LogLevel logLevel,
+                                                          std::uint32_t u32LogSequenceNumber):
   pImpl_{new Implementation{std::string{p, len}, logLevel, u32LogSequenceNumber}}
 { }
 
 
-EMANE::Messages::LoggerRecordMessage::LoggerRecordMessage(const void * p, size_t len) 
+EMANE::Messages::LoggerRecordMessage::LoggerRecordMessage(const void * p, size_t len)
 {
   EMANEMessage::LoggerMessage loggerMessage;
 
-  try
-    {
-      if(!loggerMessage.ParseFromArray(p, len))
-        {
-          throw SerializationException("unable to deserialize LoggerRecordMessage");
-        }
-
-      // check for record rype
-      if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
-        {
-          // check for record
-          if(loggerMessage.has_record ())
-            {   
-               pImpl_.reset(new Implementation(loggerMessage.record().record(),
-                                               convertLogLevel(loggerMessage.record().level()), 
-                                               loggerMessage.record().sequencenumber()));
-            }
-          else
-            {
-              throw SerializationException("LoggerRecordMessage does NOT have record");
-            }
-        }
-      else
-        {
-          throw SerializationException("LoggerRecordMessage type is not LoggerMessage_Type_RECORD");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!loggerMessage.ParseFromArray(p, len))
     {
       throw SerializationException("unable to deserialize LoggerRecordMessage");
     }
-}
 
+  // check for record rype
+  if(loggerMessage.type() == EMANEMessage::LoggerMessage_Type_RECORD)
+    {
+      // check for record
+      if(loggerMessage.has_record ())
+        {
+          pImpl_.reset(new Implementation(loggerMessage.record().record(),
+                                          convertLogLevel(loggerMessage.record().level()),
+                                          loggerMessage.record().sequencenumber()));
+        }
+      else
+        {
+          throw SerializationException("LoggerRecordMessage does NOT have record");
+        }
+    }
+  else
+    {
+      throw SerializationException("LoggerRecordMessage type is not LoggerMessage_Type_RECORD");
+    }
+}
 
 
 EMANE::Messages::LoggerRecordMessage::~LoggerRecordMessage()
@@ -136,33 +128,26 @@ EMANE::Serialization EMANE::Messages::LoggerRecordMessage::serialize() const
 {
   Serialization serialization;
 
-  try
-    {
-     // logger message
-     EMANEMessage::LoggerMessage loggerMessage;
+  // logger message
+  EMANEMessage::LoggerMessage loggerMessage;
 
-     // set type log record
-     loggerMessage.set_type(EMANEMessage::LoggerMessage_Type_RECORD);
+  // set type log record
+  loggerMessage.set_type(EMANEMessage::LoggerMessage_Type_RECORD);
 
-     // get ref to log record msg
-     EMANEMessage::LoggerMessage_RecordMessage * pRecordMessage = loggerMessage.mutable_record();
+  // get ref to log record msg
+  EMANEMessage::LoggerMessage_RecordMessage * pRecordMessage = loggerMessage.mutable_record();
 
-     // set the log record fields
-     pRecordMessage->set_level(convertLogLevel(pImpl_->getLogLevel()));
+  // set the log record fields
+  pRecordMessage->set_level(convertLogLevel(pImpl_->getLogLevel()));
 
-     pRecordMessage->set_record(pImpl_->getLogRecord());
+  pRecordMessage->set_record(pImpl_->getLogRecord());
 
-     pRecordMessage->set_sequencenumber(pImpl_->getLogSequenceNumber());
+  pRecordMessage->set_sequencenumber(pImpl_->getLogSequenceNumber());
 
-     if(!loggerMessage.SerializeToString(&serialization))
-      {
-        throw SerializationException("unable to serialize LoggerRecordMessage");
-      }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!loggerMessage.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize LoggerRecordMessage");
     }
-  
+
   return serialization;
 }

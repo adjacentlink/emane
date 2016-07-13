@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +40,7 @@ public:
   Implementation(const Locations & locations):
     locations_{locations}{}
 
-const Locations & getLocations() const
+  const Locations & getLocations() const
   {
     return locations_;
   }
@@ -53,27 +54,17 @@ EMANE::Events::LocationEvent::LocationEvent(const Serialization & serialization)
 {
   EMANEMessage::LocationEvent msg;
 
-  try
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : LocationEvent");
-        }
+      throw SerializationException("unable to deserialize : LocationEvent");
     }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : LocationEvent");
-    }
-  
-  using RepeatedPtrFieldLocation = 
-    google::protobuf::RepeatedPtrField<EMANEMessage::LocationEvent::Location>;
-  
+
   Locations locations;
-  
-  for(const auto & repeatedLocation : RepeatedPtrFieldLocation(msg.locations()))
+
+  for(const auto & location : msg.locations())
     {
-      const auto & positionMessage = repeatedLocation.position();
-      NEMId nemId{static_cast<EMANE::NEMId>(repeatedLocation.nemid())};
+      const auto & positionMessage = location.position();
+      NEMId nemId{static_cast<EMANE::NEMId>(location.nemid())};
 
       Position position{positionMessage.latitudedegrees(),
           positionMessage.longitudedegrees(),
@@ -84,29 +75,29 @@ EMANE::Events::LocationEvent::LocationEvent(const Serialization & serialization)
 
       // optional
       Orientation orientation{};
-      
-      if(repeatedLocation.has_velocity())
+
+      if(location.has_velocity())
         {
-          const auto & velocityMessage = repeatedLocation.velocity();
+          const auto & velocityMessage = location.velocity();
 
           velocity = Velocity{velocityMessage.azimuthdegrees(),
                               velocityMessage.elevationdegrees(),
                               velocityMessage.magnitudemeterspersecond()};
         }
-      
-      if(repeatedLocation.has_orientation())
+
+      if(location.has_orientation())
         {
-          const auto & orientationMessage = repeatedLocation.orientation();
+          const auto & orientationMessage = location.orientation();
 
           orientation = Orientation{orientationMessage.rolldegrees(),
                                     orientationMessage.pitchdegrees(),
                                     orientationMessage.yawdegrees()};
         }
-          
+
       locations.push_back({nemId,
             position,
-              {orientation,repeatedLocation.has_orientation()},
-                {velocity,repeatedLocation.has_velocity()}});
+              {orientation,location.has_orientation()},
+                {velocity,location.has_velocity()}});
     }
 
   pImpl_.reset(new Implementation{locations});
@@ -115,24 +106,24 @@ EMANE::Events::LocationEvent::LocationEvent(const Serialization & serialization)
 EMANE::Events::LocationEvent::LocationEvent(const Locations & locations):
   Event{IDENTIFIER},
   pImpl_{new Implementation{locations}}{}
-    
+
 EMANE::Events::LocationEvent::LocationEvent(const LocationEvent & rhs):
   Event{IDENTIFIER},
   pImpl_{new Implementation{rhs.getLocations()}}{}
-   
+
 EMANE::Events::LocationEvent & EMANE::Events::LocationEvent::operator=(const LocationEvent & rhs)
 {
   pImpl_.reset(new Implementation{rhs.getLocations()});
   return *this;
 }
-    
+
 EMANE::Events::LocationEvent::LocationEvent(LocationEvent && rval):
   Event{IDENTIFIER},
   pImpl_{new Implementation{{}}}
 {
   rval.pImpl_.swap(pImpl_);
 }
-    
+
 EMANE::Events::LocationEvent & EMANE::Events::LocationEvent::operator=(LocationEvent && rval)
 {
   rval.pImpl_.swap(pImpl_);
@@ -140,7 +131,7 @@ EMANE::Events::LocationEvent & EMANE::Events::LocationEvent::operator=(LocationE
 }
 
 EMANE::Events::LocationEvent::~LocationEvent(){}
-    
+
 const EMANE::Events::Locations & EMANE::Events::LocationEvent::getLocations() const
 {
   return pImpl_->getLocations();
@@ -159,7 +150,7 @@ EMANE::Serialization EMANE::Events::LocationEvent::serialize() const
       pLocationMessage->set_nemid(location.getNEMId());
 
       auto pPositionMessage = pLocationMessage->mutable_position();
-      
+
       const auto & position = location.getPosition();
 
       pPositionMessage->set_latitudedegrees(position.getLatitudeDegrees());
@@ -188,15 +179,8 @@ EMANE::Serialization EMANE::Events::LocationEvent::serialize() const
           pOrientationMessage->set_rolldegrees(optionalOrientation.first.getRollDegrees());
         }
     }
-  
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize : LocationEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize : LocationEvent");
     }

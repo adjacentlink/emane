@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,7 +36,6 @@
 #define EMANEPHYLAYER_HEADER_
 
 #include "nemqueuedlayer.h"
-#include "emane/phylayerimpl.h"
 
 #include <memory>
 
@@ -52,13 +52,13 @@ namespace EMANE
   {
   public:
     PHYLayer(NEMId id,
-             PHYLayerImplementor * pImplementor,
+             NEMLayer * pImplementor,
              PlatformServiceProvider *pPlatformService);
-    
+
     ~PHYLayer();
-    
+
     void initialize(Registrar & registrar) override;
-    
+
     void configure(const ConfigurationUpdate & update) override;
 
     void start() override;
@@ -66,7 +66,7 @@ namespace EMANE
     void postStart() override;
 
     void stop() override;
-    
+
     void destroy() throw() override;
 
     void setUpstreamTransport(UpstreamTransport *) override;
@@ -74,14 +74,14 @@ namespace EMANE
     void setDownstreamTransport(DownstreamTransport *) override;
 
   private:
-    std::unique_ptr<PHYLayerImplementor> pImplementor_;
+    std::unique_ptr<NEMLayer> pImplementor_;
 
     std::unique_ptr<PlatformServiceProvider> pPlatformService_;
 
     void doProcessConfiguration(const ConfigurationUpdate &) override;
 
     void doProcessDownstreamControl(const ControlMessages &) override;
-    
+
     void doProcessDownstreamPacket(DownstreamPacket &,const ControlMessages &) override;
 
     void doProcessUpstreamPacket(UpstreamPacket &,const ControlMessages &) override;

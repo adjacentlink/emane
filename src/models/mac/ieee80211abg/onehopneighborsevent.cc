@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,28 +34,28 @@
 #include "onehopneighborsevent.pb.h"
 
 class EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::Implementation
- {
-   public:
-     Implementation(NEMId id, const NbrSet & neighbors) :
-       eventSource_(id),
-       nbrSet_{neighbors}
-     { }
+{
+public:
+  Implementation(NEMId id, const NbrSet & neighbors) :
+    eventSource_(id),
+    nbrSet_{neighbors}
+  { }
 
-     const NbrSet & getNeighbors() const
-      {
-        return nbrSet_;
-      }
+  const NbrSet & getNeighbors() const
+  {
+    return nbrSet_;
+  }
 
-     NEMId getEventSource() const
-      {
-        return eventSource_;
-      }
+  NEMId getEventSource() const
+  {
+    return eventSource_;
+  }
 
-   private:
-     NEMId  eventSource_;
+private:
+  NEMId  eventSource_;
 
-     NbrSet nbrSet_;
- };
+  NbrSet nbrSet_;
+};
 
 
 EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::OneHopNeighborsEvent(const Serialization & serialization)
@@ -64,41 +64,31 @@ EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::OneHopNeighborsEvent(const Se
 {
   EMANEEventMessage::OneHopNeighborsEvent msg;
 
-  try
-    {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : OneHopNeighborsEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.ParseFromString(serialization))
     {
       throw SerializationException("unable to deserialize : OneHopNeighborsEvent");
     }
-  
-  using RepeatedPtrFieldNeighbor = 
-    google::protobuf::RepeatedPtrField<EMANEEventMessage::OneHopNeighborsEvent_Neighbor>;
-  
+
   NbrSet neighbors;
-  
-  for(const auto & iter : RepeatedPtrFieldNeighbor(msg.neighbors()))
+
+  for(const auto & iter : msg.neighbors())
     {
       neighbors.insert(static_cast<NEMId>(iter.nemid()));
     }
 
   pImpl_.reset(new Implementation{static_cast<NEMId>(msg.eventsource()), neighbors});
 }
-    
+
 EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::OneHopNeighborsEvent(NEMId id, const NbrSet & neighbors):
   Event{IDENTIFIER},
   pImpl_{new Implementation{id, neighbors}}{}
 
-    
+
 
 EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::~OneHopNeighborsEvent(){}
 
-    
-const EMANE::Models::IEEE80211ABG::NbrSet & 
+
+const EMANE::Models::IEEE80211ABG::NbrSet &
 EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::getNeighbors() const
 {
   return pImpl_->getNeighbors();
@@ -127,14 +117,7 @@ EMANE::Serialization EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::serializ
       iter->set_nemid(neighbor);
     }
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize : OneHopNeighborsEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize : OneHopNeighborsEvent");
     }

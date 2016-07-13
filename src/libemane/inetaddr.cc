@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ public:
   }
 
   Implementation(const sockaddr_in6 & sockaddr):
-    pSockAddr_{reinterpret_cast<struct sockaddr*>(new sockaddr_in)},
+    pSockAddr_{reinterpret_cast<struct sockaddr*>(new sockaddr_in6)},
     length_{sizeof(sockaddr_in6)},
     iFamily_{AF_INET6},
     u16Port_{}
