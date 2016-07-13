@@ -79,5 +79,5 @@ then
     find . -name 'Makefile.in' -delete
     
 else
-    autoreconf --force --install
+    autoreconf --install
 fi
