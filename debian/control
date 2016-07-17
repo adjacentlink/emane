@@ -1,5 +1,5 @@
 Source: emane
-Section: unknown
+Section: net
 Priority: extra
 Maintainer: Adjacent Link LLC <emane@adjacentlink.com>
 Build-Depends: debhelper (>= 8), dh-python, protobuf-compiler, autotools-dev, python-setuptools, libxml2-dev, libprotobuf-dev, libpcre3-dev, libpcap-dev, uuid-dev
@@ -8,25 +8,25 @@ Homepage: https://github.com/adjacentlink/emane
 
 Package: emane
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-libs (= ${binary:Version}), emane-dtds (= ${binary:Version})
 Description: EMANE is an Extendable Mobile Ad-hoc Network Emulator that allows for heterogeneous network emulation using a pluggable MAC and PHY layer architecture.
 
 Package: emane-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}, emane-libs (= ${binary:Version})
 Description: Headers necessary to build EMANE network emulation modules
 
 Package: emane-dtds
-Section: extra
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: misc
+Architecture: all
+Depends: ${misc:Depends}
 Description:  EMANE DTDs required for EMANE XML.
 
 Package: emane-utils
-Section: extra
-Architecture: any
-Depends: python-lxml, ${shlibs:Depends}, ${misc:Depends}
+Section: text
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, emane-dtds (= ${binary:Version}), python-lxml
 Description:  EMANE utilities
 
 Package: emane-libs
@@ -36,100 +36,97 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE libraries required for components
 
 Package: emane-transportdaemon
-Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-libs (= ${binary:Version}), emane-dtds (= ${binary:Version})
 Description:  EMANE transport daemon.  Creates and manages one or more transports
 
 Package: emane-eventdaemon
-Section: binary
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-libs (= ${binary:Version}), emane-dtds (= ${binary:Version})
 Description:  EMANE event daemon forwards events to registered agents.
 
 Package: emane-eventservice
-Section: binary
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-libs (= ${binary:Version}), emane-dtds (= ${binary:Version})
 Description:  EMANE event service creates and manages event generators.
 
 Package: emane-model-rfpipe
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description: EMANE RF Pipe MAC layer
 
 Package: emane-model-ieee80211abg
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description:  EMANE 802.11abg MAC layer
 
 Package: emane-model-bypass
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description:  EMANE Bypass MAC layer
 
 Package: emane-model-commeffect
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description: EMANE commeffect model replacement for commercial network emulators.
 
 Package: emane-model-tdmaeventscheduler
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description: EMANE TDMA radio model
 
 Package: emane-agent-gpsdlocation
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-eventdaemon (= ${binary:Version})
 Description:  EMANE gpsd location agent translates location events into NEMA strings and transmits them to gpsd via a pseudo terminal device
 
 Package: emane-trans-virtual
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-trans-common (= ${binary:Version})
 Description:  EMANE virtual transport.  Uses tun device to create a network layer entry point for the NEM stack.
 
 Package: emane-trans-raw
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-trans-common (= ${binary:Version})
 Description:  EMANE raw transport.  Uses raw IP to create a network layer entry point for the NEM stack.
 
 Package: emane-trans-common
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version}) | emane-transportdaemon (= ${binary:Version})
 Description: EMANE common transport ethernet functionality
 
 Package: emane-model-phyapitest
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description:  EMANE PHY API Test Shim layer
 
 Package: emane-model-timinganalysisshim
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description:  EMANE Timing Test Shim layer
 
 Package: emane-gen-eel
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane-eventservice (= ${binary:Version})
 Description: EMANE Emulation Event Log Generator
 
 Package: emane-manifest
-Section: extra
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description:  EMANE PLugin Manifests
+Section: misc
+Architecture: all
+Depends: ${misc:Depends}
+Description:  EMANE Plugin Manifests
 
 Package: python-emane
 Section: python
