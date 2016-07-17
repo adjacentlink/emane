@@ -2,7 +2,7 @@ Source: emane
 Section: unknown
 Priority: extra
 Maintainer: Adjacent Link LLC <emane@adjacentlink.com>
-Build-Depends: debhelper (>= 8), protobuf-compiler, autotools-dev, libxml2-dev, libprotobuf-dev, libpcre3-dev, libpcap-dev, uuid-dev
+Build-Depends: debhelper (>= 8), dh-python, protobuf-compiler, autotools-dev, python-setuptools, libxml2-dev, libprotobuf-dev, libpcre3-dev, libpcap-dev, uuid-dev
 Standards-Version: 3.9.3
 Homepage: https://github.com/adjacentlink/emane
 
@@ -131,9 +131,10 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description:  EMANE PLugin Manifests
 
-Package: emane-python
-Section: libdevel
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-setuptools, python-protobuf
+Package: python-emane
+Section: python
+Architecture: all
+Provides: ${python:Provides}
+Depends: ${python:Depends}, ${misc:Depends}, python-pkg-resources, python-protobuf, python-lxml
 Replaces: emanesh
 Description: EMANE Python modules and utilities

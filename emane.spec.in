@@ -8,7 +8,7 @@ URL: https://github.com/adjacentlink/emane
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: emane-libs = %{version} emane-dtds = %{version}
-BuildRequires: libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
+BuildRequires: python-setuptools libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
 Prefix: /usr
 Vendor: Adjacent Link LLC
 
@@ -179,14 +179,16 @@ Group: Applications/System
 %description manifest
 EMANE Plugin Manifests
 
-%package python
-Requires: python-setuptools protobuf-python
+%package -n python-emane
+Requires: python-setuptools
+Requires: protobuf-python
+Requires: python-lxml
 Summary: EMANE Python modules and utilities
 Group: Development/Libraries
 Obsoletes: emanesh
 BuildArch: noarch
 
-%description python
+%description -n python-emane
 EMANE Python modules and utilities
 
 %prep
@@ -501,7 +503,8 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
-%files python
+%files -n python-emane
+%defattr(-,root,root,-)
 %{_bindir}/emanecommand-eel
 %{_bindir}/emaneevent-antennaprofile
 %{_bindir}/emaneevent-commeffect
@@ -511,4 +514,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-tdmaschedule
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
-%{prefix}/lib*/python*/site-packages/emanesh*
+%{python_sitelib}/emanesh
+%{python_sitelib}/emanesh-%{version}-*.egg-info
+
+%doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
