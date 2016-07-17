@@ -6,10 +6,8 @@ libcommontransport_la_CPPFLAGS= \
  $(libuuid_CFLAGS)
 
 libcommontransport_la_SOURCES= \
- ethernettransport.cc
-
-EXTRA_DIST=                    \
- ethernettransport.h           
+ ethernettransport.cc          \
+ ethernettransport.h
 
 libcommontransport_la_LDFLAGS= \
  -avoid-version

@@ -6,10 +6,10 @@ libphyapitestshim_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libphyapitestshim_la_SOURCES = \
- shimlayer.cc
+ shimlayer.cc                  \
+ shimlayer.h
 
 EXTRA_DIST =                   \
- shimlayer.h                   \
  phyapitestshim.xml.in
 
 BUILT_SOURCES =                \

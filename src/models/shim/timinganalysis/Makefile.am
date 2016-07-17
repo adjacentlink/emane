@@ -7,19 +7,21 @@ libtiminganalysisshim_la_CPPFLAGS= \
 
 libtiminganalysisshim_la_SOURCES= \
  shimlayer.cc                     \
+ shimheadermessage.cc             \
+ shimheadermessage.h              \
+ shimlayer.h
+
+nodist_libtiminganalysisshim_la_SOURCES= \
  shimheader.pb.cc                 \
- shimheadermessage.cc
+ shimheader.pb.h
 
 EXTRA_DIST =                      \
- shimheadermessage.h              \
- shimlayer.h                      \
  shimheader.proto                 \
  timinganalysisshim.xml.in
 
 BUILT_SOURCES =                   \
  timinganalysisshim.xml           \
- shimheader.pb.cc                 \
- shimheader.pb.h
+ $(nodist_libtiminganalysisshim_la_SOURCES)
 
 libtiminganalysisshim_la_LDFLAGS= \
  -avoid-version

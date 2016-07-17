@@ -21,14 +21,7 @@ libtdmabase_la_SOURCES =             \
  queuestatuspublisher.cc             \
  receivemanager.cc                   \
  slotstatustablepublisher.cc         \
- tdmabasemodelmessage.pb.cc          \
- txslotinfosformatter.cc 
-
-BUILT_SOURCES =                      \
- tdmabasemodelmessage.pb.cc          \
- tdmabasemodelmessage.pb.h
-
-EXTRA_DIST=                          \
+ txslotinfosformatter.cc             \
  aggregationstatuspublisher.h        \
  basemodelimpl.h                     \
  basemodelmessage.h                  \
@@ -40,9 +33,18 @@ EXTRA_DIST=                          \
  queuestatuspublisher.h              \
  receivemanager.h                    \
  slotstatustablepublisher.h          \
- tdmabasemodelmessage.proto          \
- tdmabasemodelpcr.xml                \
  txslotinfosformatter.h
+
+nodist_libtdmabase_la_SOURCES =      \
+ tdmabasemodelmessage.pb.cc          \
+ tdmabasemodelmessage.pb.h
+
+EXTRA_DIST=                          \
+ tdmabasemodelmessage.proto          \
+ tdmabasemodelpcr.xml
+
+BUILT_SOURCES =                      \
+ $(nodist_libtdmabase_la_SOURCES)
 
 libtdmabase_la_LDFLAGS=              \
  $(libxml2_LIBS)                     \

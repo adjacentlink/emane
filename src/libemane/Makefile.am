@@ -11,7 +11,7 @@ libemane_la_CXXFLAGS =  \
  $(libuuid_CFLAGS)      \
  $(libxml2_CFLAGS)
 
-BUILT_SOURCES =                          \
+nodist_libemane_la_SOURCES =             \
  antennaprofileevent.pb.cc               \
  antennaprofileevent.pb.h                \
  commeffectevent.pb.cc                   \
@@ -177,24 +177,6 @@ libemane_la_SOURCES =                         \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \
- antennaprofileevent.pb.cc                    \
- commeffectevent.pb.cc                        \
- commonmacheader.pb.cc                        \
- commonphyheader.pb.cc                        \
- event.pb.cc                                  \
- flowcontrol.pb.cc                            \
- locationevent.pb.cc                          \
- loggermessage.pb.cc                          \
- otaheader.pb.cc                              \
- otatransmitter.pb.cc                         \
- pathlossevent.pb.cc                          \
- radiotorouter.pb.cc                          \
- remotecontrolportapi.pb.cc                   \
- tdmascheduleevent.pb.cc                      
-
-
-
-EXTRA_DIST=                                   \
  antennapattern.h                             \
  antennaprofileexception.h                    \
  antennaprofilemanifest.h                     \
@@ -310,7 +292,12 @@ EXTRA_DIST=                                   \
  transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
- wheel.inl                                    \
+ wheel.inl
+
+BUILT_SOURCES =                               \
+ $(nodist_libemane_la_SOURCES)
+
+EXTRA_DIST =                                  \
  antennaprofileevent.proto                    \
  commeffectevent.proto                        \
  commonmacheader.proto                        \

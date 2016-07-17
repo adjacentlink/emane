@@ -10,10 +10,10 @@ emanetransportd_CXXFLAGS =                   \
 
 emanetransportd_SOURCES =                    \
  emanetransportd.cc                          \
- transportdirector.cc
+ transportdirector.cc                        \
+ transportdirector.h
 
 EXTRA_DIST  =                                \
- transportdirector.h                         \
  transportdaemon.xml.in
 
 BUILT_SOURCES =                              \

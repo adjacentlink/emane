@@ -10,9 +10,7 @@ emane_CXXFLAGS =    \
 
 emane_SOURCES =  \
  emane.cc        \
- nemdirector.cc 
-
-EXTRA_DIST=   \
+ nemdirector.cc  \
  nemdirector.h
 
 emane_LDADD =                                \

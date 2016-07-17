@@ -9,13 +9,13 @@ libtdmaeventschedulerradiomodel_la_CPPFLAGS= \
 libtdmaeventschedulerradiomodel_la_SOURCES = \
  radiomodel.cc                       \
  eventscheduler.cc                   \
- eventtablepublisher.cc
-
-EXTRA_DIST=                          \
+ eventtablepublisher.cc              \
  eventscheduler.h                    \
  eventtablepublisher.h               \
  slotter.h                           \
- slotter.inl                         \
+ slotter.inl
+
+EXTRA_DIST=                          \
  tdmanem.xml.in                      \
  tdmaradiomodel.xml.in
 

@@ -10,10 +10,10 @@ emaneeventd_CXXFLAGS =                       \
 
 emaneeventd_SOURCES =                        \
  emaneeventd.cc                              \
- eventagentdirector.cc
+ eventagentdirector.cc                       \
+ eventagentdirector.h
 
 EXTRA_DIST  =                                \
- eventagentdirector.h                        \
  eventdaemon.xml.in
 
 BUILT_SOURCES =                              \

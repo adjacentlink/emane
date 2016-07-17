@@ -8,7 +8,8 @@ libeelloadercommeffect_la_CPPFLAGS= \
  $(AM_CFLAGS)                
 
 libeelloadercommeffect_la_SOURCES= \
- eelloadercommeffect.cc
+ eelloadercommeffect.cc            \
+ eelloadercommeffect.h
 
 libeelloadercommeffect_la_LDFLAGS= \
  -avoid-version

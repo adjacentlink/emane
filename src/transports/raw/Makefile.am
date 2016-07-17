@@ -8,10 +8,10 @@ libtransraw_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libtransraw_la_SOURCES= \
- rawtransport.cc        
+ rawtransport.cc        \
+ rawtransport.h
 
 EXTRA_DIST=             \
- rawtransport.h         \
  transraw.xml.in
 
 BUILT_SOURCES =         \

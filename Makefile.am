@@ -14,10 +14,6 @@ edit = sed                                               \
        -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
        -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
-dist-hook:
-	find $(distdir) -name "*.pb.*" -delete
-	rm -f $(distdir)/include/emane/version.h
-
 cleantar:
 	@(rm -f emane*.tar.gz)
 

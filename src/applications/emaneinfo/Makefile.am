@@ -10,9 +10,7 @@ emaneinfo_CXXFLAGS =                     \
 emaneinfo_SOURCES =                      \
  configurationloader.cc                  \
  emaneinfo.cc                            \
- manifest.cc                             
-
-EXTRA_DIST=                              \
+ manifest.cc                             \
  configurationloader.h                   \
  manifest.h                              \
  plugintype.h                            

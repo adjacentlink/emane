@@ -10,10 +10,10 @@ emaneeventservice_CXXFLAGS =                  \
 
 emaneeventservice_SOURCES =                   \
  emaneeventserver.cc                          \
- eventdirector.cc
+ eventdirector.cc                             \
+ eventdirector.h
 
 EXTRA_DIST=                                   \
- eventdirector.h                              \
  eventservice.xml.in
 
 BUILT_SOURCES =                               \

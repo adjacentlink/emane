@@ -11,13 +11,16 @@ librfpipemaclayer_la_SOURCES =   \
  downstreamqueue.cc              \
  pcrmanager.cc                   \
  rfpipemacheadermessage.cc       \
- rfpipemacheader.pb.cc
-
-EXTRA_DIST=                      \
  maclayer.h                      \
  downstreamqueue.h               \
  pcrmanager.h                    \
- rfpipemacheadermessage.h        \
+ rfpipemacheadermessage.h
+
+nodist_librfpipemaclayer_la_SOURCES =   \
+ rfpipemacheader.pb.cc           \
+ rfpipemacheader.pb.h
+
+EXTRA_DIST=                      \
  rfpipenem.xml.in                \
  rfpipemac.xml.in                \
  rfpipepcr.xml.in                \
@@ -27,8 +30,7 @@ BUILT_SOURCES =                  \
  rfpipenem.xml                   \
  rfpipemac.xml                   \
  rfpipepcr.xml                   \
- rfpipemacheader.pb.cc           \
- rfpipemacheader.pb.h
+ $(nodist_librfpipemaclayer_la_SOURCES)
 
 librfpipemaclayer_la_LIBADD=     
 

@@ -32,12 +32,8 @@ libieee80211abgmaclayer_la_SOURCES = \
  macheaderparams.cc                  \
  wmmmanager.cc                       \
  ieee80211abgmacheadermessage.cc     \
- ieee80211abgmacheader.pb.cc         \
- onehopneighborsevent.pb.cc          \
  macheaderparamsformatter.cc         \
- configurationvalidator.cc
-
-EXTRA_DIST=                          \
+ configurationvalidator.cc           \
  downstreamqueue.h                   \
  downstreamqueueentry.h              \
  accesscategory.h                    \
@@ -70,9 +66,15 @@ EXTRA_DIST=                          \
  wmmmanager.h                        \
  configurationvalidator.h            \
  ieee80211abgmacheadermessage.h      \
+ macheaderparamsformatter.h
+
+nodist_libieee80211abgmaclayer_la_SOURCES = \
+ ieee80211abgmacheader.pb.cc         \
+ onehopneighborsevent.pb.cc          \
  ieee80211abgmacheader.pb.h          \
- onehopneighborsevent.pb.h           \
- macheaderparamsformatter.h          \
+ onehopneighborsevent.pb.h
+
+EXTRA_DIST=                          \
  ieee80211abgmacheader.proto         \
  onehopneighborsevent.proto          \
  ieee80211abgnem.xml.in              \
@@ -83,10 +85,7 @@ BUILT_SOURCES =                      \
  ieee80211abgnem.xml                 \
  ieee80211abgmac.xml                 \
  ieee80211pcr.xml                    \
- ieee80211abgmacheader.pb.cc         \
- ieee80211abgmacheader.pb.h          \
- onehopneighborsevent.pb.cc          \
- onehopneighborsevent.pb.h             
+ $(nodist_libieee80211abgmaclayer_la_SOURCES)
 
 libieee80211abgmaclayer_la_LDFLAGS=  \
  $(libxml2_LIBS)                     \

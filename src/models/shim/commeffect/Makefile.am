@@ -1,13 +1,16 @@
 lib_LTLIBRARIES = libcommeffectshim.la
 
-BUILT_SOURCES =                \
- commeffectshimheader.pb.h     \
- commeffectshimheader.pb.cc    \
- commeffectfilters.xml         \
- commeffectnem.xml             \
- commeffectshim.xml
 
-EXTRA_DIST=                    \
+libcommeffectshim_la_SOURCES=  \
+ ethernetprotocolipv4rule.cc   \
+ filter.cc                     \
+ filterreader.cc               \
+ ipprotocolsimplerule.cc       \
+ ipprotocoludprule.cc          \
+ profilemanager.cc             \
+ shim.cc                       \
+ shimheader.cc                 \
+ target.cc                     \
  ethernetprotocolipv4rule.h    \
  ethernetprotocolrule.h        \
  filter.h                      \
@@ -20,7 +23,13 @@ EXTRA_DIST=                    \
  shim.h                        \
  shimheader.h                  \
  shimheader.inl                \
- target.h                      \
+ target.h
+
+nodist_libcommeffectshim_la_SOURCES= \
+ commeffectshimheader.pb.cc    \
+ commeffectshimheader.pb.h
+
+EXTRA_DIST=                    \
  commeffectshimheader.proto    \
  commeffectfilters.xml.in      \
  commeffectnem.xml.in          \
@@ -32,18 +41,11 @@ libcommeffectshim_la_CPPFLAGS= \
  $(libuuid_CFLAGS)             \
  $(libxml2_CFLAGS)
 
-libcommeffectshim_la_SOURCES=  \
- commeffectshimheader.pb.cc    \
- ethernetprotocolipv4rule.cc   \
- filter.cc                     \
- filterreader.cc               \
- ipprotocolsimplerule.cc       \
- ipprotocoludprule.cc          \
- profilemanager.cc             \
- shim.cc                       \
- shimheader.cc                 \
- target.cc                     
-
+BUILT_SOURCES =                \
+ commeffectfilters.xml         \
+ commeffectnem.xml             \
+ commeffectshim.xml            \
+ $(nodist_libcommeffectshim_la_SOURCES)
 
 libcommeffectshim_la_LDFLAGS=  \
  $(libxml2_LIBS)               \

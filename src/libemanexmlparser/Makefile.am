@@ -16,9 +16,7 @@ libemanexmlparser_la_SOURCES=      \
  platformconfiguration.cc          \
  pluginconfiguration.cc            \
  transportdaemonconfiguration.cc   \
- transportinstanceconfiguration.cc
-
-EXTRA_DIST=                       \
+ transportinstanceconfiguration.cc \
  configurationparser.h            \
  eventagentconfiguration.h        \
  eventdaemonconfiguration.h       \

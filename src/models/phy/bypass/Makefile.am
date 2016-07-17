@@ -6,10 +6,10 @@ libbypassphylayer_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libbypassphylayer_la_SOURCES = \
- phylayer.cc 
+ phylayer.cc                   \
+ phylayer.h
 
 EXTRA_DIST =                   \
- phylayer.h                    \
  bypassphy.xml.in
 
 BUILT_SOURCES =                \

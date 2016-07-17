@@ -8,11 +8,11 @@ libtransvirtual_la_CPPFLAGS= \
 
 libtransvirtual_la_SOURCES= \
  virtualtransport.cc        \
- tuntap.cc                  
+ tuntap.cc                  \
+ virtualtransport.h         \
+ tuntap.h
 
 EXTRA_DIST=                 \
- virtualtransport.h         \
- tuntap.h                   \
  transvirtual.xml.in        
 
 BUILT_SOURCES =             \

@@ -6,10 +6,10 @@ libbypassmaclayer_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libbypassmaclayer_la_SOURCES = \
- maclayer.cc
+ maclayer.cc                   \
+ maclayer.h
 
 EXTRA_DIST =                   \
- maclayer.h                    \
  bypassnem.xml.in              \
  bypassmac.xml.in
 

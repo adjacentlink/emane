@@ -5,10 +5,10 @@ libgpsdlocationagent_la_CPPFLAGS= \
  $(AM_CFLAGS)
 
 libgpsdlocationagent_la_SOURCES= \
- agent.cc
+ agent.cc                        \
+ agent.h
 
 EXTRA_DIST=                      \
- agent.h                         \
  gpsdlocationagent.xml.in 
 
 BUILT_SOURCES =                  \
