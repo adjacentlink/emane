@@ -2,19 +2,16 @@ noinst_PROGRAMS = profilescenario
 
 profilescenario_CPPFLAGS =    \
  -I@top_srcdir@/include       \
- -I@top_srcdir@/src/libemane
-
-profilescenario_CXXFLAGS =    \
+ -I@top_srcdir@/src/libemane  \
+ $(AM_CPPFLAGS)               \
  $(libemane_CFLAGS)
+
+profilescenario_LDADD =                      \
+ $(libxml2_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
 
 profilescenario_SOURCES =  \
  main.cc            
 
 EXTRA_DIST=   \
  profilescenario.xsd
-
-profilescenario_LDADD =                         \
- -L@top_srcdir@/src/libemane/.libs           \
- -L@top_srcdir@/src/libemanexmlparser/.libs  \
- -lemanexmlparser                            \
- $(libemane_LIBS)

@@ -1,15 +1,23 @@
-lib_LTLIBRARIES = libemane.la
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libemane.pc
 
-libemane_la_CPPFLAGS =  \
- -I@top_srcdir@/include
+lib_LTLIBRARIES = libemane.la
 
-libemane_la_CXXFLAGS =  \
- $(AM_CFLAGS)           \
- $(libuuid_CFLAGS)      \
- $(libxml2_CFLAGS)
+libemane_la_CPPFLAGS =  \
+ -I@top_srcdir@/include \
+ $(AM_CPPFLAGS)         \
+ $(libemane_CFLAGS)
+
+libemane_la_LIBADD=      \
+ -lrt                    \
+ $(libxml2_LIBS)         \
+ $(protobuf_LIBS)        \
+ $(libpcre_LIBS)         \
+ $(libuuid_LIBS)
+
+libemane_la_LDFLAGS=     \
+ $(AM_LDFLAGS)           \
+ -avoid-version
 
 nodist_libemane_la_SOURCES =             \
  antennaprofileevent.pb.cc               \
@@ -312,11 +320,6 @@ EXTRA_DIST =                                  \
  radiotorouter.proto                          \
  remotecontrolportapi.proto                   \
  tdmascheduleevent.proto
-
-libemane_la_LDFLAGS=     \
- $(libxml2_LIBS)         \
- $(libuuid_LIBS)         \
- -avoid-version
 
 flowcontrol.pb.cc flowcontrol.pb.h: flowcontrol.proto
 	protoc -I=. --cpp_out=. $<

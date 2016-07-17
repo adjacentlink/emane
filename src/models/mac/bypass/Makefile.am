@@ -2,8 +2,16 @@ lib_LTLIBRARIES = libbypassmaclayer.la
 
 libbypassmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(libuuid_CFLAGS)             \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)                \
+ $(libemane_CFLAGS)
+
+libbypassmaclayer_la_LIBADD=                 \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libbypassmaclayer_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                 \
+ -avoid-version
 
 libbypassmaclayer_la_SOURCES = \
  maclayer.cc                   \
@@ -16,9 +24,6 @@ EXTRA_DIST =                   \
 BUILT_SOURCES =                \
  bypassnem.xml                 \
  bypassmac.xml                   
-
-libbypassmaclayer_la_LDFLAGS=  \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

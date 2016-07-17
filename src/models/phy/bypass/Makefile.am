@@ -2,8 +2,16 @@ lib_LTLIBRARIES = libbypassphylayer.la
 
 libbypassphylayer_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(libuuid_CFLAGS)             \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)                \
+ $(libemane_CFLAGS)
+
+libbypassphylayer_la_LIBADD=                 \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libbypassphylayer_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                 \
+ -avoid-version
 
 libbypassphylayer_la_SOURCES = \
  phylayer.cc                   \
@@ -14,9 +22,6 @@ EXTRA_DIST =                   \
 
 BUILT_SOURCES =                \
  bypassphy.xml                   
-
-libbypassphylayer_la_LDFLAGS=  \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

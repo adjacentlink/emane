@@ -6,9 +6,18 @@ lib_LTLIBRARIES = libtdmabase.la
 
 libtdmabase_la_CPPFLAGS=             \
  -I@top_srcdir@/include              \
- $(AM_CFLAGS)                        \
- $(libuuid_CFLAGS)                   \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                      \
+ $(libemane_CFLAGS)
+
+libtdmabase_la_LIBADD=                       \
+ $(libuuid_LIBS)                             \
+ $(libxml2_LIBS)                             \
+ $(protobuf_LIBS)                            \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libtdmabase_la_LDFLAGS=              \
+ $(AM_LDFLAGS)                       \
+ -avoid-version
 
 libtdmabase_la_SOURCES =             \
  aggregationstatuspublisher.cc       \
@@ -45,10 +54,6 @@ EXTRA_DIST=                          \
 
 BUILT_SOURCES =                      \
  $(nodist_libtdmabase_la_SOURCES)
-
-libtdmabase_la_LDFLAGS=              \
- $(libxml2_LIBS)                     \
- -avoid-version
 
 clean-local:
 	rm -f $(BUILT_SOURCES)

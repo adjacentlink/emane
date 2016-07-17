@@ -2,9 +2,18 @@ lib_LTLIBRARIES = librfpipemaclayer.la
 
 librfpipemaclayer_la_CPPFLAGS=   \
  -I@top_srcdir@/include          \
- $(AM_CFLAGS)                    \
- $(libuuid_CFLAGS)               \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                  \
+ $(libemane_CFLAGS)
+
+librfpipemaclayer_la_LIBADD=                  \
+ $(libuuid_LIBS)                              \
+ $(libxml2_LIBS)                              \
+ $(protobuf_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+librfpipemaclayer_la_LDFLAGS=    \
+ $(AM_LDFLAGS)                   \
+ -avoid-version
 
 librfpipemaclayer_la_SOURCES =   \
  maclayer.cc                     \
@@ -31,12 +40,6 @@ BUILT_SOURCES =                  \
  rfpipemac.xml                   \
  rfpipepcr.xml                   \
  $(nodist_librfpipemaclayer_la_SOURCES)
-
-librfpipemaclayer_la_LIBADD=     
-
-librfpipemaclayer_la_LDFLAGS=    \
- $(libxml2_LIBS)                 \
- -avoid-version
 
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

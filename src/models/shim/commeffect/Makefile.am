@@ -1,5 +1,19 @@
 lib_LTLIBRARIES = libcommeffectshim.la
 
+libcommeffectshim_la_CPPFLAGS= \
+ -I@top_srcdir@/include        \
+ $(AM_CPPFLAGS)                \
+ $(libemane_CFLAGS)
+
+libcommeffectshim_la_LIBADD=                 \
+ $(libuuid_LIBS)                             \
+ $(libxml2_LIBS)                             \
+ $(protobuf_LIBS)                            \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libcommeffectshim_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                 \
+ -avoid-version
 
 libcommeffectshim_la_SOURCES=  \
  ethernetprotocolipv4rule.cc   \
@@ -35,21 +49,11 @@ EXTRA_DIST=                    \
  commeffectnem.xml.in          \
  commeffectshim.xml.in
 
-libcommeffectshim_la_CPPFLAGS= \
- -I@top_srcdir@/include        \
- $(AM_CFLAGS)                  \
- $(libuuid_CFLAGS)             \
- $(libxml2_CFLAGS)
-
 BUILT_SOURCES =                \
  commeffectfilters.xml         \
  commeffectnem.xml             \
  commeffectshim.xml            \
  $(nodist_libcommeffectshim_la_SOURCES)
-
-libcommeffectshim_la_LDFLAGS=  \
- $(libxml2_LIBS)               \
- -avoid-version
 
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

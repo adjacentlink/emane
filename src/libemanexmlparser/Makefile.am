@@ -2,8 +2,15 @@ lib_LTLIBRARIES = libemanexmlparser.la
 
 libemanexmlparser_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(libxml2_CFLAGS)             \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)                \
+ $(libxml2_CFLAGS)
+
+libemanexmlparser_la_LIBADD= \
+ $(libxml2_LIBS)
+
+libemanexmlparser_la_LDFLAGS= \
+ $(AM_LDFLAGS)                \
+ -avoid-version
 
 libemanexmlparser_la_SOURCES=      \
  configurationparser.cc            \
@@ -30,6 +37,3 @@ libemanexmlparser_la_SOURCES=      \
  transportdaemonconfiguration.h   \
  transportinstanceconfiguration.h
 
-libemanexmlparser_la_LDFLAGS= \
- $(libxml2_LIBS)              \
- -avoid-version

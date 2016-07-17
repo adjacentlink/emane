@@ -3,10 +3,13 @@ bin_PROGRAMS = emaneeventservice
 emaneeventservice_CPPFLAGS =                  \
  -I@top_srcdir@/include                       \
  -I@top_srcdir@/src/libemane                  \
- -I@top_srcdir@/src/libemanexmlparser         
+ -I@top_srcdir@/src/libemanexmlparser         \
+ $(AM_CPPFLAGS)                               \
+ $(libemane_CFLAGS)
 
-emaneeventservice_CXXFLAGS =                  \
- $(libemane_CFLAGS)            
+emaneeventservice_LDADD =                                      \
+ @top_srcdir@/src/libemane/.libs/libemane.la                   \
+ @top_srcdir@/src/libemanexmlparser/.libs/libemanexmlparser.la
 
 emaneeventservice_SOURCES =                   \
  emaneeventserver.cc                          \
@@ -18,13 +21,6 @@ EXTRA_DIST=                                   \
 
 BUILT_SOURCES =                               \
  eventservice.xml
-
-emaneeventservice_LDADD =                     \
- -L@top_srcdir@/src/libemanexmlparser/.libs   \
- -L@top_srcdir@/src/libemane/.libs            \
- -lemanexmlparser                             \
- $(libemane_LIBS)
-
 
 edit = sed                                    \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

@@ -2,9 +2,18 @@ lib_LTLIBRARIES = libieee80211abgmaclayer.la
 
 libieee80211abgmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
- $(AM_CFLAGS)                        \
- $(libuuid_CFLAGS)                   \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                      \
+ $(libemane_CFLAGS)
+
+libieee80211abgmaclayer_la_LIBADD=           \
+ $(libuuid_LIBS)                             \
+ $(libxml2_LIBS)                             \
+ $(protobuf_LIBS)                            \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libieee80211abgmaclayer_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                       \
+ -avoid-version
 
 libieee80211abgmaclayer_la_SOURCES = \
  maclayer.cc                         \
@@ -86,10 +95,6 @@ BUILT_SOURCES =                      \
  ieee80211abgmac.xml                 \
  ieee80211pcr.xml                    \
  $(nodist_libieee80211abgmaclayer_la_SOURCES)
-
-libieee80211abgmaclayer_la_LDFLAGS=  \
- $(libxml2_LIBS)                     \
- -avoid-version
 
 ieee80211abgmacheader.pb.cc ieee80211abgmacheader.pb.h: ieee80211abgmacheader.proto
 	protoc -I=. --cpp_out=. $<

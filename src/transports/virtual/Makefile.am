@@ -3,8 +3,17 @@ lib_LTLIBRARIES = libtransvirtual.la
 libtransvirtual_la_CPPFLAGS= \
  -I@top_srcdir@/include      \
  -I../common                 \
- $(AM_CFLAGS)                \
- $(libuuid_CFLAGS)           
+ $(AM_CPPFLAGS)              \
+ $(libemane_CFLAGS)
+
+libtransvirtual_la_LIBADD=                   \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ ../common/.libs/libcommontransport.la
+
+libtransvirtual_la_LDFLAGS= \
+ $(AM_LDFLAGS)              \
+ -avoid-version
 
 libtransvirtual_la_SOURCES= \
  virtualtransport.cc        \
@@ -17,11 +26,6 @@ EXTRA_DIST=                 \
 
 BUILT_SOURCES =             \
  transvirtual.xml
-
-libtransvirtual_la_LDFLAGS= \
- -L../common                \
- -lcommontransport          \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  
