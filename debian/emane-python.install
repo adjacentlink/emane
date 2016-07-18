@@ -1,10 +1,10 @@
-usr/local/lib/python2.7/*-packages/*  usr/lib/python2.7/dist-packages
-usr/local/bin/emanecommand-eel usr/bin
-usr/local/bin/emaneevent-antennaprofile usr/bin
-usr/local/bin/emaneevent-commeffect usr/bin
-usr/local/bin/emaneevent-dump usr/bin
-usr/local/bin/emaneevent-location usr/bin
-usr/local/bin/emaneevent-pathloss usr/bin
-usr/local/bin/emaneevent-tdmaschedule usr/bin
-usr/local/bin/emaneota-publisher usr/bin
-usr/local/bin/emanesh usr/bin
+usr/lib/python2.*/*-packages/*
+usr/bin/emanecommand-eel
+usr/bin/emaneevent-antennaprofile
+usr/bin/emaneevent-commeffect
+usr/bin/emaneevent-dump
+usr/bin/emaneevent-location
+usr/bin/emaneevent-pathloss
+usr/bin/emaneevent-tdmaschedule
+usr/bin/emaneota-publisher
+usr/bin/emanesh
