@@ -307,17 +307,10 @@ void EMANE::Application::NEMManagerImpl::start()
 {
   if(bOTAManagerChannelEnable_)
     {
-      const char * pzDevice{nullptr};
-
-      if(!sOTAManagerGroupDevice_.empty())
-        {
-          pzDevice = sOTAManagerGroupDevice_.c_str();
-        }
-
       try
         {
           OTAManagerSingleton::instance()->open(OTAManagerGroupAddr_,
-                                                pzDevice,
+                                                sOTAManagerGroupDevice_,
                                                 bOTAManagerChannelLoopback_,
                                                 u8OTAManagerTTL_,
                                                 uuid_);
