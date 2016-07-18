@@ -1067,6 +1067,12 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
 
           Microseconds duration{std::chrono::duration_cast<Microseconds>(DoubleSeconds{fSeconds})};
 
+          // rounding error corner case mitigation
+          if(duration >= slotDuration_)
+            {
+              duration = slotDuration_ - Microseconds{1};
+            }
+
           NEMId dst{};
           size_t completedPackets{};
 
