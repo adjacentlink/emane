@@ -183,7 +183,7 @@ class EMANEShell(cmd.Cmd):
           ## info manifest
           ## info config rfpipemaclayer
           ## info config rfpipemaclayer neighbormetricdeletetime
-          ## info stat universalphylayer processedEvents
+          ## info stat emanephy processedEvents
         """
         args = args.split()
 
@@ -411,11 +411,11 @@ class EMANEShell(cmd.Cmd):
 
         example:
 
-          Get all configuration info from all NEM layers
+          Get all configuration info from all NEM layers and the emulator
           ## get config * all
 
           Get all statistic tables from all NEM mac layers
-          ## get table * mac
+          ## get table nems mac
 
           Get two statistic items from the mac layers of NEM 1 and 2
           ## get stat 1 2 mac processedEvents processedDownstreamControl
@@ -450,11 +450,11 @@ class EMANEShell(cmd.Cmd):
                <name>            ::= [A-Za-z0-9]+
 
         example:
-          Clear all statistics from all NEM layers
+          Clear all statistics from all NEM layers and the emulator
           ## clear stat * all
 
           Clear all statistics from all NEM mac layers
-          ## clear stat * mac
+          ## clear stat nems mac
 
           Clear two statistic items from the phy layers of NEM 1 and 2
           ## clear stat 1 2 phy processedEvents processedDownstreamControl
@@ -724,7 +724,7 @@ class EMANEShell(cmd.Cmd):
 
         example:
           Set the txpower parameter for all NEM phy layers
-          ## set config * phy txpower=20
+          ## set config nems phy txpower=20
 
           Set the cwmin0 and cwmax0 parameters for NEM 1, 2 and 3 mac layers
           ## set config 1 2 3 mac cwmin0=100 cwmax0=200
