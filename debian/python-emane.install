@@ -1,0 +1,10 @@
+usr/lib/python2.*/*-packages/*
+usr/bin/emanecommand-eel
+usr/bin/emaneevent-antennaprofile
+usr/bin/emaneevent-commeffect
+usr/bin/emaneevent-dump
+usr/bin/emaneevent-location
+usr/bin/emaneevent-pathloss
+usr/bin/emaneevent-tdmaschedule
+usr/bin/emaneota-publisher
+usr/bin/emanesh

@@ -114,7 +114,9 @@ emaneinc_HEADERS =                       \
  upstreamtransport.inl                   \
  velocity.h                              \
  velocity.inl                            \
- velocityformatter.h                     \
+ velocityformatter.h
+
+nodist_emaneinc_HEADERS=                 \
  version.h
 
 EXTRA_DIST=                              \

@@ -146,9 +146,6 @@ fi
 AC_SUBST(libemane_CFLAGS,
 ["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
 
-AC_SUBST(libemane_LIBS,
-["-lemane -lrt ${libxml2_LIBS} ${protobuf_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
-
 LANG=C
 AC_SUBST(LANG)
 

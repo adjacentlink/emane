@@ -2,27 +2,35 @@ lib_LTLIBRARIES = libtiminganalysisshim.la
 
 libtiminganalysisshim_la_CPPFLAGS= \
  -I@top_srcdir@/include            \
- $(libuuid_CFLAGS)                 \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)                    \
+ $(libemane_CFLAGS)
+
+libtiminganalysisshim_la_LIBADD=             \
+ $(libuuid_LIBS)                             \
+ $(protobuf_LIBS)                            \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libtiminganalysisshim_la_LDFLAGS= \
+ $(AM_LDFLAGS)                    \
+ -avoid-version
 
 libtiminganalysisshim_la_SOURCES= \
  shimlayer.cc                     \
+ shimheadermessage.cc             \
+ shimheadermessage.h              \
+ shimlayer.h
+
+nodist_libtiminganalysisshim_la_SOURCES= \
  shimheader.pb.cc                 \
- shimheadermessage.cc
+ shimheader.pb.h
 
 EXTRA_DIST =                      \
- shimheadermessage.h              \
- shimlayer.h                      \
  shimheader.proto                 \
  timinganalysisshim.xml.in
 
 BUILT_SOURCES =                   \
  timinganalysisshim.xml           \
- shimheader.pb.cc                 \
- shimheader.pb.h
-
-libtiminganalysisshim_la_LDFLAGS= \
- -avoid-version
+ $(nodist_libtiminganalysisshim_la_SOURCES)
 
 edit = sed                        \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

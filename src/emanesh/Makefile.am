@@ -55,31 +55,15 @@ all-local:
 
 clean-local: setup.py
 	$(PYTHON) setup.py clean
-	-rm -rf build
-	-rm -f MANIFEST
-	-rm -f emanesh/events/antennaprofileevent_pb2.py
-	-rm -f emanesh/events/commeffectevent_pb2.py
-	-rm -f emanesh/events/event_pb2.py
-	-rm -f emanesh/events/locationevent_pb2.py
-	-rm -f emanesh/events/pathlossevent_pb2.py
-	-rm -f emanesh/events/tdmascheduleevent_pb2.py
-	-rm -f emanesh/remotecontrolportapi_pb2.py
-	-rm -f emanesh/events/onehopneighborsevent_pb2.py
-	-rm -f emanesh/ota/otaheader_pb2.py
-	-rm -f emanesh/ota/commonphyheader_pb2.py
-	-rm -f emanesh/schema/manifest.xsd
-	-rm -rf dist
-	-find . -name "*.pyc" -delete
-
-DISTCLEANFILES=setup.py
+	-rm -rf build dist
+	-rm -f MANIFEST $(BUILT_SOURCES)
 
 sdist:
 	$(PYTHON) setup.py sdist
 
 edit = sed                              \
         -e 's|@VERSION[@]|$(VERSION)|g' \
-        -e 's|@PYTHON[@]|$(PYTHON)|g'   \
-        -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
+        -e 's|@PYTHON[@]|$(PYTHON)|g'
 
 emanesh/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emanesh  $<
@@ -121,5 +105,7 @@ setup.py:	setup.py.in
 
 install-exec-hook: $(BUILT_SOURCES)
 	$(PYTHON) setup.py install \
-    -O1 \
-    --root=$(DESTDIR)
+	    -O1 \
+	    --prefix=$(prefix) \
+	    --exec-prefix=$(exec_prefix) \
+	    $(if $(DESTDIR),--root=$(DESTDIR))

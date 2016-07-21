@@ -14,10 +14,6 @@ edit = sed                                               \
        -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
        -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
-dist-hook:
-	find $(distdir) -name "*.pb.*" -delete
-	rm -f $(distdir)/include/emane/version.h
-
 cleantar:
 	@(rm -f emane*.tar.gz)
 
@@ -92,11 +88,17 @@ uninstall-local:
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/bypassphylayer.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/commeffectshim.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eelgenerator.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/emanephy.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eventagentmanager.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eventgeneratormanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/gpsdlocationagent.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/ieee80211abgmaclayer.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/nemmanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/phyapitestshim.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/rfpipemaclayer.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/tdmaeventschedulerradiomodel.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/timinganalysisshim.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transportmanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transraw.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transvirtual.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/universalphylayer.xml
