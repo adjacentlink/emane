@@ -623,24 +623,50 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                                    entry.first.u32RelativeSlotIndex_,
                                                    SlotStatusTablePublisher::Status::RX_GOOD,
                                                    dSlotRemainingRatio);
+
+                  Microseconds span{pReceivePropertiesControlMessage->getSpan()};
+
+                  if(receiveManager_.enqueue(std::move(baseModelMessage),
+                                             pktInfo,
+                                             pkt.length(),
+                                             startOfReception,
+                                             frequencySegments,
+                                             span,
+                                             now,
+                                             hdr.getSequenceNumber()))
+                    {
+                      pPlatformService_->timerService().
+                        schedule(std::bind(&ReceiveManager::process,
+                                           &receiveManager_,
+                                           entry.first.u64AbsoluteSlotIndex_+1),
+                                 entry.first.timePoint_+ slotDuration_);
+                    }
                 }
-
-              Microseconds span{pReceivePropertiesControlMessage->getSpan()};
-
-              if(receiveManager_.enqueue(std::move(baseModelMessage),
-                                         pktInfo,
-                                         pkt.length(),
-                                         startOfReception,
-                                         frequencySegments,
-                                         span,
-                                         now,
-                                         hdr.getSequenceNumber()))
+              else
                 {
-                  pPlatformService_->timerService().
-                    schedule(std::bind(&ReceiveManager::process,
-                                       &receiveManager_,
-                                       entry.first.u64AbsoluteSlotIndex_+1),
-                             entry.first.timePoint_+ slotDuration_);
+                  slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
+                                                   entry.first.u32RelativeFrameIndex_,
+                                                   entry.first.u32RelativeSlotIndex_,
+                                                   SlotStatusTablePublisher::Status::RX_WRONGFREQ,
+                                                   dSlotRemainingRatio);
+
+                  packetStatusPublisher_.inbound(pktInfo.getSource(),
+                                                 baseModelMessage.getMessages(),
+                                                 PacketStatusPublisher::InboundAction::DROP_FREQUENCY);
+
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          DEBUG_LEVEL,
+                                          "MACI %03hu TDMA::BaseModel::%s drop reason rx slot correct"
+                                          " rframe: %u rslot: %u but frequency mismatch expected: %zu got: %zu",
+                                          id_,
+                                          __func__,
+                                          entry.first.u32RelativeFrameIndex_,
+                                          entry.first.u32RelativeSlotIndex_,
+                                          entry.first.u64FrequencyHz_,
+                                          frequencySegment.getFrequencyHz());
+
+                  // drop
+                  return;
                 }
             }
           else
@@ -1167,6 +1193,16 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                   totalSize,
                                   bytesAvailable);
         }
+    }
+  else
+    {
+      // nothing to transmit, update the slot table to record how well
+      // schedule is being serviced
+      slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
+                                       pendingTxSlotInfo_.u32RelativeFrameIndex_,
+                                       pendingTxSlotInfo_.u32RelativeSlotIndex_,
+                                       SlotStatusTablePublisher::Status::TX_GOOD,
+                                       dSlotRemainingRatio);
     }
 }
 

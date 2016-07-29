@@ -98,7 +98,8 @@ namespace EMANE
                                                          std::uint64_t, // Bad Spectrum Query
                                                          std::uint64_t, // Flow Control
                                                          std::uint64_t, // Too Big
-                                                         std::uint64_t, // Too Big
+                                                         std::uint64_t, // Too Long
+                                                         std::uint64_t, // Frequency
                                                          std::uint64_t, // Slot Error
                                                          std::uint64_t>>; // Miss Fragment
 

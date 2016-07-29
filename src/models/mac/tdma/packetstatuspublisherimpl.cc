@@ -61,6 +61,7 @@ namespace
       "Flow Control",
       "Big",
       "Long",
+      "Freq",
       "Slot Error",
       "Miss Fragment"
     };
@@ -77,8 +78,9 @@ namespace
       DROP_COLUMN_FLOW_CONTROL = 7,
       DROP_COLUMN_TOO_BIG = 8,
       DROP_COLUMN_TOO_LONG = 9,
-      DROP_COLUMN_SLOT_ERROR = 10,
-      DROP_COLUMN_MISS_FRAGMENT = 11
+      DROP_COLUMN_FREQUENCY = 10,
+      DROP_COLUMN_SLOT_ERROR = 11,
+      DROP_COLUMN_MISS_FRAGMENT = 12
     };
 
 }
@@ -249,9 +251,10 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
                                                              Any{0L},
                                                                Any{0L},
                                                                  Any{0L},
-                                                                    Any{0L},
-                                                                      Any{0L},
-                                                                        Any{0L}});
+                                                                   Any{0L},
+                                                                     Any{0L},
+                                                                       Any{0L},
+                                                                         Any{0L}});
         }
 
       switch(action)
@@ -351,6 +354,18 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::inbound(NEMId src,
                                                   Any{bytes});
           }
           break;
+        case InboundAction::DROP_FREQUENCY:
+          {
+            auto & bytes = std::get<DROP_COLUMN_FREQUENCY-1>(iter->second);
+
+            bytes += size;
+
+            (*pDropTables)[u8QueueIndex]->setCell(src,
+                                                  DROP_COLUMN_FREQUENCY,
+                                                  Any{bytes});
+          }
+          break;
+
         default:
           break;
         }
@@ -445,9 +460,10 @@ void EMANE::Models::TDMA::PacketStatusPublisherImpl::outbound(NEMId src,
                                                              Any{0L},
                                                                Any{0L},
                                                                  Any{0L},
-                                                                    Any{0L},
-                                                                      Any{0L},
-                                                                        Any{0L}});
+                                                                   Any{0L},
+                                                                     Any{0L},
+                                                                       Any{0L},
+                                                                         Any{0L}});
         }
 
       switch(action)
