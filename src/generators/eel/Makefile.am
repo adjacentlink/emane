@@ -2,27 +2,31 @@ SUBDIRS=loaders
 
 lib_LTLIBRARIES = libeelgenerator.la
 
-EXTRA_DIST=                   \
- eeleventgenerator.h          \
- eelinputparser.h             \
- eelloaderpluginfactory.h     \
- eelgenerator.xml.in
-
 libeelgenerator_la_CPPFLAGS= \
  -I@top_srcdir@/include      \
- $(AM_CFLAGS)                \
- $(EMANE_CFLAGS)               
+ $(AM_CPPFLAGS)              \
+ $(libemane_CFLAGS)
+
+libeelgenerator_la_LIBADD=                   \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libeelgenerator_la_LDFLAGS=  \
+ $(AM_LDFLAGS)               \
+ -avoid-version
 
 libeelgenerator_la_SOURCES= \
  eeleventgenerator.cc       \
  eelinputparser.cc          \
- eelloaderpluginfactory.cc
+ eelloaderpluginfactory.cc  \
+ eeleventgenerator.h        \
+ eelinputparser.h           \
+ eelloaderpluginfactory.h
+
+EXTRA_DIST=                 \
+ eelgenerator.xml.in
 
 BUILT_SOURCES =                  \
  eelgenerator.xml
-
-libeelgenerator_la_LDFLAGS= \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

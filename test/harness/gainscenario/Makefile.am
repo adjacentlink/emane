@@ -2,20 +2,17 @@ noinst_PROGRAMS = gainscenario
 
 gainscenario_CPPFLAGS =               \
  -I@top_srcdir@/include               \
- -I@top_srcdir@/src/libemane
-
-gainscenario_CXXFLAGS =    \
+ -I@top_srcdir@/src/libemane          \
+ $(AM_CPPFLAGS)                       \
  $(libemane_CFLAGS)
+
+gainscenario_LDADD =                         \
+ $(libxml2_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
 
 gainscenario_SOURCES =  \
  main.cc            
 
 EXTRA_DIST=   \
  gainscenario.xsd
-
-gainscenario_LDADD =                         \
- -L@top_srcdir@/src/libemane/.libs           \
- -L@top_srcdir@/src/libemanexmlparser/.libs  \
- -lemanexmlparser                            \
- $(libemane_LIBS)
 

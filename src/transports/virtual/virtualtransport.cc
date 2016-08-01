@@ -39,6 +39,7 @@
 #include "emane/startexception.h"
 
 #include "emane/utils/netutils.h"
+#include "emane/utils/threadutils.h"
 
 #include "emane/controls/serializedcontrolmessage.h"
 #include "emane/controls/flowcontrolcontrolmessage.h"
@@ -68,6 +69,7 @@ EMANE::Transports::Virtual::VirtualTransport::VirtualTransport(NEMId id,
   EthernetTransport(id, pPlatformService),
   pTunTap_{},
   pBitPool_{},
+  thread_{},
   bCanceled_{},
   flowControlClient_{*this},
   bFlowControlEnable_{},
@@ -332,15 +334,8 @@ void EMANE::Transports::Virtual::VirtualTransport::start()
 
   pBitPool_->setMaxSize(u64BitRate_);
 
-  /** [filedescriptorservice-registerfd-snippet] */
-  
-  pPlatformService_->fileDescriptorService().addFileDescriptor(pTunTap_->get_handle(),
-                                                               FileDescriptorServiceProvider::DescriptorType::READ,
-                                                               std::bind(&VirtualTransport::readDevice,
-                                                                         this,
-                                                                         std::placeholders::_1));
-
-  /** [filedescriptorservice-registerfd-snippet] */
+  // start tuntap read thread
+  thread_ = std::thread{&VirtualTransport::readDevice,this};
 }
 
 void EMANE::Transports::Virtual::VirtualTransport::postStart()
@@ -362,18 +357,19 @@ void EMANE::Transports::Virtual::VirtualTransport::postStart()
 
 void EMANE::Transports::Virtual::VirtualTransport::stop()
 {
-  /** [filedescriptorservice-unregisterfd-snippet] */
-  
-  pPlatformService_->fileDescriptorService().removeFileDescriptor(pTunTap_->get_handle());
-
-  /** [filedescriptorservice-unregisterfd-snippet] */
-  
-  if(bFlowControlEnable_)
+  if(thread_.joinable())
     {
-      flowControlClient_.stop();
-    }
+      if(bFlowControlEnable_)
+        {
+          flowControlClient_.stop();
+        }
 
-  bCanceled_ = true;
+      bCanceled_ = true;
+
+      ThreadUtils::cancel(thread_);
+
+      thread_.join();
+    }
 
   pTunTap_->deactivate();
 
@@ -667,7 +663,7 @@ void EMANE::Transports::Virtual::VirtualTransport::handleUpstreamControl(const C
 }
 
 
-void EMANE::Transports::Virtual::VirtualTransport::readDevice(int)
+void EMANE::Transports::Virtual::VirtualTransport::readDevice()
 {
   std::uint8_t buf[Utils::IP_MAX_PACKET];
 
@@ -685,17 +681,14 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice(int)
       // read from tuntap
       if((len = pTunTap_->readv(&iov, 1)) < 0)
         {
-          if(errno != EAGAIN)
-            {
-              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                      ERROR_LEVEL,
-                                      "TRANSPORTI %03hu VirtualTransport::%s %s",
-                                      id_,
-                                      __func__,
-                                      strerror(errno));
-            }
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  ERROR_LEVEL,
+                                  "TRANSPORTI %03hu VirtualTransport::%s %s",
+                                  id_,
+                                  __func__,
+                                  strerror(errno));
 
-          return;
+          break;
         }
       else
         {
@@ -759,7 +752,7 @@ void EMANE::Transports::Virtual::VirtualTransport::readDevice(int)
                                                  __func__,
                                                  status.first);
                           // done
-                          return;
+                          break;
                         }
                       else
                         {

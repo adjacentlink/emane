@@ -2,9 +2,18 @@ lib_LTLIBRARIES = libieee80211abgmaclayer.la
 
 libieee80211abgmaclayer_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
- $(AM_CFLAGS)                        \
- $(libuuid_CFLAGS)                   \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                      \
+ $(libemane_CFLAGS)
+
+libieee80211abgmaclayer_la_LIBADD=           \
+ $(libuuid_LIBS)                             \
+ $(libxml2_LIBS)                             \
+ $(protobuf_LIBS)                            \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libieee80211abgmaclayer_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                       \
+ -avoid-version
 
 libieee80211abgmaclayer_la_SOURCES = \
  maclayer.cc                         \
@@ -32,12 +41,8 @@ libieee80211abgmaclayer_la_SOURCES = \
  macheaderparams.cc                  \
  wmmmanager.cc                       \
  ieee80211abgmacheadermessage.cc     \
- ieee80211abgmacheader.pb.cc         \
- onehopneighborsevent.pb.cc          \
  macheaderparamsformatter.cc         \
- configurationvalidator.cc
-
-EXTRA_DIST=                          \
+ configurationvalidator.cc           \
  downstreamqueue.h                   \
  downstreamqueueentry.h              \
  accesscategory.h                    \
@@ -70,9 +75,15 @@ EXTRA_DIST=                          \
  wmmmanager.h                        \
  configurationvalidator.h            \
  ieee80211abgmacheadermessage.h      \
+ macheaderparamsformatter.h
+
+nodist_libieee80211abgmaclayer_la_SOURCES = \
+ ieee80211abgmacheader.pb.cc         \
+ onehopneighborsevent.pb.cc          \
  ieee80211abgmacheader.pb.h          \
- onehopneighborsevent.pb.h           \
- macheaderparamsformatter.h          \
+ onehopneighborsevent.pb.h
+
+EXTRA_DIST=                          \
  ieee80211abgmacheader.proto         \
  onehopneighborsevent.proto          \
  ieee80211abgnem.xml.in              \
@@ -83,14 +94,7 @@ BUILT_SOURCES =                      \
  ieee80211abgnem.xml                 \
  ieee80211abgmac.xml                 \
  ieee80211pcr.xml                    \
- ieee80211abgmacheader.pb.cc         \
- ieee80211abgmacheader.pb.h          \
- onehopneighborsevent.pb.cc          \
- onehopneighborsevent.pb.h             
-
-libieee80211abgmaclayer_la_LDFLAGS=  \
- $(libxml2_LIBS)                     \
- -avoid-version
+ $(nodist_libieee80211abgmaclayer_la_SOURCES)
 
 ieee80211abgmacheader.pb.cc ieee80211abgmacheader.pb.h: ieee80211abgmacheader.proto
 	protoc -I=. --cpp_out=. $<

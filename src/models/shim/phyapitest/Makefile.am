@@ -2,21 +2,26 @@ lib_LTLIBRARIES = libphyapitestshim.la
 
 libphyapitestshim_la_CPPFLAGS= \
  -I@top_srcdir@/include        \
- $(libuuid_CFLAGS)             \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)                \
+ $(libemane_CFLAGS)
+
+libphyapitestshim_la_LIBADD=                 \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+libphyapitestshim_la_LDFLAGS=  \
+ $(AM_LDFLAGS)                 \
+ -avoid-version
 
 libphyapitestshim_la_SOURCES = \
- shimlayer.cc
+ shimlayer.cc                  \
+ shimlayer.h
 
 EXTRA_DIST =                   \
- shimlayer.h                   \
  phyapitestshim.xml.in
 
 BUILT_SOURCES =                \
  phyapitestshim.xml
-
-libphyapitestshim_la_LDFLAGS=  \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

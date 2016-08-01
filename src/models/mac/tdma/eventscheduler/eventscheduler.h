@@ -101,6 +101,7 @@ namespace EMANE
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectSlotIndexOutOfRange_;
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectFrameIndexOutOfRange_;
         StatisticNumeric<std::uint64_t> * pNumScheduleRejectUpdateBeforeFull_;
+        StatisticNumeric<std::uint64_t> * pNumScheduleRejectOther_;
         StatisticNumeric<std::uint64_t> * pNumScheduleFullAccept_;
         StatisticNumeric<std::uint64_t> * pNumScheduleUpdateAccept_;
 

@@ -45,6 +45,8 @@
 
 #include "tuntap.h"
 
+#include <thread>
+
 namespace EMANE
 {
   namespace Transports
@@ -97,6 +99,8 @@ namespace EMANE
 
         Utils::BitPool * pBitPool_;
 
+        std::thread thread_;
+
         bool bCanceled_;
 
         FlowControlClient flowControlClient_;
@@ -107,7 +111,7 @@ namespace EMANE
 
         Utils::CommonLayerStatistics commonLayerStatistics_;
 
-        void readDevice(int);
+        void readDevice();
 
         void handleUpstreamControl(const ControlMessages & msgs);
       };

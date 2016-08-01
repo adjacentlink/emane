@@ -94,7 +94,8 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
   downstreamQueueTimedEventId_{},
   bHasPendingDownstreamQueueEntry_{},
   pendingDownstreamQueueEntry_{},
-  currentEndOfTransmissionTime_{}
+  currentEndOfTransmissionTime_{},
+  currentDelay_{}
 {}
 
 EMANE::Models::RFPipe::MACLayer::~MACLayer(){}
@@ -1080,9 +1081,26 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
       auto now = Clock::now();
 
-      if(currentEndOfTransmissionTime_ <= now)
+      if(currentEndOfTransmissionTime_ - currentDelay_ <= now)
         {
-          handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+          currentDelay_ = delayMicroseconds_ + getJitter();
+
+          if(currentDelay_ > Microseconds::zero())
+            {
+              currentEndOfTransmissionTime_ = now + currentDelay_;
+
+              downstreamQueueTimedEventId_ =
+                pPlatformService_->timerService().
+                schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                   this,
+                                   currentEndOfTransmissionTime_,
+                                   u64TxSequenceNumber_),
+                         currentEndOfTransmissionTime_);
+            }
+          else
+            {
+              handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+            }
         }
       else
         {
@@ -1182,10 +1200,11 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                         pendingDownstreamQueueEntry_.u64DataRatebps_,
                                                         now);
 
+          currentDelay_ = delayMicroseconds_ + getJitter();
 
           // earliest you can send the next packet
           currentEndOfTransmissionTime_ =
-            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + delayMicroseconds_ + getJitter();
+            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + currentDelay_;
 
           std::tie(pendingDownstreamQueueEntry_,
                    bHasPendingDownstreamQueueEntry_) =
@@ -1201,7 +1220,7 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                        this,
                                        currentEndOfTransmissionTime_,
                                        u64TxSequenceNumber_),
-                             sot);
+                             currentEndOfTransmissionTime_);
                 }
               else
                 {

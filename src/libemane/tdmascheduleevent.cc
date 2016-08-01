@@ -86,6 +86,12 @@ public:
       {
         std::uint32_t u32FrameIndex = frame.index();
 
+        if(bHasStructure_ && u32FrameIndex >= u32FramesPerMultiFrame)
+          {
+            throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu index out of range",
+                                                        u32FrameIndex);
+          }
+
         std::set<std::uint32_t> presentSlots{};
 
         for(const auto & slot : frame.slots())
@@ -98,6 +104,13 @@ public:
             NEMId destination{};
 
             std::uint32_t u32SlotIndex = slot.index();
+
+            if(bHasStructure_ && u32SlotIndex >= u32SlotsPerFrame)
+              {
+                 throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu slot index out of range",
+                                                             u32FrameIndex,
+                                                             u32SlotIndex);
+              }
 
             presentSlots.insert(u32SlotIndex);
 
@@ -123,9 +136,9 @@ public:
                     }
                   else
                     {
-                      makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
-                                                            u32FrameIndex,
-                                                            u32SlotIndex);
+                      throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
+                                                                  u32FrameIndex,
+                                                                  u32SlotIndex);
                     }
 
                   if(tx.has_dataratebps())
@@ -142,9 +155,9 @@ public:
                     }
                   else
                     {
-                      makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable datarate",
-                                                            u32FrameIndex,
-                                                            u32SlotIndex);
+                      throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable datarate",
+                                                                  u32FrameIndex,
+                                                                  u32SlotIndex);
                     }
 
 
@@ -162,9 +175,9 @@ public:
                     }
                   else
                     {
-                      makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable class",
-                                                            u32FrameIndex,
-                                                            u32SlotIndex);
+                      throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable class",
+                                                                  u32FrameIndex,
+                                                                  u32SlotIndex);
                     }
 
 
@@ -182,9 +195,9 @@ public:
                     }
                   else
                     {
-                      makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable power",
-                                                            u32FrameIndex,
-                                                            u32SlotIndex);
+                      throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable power",
+                                                                  u32FrameIndex,
+                                                                  u32SlotIndex);
                     }
 
 
@@ -215,9 +228,9 @@ public:
                     }
                   else
                     {
-                      makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
-                                                            u32FrameIndex,
-                                                            u32SlotIndex);
+                      throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
+                                                                  u32FrameIndex,
+                                                                  u32SlotIndex);
                     }
                 }
                 break;
@@ -274,10 +287,12 @@ public:
                       }
                     else
                       {
-                        makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
-                                                              u32FrameIndex,
-                                                              i);
+                        throw makeException<SerializationException>("TDMAScheduleEvent : Frame %lu Slot %lu has undeterminable frequency",
+                                                                    u32FrameIndex,
+                                                                    i);
                       }
+
+                    frequencies_.insert(u64FrequencyHz);
 
                     slotInfos_[u32FrameIndex * u32SlotsPerFrame + i] = {SlotInfo::Type::RX,
                                                                         u32FrameIndex,

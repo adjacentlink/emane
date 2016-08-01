@@ -103,8 +103,14 @@ namespace EMANE
  * @ref EMANE::FileDescriptorServiceProvider::addFileDescriptor
  * "FileDescriptorServiceProvider::addFileDescriptor" is a template method that associates a
  * callable and a type, either read or write, with a file descriptor.
+ * @code
  *
- * @snippet src/transports/virtual/virtualtransport.cc filedescriptorservice-registerfd-snippet
+ * pPlatformService_->fileDescriptorService().addFileDescriptor(pTunTap_->get_handle(),
+ *                                                               FileDescriptorServiceProvider::DescriptorType::READ,
+ *                                                               std::bind(&VirtualTransport::readDevice,
+ *                                                                         this,
+ *                                                                         std::placeholders::_1));
+ * @endcode
  *
  * The @ref EMANE::FileDescriptorServiceProvider "FileDescriptorServiceProvider" is accessed via the
  * @ref EMANE::PlatformServiceProvider "PlatformServiceProvider". All components are given a reference
@@ -121,5 +127,9 @@ namespace EMANE
  * @ref EMANE::FileDescriptorServiceProvider::removeFileDescriptor
  * "FileDescriptorServiceProvider::removeFileDescriptor."
  *
- * @snippet src/transports/virtual/virtualtransport.cc filedescriptorservice-unregisterfd-snippet
+ * @code
+ *
+ *  pPlatformService_->fileDescriptorService().removeFileDescriptor(pTunTap_->get_handle());
+ *
+ * @endcode
  */

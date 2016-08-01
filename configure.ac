@@ -32,7 +32,7 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.3,[emane at adjacent link dot com])
+AC_INIT([emane],1.0.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -145,9 +145,6 @@ fi
 
 AC_SUBST(libemane_CFLAGS,
 ["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
-
-AC_SUBST(libemane_LIBS,
-["-lemane -lrt ${libxml2_LIBS} ${protobuf_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
 
 LANG=C
 AC_SUBST(LANG)
