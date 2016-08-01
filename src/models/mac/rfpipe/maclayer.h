@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008,2009,2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -88,38 +88,31 @@ namespace EMANE
 
 
         // mac layer implementor api below
-  
+
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & update) override;
-  
+
         void start() override;
-  
+
         void postStart() override;
 
         void stop() override;
-  
+
         void destroy() throw() override;
 
         void processUpstreamControl(const ControlMessages & msgs) override;
-   
+
 
         void processUpstreamPacket(const CommonMACHeader & hdr,
                                    UpstreamPacket & pkt,
-                                   const ControlMessages & msgs) override;  
-   
+                                   const ControlMessages & msgs) override;
+
         void processDownstreamControl(const ControlMessages & msgs) override;
- 
+
 
         void processDownstreamPacket(DownstreamPacket & pkt,
                                      const ControlMessages & msgs) override;
-
-        
-        void processTimedEvent(TimerEventId eventId,
-                               const TimePoint & expireTime,
-                               const TimePoint & scheduleTime,
-                               const TimePoint & fireTime,
-                               const void * arg) override;
 
         void processConfiguration(const ConfigurationUpdate & update) override;
 
@@ -132,7 +125,7 @@ namespace EMANE
         static const RegistrationId type_ = REGISTERED_EMANE_MAC_RF_PIPE;
 
         DownstreamQueue downstreamQueue_;
-  
+
         std::uint64_t u64TxSequenceNumber_;
 
         FlowControlManager flowControlManager_;
@@ -166,11 +159,11 @@ namespace EMANE
 
         Utils::CommonLayerStatistics commonLayerStatistics_;
 
-        Utils::RandomNumberDistribution<std::mt19937, 
-                                 std::uniform_real_distribution<float>> RNDZeroToOne_;
+        Utils::RandomNumberDistribution<std::mt19937,
+                                        std::uniform_real_distribution<float>> RNDZeroToOne_;
 
-        std::unique_ptr<Utils::RandomNumberDistribution<std::mt19937, 
-                                 std::uniform_real_distribution<float>>> pRNDJitter_;
+        std::unique_ptr<Utils::RandomNumberDistribution<std::mt19937,
+                                                        std::uniform_real_distribution<float>>> pRNDJitter_;
 
         float fJitterSeconds_;
 
@@ -186,12 +179,15 @@ namespace EMANE
 
         TimePoint currentEndOfTransmissionTime_;
 
-        bool handleDownstreamQueueEntry(TimePoint sot, std::uint64_t u64TxSequenceNumber);
+        Microseconds currentDelay_;
+
+        void handleDownstreamQueueEntry(TimePoint sot,
+                                        std::uint64_t u64TxSequenceNumber);
 
         Microseconds getDurationMicroseconds(size_t lengthInBytes);
 
         Microseconds getJitter();
-    
+
         bool checkPOR(float fSINR, size_t packetSize);
       };
     }

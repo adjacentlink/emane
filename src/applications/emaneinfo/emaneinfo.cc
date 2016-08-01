@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,19 +48,12 @@
 #include "eventagentmanagerimpl.h"
 #include "registrarproxy.h"
 #include "buildidservice.h"
+#include "otamanager.h"
 #include <sstream>
 #include <iostream>
 #include <tuple>
 #include <uuid.h>
-
-#include <ace/ACE.h>
-#include <ace/Get_Opt.h>
-#include <ace/Reactor.h>
-#include <ace/Sched_Params.h>
-
-#include <ace/OS_NS_unistd.h>
-#include <ace/OS_NS_fcntl.h>
-#include <ace/OS_NS_stdio.h>
+#include <getopt.h>
 
 void usage();
 
@@ -69,52 +63,41 @@ T * createManager()
   uuid_t uuid{};
   uuid_generate(uuid);
   T *  pManager{new T{uuid}};
-  auto buildId = EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pManager);
+  EMANE::BuildId buildId{0};
   EMANE::RegistrarProxy registrarProxy{buildId};
   pManager->initialize(registrarProxy);
   return pManager;
 }
 
-int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
+int main(int argc, char * argv[])
 {
   EMANE::Application::initialize();
 
   try
     {
-      const ACE_TCHAR options[] = ACE_TEXT(":vhcm");
-
-      ACE_Get_Opt cmd_opts(argc,argv,options);
-      
-      if(cmd_opts.long_option(ACE_TEXT("help"),'h') == -1)
+      std::vector<option> options =
         {
-          ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),ACE_TEXT("config long option: help")),EXIT_FAILURE);
-        }
-      
-      if(cmd_opts.long_option(ACE_TEXT("version"),'v') == -1)
-        {
-          ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),ACE_TEXT("config long option: version")),EXIT_FAILURE);
-        }
+          {"help",0,nullptr,'h'},
+          {"version",0,nullptr,'v'},
+          {"configuration",0,nullptr,'c'},
+          {"manifest",0,nullptr,'m'},
+          {0, 0,nullptr,0},
+        };
 
-      if(cmd_opts.long_option(ACE_TEXT("configuration"),'c') == -1)
-        {
-          ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),ACE_TEXT("config long option: configuration")),EXIT_FAILURE);
-        }
-      
-      using EMANE::Application::ConfigurationController;
-
-      int option;
+      int iOption{};
+      int iOptionIndex{};
       bool bConfiguration{false};
       bool bShowManifest{false};
-      
-      while((option = cmd_opts()) != EOF)
+
+      while((iOption = getopt_long(argc,argv,"hcmv", &options[0],&iOptionIndex)) != -1)
         {
-          switch(option)
+          switch(iOption)
             {
             case 'h':
-              // --help
               usage();
-              return 0;
-              
+              return EXIT_SUCCESS;
+              break;
+
             case 'v':
               // --version
               std::cout<<VERSION<<std::endl;
@@ -128,30 +111,25 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
             case 'm':
               bShowManifest = true;
               break;
- 
-            case ':':
-              // missing arguement
-              std::cerr<<"-"<<cmd_opts.last_option()<<" requires an argument"<<std::endl;
-              return EXIT_FAILURE;
-              
+
             default:
-              std::cerr<<"Unknown option: -"<<cmd_opts.last_option()<<std::endl;
+              std::cerr<<"Unknown option: -"<<static_cast<char>(iOption)<<std::endl;
               return EXIT_FAILURE;
             }
         }
 
       std::string sFileName;
 
-      if(cmd_opts.opt_ind() < cmd_opts.argc())
-        {
-          sFileName = argv[cmd_opts.opt_ind()];
-        }
-      else
+      if(optind >= argc)
         {
           std::cerr<<"Missing plugin"<<std::endl;
           return EXIT_FAILURE;
         }
-      
+      else
+        {
+          sFileName = argv[optind];
+        }
+
       EMANE::Application::NEMBuilder nemBuilder;
       EMANE::Application::EventGeneratorBuilder eventGeneratorBuilder;
       EMANE::Application::EventAgentBuilder eventAgentBuilder;
@@ -181,6 +159,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
           auto pManager = createManager<EMANE::Application::NEMManagerImpl>();
           buildId = pManager->getBuildId();
           pComponent.reset(pManager);
+          EMANE::OTAManagerSingleton::instance();
         }
       else if(sPluginName == "transportmanager")
         {
@@ -229,7 +208,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
                 pComponent.reset(pPlugin.release());
               }
               break;
-          
+
             case EMANE::Application::PluginType::SHIM:
               {
                 auto pPlugin = nemBuilder.buildShimLayer(1,sPluginName,request,!bConfiguration);
@@ -245,7 +224,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
                 pComponent.reset(pPlugin.release());
               }
               break;
-           
+
             case EMANE::Application::PluginType::AGENT:
               {
                 auto pPlugin = eventAgentBuilder.buildEventAgent(1,sPluginName,request,!bConfiguration);
@@ -253,7 +232,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
                 pComponent.reset(pPlugin.release());
               }
               break;
-          
+
             case EMANE::Application::PluginType::TRANSPORT:
               {
                 auto pPlugin = transportBuilder.buildTransport(1,sPluginName,request,!bConfiguration);
@@ -264,7 +243,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
               break;
             }
         }
-      
+
       if(bShowManifest)
         {
           std::cout<<EMANE::Application::manifest(buildId,sFileName);
@@ -288,7 +267,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR * argv[])
     }
 
   EMANE::Application::shutdown();
-  
+
   return EXIT_SUCCESS;
 }
 
@@ -301,6 +280,7 @@ void usage()
   std::cout<<std::endl;
   std::cout<<"options:"<<std::endl;
   std::cout<<"  -h, --help                     Print this message and exit."<<std::endl;
+  std::cout<<"  -m, --manifest                 Print manifest."<<std::endl;
   std::cout<<"  -v, --version                  Print version and exit."<<std::endl;
   std::cout<<std::endl;
 }

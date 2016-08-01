@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,8 +34,7 @@
 
 #include "emane/flowcontrolmanager.h"
 
-#include <ace/Guard_T.h>
-#include <ace/Thread_Mutex.h>
+#include <mutex>
 
 class EMANE::FlowControlManager::Implementation
 {
@@ -46,23 +46,23 @@ Implementation(EMANE::DownstreamTransport & transport):
   u16ShadowTokenCount_{},
   u16LastTokensUpdate_{},
   bAckPending_{true}{}
-  
+
   ~Implementation(){}
 
   void start(std::uint16_t u16TotalTokensAvailable)
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
+    std::lock_guard<std::mutex> m(mutex_);
+
     u16TotalTokensAvailable_ = u16TotalTokensAvailable;
     u16TokensAvailable_      = u16TotalTokensAvailable;
-    
+
     sendFlowControlResponseMessage();
   }
-  
+
   void stop()
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
+    std::lock_guard<std::mutex> m(mutex_);
+
     u16TotalTokensAvailable_ = 0;
     u16TokensAvailable_      = 0;
     u16ShadowTokenCount_     = 0;
@@ -70,14 +70,14 @@ Implementation(EMANE::DownstreamTransport & transport):
 
   std::pair<std::uint16_t,bool> addToken(std::uint16_t u16Tokens)
   {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+    std::lock_guard<std::mutex> m(mutex_);
 
   // get add tokens status
   const bool bStatus = ((u16TokensAvailable_ + u16Tokens) <= u16TotalTokensAvailable_);
 
   // have room to add all requested tokens
   if(bStatus == true)
-    { 
+    {
       // update tokens available
       u16TokensAvailable_ += u16Tokens;
     }
@@ -93,16 +93,16 @@ Implementation(EMANE::DownstreamTransport & transport):
 
   std::pair<std::uint16_t,bool> removeToken()
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
+    std::lock_guard<std::mutex> m(mutex_);
+
     bool bStatus;
-    
+
     // ack pending, no action
     if(bAckPending_ == true)
       {
         bStatus = false;
       }
-    else 
+    else
       {
         // no tokens available
         if(u16TokensAvailable_ == 0)
@@ -114,7 +114,7 @@ Implementation(EMANE::DownstreamTransport & transport):
             // decrement tokens available
             --u16TokensAvailable_;
             --u16ShadowTokenCount_;
-            
+
             bStatus = true;
           }
       }
@@ -124,8 +124,8 @@ Implementation(EMANE::DownstreamTransport & transport):
 
   void processFlowControlMessage(const Controls::FlowControlControlMessage * pMsg)
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
+    std::lock_guard<std::mutex> m(mutex_);
+
     if(!bAckPending_)
       {
         // upstream layer start or restart condition
@@ -154,25 +154,25 @@ private:
 
   DownstreamTransport & rTransport_;
 
-  ACE_Thread_Mutex mutex_;
-  
+  std::mutex mutex_;
+
   std::uint16_t u16TokensAvailable_;
-  
+
   std::uint16_t u16TotalTokensAvailable_;
-  
+
   std::uint16_t u16ShadowTokenCount_;
 
   std::uint16_t u16LastTokensUpdate_;
-  
+
   bool bAckPending_;
 
   // precondition - mutex is locked
   void sendFlowControlResponseMessage()
   {
     rTransport_.sendUpstreamControl({Controls::FlowControlControlMessage::create(u16TokensAvailable_)});
-                                    
+
     u16ShadowTokenCount_ = u16TokensAvailable_;
-    
+
     u16LastTokensUpdate_ = u16TokensAvailable_;
 
     bAckPending_ = true;
@@ -210,4 +210,3 @@ void EMANE::FlowControlManager::processFlowControlMessage(const Controls::FlowCo
 {
   pImpl_->processFlowControlMessage(pMsg);
 }
-

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +36,10 @@
 #include "logservice.h"
 
 std::string
-EMANE::ControlPort::LogLevelUpdateHandler::process(const EMANERemoteControlPortAPI::Request::Update::LogLevel & logLevel,
-                                                   std::uint32_t u32Sequence,
-                                                   std::uint32_t u32Reference)
+EMANE::ControlPort::LogLevelUpdateHandler::
+process(const EMANERemoteControlPortAPI::Request::Update::LogLevel & logLevel,
+        std::uint32_t u32Sequence,
+        std::uint32_t u32Reference)
 {
   EMANERemoteControlPortAPI::Response response;
 
@@ -46,38 +48,31 @@ EMANE::ControlPort::LogLevelUpdateHandler::process(const EMANERemoteControlPortA
   if(iLogLevel >= 0 && iLogLevel <= 4)
     {
       LogServiceSingleton::instance()->setLogLevel(static_cast<EMANE::LogLevel>(iLogLevel));
-          
+
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_UPDATE);
 
       auto pUpdate = response.mutable_update();
-      
+
       pUpdate->set_type(EMANERemoteControlPortAPI::TYPE_UPDATE_LOGLEVEL);
     }
   else
     {
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-          
+
       auto pError = response.mutable_error();
-          
+
       pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-          
+
       pError->set_description("Log level out of allowable range [0,4]");
     }
 
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize log level update response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize log level update response");
     }

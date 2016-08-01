@@ -10,8 +10,6 @@ emaneincdir = $(includedir)/emane/
 
 emaneinc_HEADERS =                       \
  antennamode.h                           \
- antennaprofile.h                        \
- antennaprofile.inl                      \
  anyexception.h                          \
  any.h                                   \
  buildable.h                             \
@@ -44,10 +42,14 @@ emaneinc_HEADERS =                       \
  eventserviceprovider.h                  \
  eventserviceuser.h                      \
  exception.h                             \
+ filedescriptorserviceprovider.h         \
+ filedescriptorserviceprovider.inl       \
  flowcontrolclient.h                     \
  flowcontrolmanager.h                    \
  frequencysegment.h                      \
  frequencysegment.inl                    \
+ inetaddr.h                              \
+ inetaddrexception.h                     \
  logserviceprovider.h                    \
  logserviceprovider.inl                  \
  maclayerimpl.h                          \
@@ -100,6 +102,7 @@ emaneinc_HEADERS =                       \
  statistictable.inl                      \
  statistictablepublisher.h               \
  timerserviceprovider.h                  \
+ timerserviceprovider.inl                \
  timerserviceuser.h                      \
  transmitter.h                           \
  transmitter.inl                         \
@@ -111,7 +114,9 @@ emaneinc_HEADERS =                       \
  upstreamtransport.inl                   \
  velocity.h                              \
  velocity.inl                            \
- velocityformatter.h                     \
+ velocityformatter.h
+
+nodist_emaneinc_HEADERS=                 \
  version.h
 
 EXTRA_DIST=                              \

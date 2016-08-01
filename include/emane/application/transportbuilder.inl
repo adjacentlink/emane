@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -32,17 +32,23 @@
  */
 
 template<typename T>
-T *
-EMANE::Application::TransportBuilder::buildTransport(const NEMId id,
-                                                     const ConfigurationUpdateRequest& request)
-{      
+std::pair<T *,std::unique_ptr<EMANE::Application::TransportAdapter>>
+EMANE::Application::TransportBuilder::buildTransportWithAdapter(const NEMId id,
+                                                                const ConfigurationUpdateRequest& request,
+                                                                const std::string & sPlatformEndpoint,
+                                                                const std::string & sTransportEndpoint) const
+{
   // new platform service
   EMANE::PlatformServiceProvider * pPlatformService{newPlatformService()};
-  
+
   // create transport
   T * pInstance{new T{id, pPlatformService}};
-  
-  initializeTransport(pInstance, pPlatformService, request);
-  
-  return pInstance;
+
+  auto pTransportAdapater = buildTransportWithAdapter_i(pInstance,
+                                                        pPlatformService,
+                                                        request,
+                                                        sPlatformEndpoint,
+                                                        sTransportEndpoint);
+
+  return std::make_pair(pInstance,std::move(pTransportAdapater));
 }

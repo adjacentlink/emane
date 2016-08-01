@@ -9,17 +9,13 @@ SUBDIRS= src                            \
          schema                         \
          test
 
-edit = sed                                \
-       -e 's|@VERSION[@]|$(VERSION)|g'      
-
-dist-hook:
-	find $(distdir) -name "*.pb.*" -delete
-	rm -f $(distdir)/include/emane/version.h
+edit = sed                                               \
+       -e 's|@VERSION[@]|$(VERSION)|g'                   \
+       -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
+       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
 cleantar:
 	@(rm -f emane*.tar.gz)
-
-RPMARCH=`arch`
 
 if HAVE_RPMBUILD
 
@@ -28,16 +24,12 @@ rpm: emane.spec dist-gzip
 	.rpmbuild/SPECS \
 	.rpmbuild/SOURCES \
 	.rpmbuild/SRPMS \
-	.rpmbuild/RPMS/$(RPMARCH) \
 	.rpmbuild/RPMS/noarch \
 	.rpmbuild/tmp
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec --target $(RPMARCH) \
+	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp"
-	$(MAKE) -C src/emanesh rpm &&\
-    cp src/emanesh/dist/emanesh-$(VERSION)-1.noarch.rpm .rpmbuild/RPMS/noarch && \
-    cp src/emanesh/dist/emanesh-$(VERSION)-1.src.rpm .rpmbuild/SRPMS
 	@echo "============================================================"
 	@echo "RPMs located in .rpmbuild/RPMS and .rpmbuild/SRPMS"
 
@@ -56,15 +48,15 @@ emane.spec: emane.spec.in
 
 if HAVE_DEB
 
+JOBS=`getconf _NPROCESSORS_ONLN`
+
 deb: dist-gzip 
 	mkdir -p .debbuild
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .debbuild
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
-	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc
-	$(MAKE) -C .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh deb && \
-         cp .debbuild/$(PACKAGE)-$(VERSION)/src/emanesh/deb_dist/emanesh_$(VERSION)-1_all.deb .debbuild
+	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	@echo "============================================================"
 	@echo "debs located in .debbuild"
 cleandeb:
@@ -82,13 +74,10 @@ EXTRA_DIST =         \
  ChangeLog           \
  NEWS                \
  emane.spec.in       \
- PROBLEM-REPORT-FORM \
  SPONSOR             \
  README.md           \
  debian              \
  autogen.sh
-
-DISTCLEANFILES = .rpmbuild
 
 install-exec-hook:	
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/$(PACKAGE)/manifest
@@ -99,11 +88,17 @@ uninstall-local:
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/bypassphylayer.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/commeffectshim.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eelgenerator.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/emanephy.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eventagentmanager.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/eventgeneratormanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/gpsdlocationagent.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/ieee80211abgmaclayer.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/nemmanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/phyapitestshim.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/rfpipemaclayer.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/tdmaeventschedulerradiomodel.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/timinganalysisshim.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transportmanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transraw.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transvirtual.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/universalphylayer.xml

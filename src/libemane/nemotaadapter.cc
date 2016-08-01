@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,56 +36,38 @@
 #include "otamanager.h"
 #include "logservice.h"
 
+#include "emane/utils/threadutils.h"
 #include "emane/upstreamtransport.h"
-
-#include "emane/utils/spawnmemberfunc.h"
-
-#include <ace/Guard_T.h>
 
 EMANE::NEMOTAAdapter::NEMOTAAdapter(NEMId id):
   id_{id},
-  thread_{},
-  cond_{mutex_},
   bCancel_{}
 {}
 
 void EMANE::NEMOTAAdapter::open()
 {
-  ACE_hthread_t threadHandle{};
-  int priority{};
-  int policy{};
   bCancel_ = false;
 
   OTAManagerSingleton::instance()->registerOTAUser(id_,this);
-  
-  EMANE::Utils::spawn(*this,&NEMOTAAdapter::processPacketQueue,&thread_,&threadHandle);
 
-  ACE_OS::thr_getprio(threadHandle,priority,policy);
-  
-  if(policy == ACE_SCHED_RR)
-  {
-    LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                            DEBUG_LEVEL,"NEMOTAAdapter::NEMOTAAdapter: Policy set to RR, raising thread priority level");
+  thread_ = std::thread{&NEMOTAAdapter::processPacketQueue,this};
 
-    int retval{ACE_OS::thr_setprio(threadHandle,priority + 1,ACE_SCHED_RR)};
-
-    if(retval != 0)
+  if(ThreadUtils::elevate(thread_))
     {
       LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                               ERROR_LEVEL,"NEMOTAAdapter::NEMOTAAdapter: Unable to set Priority");
     }
-  }
 }
-    
+
 EMANE::NEMOTAAdapter::~NEMOTAAdapter()
 {
-  if(!bCancel_ && thread_)
+  if(!bCancel_ && thread_.joinable())
     {
-      mutex_.acquire();
+      mutex_.lock();
       bCancel_ = true;
-      cond_.signal();
-      mutex_.release();
-      ACE_OS::thr_join(thread_,0,0);
+      cond_.notify_one();
+      mutex_.unlock();
+      thread_.join();
     }
 }
 
@@ -98,78 +81,77 @@ void EMANE::NEMOTAAdapter::close()
     {
     }
 
-  if(thread_)
+  if(thread_.joinable())
     {
-      mutex_.acquire();
+      mutex_.lock();
       bCancel_ = true;
-      cond_.signal();
-      mutex_.release();
-      
-      ACE_OS::thr_join(thread_,0,0);
+      cond_.notify_one();
+      mutex_.unlock();
+      thread_.join();
     }
 }
-    
+
 void EMANE::NEMOTAAdapter::processOTAPacket(UpstreamPacket & pkt, const ControlMessages & msgs)
 {
   sendUpstreamPacket(pkt, msgs);
 }
-    
-void EMANE::NEMOTAAdapter::processDownstreamPacket(DownstreamPacket & pkt, 
+
+void EMANE::NEMOTAAdapter::processDownstreamPacket(DownstreamPacket & pkt,
                                                    const ControlMessages & msgs)
 {
-  ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+  std::lock_guard<std::mutex> m(mutex_);
 
-  queue_.push(DownstreamQueueEntry(std::move(pkt), msgs));
+  queue_.emplace_back(pkt, msgs);
 
-  cond_.signal();
+  cond_.notify_one();
 
 }
 
-ACE_THR_FUNC_RETURN EMANE::NEMOTAAdapter::processPacketQueue()
+void EMANE::NEMOTAAdapter::processPacketQueue()
 {
   while(1)
     {
-      mutex_.acquire();
+      std::unique_lock<std::mutex> lock(mutex_);
 
       while(queue_.empty() && !bCancel_)
         {
-          cond_.wait();
+          cond_.wait(lock);
         }
 
       if(bCancel_)
         {
-          mutex_.release();
           break;
         }
 
-      DownstreamQueueEntry entry{std::move(queue_.front())};
-      
-      queue_.pop();
-      
-      mutex_.release();
+      DownstreamPacketQueue queue{};
 
-      try
-        { // id, pkt, ctrl                                               
-          OTAManagerSingleton::instance()->sendOTAPacket(id_, entry.first, entry.second);
-        }
-      catch(std::exception & exp)
+      queue.swap(queue_);
+
+      lock.unlock();
+
+      for(auto & entry : queue)
         {
-          // cannot really do too much at this point, so we'll log it 
-          // good candidate spot to generate and error event as well
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                  "NEMOTAAdapter::processPacketQueue Excepetion caught: %s",
-                                  exp.what());
+          try
+            { // id, pkt, ctrl
+              OTAManagerSingleton::instance()->sendOTAPacket(id_, entry.first, entry.second);
+            }
+          catch(std::exception & exp)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "NEMOTAAdapter::processPacketQueue Excepetion caught: %s",
+                                      exp.what());
+            }
+          catch(...)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "NEMOTAAdapter::processPacketQueue Excepetion caught");
+            }
         }
-      catch(...)
-        {
-          // cannot really do too much at this point, so we'll log it 
-          // good candidate spot to generate and error event as well
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  ERROR_LEVEL,
-                                  "NEMOTAAdapter::processPacketQueue Excepetion caught");
-        }
+
+      queue.clear();
     }
-
-  return 0;
 }

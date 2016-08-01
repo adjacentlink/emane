@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +33,7 @@
 
 #include "timerserviceproxy.h"
 #include "timerservice.h"
+#include "logservice.h"
 
 EMANE::TimerServiceProxy::TimerServiceProxy():
   pTimerServiceUser_{}{}
@@ -48,17 +50,17 @@ bool EMANE::TimerServiceProxy::cancelTimedEvent(TimerEventId eventId)
 {
   return TimerServiceSingleton::instance()->cancelTimedEvent(eventId);
 }
-    
-EMANE::TimerEventId EMANE::TimerServiceProxy::scheduleTimedEvent(const TimePoint & timeout, 
-                                                                 const void *arg, 
-                                                                 const Microseconds & interval)
+
+EMANE::TimerEventId EMANE::TimerServiceProxy::scheduleTimedEvent(const TimePoint & timeout,
+                                                                 const void *arg,
+                                                                 const Duration & interval)
 {
   return TimerServiceSingleton::instance()->scheduleTimedEvent(timeout,
                                                                arg,
                                                                interval,
                                                                this);
 }
-    
+
 void EMANE::TimerServiceProxy::processTimedEvent(TimerEventId eventId,
                                                  const TimePoint & expireTime,
                                                  const TimePoint & scheduleTime,
@@ -70,4 +72,15 @@ void EMANE::TimerServiceProxy::processTimedEvent(TimerEventId eventId,
                                         scheduleTime,
                                         fireTime,
                                         arg);
+}
+
+EMANE::TimerEventId EMANE::TimerServiceProxy::schedule_i(TimerCallback,
+                                                         const TimePoint &,
+                                                         const Duration &)
+{
+  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                          ERROR_LEVEL,
+                          "TimerService schedule not available to component");
+
+  return 0;
 }

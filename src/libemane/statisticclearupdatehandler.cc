@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,12 +36,13 @@
 #include "statisticservice.h"
 
 std::string
-EMANE::ControlPort::StatisticClearUpdateHandler::process(const EMANERemoteControlPortAPI::Request::Update::StatisticClear & statisticClear,
-                                                         std::uint32_t u32Sequence,
-                                                         std::uint32_t u32Reference)
+EMANE::ControlPort::StatisticClearUpdateHandler::
+process(const EMANERemoteControlPortAPI::Request::Update::StatisticClear & statisticClear,
+        std::uint32_t u32Sequence,
+        std::uint32_t u32Reference)
 {
   std::vector<std::string> names;
-  
+
   for(int i = 0; i < statisticClear.names_size(); ++i)
     {
       names.push_back(statisticClear.names(i));
@@ -52,38 +53,31 @@ EMANE::ControlPort::StatisticClearUpdateHandler::process(const EMANERemoteContro
   try
     {
       StatisticServiceSingleton::instance()->clearStatistic(statisticClear.buildid(),names);
-                                            
+
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_UPDATE);
-      
+
       auto pUpdate = response.mutable_update();
-      
+
       pUpdate->set_type(EMANERemoteControlPortAPI::TYPE_UPDATE_STATISTICCLEAR);
     }
   catch(RegistrarException & exp)
     {
       response.set_type(EMANERemoteControlPortAPI::Response::TYPE_RESPONSE_ERROR);
-      
+
       auto pError = response.mutable_error();
-      
+
       pError->set_type(EMANERemoteControlPortAPI::Response::Error::TYPE_ERROR_PARAMETER);
-      
+
       pError->set_description(exp.what());
     }
-  
+
   response.set_reference(u32Reference);
-  
+
   response.set_sequence(u32Sequence);
-  
+
   std::string sSerialization;
 
-  try
-    {
-      if(!response.SerializeToString(&sSerialization))
-        {
-          throw SerializationException("unable to serialize statistic clear update response");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!response.SerializeToString(&sSerialization))
     {
       throw SerializationException("unable to serialize statistic clear update response");
     }

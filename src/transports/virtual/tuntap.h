@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014-2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,27 +35,24 @@
 #ifndef TUNTAP_HEADER_
 #define TUNTAP_HEADER_
 
-#include <ace/Handle_Set.h>
-#include <ace/INET_Addr.h>
+#include "emane/inetaddr.h"
 #include <string>
 
 #include "emane/platformserviceprovider.h"
 #include "emane/utils/netutils.h"
 
 
-// linux
-#ifdef __linux__
-
 #include <linux/if_tun.h>
 
-#undef ETH_ALEN 
+#undef ETH_ALEN
 #undef ETH_P_ARP
 #undef ETH_P_IPV6
 
 #define NETWORK_DEVICE_PATH  "/dev/net/tun"
 
 // local sockaddr
-struct sockaddr_in_t {
+struct sockaddr_in_t
+{
   short            sin_family;   // e.g. AF_INET, AF_INET6
   unsigned short   sin_port;     // e.g. htons(3490)
   struct in_addr   sin_addr;     // see struct in_addr, below
@@ -63,198 +61,144 @@ struct sockaddr_in_t {
 
 
 
-// APPLE
-#elif defined(__APPLE__)
-
-#define NETWORK_DEVICE_PATH  "/dev/tap0"
-
-// local sockaddr
-struct sockaddr_in_t {
-  __uint8_t      sin_len;
-  sa_family_t    sin_family;
-  in_port_t      sin_port;
-  struct in_addr sin_addr;
-  char           sin_zero[8];
-} __attribute__((__may_alias__));
-
-// WIN32
-#elif defined(WIN32)
-
-#include <winioctl.h>
-
-#define NETWORK_DEVICE_PATH "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
-
-#define NETWORK_CONTROL_PATH "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
-
-
-// win32 tap ioctls
-#define TAP_GET_MAC               CTL_CODE (FILE_DEVICE_UNKNOWN, 1, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_GET_VERSION           CTL_CODE (FILE_DEVICE_UNKNOWN, 2, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_GET_MTU               CTL_CODE (FILE_DEVICE_UNKNOWN, 3, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_GET_INFO              CTL_CODE (FILE_DEVICE_UNKNOWN, 4, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_CONFIG_POINT_TO_POINT CTL_CODE (FILE_DEVICE_UNKNOWN, 5, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_SET_MEDIA_STATUS      CTL_CODE (FILE_DEVICE_UNKNOWN, 6, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_CONFIG_DHCP_MASQ      CTL_CODE (FILE_DEVICE_UNKNOWN, 7, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_GET_LOG_LINE          CTL_CODE (FILE_DEVICE_UNKNOWN, 8, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_CONFIG_DHCP_SET_OPT   CTL_CODE (FILE_DEVICE_UNKNOWN, 9, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define TAP_CONFIG_TUN            CTL_CODE (FILE_DEVICE_UNKNOWN,10, METHOD_BUFFERED, FILE_ANY_ACCESS)
-
-#endif
-
-  namespace EMANE
+namespace EMANE
+{
+  namespace Transports
   {
-    namespace Transports
+    namespace Virtual
     {
-      namespace Virtual
+      class TunTap
       {
-        class TunTap
-        {
-        private:
-  
-          PlatformServiceProvider * pPlatformService_;
-          ACE_HANDLE            tunHandle_;
-          std::string           tunName_;
-          std::string           tunPath_;
-          std::string           tunGuid_;
-          int                   tunIndex_;
-          ACE_INET_Addr         tunAddr_;
-          ACE_INET_Addr         tunMask_;
+      private:
 
-#if defined(__linux__) || defined(__APPLE__)
+        PlatformServiceProvider * pPlatformService_;
+        int                   tunHandle_;
+        std::string           tunName_;
+        std::string           tunPath_;
+        std::string           tunGuid_;
+        int                   tunIndex_;
+        INETAddr              tunAddr_;
+        INETAddr              tunMask_;
 
-          int set_flags (int, int);
-          int get_flags ();
 
-#elif defined(WIN32)
+        int set_flags(int, int);
+        int get_flags();
 
-          const static size_t IO_BUFFLEN = 2048;
+      public:
+        TunTap(PlatformServiceProvider * pPlatformService);
 
-          struct IoOverlapped {
-            char          buffer[IO_BUFFLEN];
-            DWORD         byteCount;
-            OVERLAPPED    overlapped;
-          };
+        ~TunTap();
 
-          struct IoOverlapped ioRead_;
-          struct IoOverlapped ioWrite_;
+        /**
+         * Opens tuntap handle
+         *
+         * @param sDevicePath path to device
+         * @param sDeviceName name of device
+         *
+         * @return 0 on success, -1 on error
+         */
+        int open(const char *, const char *);
 
-#endif
+        /**
+         * Closes tuntap handle
+         *
+         * @return 0
+         */
+        int close();
 
-        public:
-          TunTap (PlatformServiceProvider * pPlatformService);
+        /**
+         * Activates tuntap
+         *
+         * @param arpEnabled enable or disable arp
+         * @return 0 on success, -1 on error.
+         *
+         * @note sets the device to the UP state.
+         */
+        int activate(bool);
 
-          ~TunTap ();
+        /**
+         * Deactivates tuntap
+         *
+         * @return 0 on success, -1 on error.
+         *
+         * @note sets the device to the DOWN state.
+         */
+        int deactivate();
 
-          /**
-           * Opens tuntap handle
-           *
-           * @param sDevicePath path to device
-           * @param sDeviceName name of device
-           *
-           * @return 0 on success, -1 on error
-           */
-          int open (const char *, const char *);
+        /**
+         * Gets tuntap handle
+         *
+         * @return tuntap handle.
+         */
+        int get_handle();
 
-          /**
-           * Closes tuntap handle
-           *
-           * @return 0
-           */
-          int close ();
+        /**
+         * Reads from tuntap
+         *
+         * @param iov iovector
+         * @param iov_len number of elements in the iovector
+         *
+         * @return total number of bytes read
+         */
+        int readv(struct iovec*, size_t);
 
-          /**
-           * Activates tuntap
-           *
-           * @param arpEnabled enable or disable arp
-           * @return 0 on success, -1 on error.
-           *
-           * @note sets the device to the UP state.
-           */
-          int activate (bool);
-    
-          /**
-           * Deactivates tuntap
-           *
-           * @return 0 on success, -1 on error.
-           *
-           * @note sets the device to the DOWN state.
-           */
-          int deactivate ();
+        /**
+         * Writes to tuntap
+         *
+         * @param iov iovector
+         * @param iov_len number of elements in the iovector
+         *
+         * @return total number of bytes written
+         */
+        int writev(const struct iovec*, size_t);
 
-          /**
-           * Gets tuntap handle
-           *
-           * @return tuntap handle.
-           */
-          ACE_HANDLE get_handle ();
+        /**
+         * Sets tuntap interface address and netmask
+         *
+         * ipv4 addr "192.168.1.1"    mask "255.255.255.0"
+         * ipv6 addr "::192.168.1.1"  mask "ffff:ffff:ffff:ffff::"
+         *
+         * @param addr tun address ipv4 or ipv6 address
+         * @param mask tun netmask used as an ipv4 or ipv6 netmask
+         *
+         * @return 0 on success, -1 on error.
+         */
+        int set_addr(const INETAddr &, const INETAddr &);
 
-          /**
-           * Reads from tuntap
-           *
-           * @param iov iovector
-           * @param iov_len number of elements in the iovector
-           *
-           * @return total number of bytes read
-           */
-          int readv (struct iovec*, size_t);
+        /**
+         * Sets tuntap eth address
+         *
+         * @param ethAddr eth address
+         *
+         * @return 0 on success, -1 on error.
+         */
+        int set_ethaddr(const Utils::EtherAddr &);
 
-          /**
-           * Writes to tuntap
-           *
-           * @param iov iovector
-           * @param iov_len number of elements in the iovector
-           *
-           * @return total number of bytes written
-           */
-          int writev (const struct iovec*, size_t);
+        /**
+         * Sets tuntap eth address
+         *
+         * @param id nem id
+         *
+         * @return 0 on success, -1 on error.
+         */
+        int set_ethaddr(NEMId);
 
-          /**
-           * Sets tuntap interface address and netmask
-           *
-           * ipv4 addr "192.168.1.1"    mask "255.255.255.0"
-           * ipv6 addr "::192.168.1.1"  mask "ffff:ffff:ffff:ffff::"
-           *
-           * @param addr tun address ipv4 or ipv6 address
-           * @param mask tun netmask used as an ipv4 or ipv6 netmask
-           *
-           * @return 0 on success, -1 on error.
-           */
-          int set_addr (const ACE_INET_Addr &, const ACE_INET_Addr &);
+        /**
+         * Gets the tuntap ip address
+         *
+         * @return tuntap ip address
+         */
+        INETAddr & get_addr();
 
-          /**
-           * Sets tuntap eth address
-           *
-           * @param ethAddr eth address
-           *
-           * @return 0 on success, -1 on error.
-           */
-          int set_ethaddr (const Utils::EtherAddr &);
-
-          /**
-           * Sets tuntap eth address
-           *
-           * @param id nem id
-           *
-           * @return 0 on success, -1 on error.
-           */
-          int set_ethaddr (ACE_UINT16);
-    
-          /**
-           * Gets the tuntap ip address
-           *
-           * @return tuntap ip address
-           */
-          ACE_INET_Addr & get_addr ();
-
-          /**
-           * Gets the tuntap netmask
-           *
-           * @return tuntap netmask
-           */
-          ACE_INET_Addr & get_mask ();
-        };
-      }
+        /**
+         * Gets the tuntap netmask
+         *
+         * @return tuntap netmask
+         */
+        INETAddr & get_mask();
+      };
     }
   }
+}
 
 #endif // TUNTAP_HEADER_

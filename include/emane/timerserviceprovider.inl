@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,51 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-inline
-EMANE::AntennaProfile::AntennaProfile():
-  bValid_{false}{}
-
-inline
-EMANE::AntennaProfile::AntennaProfile(NEMId nemId,
-                                              AntennaProfileId antennaProfileId,
-                                              double dAntennaAzimuthDegrees,
-                                              double dAntennaElevationDegrees):
-  nemId_{nemId},
-  antennaProfileId_{antennaProfileId},
-  dAntennaAzimuthDegrees_{dAntennaAzimuthDegrees},
-  dAntennaElevationDegrees_{dAntennaElevationDegrees},
-  bValid_{true}{}
-  
-inline    
-EMANE::NEMId EMANE::AntennaProfile::getNEMId() const
+template <typename Function>
+EMANE::TimerEventId EMANE::TimerServiceProvider::schedule(Function fn,
+                                                          const TimePoint & timePoint,
+                                                          const Duration & interval)
 {
-  return nemId_;
+  return schedule_i(fn,timePoint,interval);
 }
-
-inline    
-EMANE::AntennaProfileId EMANE::AntennaProfile::getAntennaProfileId() const
-{
-  return antennaProfileId_;
-}
-
-inline
-double EMANE::AntennaProfile::getAntennaAzimuthDegrees() const
-{
-  return dAntennaAzimuthDegrees_;
-}
-
-inline
-double EMANE::AntennaProfile::getAntennaElevationDegrees() const
-{
-  return dAntennaElevationDegrees_;
-}
-
-inline
-bool EMANE::AntennaProfile::operator==(const AntennaProfile & rhs) const
-{
-  return (nemId_ == rhs.nemId_ &&
-          antennaProfileId_ == rhs.antennaProfileId_ &&
-          dAntennaAzimuthDegrees_  == rhs.dAntennaAzimuthDegrees_ &&
-          dAntennaElevationDegrees_ == rhs.dAntennaElevationDegrees_);
-}
-

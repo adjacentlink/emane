@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +40,7 @@
 
 namespace EMANE
 {
-  
+
   class TimerServiceProxy : public TimerServiceProvider,
                             public TimerServiceUser
   {
@@ -49,11 +50,11 @@ namespace EMANE
     ~TimerServiceProxy();
 
     bool cancelTimedEvent(TimerEventId eventId) override;
-    
-    TimerEventId scheduleTimedEvent(const TimePoint & timeout, 
-                                    const void *arg, 
-                                    const Microseconds & interval) override;
-    
+
+    TimerEventId scheduleTimedEvent(const TimePoint & timeout,
+                                    const void *arg,
+                                    const Duration & interval) override;
+
     void processTimedEvent(TimerEventId eventId,
                            const TimePoint & requestedExpireTime,
                            const TimePoint & scheduleTime,
@@ -64,6 +65,10 @@ namespace EMANE
 
   protected:
     TimerServiceUser * pTimerServiceUser_;
+
+    TimerEventId schedule_i(TimerCallback callback,
+                            const TimePoint & timePoint,
+                            const Duration & interval) override;
   };
 }
 

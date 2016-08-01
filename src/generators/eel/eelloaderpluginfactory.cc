@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,38 +33,38 @@
  */
 
 #include "eelloaderpluginfactory.h"
-
+#include <dlfcn.h>
 #include <sstream>
 
 EMANE::Generators::EEL::LoaderPluginFactory::LoaderPluginFactory():
-  shlibHandle_(0),
-  createPluginFunc_(0),
-  destroyPluginFunc_(0){}
+  pLibHandle_{},
+  createPluginFunc_{},
+  destroyPluginFunc_{}{}
 
-void EMANE::Generators::EEL::LoaderPluginFactory::construct(const std::string & sLibraryName) 
+void EMANE::Generators::EEL::LoaderPluginFactory::construct(const std::string & sLibraryName)
 {
-  if((shlibHandle_ = ACE_OS::dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
+  if((pLibHandle_ = dlopen(sLibraryName.c_str(), RTLD_NOW)) == 0)
     {
-      throw Utils::FactoryException(ACE_OS::dlerror());
+      throw Utils::FactoryException(dlerror());
     }
-  
-  if((createPluginFunc_ = 
-      reinterpret_cast<createPluginFunc>((void (*)())(ACE_OS::dlsym(shlibHandle_,"create")))) == 0)
+
+  if((createPluginFunc_ =
+      reinterpret_cast<createPluginFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
 
       std::stringstream sstream;
 
       sstream<<sLibraryName
              <<" missing create symbol. (Missing DECLARE_EEL_LOADER_PLUGIN()?)"<<std::ends;
-      
+
       throw Utils::FactoryException(sstream.str());
     }
 
-  if((destroyPluginFunc_ = 
-      reinterpret_cast<destroyPluginFunc>((void (*)())ACE_OS::dlsym(shlibHandle_,"destroy"))) == 0)
+  if((destroyPluginFunc_ =
+      reinterpret_cast<destroyPluginFunc>((void (*)())dlsym(pLibHandle_,"destroy"))) == 0)
     {
-      ACE_OS::dlclose(shlibHandle_);
+      dlclose(pLibHandle_);
 
       std::stringstream sstream;
 
@@ -77,7 +77,7 @@ void EMANE::Generators::EEL::LoaderPluginFactory::construct(const std::string & 
 
 EMANE::Generators::EEL::LoaderPluginFactory::~LoaderPluginFactory()
 {
-  ACE_OS::dlclose(shlibHandle_);
+  dlclose(pLibHandle_);
 }
 
 EMANE::Generators::EEL::LoaderPlugin * EMANE::Generators::EEL::LoaderPluginFactory::createPlugin() const

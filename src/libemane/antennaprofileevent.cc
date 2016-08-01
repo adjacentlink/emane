@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,55 +54,45 @@ EMANE::Events::AntennaProfileEvent::AntennaProfileEvent(const Serialization & se
 {
   EMANEMessage::AntennaProfileEvent msg;
 
-  try
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : AntennaProfileEvent");
-        }
+      throw SerializationException("unable to deserialize : AntennaProfileEvent");
     }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : AntennaProfileEvent");
-    }
-  
-  using RepeatedPtrFieldAntennaProfile = 
-    google::protobuf::RepeatedPtrField<EMANEMessage::AntennaProfileEvent::Profile>;
-  
+
   AntennaProfiles profiles;
-  
-  for(const auto & repeatedAntennaProfile : RepeatedPtrFieldAntennaProfile(msg.profiles()))
+
+  for(const auto & profile : msg.profiles())
     {
-      profiles.push_back({static_cast<EMANE::NEMId>(repeatedAntennaProfile.nemid()),
-          static_cast<EMANE::AntennaProfileId>(repeatedAntennaProfile.profileid()),
-            repeatedAntennaProfile.antennaazimuthdegrees(),
-            repeatedAntennaProfile.antennaelevationdegrees()});
+      profiles.push_back({static_cast<EMANE::NEMId>(profile.nemid()),
+            static_cast<EMANE::AntennaProfileId>(profile.profileid()),
+            profile.antennaazimuthdegrees(),
+            profile.antennaelevationdegrees()});
     }
 
   pImpl_.reset(new Implementation{profiles});
 }
-    
+
 EMANE::Events::AntennaProfileEvent::AntennaProfileEvent(const AntennaProfiles & profiles):
   Event{IDENTIFIER},
   pImpl_{new Implementation{profiles}}{}
-    
+
 EMANE::Events::AntennaProfileEvent::AntennaProfileEvent(const AntennaProfileEvent & rhs):
   Event{IDENTIFIER},
   pImpl_{new Implementation{rhs.getAntennaProfiles()}}{}
-   
+
 EMANE::Events::AntennaProfileEvent & EMANE::Events::AntennaProfileEvent::operator=(const AntennaProfileEvent & rhs)
 {
   pImpl_.reset(new Implementation{rhs.getAntennaProfiles()});
   return *this;
 }
-    
+
 EMANE::Events::AntennaProfileEvent::AntennaProfileEvent(AntennaProfileEvent && rval):
   Event{IDENTIFIER},
   pImpl_{new Implementation{{}}}
 {
   rval.pImpl_.swap(pImpl_);
 }
-    
+
 EMANE::Events::AntennaProfileEvent & EMANE::Events::AntennaProfileEvent::operator=(AntennaProfileEvent && rval)
 {
   rval.pImpl_.swap(pImpl_);
@@ -109,8 +100,8 @@ EMANE::Events::AntennaProfileEvent & EMANE::Events::AntennaProfileEvent::operato
 }
 
 EMANE::Events::AntennaProfileEvent::~AntennaProfileEvent(){}
-    
-const EMANE::AntennaProfiles & EMANE::Events::AntennaProfileEvent::getAntennaProfiles() const
+
+const EMANE::Events::AntennaProfiles & EMANE::Events::AntennaProfileEvent::getAntennaProfiles() const
 {
   return pImpl_->getAntennaProfiles();
 }
@@ -130,18 +121,11 @@ EMANE::Serialization EMANE::Events::AntennaProfileEvent::serialize() const
       pAntennaProfileMessage->set_profileid(profile.getAntennaProfileId());
 
       pAntennaProfileMessage->set_antennaazimuthdegrees(profile.getAntennaAzimuthDegrees());
-      
+
       pAntennaProfileMessage->set_antennaelevationdegrees(profile.getAntennaElevationDegrees());
     }
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize : AntennaProfileEvent");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize : AntennaProfileEvent");
     }

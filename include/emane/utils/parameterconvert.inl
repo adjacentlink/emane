@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009,2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -32,15 +33,16 @@
 
 #include <sstream>
 #include <cstdlib>
+#include <cstring>
 
 namespace
 {
   std::string scaleNumericalStringRepresentation(const std::string & sValue)
   {
     std::string sTmpParameter(sValue);
-    
+
     std::uint8_t u8PowerOf10 = 0;
-    
+
     switch(*(sValue.end() - 1))
       {
       case 'G':
@@ -58,29 +60,36 @@ namespace
         u8PowerOf10 = 3;
         break;
       }
-    
+
     if(u8PowerOf10 != 0)
       {
+        // strip any leading whitespace
+        std::string::size_type notWhiteSpace{sTmpParameter.find_first_not_of(" \t")};
+
+        if(notWhiteSpace != std::string::npos)
+          {
+            sTmpParameter = sTmpParameter.substr(notWhiteSpace,std::string::npos);
+          }
+
         // location of decimal point, if exists
         std::string::size_type indexPoint =  sTmpParameter.find(".",0);
-        
+
         if(indexPoint != std::string::npos)
           {
-            std::string::size_type numberOfDigitsAfterPoint = 
+            std::string::size_type numberOfDigitsAfterPoint =
               sTmpParameter.size() - indexPoint - 1;
-            
+
             if(numberOfDigitsAfterPoint > u8PowerOf10)
               {
                 // need to move the decimal point, enough digits are present
-                sTmpParameter.insert(sTmpParameter.size() - (numberOfDigitsAfterPoint - u8PowerOf10),
-                                     ".");
+                sTmpParameter.insert(indexPoint + u8PowerOf10,".");
               }
             else
               {
                 // need to append 0s
                 sTmpParameter.append(u8PowerOf10 - numberOfDigitsAfterPoint,'0');
               }
-            
+
             // remove original decimal point
             sTmpParameter.erase(indexPoint,1);
           }
@@ -88,6 +97,22 @@ namespace
           {
             // need to append 0s
             sTmpParameter.append(u8PowerOf10,'0');
+          }
+
+        // strip any leading zeros but be mindful of sign
+        std::string sSign{};
+
+        if(sTmpParameter.front() == '+' ||
+           sTmpParameter.front() == '-')
+          {
+            sSign = sTmpParameter.front();
+          }
+
+        std::string::size_type not0Index{sTmpParameter.find_first_not_of("0",sSign.size())};
+
+        if(not0Index != sSign.size())
+          {
+            sTmpParameter = sSign + sTmpParameter.substr(not0Index,std::string::npos);
           }
       }
 
@@ -138,7 +163,7 @@ std::int64_t EMANE::Utils::ParameterConvert::toINT64(std::int64_t i64Min, std::i
           throw ConversionException(sstream.str());
         }
     }
-  
+
   return llValue;
 }
 
@@ -146,7 +171,7 @@ inline
 std::uint64_t EMANE::Utils::ParameterConvert::toUINT64(std::uint64_t u64Min, std::uint64_t u64Max) const
 {
   unsigned long long ullValue = 0;
-  
+
   if(sParameter_.empty())
     {
       throw ConversionException("Empty string in numeric conversion");
@@ -156,12 +181,12 @@ std::uint64_t EMANE::Utils::ParameterConvert::toUINT64(std::uint64_t u64Min, std
       std::string sTmpParameter(scaleNumericalStringRepresentation(sParameter_));
 
       char * pEnd = 0;
-      
+
       //Clear errno before making call because Ubuntu does not
       //clear it when a call is made
       errno = 0;
 
-      ullValue =  ACE_OS::strtoull(sTmpParameter.c_str(),&pEnd,0);
+      ullValue =  strtoull(sTmpParameter.c_str(),&pEnd,0);
 
       if(errno == ERANGE ||
          ullValue < u64Min ||
@@ -178,7 +203,7 @@ std::uint64_t EMANE::Utils::ParameterConvert::toUINT64(std::uint64_t u64Min, std
           throw ConversionException(sstream.str());
         }
     }
-  
+
   return ullValue;
 }
 
@@ -244,33 +269,15 @@ bool EMANE::Utils::ParameterConvert::toBool() const
 }
 
 inline
-ACE_INET_Addr EMANE::Utils::ParameterConvert::toINETAddr() const
+EMANE::INETAddr EMANE::Utils::ParameterConvert::toINETAddr() const
 {
-  size_t pos = sParameter_.rfind("/");
+  INETAddr addr;
 
-  if(pos == std::string::npos)
+  try
     {
-      // only used ':' as a port seperator for
-      // hostname or IPv4 addresses
-      if(std::count(sParameter_.begin(),
-                    sParameter_.end(),
-                    ':') == 1)
-        {
-          pos  = sParameter_.rfind(":");
-        }
+      addr.set(sParameter_);
     }
-
-  std::string sAddress{sParameter_};
-  std::uint16_t u16Port{};
-  ACE_INET_Addr addr;
-
-  if(pos != std::string::npos)
-    {
-      sAddress = sParameter_.substr(0,pos);
-      u16Port = ParameterConvert(sParameter_.substr(pos+1)).toUINT16();
-    }
-  
-  if(addr.set(u16Port,sAddress.c_str()) == -1)
+  catch(...)
     {
       std::stringstream sstream;
       sstream<<"'"<<sParameter_<<"' Invalid IP Address"<<std::ends;
@@ -292,9 +299,9 @@ double EMANE::Utils::ParameterConvert::toDouble(double dMin, double dMax) const
   else
     {
       std::string sTmpParameter(scaleNumericalStringRepresentation(sParameter_));
-      
+
       char * pEnd = 0;
-      
+
       //Clear errno before making call because Ubuntu does not
       //clear it when a call is made
       errno = 0;
@@ -316,7 +323,7 @@ double EMANE::Utils::ParameterConvert::toDouble(double dMin, double dMax) const
           throw ConversionException(sstream.str());
         }
     }
-  
+
   return dValue;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,7 +41,7 @@
 #include "emane/utils/netutils.h"
 #include "emane/utils/bitpool.h"
 
-#include <ace/Thread_Mutex.h>
+#include <thread>
 
 #include <set>
 
@@ -61,31 +61,31 @@ namespace EMANE
       public:
         RawTransport(NEMId id,
                      PlatformServiceProvider *pPlatformService);
-  
+
         ~RawTransport();
-  
+
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & items) override;
 
         void start() override;
-  
+
         void stop() override;
-  
+
         void destroy() throw() override;
-  
+
         void processUpstreamPacket(UpstreamPacket & pkt,
                                    const ControlMessages & msgs) override;
-  
+
         void processUpstreamControl(const ControlMessages & msgs) override;
 
 
       private:
-        std::string sTargetDevice_; 
+        std::string sTargetDevice_;
 
         Utils::EtherAddr macAddr_;
 
-        ACE_thread_t threadRead_;
+        std::thread thread_;
 
         pcap_t *pPcapHandle_;
 
@@ -100,36 +100,8 @@ namespace EMANE
          * @retval NULL
          *
          */
-        ACE_THR_FUNC_RETURN readDevice();
+        void readDevice();
 
-        /**
-         *
-         * @brief isOutbound checks packet direction based on ethernet src addr in win32.
-         * 
-         * @param pEtherHeader pointer to the frame ethernet header.
-         *
-         * @retval in win32 returns 1 if packet is outbound, otherwsise returns 0.
-         *
-         */
-        int isOutbound(const Utils::EtherHeader *pEtherHeader);
-
-#ifdef WIN32
-        // needed to check src mac address since we can not determine packet direction in win32
-  
-        ACE_Thread_Mutex mutex_;
-
-        struct ltmacaddr
-        {
-          bool operator()(const Utils::EtherAddr& a1, const Utils::EtherAddr& a2) const
-          {
-            return memcmp(&a1, &a2, Utils::ETH_ALEN) < 0;
-          }
-        };
-
-        using EthAddrSet = std::set<Utils::EtherAddr, ltmacaddr>;
-
-        EthAddrSet upstreamHostSrcMacAddrHistorySet_;
-#endif
 
         void handleUpstreamControl(const ControlMessages & msgs);
       };

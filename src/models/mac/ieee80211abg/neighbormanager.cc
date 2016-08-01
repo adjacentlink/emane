@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,7 +38,6 @@
 
 #include "emane/constants.h"
 
-#include <ace/OS_NS_time.h>
 #include <sstream>
 
 
@@ -47,13 +46,13 @@ namespace {
 }
 
 
-EMANE::Models::IEEE80211ABG::NeighborManager::NeighborManager(NEMId id, 
-                                                PlatformServiceProvider * pPlatformService, 
+EMANE::Models::IEEE80211ABG::NeighborManager::NeighborManager(NEMId id,
+                                                PlatformServiceProvider * pPlatformService,
                                                 MACLayer *pMACLayer):
-  id_{id}, 
+  id_{id},
   pPlatformService_{pPlatformService},
   pMACLayer_{pMACLayer},
-  wmmManager_{id, pPlatformService, pMACLayer}, 
+  wmmManager_{id, pPlatformService, pMACLayer},
   nbrTimeOutMicroseconds_{},
   lastOneHopNbrListTxTime_{},
   RNDZeroToOne_{0.0f, 1.0f},
@@ -71,14 +70,14 @@ EMANE::Models::IEEE80211ABG::NeighborManager::~NeighborManager()
 { }
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::setCategories(std::uint8_t u8NumCategories)
 {
    wmmManager_.setNumCategories(u8NumCategories);
 }
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getHiddenChannelActivity(NEMId src) const
 {
   // find the src in the one hop nbr(s)
@@ -96,7 +95,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getHiddenChannelActivity(NEMId src
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getNumberOfEstimatedCommonNeighbors(NEMId src) const
 {
   // find the src
@@ -113,7 +112,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getNumberOfEstimatedCommonNeighbor
 }
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getNumberOfEstimatedHiddenNeighbors(NEMId src) const
 {
   // find the src
@@ -133,12 +132,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getNumberOfEstimatedHiddenNeighbor
      fResult = 0.0f;
    }
 
-  return fResult; 
+  return fResult;
 }
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::NeighborManager::getAllUtilizationMicroseconds(NEMId src) const
 {
   // find the src
@@ -172,7 +171,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getNumberOfEstimatedTwoHopNeighbor
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::NeighborManager::getTotalOneHopUtilizationMicroseconds() const
 {
   return totalOneHopUtilizationMicroseconds_;
@@ -188,10 +187,10 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getTotalTwoHopUtilizationMicroseco
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::IEEE80211ABG::NeighborManager::getAverageMessageDurationMicroseconds() const
 {
-  return averageMessageDurationMicroseconds_;        
+  return averageMessageDurationMicroseconds_;
 }
 
 
@@ -213,7 +212,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getTotalActiveOneHopNeighbors() co
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageMilliWatts() const
 {
   return fAverageRxPowerPerMessageMilliWatts_;
@@ -221,7 +220,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageMilliWa
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageHiddenNodesMilliWatts() const
 {
   if(sumHiddenPackets_ > 0)
@@ -236,7 +235,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageHiddenN
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageCommonNodesMilliWatts() const
 {
   if(sumCommonPackets_ > 0)
@@ -251,7 +250,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getAverageRxPowerPerMessageCommonN
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerCommonNodesMilliWatts(NEMId src)
 {
   // get random probability
@@ -262,7 +261,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerCommonNodesMilliWa
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %5.4f", 
+                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %5.4f",
                          id_,
                          pzLayerName,
                          __func__,
@@ -275,21 +274,21 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerCommonNodesMilliWa
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerHiddenNodesMilliWatts(NEMId src)
 {
   // get random probability
   const float fRandom{RNDZeroToOne_()};
 
   // get result using hidden info
-  const float fResult{getRandomRxPowerMilliWatts_i(src, 
+  const float fResult{getRandomRxPowerMilliWatts_i(src,
                                                      fRandom,
                                                      hiddenProbabilityMapMap_,
                                                      hiddenNbrAvgRxPowerMwMap_)};
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %6.4f mW", 
+                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %6.4f mW",
                          id_,
                          pzLayerName,
                          __func__,
@@ -303,7 +302,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerHiddenNodesMilliWa
 
 
 
-float 
+float
 EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerMilliWatts_i(NEMId src,
                                                                            float fRandom,
                                                                            const ProbabilityPairMapMap & pmap,
@@ -342,7 +341,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerMilliWatts_i(NEMId
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %6.4f", 
+                         "MACI %03hu %s::%s: src %hu, random %5.4f, result %6.4f",
                          id_,
                          pzLayerName,
                          __func__,
@@ -355,7 +354,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getRandomRxPowerMilliWatts_i(NEMId
 
 
 
-EMANE::TimePoint 
+EMANE::TimePoint
 EMANE::Models::IEEE80211ABG::NeighborManager::getLastOneHopNbrListTxTime() const
 {
   return lastOneHopNbrListTxTime_;
@@ -363,7 +362,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getLastOneHopNbrListTxTime() const
 
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::setNeighborTimeoutMicroseconds(const Microseconds & timeOutMicroseconds)
 {
   nbrTimeOutMicroseconds_ = timeOutMicroseconds;
@@ -428,10 +427,10 @@ EMANE::Models::IEEE80211ABG::NeighborManager::resetStatistics()
 
 
 void
-EMANE::Models::IEEE80211ABG::NeighborManager::updateDataChannelActivity(NEMId src, 
+EMANE::Models::IEEE80211ABG::NeighborManager::updateDataChannelActivity(NEMId src,
                                                                         std::uint8_t type,
-                                                                        float fRxPowerMilliWatts, 
-                                                                        const TimePoint & timePoint, 
+                                                                        float fRxPowerMilliWatts,
+                                                                        const TimePoint & timePoint,
                                                                         const Microseconds & durationMicroseconds,
                                                                         std::uint8_t u8Category)
 {
@@ -472,10 +471,10 @@ EMANE::Models::IEEE80211ABG::NeighborManager::updateDataChannelActivity(NEMId sr
 
 
 void
-EMANE::Models::IEEE80211ABG::NeighborManager::updateCtrlChannelActivity(NEMId src, 
-                                                                        NEMId origin, 
+EMANE::Models::IEEE80211ABG::NeighborManager::updateCtrlChannelActivity(NEMId src,
+                                                                        NEMId origin,
                                                                         std::uint8_t type,
-                                                                        float fRxPowerMilliWatts, 
+                                                                        float fRxPowerMilliWatts,
                                                                         const TimePoint & timePoint,
                                                                         const Microseconds & durationMicroseconds,
                                                                         std::uint8_t u8Category)
@@ -529,7 +528,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::updateCtrlChannelActivity(NEMId sr
 
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const Serialization &serialization)
 {
   try
@@ -540,7 +539,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
 
      NEMId eventSource{event.getEventSource()};
 
-     // bump num rx events 
+     // bump num rx events
      pMACLayer_->getStatistics().incrementRxOneHopNbrListEventCount();
 
      // search for one hop nbr
@@ -551,11 +550,11 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
      {
        LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
-                              "MACI %03hu %s::%s: update 1hop_nbr_list for nbr %hu, %zd entries", 
+                              "MACI %03hu %s::%s: update 1hop_nbr_list for nbr %hu, %zd entries",
                               id_,
                               pzLayerName,
                               __func__,
-                              eventSource, 
+                              eventSource,
                               nbrSet.size());
 
       // set one hop nbrs of this one hop nbr
@@ -565,15 +564,15 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s: unknown nbr %hu, 1hop_nbr_list with %zd entries will be cached", 
+                             "MACI %03hu %s::%s: unknown nbr %hu, 1hop_nbr_list with %zd entries will be cached",
                              id_,
                              pzLayerName,
                              __func__,
-                             eventSource, 
+                             eventSource,
                              nbrSet.size());
    }
 
-   // we want to keep a cache of events in case of unknown or timed out nodes 
+   // we want to keep a cache of events in case of unknown or timed out nodes
    // find src of this event in the one hop nbr list event cache
    auto iter = cachedOneHopNbrSetMap_.find(eventSource);
 
@@ -585,7 +584,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
 
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s: added event cache 1hop_nbr_list for nbr %hu, %zd entries", 
+                             "MACI %03hu %s::%s: added event cache 1hop_nbr_list for nbr %hu, %zd entries",
                              id_,
                              pzLayerName,
                              __func__,
@@ -596,14 +595,14 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
     {
       // update cache
       iter->second = nbrSet;
- 
+
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s: updated event cache 1hop_nbr_list for nbr %hu, %zd entries", 
+                             "MACI %03hu %s::%s: updated event cache 1hop_nbr_list for nbr %hu, %zd entries",
                              id_,
                              pzLayerName,
                              __func__,
-                             eventSource, 
+                             eventSource,
                              nbrSet.size());
     }
 
@@ -612,19 +611,19 @@ EMANE::Models::IEEE80211ABG::NeighborManager::handleOneHopNeighborsEvent(const S
    {
      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                              ERROR_LEVEL,
-                             "MACI %03hu %s::%s: 1hop neighbors event error %s", 
+                             "MACI %03hu %s::%s: 1hop neighbors event error %s",
                              id_,
                              pzLayerName,
                              __func__,
                              ex.what());
 
-     // bump num rx invalid events 
+     // bump num rx invalid events
      pMACLayer_->getStatistics().incrementRxOneHopNbrListInvalidEventCount();
    }
 }
 
 
-EMANE::Models::IEEE80211ABG::WMMManager::UtilizationRatioVector 
+EMANE::Models::IEEE80211ABG::WMMManager::UtilizationRatioVector
 EMANE::Models::IEEE80211ABG::NeighborManager::getUtilizationRatios()
 {
   return utilizationRatioVector_;
@@ -637,7 +636,7 @@ void
 EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Microseconds & deltaTMicroseconds)
 {
   // internal call
-  
+
   // reset counters
   resetCounters_i();
 
@@ -661,7 +660,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                                  "MACI %03hu %s::%s: 1hop_nbr %hu, 1hop_bw %lf, total_1hop_bw %lf",
                                  id_,
                                  pzLayerName,
-                                 __func__, 
+                                 __func__,
                                  nbrEntry.first,
                                  std::chrono::duration_cast<DoubleSeconds>(utilizationMicroseconds).count(),
                                  std::chrono::duration_cast<DoubleSeconds>(totalOneHopUtilizationMicroseconds_).count());
@@ -699,7 +698,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                          DEBUG_LEVEL,
                          "MACI %03hu %s::%s: %zd active 1hop_nbrs, "
                          "1hop_total_bw %lf, total_1hop_pkts %zd, total_1hop_pwr %5.4f mW, local tx %5.4f",
-                         id_, 
+                         id_,
                          pzLayerName,
                          __func__,
                          oneHopUtilizationMap_.size(),
@@ -732,8 +731,8 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                                  DEBUG_LEVEL,
                                  "MACI %03hu %s::%s: 2hop_nbr %hu, 2hop_bw %lf, total_2hop_bw %lf",
                                  id_,
-                                 pzLayerName, 
-                                 __func__, 
+                                 pzLayerName,
+                                 __func__,
                                  nbr2Entry.first,
                                  std::chrono::duration_cast<DoubleSeconds>(utilizationMicroseconds).count(),
                                  std::chrono::duration_cast<DoubleSeconds>(totalTwoHopUtilizationMicroseconds_).count());
@@ -745,9 +744,9 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
                          "MACI %03hu %s::%s: %zd active 2hop_nbrs, total_2hop_bw %lf, total_pkts %zd",
-                         id_, 
+                         id_,
                          pzLayerName,
-                         __func__, 
+                         __func__,
                          twoHopUtilizationMap_.size(),
                          std::chrono::duration_cast<DoubleSeconds>(totalTwoHopUtilizationMicroseconds_).count(),
                          totalTwoHopNumPackets_);
@@ -760,8 +759,8 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
       float B{};
 
       // average bandwidth utilization per active two hop nbr
-      averageUtilizationPerTwoHopNbrMicroseconds_ = 
-         std::chrono::duration_cast<Microseconds>(DoubleSeconds{((totalTwoHopUtilizationMicroseconds_.count() * 
+      averageUtilizationPerTwoHopNbrMicroseconds_ =
+         std::chrono::duration_cast<Microseconds>(DoubleSeconds{((totalTwoHopUtilizationMicroseconds_.count() *
             (1.0f / twoHopUtilizationMap_.size())) / USEC_PER_SEC_F)});
 
       // each two hop utilization entry
@@ -774,11 +773,11 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
           B += powf(A, 2.0f);
 
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                 DEBUG_LEVEL, 
+                                 DEBUG_LEVEL,
                                  "MACI %03hu %s::%s: 2hop A = %5.4f, B = %5.4f",
-                                 id_, 
+                                 id_,
                                  pzLayerName,
-                                 __func__, 
+                                 __func__,
                                  A, B);
         }
 
@@ -794,16 +793,16 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
       numTotalActiveOneHopNeighbors_ = oneHopUtilizationMap_.size();
 
       // average bandwidth utilization per active one hop nbr
-      averageUtilizationPerOneHopNbrMicroseconds_ = 
-        std::chrono::duration_cast<Microseconds>(DoubleSeconds{((totalOneHopUtilizationMicroseconds_.count() * 
+      averageUtilizationPerOneHopNbrMicroseconds_ =
+        std::chrono::duration_cast<Microseconds>(DoubleSeconds{((totalOneHopUtilizationMicroseconds_.count() *
            (1.0f / numTotalActiveOneHopNeighbors_)) / USEC_PER_SEC_F)});
 
       // average rx power per packet
       fAverageRxPowerPerMessageMilliWatts_ = fTotalRxPowerMilliWatts_ / totalOneHopNumPackets_;
 
       // average message duration (not including this nem)
-      averageMessageDurationMicroseconds_ = 
-          std::chrono::duration_cast<Microseconds>(DoubleSeconds{(((totalOneHopUtilizationMicroseconds_.count() - 
+      averageMessageDurationMicroseconds_ =
+          std::chrono::duration_cast<Microseconds>(DoubleSeconds{(((totalOneHopUtilizationMicroseconds_.count() -
              utilizationThisNEMMicroseconds_.count()) * (1.0f / totalOneHopNumPackets_)) / USEC_PER_SEC_F)});
 
       float A1{}, A2{}, B1{};
@@ -815,7 +814,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
           if(nbrEntry1.second.getNumberOfPackets(MSG_TYPE_MASK_ALL_DATA) > 0)
            {
              // get A
-             A1 = getA_i(nbrEntry1.second.getUtilizationMicroseconds(MSG_TYPE_MASK_ALL_DATA), 
+             A1 = getA_i(nbrEntry1.second.getUtilizationMicroseconds(MSG_TYPE_MASK_ALL_DATA),
                             averageUtilizationPerOneHopNbrMicroseconds_);
 
              B1 += powf(A1, 2.0f);
@@ -836,17 +835,17 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
 
                 // the sum of common tx pkts
                 size_t numCommonPackets{};
-               
+
                 // the sum of hidden tx pkts
                 size_t numHiddenPackets{};
-               
-                // get the one hop nbrs of this nbr 
+
+                // get the one hop nbrs of this nbr
                 const NbrSet nbrOneHopNbrSet = nbrEntry1.second.getOneHopNeighbors();
 
 #ifdef VERBOSE_LOGGIN
                 std::stringstream ss;
 
-                // list the nbrs of this nbr               
+                // list the nbrs of this nbr
                 for(auto & nbr : nbrOneHopNbrSet)
                  {
                    if(nbr == nbrOneHopNbrSet.begin())
@@ -854,12 +853,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                       ss << *nbr;
                     }
                    else
-                    { 
+                    {
                       ss << ", " << *nbr;
                     }
                  }
 
-                LOGGER_VERBOSE_LOGGING(pPlatformService_, 
+                LOGGER_VERBOSE_LOGGING(pPlatformService_,
                                        DEBUG_LEVEL,
                                        "MACI %03hu %s::%s: nbr %hu has %zu 1hop_nbrs: %s",
                                        id_,
@@ -872,7 +871,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
 
                 // nbrs hidden from this nbr
                 NbrSet hiddenNbrs;
- 
+
                 // nbrs common with this nbr
                 NbrSet commonNbrs;
 
@@ -885,12 +884,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                         // get all DATA msg types
                         const int typeMask{MSG_TYPE_MASK_ALL_DATA};
 
-                        A2 = getA_i(nbrEntry2.second.getUtilizationMicroseconds(typeMask), 
+                        A2 = getA_i(nbrEntry2.second.getUtilizationMicroseconds(typeMask),
                                     averageUtilizationPerOneHopNbrMicroseconds_);
- 
+
                         B2 +=powf(A2, 2.0f);
 
-                        // get common rx power 
+                        // get common rx power
                         const float fRxPowermW{nbrEntry2.second.getRxPowerMilliWatts(typeMask)};
 
                         // get the common number of packets
@@ -900,7 +899,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                                                DEBUG_LEVEL,
                                                "MACI %03hu %s::%s: our nbr %hu is common with nbr %hu, pkts %zd, rxpwr %6.4f mW",
                                                 id_,
-                                                pzLayerName, 
+                                                pzLayerName,
                                                 __func__,
                                                 nbrEntry2.first,
                                                 nbrEntry1.first,
@@ -930,7 +929,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
 
                         // get hidden rx power
                         const float fRxPowermW{nbrEntry2.second.getRxPowerMilliWatts(typeMask)};
- 
+
                         // get the hidden number of packets
                         const size_t numPackets{nbrEntry2.second.getNumberOfPackets(typeMask)};
 
@@ -947,7 +946,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
 
                         // add to hidden nbrs
                         hiddenNbrs.insert(nbrEntry2.first);
-                       
+
                         // save hidden rx power avoid / by 0
                         hiddenNbrAvgRxPowerMwMap_[nbrEntry2.first] = numPackets > 0 ? fRxPowermW / numPackets : 0;
 
@@ -969,26 +968,26 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                  const float H{getH_i(hiddenUtilizationMicroseconds, deltaTMicroseconds)};
 
                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                        DEBUG_LEVEL, 
+                                        DEBUG_LEVEL,
                                         "MACI %03hu %s::%s: 1hop_nbr %hu, A1 = %5.4f, A2 = %5.4f, B1 = %5.4f, B2 = %5.4f, H = %5.4f",
                                         id_,
                                         pzLayerName,
-                                         __func__, 
-                                        nbrEntry1.first, 
+                                         __func__,
+                                        nbrEntry1.first,
                                         A1, A2, B1, B2, H);
 
                  // set the estimated number of common nbrs this nbr
                  nbrEntry1.second.setEstimatedNumCommonNeighbors(round(B2));
 
                  // set the avg common rx power this nbr, avoid / by 0
-                 nbrEntry1.second.setAverageCommonRxPowerMilliWatts(numCommonPackets > 0.0f ? 
+                 nbrEntry1.second.setAverageCommonRxPowerMilliWatts(numCommonPackets > 0.0f ?
                    fCommonRxPowerMilliWatts / numCommonPackets : 0.0f);
 
-                 // set the hidden channel activity this nbr 
+                 // set the hidden channel activity this nbr
                  nbrEntry1.second.setHiddenChannelActivity(H);
 
                  // set the avg hidden rx power this nbr, avoid / by 0
-                 nbrEntry1.second.setAverageHiddenRxPowerMilliWatts(numHiddenPackets > 0.0f ? 
+                 nbrEntry1.second.setAverageHiddenRxPowerMilliWatts(numHiddenPackets > 0.0f ?
                    fHiddenRxPowerMilliWatts / numHiddenPackets : 0.0f);
 
                  // set the overall sum of common pkts
@@ -1013,14 +1012,14 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
       fEstimatedNumOneHopNeighbors_ = round(B1);
 
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
+                             DEBUG_LEVEL,
                              "MACI %03hu %s::%s: est nbrs [1hop %5.4f, 2hop %5.4f], active nbrs %zd, elapsed time %lf",
                              id_,
                              pzLayerName,
-                             __func__, 
-                             fEstimatedNumOneHopNeighbors_, 
-                             fEstimatedNumTwoHopNeighbors_, 
-                             numTotalActiveOneHopNeighbors_, 
+                             __func__,
+                             fEstimatedNumOneHopNeighbors_,
+                             fEstimatedNumTwoHopNeighbors_,
+                             numTotalActiveOneHopNeighbors_,
                              std::chrono::duration_cast<DoubleSeconds>(deltaTMicroseconds).count());
     }
 }
@@ -1031,7 +1030,7 @@ void
 EMANE::Models::IEEE80211ABG::NeighborManager::resetCounters_i()
 {
   // internal call
- 
+
   fLocalNodeTx_ = 0.0f;
 
   totalOneHopNumPackets_ = 0;
@@ -1075,19 +1074,19 @@ EMANE::Models::IEEE80211ABG::NeighborManager::resetCounters_i()
 
 
 
-bool 
-EMANE::Models::IEEE80211ABG::NeighborManager::flushOneHopNeighbors_i(const TimePoint & currentTime, 
+bool
+EMANE::Models::IEEE80211ABG::NeighborManager::flushOneHopNeighbors_i(const TimePoint & currentTime,
                                                                      const Microseconds & timeOutMicroseconds)
 {
   // internal call
-  
+
   // number of expired entries
   size_t numExpired{};
 
   for(NeighborEntryMap::iterator iter = oneHopNbrMap_.begin(); iter != oneHopNbrMap_.end(); /* bump/erase below */)
     {
       // nbr age
-      const Microseconds ageMicroseconds = 
+      const Microseconds ageMicroseconds =
         std::chrono::duration_cast<Microseconds>(currentTime - iter->second.getLastActivityTime());
 
       // nbr timed out
@@ -1095,18 +1094,18 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushOneHopNeighbors_i(const TimeP
         {
           // log first, then remove
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                 DEBUG_LEVEL, 
+                                 DEBUG_LEVEL,
                                  "MACI %03hu %s::%s: remove 1hop_nbr %hu, age %lf, %zd nbrs remaining",
                                  id_,
                                  pzLayerName,
-                                 __func__, 
+                                 __func__,
                                  iter->first,
                                  std::chrono::duration_cast<DoubleSeconds>(ageMicroseconds).count(),
                                  oneHopNbrMap_.size() - 1);
 
           pStatisticOneHopNbrTable_->deleteRow(iter->first);
 
-          // remove entry and bump 
+          // remove entry and bump
           oneHopNbrMap_.erase(iter++);
 
           // bump num expired
@@ -1114,7 +1113,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushOneHopNeighbors_i(const TimeP
         }
       else
         {
-          // bump 
+          // bump
           ++iter;
         }
      }
@@ -1125,12 +1124,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushOneHopNeighbors_i(const TimeP
 
 
 
-bool 
-EMANE::Models::IEEE80211ABG::NeighborManager::flushTwoHopNeighbors_i(const TimePoint & currentTime, 
+bool
+EMANE::Models::IEEE80211ABG::NeighborManager::flushTwoHopNeighbors_i(const TimePoint & currentTime,
                                                                      const Microseconds & timeOutMicroseconds)
 {
    // internal call
-   
+
    // number of expired entries
    size_t numExpired{};
 
@@ -1138,26 +1137,26 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushTwoHopNeighbors_i(const TimeP
    for(Neighbor2HopEntryMap::iterator iter = twoHopNbrMap_.begin(); iter != twoHopNbrMap_.end(); /* bump/erase below */)
      {
        // nbr age
-       const Microseconds ageMicroseconds = 
+       const Microseconds ageMicroseconds =
          std::chrono::duration_cast<Microseconds>(currentTime - iter->second.getLastActivityTime());
 
        // nbr timed out
        if(ageMicroseconds > timeOutMicroseconds)
          {
-           // log first, then remove 
+           // log first, then remove
            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
                                   "MACI %03hu %s::%s: remove 2hop_nbr %hu, age %lf, %zd nbrs remaining",
                                   id_,
                                   pzLayerName,
-                                  __func__, 
+                                  __func__,
                                   iter->first,
                                   std::chrono::duration_cast<DoubleSeconds>(ageMicroseconds).count(),
                                   twoHopNbrMap_.size() - 1);
 
            pStatisticTwoHopNbrTable_->deleteRow(iter->first);
 
-           // remove entry and bump 
+           // remove entry and bump
            twoHopNbrMap_.erase(iter++);
 
            // bump num expired
@@ -1166,7 +1165,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushTwoHopNeighbors_i(const TimeP
          }
        else
          {
-           // bump 
+           // bump
            ++iter;
          }
      }
@@ -1177,14 +1176,14 @@ EMANE::Models::IEEE80211ABG::NeighborManager::flushTwoHopNeighbors_i(const TimeP
 
 
 
-    
-void 
+
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::sendOneHopNbrListEvent_i()
-{ 
+{
    // internal call
 
    NbrSet nbrSet;
-   
+
    // each one hop nbr
    for(auto & nbrEntry : oneHopNbrMap_)
     {
@@ -1196,7 +1195,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::sendOneHopNbrListEvent_i()
    LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "MACI %03hu %s::%s: sending list of %zd 1hop_nbrs",
-                          id_, 
+                          id_,
                           pzLayerName,
                           __func__,
                           nbrSet.size());
@@ -1229,9 +1228,9 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addOneHopNeighbor_i(NEMId src)
    {
      LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                             DEBUG_LEVEL,
-                            "MACI %03hu %s::%s: added 1hop_nbr %hu, %zd total nbrs", 
+                            "MACI %03hu %s::%s: added 1hop_nbr %hu, %zd total nbrs",
                             id_,
-                            pzLayerName, 
+                            pzLayerName,
                             __func__,
                             src,
                             oneHopNbrMap_.size());
@@ -1248,10 +1247,10 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addOneHopNeighbor_i(NEMId src)
       {
         LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                DEBUG_LEVEL,
-                               "MACI %03hu %s::%s: copied 1hop_nbr_list from cache for nbr %hu, has %zd total nbrs", 
+                               "MACI %03hu %s::%s: copied 1hop_nbr_list from cache for nbr %hu, has %zd total nbrs",
                                id_,
-                               pzLayerName, 
-                               __func__, 
+                               pzLayerName,
+                               __func__,
                                src,
                                iter->second.size());
 
@@ -1262,9 +1261,9 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addOneHopNeighbor_i(NEMId src)
       {
          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                 DEBUG_LEVEL,
-                                "MACI %03hu %s::%s: no 1hop_nbr_list cache for nbr %hu, must wait for event update", 
+                                "MACI %03hu %s::%s: no 1hop_nbr_list cache for nbr %hu, must wait for event update",
                                 id_,
-                                pzLayerName, 
+                                pzLayerName,
                                 __func__,
                                 src);
       }
@@ -1272,11 +1271,11 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addOneHopNeighbor_i(NEMId src)
   else
    {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
-                             "MACI %03hu %s::%s: existing 1hop_nbr %hu, keep existing 1hop_nbr_list", 
-                             id_, 
+                             DEBUG_LEVEL,
+                             "MACI %03hu %s::%s: existing 1hop_nbr %hu, keep existing 1hop_nbr_list",
+                             id_,
                              pzLayerName,
-                             __func__, 
+                             __func__,
                              src);
    }
 
@@ -1285,27 +1284,27 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addOneHopNeighbor_i(NEMId src)
 
 
 
-EMANE::Models::IEEE80211ABG::NeighborManager::Neighbor2HopEntryInsertResult 
+EMANE::Models::IEEE80211ABG::NeighborManager::Neighbor2HopEntryInsertResult
 EMANE::Models::IEEE80211ABG::NeighborManager::addTwoHopNeighbor_i(NEMId src)
 {
    // internal call
-  
-   // add 2 hop nbr 
+
+   // add 2 hop nbr
    auto nbr2Result = twoHopNbrMap_.insert(std::make_pair(src, Neighbor2HopEntry()));
 
    if(nbr2Result.second == true)
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s: added 2hop_nbr %hu, %zd total nbrs", 
+                             "MACI %03hu %s::%s: added 2hop_nbr %hu, %zd total nbrs",
                              id_,
                              pzLayerName,
-                             __func__, 
+                             __func__,
                              src,
                              twoHopNbrMap_.size());
 
       pStatisticTwoHopNbrTable_->addRow(src,{Any{src}});
-  
+
       // set high water
       pMACLayer_->getStatistics().updateTwoHopNbrHighWaterMark(twoHopNbrMap_.size());
     }
@@ -1313,9 +1312,9 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addTwoHopNeighbor_i(NEMId src)
     {
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
-                             "MACI %03hu %s::%s: existing 2hop_nbr %hu, %zd total nbrs", 
+                             "MACI %03hu %s::%s: existing 2hop_nbr %hu, %zd total nbrs",
                              id_,
-                             pzLayerName, 
+                             pzLayerName,
                              __func__,
                              src,
                              twoHopNbrMap_.size());
@@ -1327,12 +1326,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::addTwoHopNeighbor_i(NEMId src)
 
 
 
-float 
-EMANE::Models::IEEE80211ABG::NeighborManager::getA_i(const Microseconds & utilizationMicroseconds, 
+float
+EMANE::Models::IEEE80211ABG::NeighborManager::getA_i(const Microseconds & utilizationMicroseconds,
                                                      const Microseconds & avgUtilizationMicroseconds) const
 {
   // internal call
-  
+
   const float A{getChannelActivity_i(utilizationMicroseconds, avgUtilizationMicroseconds)};
 
   // cap at 1.0
@@ -1347,13 +1346,13 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getA_i(const Microseconds & utiliz
 }
 
 
-  
-float 
-EMANE::Models::IEEE80211ABG::NeighborManager::getC_i(const Microseconds & utilizationMicroseconds, 
+
+float
+EMANE::Models::IEEE80211ABG::NeighborManager::getC_i(const Microseconds & utilizationMicroseconds,
                                                      const Microseconds & deltaTMicroseconds) const
 {
   // internal call
-  
+
   const float C{getChannelActivity_i(utilizationMicroseconds, deltaTMicroseconds)};
 
   // cap to 1.0
@@ -1368,13 +1367,13 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getC_i(const Microseconds & utiliz
 }
 
 
- 
-float 
-EMANE::Models::IEEE80211ABG::NeighborManager::getH_i(const Microseconds & utilizationMicroseconds, 
+
+float
+EMANE::Models::IEEE80211ABG::NeighborManager::getH_i(const Microseconds & utilizationMicroseconds,
                                                      const Microseconds & deltaTMicroseconds) const
 {
   // internal call
- 
+
   const float H{getChannelActivity_i(utilizationMicroseconds, deltaTMicroseconds)};
 
   // cap at 1.0
@@ -1390,12 +1389,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getH_i(const Microseconds & utiliz
 
 
 
-float 
-EMANE::Models::IEEE80211ABG::NeighborManager::getChannelActivity_i(const Microseconds & utilizationMicroseconds, 
+float
+EMANE::Models::IEEE80211ABG::NeighborManager::getChannelActivity_i(const Microseconds & utilizationMicroseconds,
                                                                    const Microseconds & deltaTMicroseconds) const
 {
   // internal call
-  
+
   // check divide by zero
   if(deltaTMicroseconds == Microseconds::zero())
    {
@@ -1408,7 +1407,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::getChannelActivity_i(const Microse
 }
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::setCommonAndHiddenProbability_i()
 {
    // for each one hop utilization
@@ -1418,9 +1417,9 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setCommonAndHiddenProbability_i()
       if(oneHopUtilization.first != id_)
        {
           // remove local and src utilization from total one hop utilization
-          Microseconds adjustedUtililizationMicroseconds{ 
-                           totalOneHopUtilizationMicroseconds_ - 
-                               utilizationThisNEMMicroseconds_ -  
+          Microseconds adjustedUtililizationMicroseconds{
+                           totalOneHopUtilizationMicroseconds_ -
+                               utilizationThisNEMMicroseconds_ -
                                  oneHopUtilization.second};
 
           // check remaining utlzation
@@ -1437,7 +1436,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setCommonAndHiddenProbability_i()
                 // get hidden nbrs
                 const NbrSet hiddenNbrs = niter->second.getHiddenNeighbors();
 
-                // get one hop utilzation 
+                // get one hop utilzation
                 NbrUtilizationMap adjustedUtilzationMap = oneHopUtilizationMap_;
 
                 // remove local node from utilization
@@ -1447,15 +1446,15 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setCommonAndHiddenProbability_i()
                 adjustedUtilzationMap.erase(oneHopUtilization.first);
 
                 // get and store common probability using adjusted one hop utilization for this src
-                commonProbabilityMapMap_[oneHopUtilization.first] = setProbability_i(oneHopUtilization.first, 
-                                                                          adjustedUtilzationMap, 
-                                                                          adjustedUtililizationMicroseconds, 
+                commonProbabilityMapMap_[oneHopUtilization.first] = setProbability_i(oneHopUtilization.first,
+                                                                          adjustedUtilzationMap,
+                                                                          adjustedUtililizationMicroseconds,
                                                                           commonNbrs,
                                                                           "common");
 
                // get and store hidden probability using adjusted one hop utilization for this src
-               hiddenProbabilityMapMap_[oneHopUtilization.first] = setProbability_i(oneHopUtilization.first, 
-                                                                         adjustedUtilzationMap, 
+               hiddenProbabilityMapMap_[oneHopUtilization.first] = setProbability_i(oneHopUtilization.first,
+                                                                         adjustedUtilzationMap,
                                                                          adjustedUtililizationMicroseconds,
                                                                          hiddenNbrs,
                                                                          "hidden");
@@ -1467,11 +1466,11 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setCommonAndHiddenProbability_i()
 
 
 
-EMANE::Models::IEEE80211ABG::NeighborManager::ProbabilityPairMap 
-EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attribute__((unused)), 
-                                                               const NbrUtilizationMap & map, 
-                                                               const Microseconds & rUtilizationMicroseconds, 
-                                                               const NbrSet & nbrSet, 
+EMANE::Models::IEEE80211ABG::NeighborManager::ProbabilityPairMap
+EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attribute__((unused)),
+                                                               const NbrUtilizationMap & map,
+                                                               const Microseconds & rUtilizationMicroseconds,
+                                                               const NbrSet & nbrSet,
                                                                const char *str __attribute__((unused))) const
 {
   ProbabilityPairMap probabilityMap;
@@ -1481,18 +1480,18 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attri
   Microseconds utilizationMicroseconds{rUtilizationMicroseconds};
 
   for(auto & utilization : map)
-   { 
+   {
       if(nbrSet.find(utilization.first) != nbrSet.end())
        {
          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                DEBUG_LEVEL, 
-                                "MACI %03hu %s::%s_%s: src %hu, is %s w/r to nbr %hu", 
+                                DEBUG_LEVEL,
+                                "MACI %03hu %s::%s_%s: src %hu, is %s w/r to nbr %hu",
                                 id_,
-                                pzLayerName,  
+                                pzLayerName,
                                 __func__,
                                 str,
                                 src,
-                                str, 
+                                str,
                                 utilization.first);
 
          // add entry
@@ -1501,13 +1500,13 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attri
       else
        {
          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                DEBUG_LEVEL, 
-                                "MACI %03hu %s::%s_%s: src %hu, is not %s w/r to nbr %hu, ignore", 
+                                DEBUG_LEVEL,
+                                "MACI %03hu %s::%s_%s: src %hu, is not %s w/r to nbr %hu, ignore",
                                 id_,
-                                pzLayerName, 
+                                pzLayerName,
                                 __func__,
                                 str,
-                                src, 
+                                src,
                                 str,
                                 utilization.first);
 
@@ -1530,7 +1529,7 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attri
          // not last entry
          if(num != 1)
           {
-            // get ratio 
+            // get ratio
             p2 += getRatio(iter->second, utilizationMicroseconds);
           }
          // last entry
@@ -1539,20 +1538,20 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attri
             // set to 1
             p2 = 1.0f;
           }
-   
+
           LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                                  DEBUG_LEVEL,
-                                 "MACI %03hu %s::%s_%s: src %hu, nbr %hu, p1 %5.4f, p2 %5.4f", 
+                                 "MACI %03hu %s::%s_%s: src %hu, nbr %hu, p1 %5.4f, p2 %5.4f",
                                  id_,
-                                 pzLayerName, 
+                                 pzLayerName,
                                  __func__,
-                                 str, 
-                                 src, 
+                                 str,
+                                 src,
                                  iter->first,
                                  p1,
                                  p2);
 
-          // insert range 
+          // insert range
           probabilityMap[iter->first] = ProbabilityPair(p1, p2);
 
           // bump range
@@ -1564,15 +1563,15 @@ EMANE::Models::IEEE80211ABG::NeighborManager::setProbability_i(NEMId src __attri
 }
 
 
-void 
+void
 EMANE::Models::IEEE80211ABG::NeighborManager::registerStatistics(StatisticRegistrar & statisticRegistrar)
 {
-  pStatisticOneHopNbrTable_ = statisticRegistrar.registerTable<NEMId>("OneHopNeighborTable", 
+  pStatisticOneHopNbrTable_ = statisticRegistrar.registerTable<NEMId>("OneHopNeighborTable",
                                                                       {"NEM Id"},
                                                                       StatisticProperties::NONE,
                                                                       "Current One Hop Neighbors");
 
-  pStatisticTwoHopNbrTable_ = statisticRegistrar.registerTable<NEMId>("TwoHopNeighborTable", 
+  pStatisticTwoHopNbrTable_ = statisticRegistrar.registerTable<NEMId>("TwoHopNeighborTable",
                                                                       {"NEM Id"},
                                                                       StatisticProperties::NONE,
                                                                       "Current Two Hop Neighbors");

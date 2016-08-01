@@ -3,31 +3,29 @@ lib_LTLIBRARIES = libtransvirtual.la
 libtransvirtual_la_CPPFLAGS= \
  -I@top_srcdir@/include      \
  -I../common                 \
- $(ACE_CFLAGS)               \
- $(AM_CFLAGS)                \
- $(libuuid_CFLAGS)           
+ $(AM_CPPFLAGS)              \
+ $(libemane_CFLAGS)
+
+libtransvirtual_la_LIBADD=                   \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ ../common/.libs/libcommontransport.la
+
+libtransvirtual_la_LDFLAGS= \
+ $(AM_LDFLAGS)              \
+ -avoid-version
 
 libtransvirtual_la_SOURCES= \
  virtualtransport.cc        \
- tuntap.cc                  
+ tuntap.cc                  \
+ virtualtransport.h         \
+ tuntap.h
 
 EXTRA_DIST=                 \
- virtualtransport.h         \
- tuntap.h                   \
  transvirtual.xml.in        
 
 BUILT_SOURCES =             \
  transvirtual.xml
-
-libtransvirtual_la_LIBADD= \
- $(WIN32_EXTRA_LIBADD)        
-
-libtransvirtual_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS)     \
- $(ACE_LIBS)                \
- -L../common                \
- -lcommontransport          \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -64,7 +64,7 @@ namespace
   const std::uint16_t DROP_CODE_BAD_SPECTRUM_QUERY = 6;
   const std::uint16_t DROP_CODE_FLOW_CONTROL_ERROR = 7;
 
-  EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS 
+  EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS
   {
     "SINR",
       "Reg Id",
@@ -94,18 +94,19 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
   downstreamQueueTimedEventId_{},
   bHasPendingDownstreamQueueEntry_{},
   pendingDownstreamQueueEntry_{},
-  currentEndOfTransmissionTime_{}
+  currentEndOfTransmissionTime_{},
+  currentDelay_{}
 {}
 
 EMANE::Models::RFPipe::MACLayer::~MACLayer(){}
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
+                          "MACI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
@@ -186,7 +187,7 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                         "Defines if radio metrics will be reported up via the Radio to Router Interface"
                                         " (R2RI).");
 
-           
+
   configRegistrar.registerNumeric<float>("radiometricreportinterval",
                                          ConfigurationProperties::DEFAULT,
                                          {1.0f},
@@ -203,7 +204,7 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                          1.0f,
                                          3660.0f);
 
-  
+
   auto & statisticRegistrar = registrar.statisticRegistrar();
 
   commonLayerStatistics_.registerStatistics(statisticRegistrar);
@@ -211,54 +212,54 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
   downstreamQueue_.registerStatistics(statisticRegistrar);
 
   pNumDownstreamQueueDelay_ =
-      statisticRegistrar.registerNumeric<std::uint64_t>("numDownstreamQueueDelay",
-                                                  StatisticProperties::CLEARABLE);
+    statisticRegistrar.registerNumeric<std::uint64_t>("numDownstreamQueueDelay",
+                                                      StatisticProperties::CLEARABLE);
 
   avgDownstreamQueueDelay_.registerStatistic(
-      statisticRegistrar.registerNumeric<float>("avgDownstreamQueueDelay",
-                                                  StatisticProperties::CLEARABLE));
+                                             statisticRegistrar.registerNumeric<float>("avgDownstreamQueueDelay",
+                                                                                       StatisticProperties::CLEARABLE));
 
   neighborMetricManager_.registerStatistics(statisticRegistrar);
 }
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
-                          id_, 
-                          pzLayerName, 
+                          "MACI %03hu %s::%s",
+                          id_,
+                          pzLayerName,
                           __func__);
 
   for(const auto & item : update)
     {
       if(item.first == "enablepromiscuousmode")
         {
-          /** [logservice-infolog-snippet] */  
+          /** [logservice-infolog-snippet] */
           bPromiscuousMode_ = item.second[0].asBool();
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  INFO_LEVEL, 
-                                  "MACI %03hu %s::%s %s = %s", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu %s::%s %s = %s",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   bPromiscuousMode_ ? "on" : "off");
-          /** [logservice-infolog-snippet] */  
+          /** [logservice-infolog-snippet] */
         }
       else if(item.first == "datarate")
         {
           u64DataRatebps_ = item.second[0].asUINT64();
-             
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "MACI %03hu %s::%s %s = %ju",
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   u64DataRatebps_);
         }
       else if(item.first == "jitter")
@@ -268,71 +269,71 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
           if(fJitterSeconds_ > 0.0f)
             {
               // create a random mumber distrubtion +- the jitter range
-              pRNDJitter_.reset(new Utils::RandomNumberDistribution<std::mt19937, 
+              pRNDJitter_.reset(new Utils::RandomNumberDistribution<std::mt19937,
                                 std::uniform_real_distribution<float>>
                                 (-fJitterSeconds_ / 2.0f, fJitterSeconds_ / 2.0));
             }
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "MACI %03hu %s::%s %s = %f", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  "MACI %03hu %s::%s %s = %f",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   fJitterSeconds_);
         }
       else if(item.first == "delay")
         {
-          delayMicroseconds_ = 
+          delayMicroseconds_ =
             std::chrono::duration_cast<Microseconds>(DoubleSeconds{item.second[0].asFloat()});
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "MACI %03hu %s::%s %s = %lf", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  "MACI %03hu %s::%s %s = %lf",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   std::chrono::duration_cast<DoubleSeconds>(delayMicroseconds_).count());
-          
+
         }
       else if(item.first == "flowcontrolenable")
         {
           bFlowControlEnable_ = item.second[0].asBool();
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "MACI %03hu %s::%s %s = %s", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  "MACI %03hu %s::%s %s = %s",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   bFlowControlEnable_ ? "on" : "off");
         }
       else if(item.first == "flowcontroltokens")
         {
           u16FlowControlTokens_ = item.second[0].asUINT16();
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "MACI %03hu %s::%s %s = %hu",
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   u16FlowControlTokens_);
         }
       else if(item.first == "pcrcurveuri")
         {
           sPCRCurveURI_ = item.second[0].asString();
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
                                   "MACI %03hu %s::%s %s = %s",
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
                                   item.first.c_str(),
                                   sPCRCurveURI_.c_str());
         }
@@ -387,19 +388,19 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
 }
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::start()
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
-                          id_, 
-                          pzLayerName, 
+                          "MACI %03hu %s::%s",
+                          id_,
+                          pzLayerName,
                           __func__);
 
   // load pcr curve
   pcrManager_.load(sPCRCurveURI_);
-  
+
   // set the neighbor delete time
   neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
 
@@ -408,106 +409,106 @@ EMANE::Models::RFPipe::MACLayer::start()
 }
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::postStart()
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
+                          "MACI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
 
-  // check flow control enabled 
+  // check flow control enabled
   if(bFlowControlEnable_)
     {
-      // start flow control 
+      // start flow control
       flowControlManager_.start(u16FlowControlTokens_);
 
-      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+      LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
                               "MACI %03hu %s::%s sent a flow control token update,"
                               " a handshake response is required to process packets",
-                              id_, 
-                              pzLayerName, 
+                              id_,
+                              pzLayerName,
                               __func__);
     }
 
   // set the timer timeout (absolute time), arg, interval
-  /** [timerservice-scheduletimedevent-snippet] */
-  radioMetricTimedEventId_ = 
+  /** [timerservice-scheduletimedevent-1-snippet] */
+  radioMetricTimedEventId_ =
     pPlatformService_->timerService().
-      scheduleTimedEvent(Clock::now() + radioMetricReportIntervalMicroseconds_,
-                         new std::function<bool()>{[this]()
-                             {
-                               if(!bRadioMetricEnable_)
-                                 {
-                                   neighborMetricManager_.updateNeighborStatus();
-                                 }
-                               else
-                                 {
-                                   ControlMessages msgs{
-                                       Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
-                                                                                      u64DataRatebps_,
-                                                                                      radioMetricReportIntervalMicroseconds_),
-                                       Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
-                                       Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
+    schedule([this](const TimePoint &,
+                    const TimePoint &,
+                    const TimePoint &)
+             {
+               if(!bRadioMetricEnable_)
+                 {
+                   neighborMetricManager_.updateNeighborStatus();
+                 }
+               else
+                 {
+                   ControlMessages msgs{
+                     Controls::R2RISelfMetricControlMessage::create(u64DataRatebps_,
+                                                                    u64DataRatebps_,
+                                                                    radioMetricReportIntervalMicroseconds_),
+                     Controls::R2RINeighborMetricControlMessage::create(neighborMetricManager_.getNeighborMetrics()),
+                     Controls::R2RIQueueMetricControlMessage::create(queueMetricManager_.getQueueMetrics())};
 
-                                    sendUpstreamControl(msgs);
-                                 }
-
-                                return false;
-                             }},
-                         radioMetricReportIntervalMicroseconds_);
-  /** [timerservice-scheduletimedevent-snippet] */
+                   sendUpstreamControl(msgs);
+                 }
+             },
+             Clock::now() + radioMetricReportIntervalMicroseconds_,
+             radioMetricReportIntervalMicroseconds_);
+  /** [timerservice-scheduletimedevent-1-snippet] */
 
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s: added radio metric timed eventId %zu", 
-                          id_, 
+                          "MACI %03hu %s::%s: added radio metric timed eventId %zu",
+                          id_,
                           pzLayerName,
                           __func__,
                           radioMetricTimedEventId_);
 }
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::processConfiguration(const ConfigurationUpdate & update)
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
-                          id_, 
-                          pzLayerName, 
+                          "MACI %03hu %s::%s",
+                          id_,
+                          pzLayerName,
                           __func__);
-  
+
   for(const auto & item : update)
     {
       if(item.first == "enablepromiscuousmode")
         {
           bPromiscuousMode_ = item.second[0].asBool();
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL, 
-                                  "MACI %03hu %s::%s %s = %s", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu %s::%s %s = %s",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   bPromiscuousMode_ ? "on" : "off");
-          
+
         }
       else if(item.first == "datarate")
         {
           u64DataRatebps_ = item.second[0].asUINT64();
-             
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL,
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
                                   "MACI %03hu %s::%s %s = %ju",
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   u64DataRatebps_);
         }
       else if(item.first == "jitter")
@@ -517,34 +518,34 @@ EMANE::Models::RFPipe::MACLayer::processConfiguration(const ConfigurationUpdate 
           if(fJitterSeconds_ > 0.0f)
             {
               // create a random mumber distrubtion +- the jitter range
-              pRNDJitter_.reset(new Utils::RandomNumberDistribution<std::mt19937, 
+              pRNDJitter_.reset(new Utils::RandomNumberDistribution<std::mt19937,
                                 std::uniform_real_distribution<float>>
                                 (-fJitterSeconds_ / 2.0f, fJitterSeconds_ / 2.0));
             }
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL,
-                                  "MACI %03hu %s::%s %s = %f", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu %s::%s %s = %f",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   fJitterSeconds_);
         }
       else if(item.first == "delay")
         {
-          delayMicroseconds_ = 
+          delayMicroseconds_ =
             std::chrono::duration_cast<Microseconds>(DoubleSeconds{item.second[0].asFloat()});
 
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
-                                  DEBUG_LEVEL,
-                                  "MACI %03hu %s::%s %s = %lf", 
-                                  id_, 
-                                  pzLayerName, 
-                                  __func__, 
-                                  item.first.c_str(), 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "MACI %03hu %s::%s %s = %lf",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  item.first.c_str(),
                                   std::chrono::duration_cast<DoubleSeconds>(delayMicroseconds_).count());
-          
+
         }
       else if(item.first == "neighbormetricdeletetime")
         {
@@ -555,7 +556,7 @@ EMANE::Models::RFPipe::MACLayer::processConfiguration(const ConfigurationUpdate 
           neighborMetricManager_.setNeighborDeleteTimeMicroseconds(neighborMetricDeleteTimeMicroseconds_);
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  DEBUG_LEVEL,
+                                  INFO_LEVEL,
                                   "MACI %03hu %s::%s %s = %lf",
                                   id_,
                                   pzLayerName,
@@ -574,19 +575,19 @@ EMANE::Models::RFPipe::MACLayer::processConfiguration(const ConfigurationUpdate 
 
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::stop()
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
+                          "MACI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
 
-  /** [timerservice-canceltimedevent-snippet] */ 
+  /** [timerservice-canceltimedevent-snippet] */
   pPlatformService_->timerService().cancelTimedEvent(downstreamQueueTimedEventId_);
-  /** [timerservice-canceltimedevent-snippet] */ 
+  /** [timerservice-canceltimedevent-snippet] */
 
   downstreamQueueTimedEventId_ = 0;
 
@@ -600,32 +601,32 @@ EMANE::Models::RFPipe::MACLayer::stop()
 
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::destroy()
   throw()
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
-                          "MACI %03hu %s::%s", 
+                          "MACI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
 }
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::processUpstreamControl(const ControlMessages &){}
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages & msgs)
 {
   for(const auto & pMessage : msgs)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
-                              "MACI %03hu %s::%s downstream control message id %hu", 
-                              id_, 
+                              "MACI %03hu %s::%s downstream control message id %hu",
+                              id_,
                               pzLayerName,
                               __func__,
                               pMessage->getId());
@@ -639,11 +640,11 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
 
             if(bFlowControlEnable_)
               {
-                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+                LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                         DEBUG_LEVEL,
                                         "MACI %03hu %s::%s received a flow control token request/response",
-                                        id_, 
-                                        pzLayerName, 
+                                        id_,
+                                        pzLayerName,
                                         __func__);
 
                 flowControlManager_.processFlowControlMessage(pFlowControlControlMessage);
@@ -653,28 +654,28 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
                 LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                         ERROR_LEVEL,
                                         "MACI %03hu %s::%s received a flow control token request but"
-                                        " flow control is not enabled", 
+                                        " flow control is not enabled",
                                         id_,
                                         pzLayerName,
                                         __func__);
               }
           }
           break;
-          
+
           /** [serializedcontrolmessage-flowcontrol-snibbet] */
         case Controls::SerializedControlMessage::IDENTIFIER:
           {
             const auto pSerializedControlMessage =
-              static_cast<const Controls::SerializedControlMessage *>(pMessage); 
-        
+              static_cast<const Controls::SerializedControlMessage *>(pMessage);
+
             switch(pSerializedControlMessage->getSerializedId())
               {
               case Controls::FlowControlControlMessage::IDENTIFIER:
                 {
-                  std::unique_ptr<Controls::FlowControlControlMessage> 
+                  std::unique_ptr<Controls::FlowControlControlMessage>
                     pFlowControlControlMessage{
                     Controls::FlowControlControlMessage::create(pSerializedControlMessage->getSerialization())};
-                  
+
                   if(bFlowControlEnable_)
                     {
                       flowControlManager_.processFlowControlMessage(pFlowControlControlMessage.get());
@@ -684,7 +685,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               ERROR_LEVEL,
                                               "MACI %03hu %s::%s received a flow control token request but"
-                                              " flow control is not enabled", 
+                                              " flow control is not enabled",
                                               id_,
                                               pzLayerName,
                                               __func__);
@@ -699,7 +700,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamControl(const ControlMessages 
 }
 
 
-void 
+void
 EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & commonMACHeader,
                                                        UpstreamPacket & pkt,
                                                        const ControlMessages & msgs)
@@ -712,18 +713,18 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
   if(commonMACHeader.getRegistrationId() != type_)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              ERROR_LEVEL, 
+                              ERROR_LEVEL,
                               "MACI %03hu %s::%s: MAC Registration Id %hu does not match our Id %hu, drop.",
-                              id_, 
-                              pzLayerName, 
-                              __func__, 
-                              commonMACHeader.getRegistrationId(), 
+                              id_,
+                              pzLayerName,
+                              __func__,
+                              commonMACHeader.getRegistrationId(),
                               type_);
 
-      commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+      commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                              DROP_CODE_REGISTRATION_ID);
-      
+
       // drop
       return;
     }
@@ -741,16 +742,16 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
       const Controls::ReceivePropertiesControlMessage * pReceivePropertiesControlMessage{};
 
       const Controls::FrequencyControlMessage * pFrequencyControlMessage{};
-      
+
       for(auto & pControlMessage : msgs)
         {
           switch(pControlMessage->getId())
             {
             case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
               {
-                /** [logservice-loggerfnvargs-snippet] */  
+                /** [logservice-loggerfnvargs-snippet] */
                 pReceivePropertiesControlMessage =
-                  static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage); 
+                  static_cast<const Controls::ReceivePropertiesControlMessage *>(pControlMessage);
 
                 LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                                 DEBUG_LEVEL,
@@ -758,14 +759,14 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                 "MACI %03hu RFPipe::%s Receiver Properties Control Message",
                                                 id_,
                                                 __func__);
-                /** [logservice-loggerfnvargs-snippet] */  
+                /** [logservice-loggerfnvargs-snippet] */
               }
               break;
-              
+
             case Controls::FrequencyControlMessage::IDENTIFIER:
               {
                 pFrequencyControlMessage =
-                  static_cast<const Controls::FrequencyControlMessage *>(pControlMessage); 
+                  static_cast<const Controls::FrequencyControlMessage *>(pControlMessage);
 
                 LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                                 DEBUG_LEVEL,
@@ -773,15 +774,15 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                 "MACI %03hu RFPipe::%s Frequency Control Message",
                                                 id_,
                                                 __func__);
-                  
+
               }
-                
+
               break;
             }
         }
 
-     
-      if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage || 
+
+      if(!pReceivePropertiesControlMessage || !pFrequencyControlMessage ||
          pFrequencyControlMessage->getFrequencySegments().empty())
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -792,9 +793,9 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                   pzLayerName,
                                   __func__,
                                   pktInfo.getSource());
-      
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                                  DROP_CODE_BAD_CONTROL_INFO);
 
           // drop
@@ -811,169 +812,169 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
           /** [startofreception-calculation-snibbet] */
 
           Microseconds span{pReceivePropertiesControlMessage->getSpan()};
-            
-          auto pCallback =
-            new std::function<bool()>(std::bind([this,
-                                                 startOfReception,
-                                                 frequencySegments,
-                                                 span,
-                                                 beginTime](UpstreamPacket & pkt,
-                                                            std::uint64_t u64SequenceNumber,
-                                                            std::uint64_t u64DataRate)
-            {
-              const PacketInfo & pktInfo{pkt.getPacketInfo()};
-              
-              const FrequencySegment & frequencySegment{*frequencySegments.begin()};
-              
-              LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                     DEBUG_LEVEL,
-                                     "MACI %03hu %s upstream EOR processing: src %hu, dst %hu,"
-                                     " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %ju",
-                                     id_,
-                                     pzLayerName,
-                                     pktInfo.getSource(),
-                                     pktInfo.getDestination(),
-                                     pkt.length(),
-                                     frequencySegment.getFrequencyHz(),
-                                     frequencySegment.getOffset().count(),
-                                     frequencySegment.getDuration().count(),
-                                     u64SequenceNumber);
-              
-              
-              double dSINR{};
-             
-              double dNoiseFloordB{};
+
+          auto callback =
+            std::bind([this,
+                       startOfReception,
+                       frequencySegments,
+                       span,
+                       beginTime](UpstreamPacket & pkt,
+                                  std::uint64_t u64SequenceNumber,
+                                  std::uint64_t u64DataRate)
+                      {
+                        const PacketInfo & pktInfo{pkt.getPacketInfo()};
+
+                        const FrequencySegment & frequencySegment{*frequencySegments.begin()};
+
+                        LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                               DEBUG_LEVEL,
+                                               "MACI %03hu %s upstream EOR processing: src %hu, dst %hu,"
+                                               " len %zu, freq %ju, offset %ju, duration %ju, mac sequence %ju",
+                                               id_,
+                                               pzLayerName,
+                                               pktInfo.getSource(),
+                                               pktInfo.getDestination(),
+                                               pkt.length(),
+                                               frequencySegment.getFrequencyHz(),
+                                               frequencySegment.getOffset().count(),
+                                               frequencySegment.getDuration().count(),
+                                               u64SequenceNumber);
 
 
-              try
-                {
-                  /** [spectrumservice-request-snibbet] */
-                  // get the spectrum info for the entire span, where a span
-                  // is the total time between the start of the signal of the
-                  // earliest segment and the end of the signal of the latest
-                  // segment. This is not necessarily the signal duration.
-                  auto window = pRadioService_->spectrumService().request(frequencySegment.getFrequencyHz(),
-                                                                          span,
-                                                                          startOfReception);
+                        double dSINR{};
 
-                  // since we only have a single segment the span will equal the segment duration.
-                  // For simple noise processing we will just pull out the max noise segment, we can
-                  // use the maxBinNoiseFloor utility function for this. More elaborate noise window analysis
-                  // will require a more complex algorithm, although you should get a lot of mileage out of 
-                  // this utility function.
-                  bool bSignalInNoise{};
+                        double dNoiseFloordB{};
 
-                  std::tie(dNoiseFloordB,bSignalInNoise) =
-                    Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
-                  
-                  dSINR = frequencySegment.getRxPowerdBm() - dNoiseFloordB;
-                  /** [spectrumservice-request-snibbet] */
 
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, max noise %f, signal in noise %s, SINR %f",
-                                         id_,
-                                         pzLayerName,
-                                         pktInfo.getSource(),
-                                         pktInfo.getDestination(),
-                                         dNoiseFloordB,
-                                         bSignalInNoise ? "yes" : "no",
-                                         dSINR);
-                }
-              catch(SpectrumServiceException & exp)
-                {
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         ERROR_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, sor %ju, span %ju spectrum service request error: %s",
-                                         id_,
-                                         pzLayerName,
-                                         pktInfo.getSource(),
-                                         pktInfo.getDestination(),
-                                         std::chrono::duration_cast<Microseconds>(startOfReception.time_since_epoch()).count(),
-                                         span.count(),
-                                         exp.what());
-                  
-                  commonLayerStatistics_.processOutbound(pkt, 
-                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
-                                                         DROP_CODE_BAD_SPECTRUM_QUERY);
-                  // drop
-                  return true;
-                }
+                        try
+                          {
+                            /** [spectrumservice-request-snibbet] */
+                            // get the spectrum info for the entire span, where a span
+                            // is the total time between the start of the signal of the
+                            // earliest segment and the end of the signal of the latest
+                            // segment. This is not necessarily the signal duration.
+                            auto window = pRadioService_->spectrumService().request(frequencySegment.getFrequencyHz(),
+                                                                                    span,
+                                                                                    startOfReception);
 
-              const Microseconds & durationMicroseconds{frequencySegment.getDuration()};
-              
-              // check sinr
-              if(!checkPOR(dSINR, pkt.length()))
-                {
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, "
-                                         "rxpwr %3.2f dBm, drop",
-                                         id_,
-                                         pzLayerName,
-                                         pktInfo.getSource(),
-                                         pktInfo.getDestination(),
-                                         frequencySegment.getRxPowerdBm());
-                  
-                  commonLayerStatistics_.processOutbound(pkt, 
-                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
-                                                         DROP_CODE_SINR);
-                  
-                  // drop
-                  return true;
-                }
-              
-              // update neighbor metrics 
-              neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
-                                                            u64SequenceNumber,      // sequence number
-                                                            pktInfo.getUUID(),
-                                                            dSINR,                  // sinr in dBm
-                                                            dNoiseFloordB,          // noise floor in dB
-                                                            startOfReception,       // rx time
-                                                            durationMicroseconds,   // duration
-                                                            u64DataRate);           // data rate bps
-             
-              // check promiscuous mode, destination is this nem or to all nem's
-              if(bPromiscuousMode_ ||
-                 (pktInfo.getDestination() == id_) ||
-                 (pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS))
-                {
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, forward upstream",
-                                         id_,
-                                         pzLayerName,
-                                         pktInfo.getSource(),
-                                         pktInfo.getDestination());
-                  
-                  commonLayerStatistics_.processOutbound(pkt,
-                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
-                  
-                  
-                  sendUpstreamPacket(pkt);
-                  
-                  // done
-                  return true;
-                }
-              else
-                {
-                  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                                         DEBUG_LEVEL,
-                                         "MACI %03hu %s upstream EOR processing: not for this nem, "
-                                         "ignore pkt src %hu, dst %hu, drop",
-                                         id_,
-                                         pzLayerName,
-                                         pktInfo.getSource(),
-                                         pktInfo.getDestination());
-                  
-                  commonLayerStatistics_.processOutbound(pkt, 
-                                                         std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
-                                                         DROP_CODE_DST_MAC);
-                  
-                  // drop 
-                  return true;
-                }
-            },pkt,commonMACHeader.getSequenceNumber(),rfpipeMACHeader.getDataRate()));
+                            // since we only have a single segment the span will equal the segment duration.
+                            // For simple noise processing we will just pull out the max noise segment, we can
+                            // use the maxBinNoiseFloor utility function for this. More elaborate noise window analysis
+                            // will require a more complex algorithm, although you should get a lot of mileage out of
+                            // this utility function.
+                            bool bSignalInNoise{};
+
+                            std::tie(dNoiseFloordB,bSignalInNoise) =
+                              Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
+
+                            dSINR = frequencySegment.getRxPowerdBm() - dNoiseFloordB;
+                            /** [spectrumservice-request-snibbet] */
+
+                            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                   DEBUG_LEVEL,
+                                                   "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, max noise %f, signal in noise %s, SINR %f",
+                                                   id_,
+                                                   pzLayerName,
+                                                   pktInfo.getSource(),
+                                                   pktInfo.getDestination(),
+                                                   dNoiseFloordB,
+                                                   bSignalInNoise ? "yes" : "no",
+                                                   dSINR);
+                          }
+                        catch(SpectrumServiceException & exp)
+                          {
+                            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                   ERROR_LEVEL,
+                                                   "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, sor %ju, span %ju spectrum service request error: %s",
+                                                   id_,
+                                                   pzLayerName,
+                                                   pktInfo.getSource(),
+                                                   pktInfo.getDestination(),
+                                                   std::chrono::duration_cast<Microseconds>(startOfReception.time_since_epoch()).count(),
+                                                   span.count(),
+                                                   exp.what());
+
+                            commonLayerStatistics_.processOutbound(pkt,
+                                                                   std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
+                                                                   DROP_CODE_BAD_SPECTRUM_QUERY);
+                            // drop
+                            return;
+                          }
+
+                        const Microseconds & durationMicroseconds{frequencySegment.getDuration()};
+
+                        // check sinr
+                        if(!checkPOR(dSINR, pkt.length()))
+                          {
+                            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                   DEBUG_LEVEL,
+                                                   "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, "
+                                                   "rxpwr %3.2f dBm, drop",
+                                                   id_,
+                                                   pzLayerName,
+                                                   pktInfo.getSource(),
+                                                   pktInfo.getDestination(),
+                                                   frequencySegment.getRxPowerdBm());
+
+                            commonLayerStatistics_.processOutbound(pkt,
+                                                                   std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
+                                                                   DROP_CODE_SINR);
+
+                            // drop
+                            return;
+                          }
+
+                        // update neighbor metrics
+                        neighborMetricManager_.updateNeighborRxMetric(pktInfo.getSource(),    // nbr (src)
+                                                                      u64SequenceNumber,      // sequence number
+                                                                      pktInfo.getUUID(),
+                                                                      dSINR,                  // sinr in dBm
+                                                                      dNoiseFloordB,          // noise floor in dB
+                                                                      startOfReception,       // rx time
+                                                                      durationMicroseconds,   // duration
+                                                                      u64DataRate);           // data rate bps
+
+                        // check promiscuous mode, destination is this nem or to all nem's
+                        if(bPromiscuousMode_ ||
+                           (pktInfo.getDestination() == id_) ||
+                           (pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS))
+                          {
+                            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                   DEBUG_LEVEL,
+                                                   "MACI %03hu %s upstream EOR processing: src %hu, dst %hu, forward upstream",
+                                                   id_,
+                                                   pzLayerName,
+                                                   pktInfo.getSource(),
+                                                   pktInfo.getDestination());
+
+                            commonLayerStatistics_.processOutbound(pkt,
+                                                                   std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
+
+
+                            sendUpstreamPacket(pkt);
+
+                            // done
+                            return;
+                          }
+                        else
+                          {
+                            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                                   DEBUG_LEVEL,
+                                                   "MACI %03hu %s upstream EOR processing: not for this nem, "
+                                                   "ignore pkt src %hu, dst %hu, drop",
+                                                   id_,
+                                                   pzLayerName,
+                                                   pktInfo.getSource(),
+                                                   pktInfo.getDestination());
+
+                            commonLayerStatistics_.processOutbound(pkt,
+                                                                   std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
+                                                                   DROP_CODE_DST_MAC);
+
+                            // drop
+                            return;
+                          }
+                      },pkt,commonMACHeader.getSequenceNumber(),rfpipeMACHeader.getDataRate());
 
 
           auto eor = startOfReception + frequencySegments.begin()->getDuration();
@@ -981,23 +982,21 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
           if(eor > beginTime)
             {
               // wait for end of reception to complete processing
-              pPlatformService_->timerService().scheduleTimedEvent(eor,pCallback);
+              pPlatformService_->timerService().schedule(callback,eor);
             }
           else
             {
               // we can process now, end of reception has past
-              (*pCallback)();
-              
-              delete pCallback;
+              callback();
             }
         }
     }
 }
-                                    
 
 
 
-void 
+
+void
 EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
                                                          const ControlMessages &)
 {
@@ -1009,7 +1008,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
   if(bFlowControlEnable_)
     {
       auto status = flowControlManager_.removeToken();
-      
+
       if(status.second == false)
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -1019,9 +1018,9 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
                                   pzLayerName,
                                   __func__,
                                   status.first);
-          
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                                  DROP_CODE_FLOW_CONTROL_ERROR);
 
           // drop
@@ -1031,7 +1030,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
   // get duration
   Microseconds durationMicroseconds{getDurationMicroseconds(pkt.length())};
-  
+
   DownstreamQueueEntry entry{pkt,                   // pkt
       beginTime,             // acquire time
       durationMicroseconds,  // duration
@@ -1044,10 +1043,10 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
       // check for discarded, update stats
       for(auto & iter : result)
         {
-          commonLayerStatistics_.processOutbound(iter.pkt_, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - iter.acquireTime_), 
+          commonLayerStatistics_.processOutbound(iter.pkt_,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - iter.acquireTime_),
                                                  DROP_CODE_QUEUE_OVERFLOW);
-          
+
           // drop, replace token
           if(bFlowControlEnable_)
             {
@@ -1055,13 +1054,13 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
               if(!status.second)
                 {
-                   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  ERROR_LEVEL,
-                                  "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
-                                  id_,
-                                  pzLayerName,
-                                  __func__,
-                                  status.first);
+                  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                          ERROR_LEVEL,
+                                          "MACI %03hu %s::%s: failed to add token (tokens:%hu)",
+                                          id_,
+                                          pzLayerName,
+                                          __func__,
+                                          status.first);
                 }
             }
         }
@@ -1070,9 +1069,9 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
       auto now = Clock::now();
 
       if(currentEndOfTransmissionTime_ <= now)
-         {
-           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
-         }
+        {
+          handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+        }
     }
   else
     {
@@ -1082,19 +1081,38 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
       auto now = Clock::now();
 
-      if(currentEndOfTransmissionTime_ <= now)
-         {
-           handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
-         }
+      if(currentEndOfTransmissionTime_ - currentDelay_ <= now)
+        {
+          currentDelay_ = delayMicroseconds_ + getJitter();
+
+          if(currentDelay_ > Microseconds::zero())
+            {
+              currentEndOfTransmissionTime_ = now + currentDelay_;
+
+              downstreamQueueTimedEventId_ =
+                pPlatformService_->timerService().
+                schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                   this,
+                                   currentEndOfTransmissionTime_,
+                                   u64TxSequenceNumber_),
+                         currentEndOfTransmissionTime_);
+            }
+          else
+            {
+              handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
+            }
+        }
       else
         {
-          downstreamQueueTimedEventId_ = 
+          /** [timerservice-scheduletimedevent-2-snippet] */
+          downstreamQueueTimedEventId_ =
             pPlatformService_->timerService().
-            scheduleTimedEvent(currentEndOfTransmissionTime_,
-                               new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                   this,
-                                                                   currentEndOfTransmissionTime_,
-                                                                   u64TxSequenceNumber_)});
+            schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                               this,
+                               currentEndOfTransmissionTime_,
+                               u64TxSequenceNumber_),
+                     currentEndOfTransmissionTime_);
+          /** [timerservice-scheduletimedevent-2-snippet] */
         }
     }
 }
@@ -1102,7 +1120,7 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
 
 
 
-bool
+void
 EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                             std::uint64_t u64TxSequenceNumber)
 {
@@ -1182,10 +1200,11 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                         pendingDownstreamQueueEntry_.u64DataRatebps_,
                                                         now);
 
+          currentDelay_ = delayMicroseconds_ + getJitter();
 
           // earliest you can send the next packet
           currentEndOfTransmissionTime_ =
-            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + delayMicroseconds_ + getJitter();
+            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + currentDelay_;
 
           std::tie(pendingDownstreamQueueEntry_,
                    bHasPendingDownstreamQueueEntry_) =
@@ -1197,11 +1216,11 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                 {
                   downstreamQueueTimedEventId_ =
                     pPlatformService_->timerService().
-                    scheduleTimedEvent(sot,
-                                       new std::function<bool()>{std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                                                           this,
-                                                                           currentEndOfTransmissionTime_,
-                                                                           u64TxSequenceNumber_)});
+                    schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
+                                       this,
+                                       currentEndOfTransmissionTime_,
+                                       u64TxSequenceNumber_),
+                             currentEndOfTransmissionTime_);
                 }
               else
                 {
@@ -1210,13 +1229,11 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
             }
         }
     }
-
-  return true;
 }
 
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::RFPipe::MACLayer::getDurationMicroseconds(size_t lengthInBytes)
 {
   if(u64DataRatebps_ > 0)
@@ -1232,7 +1249,7 @@ EMANE::Models::RFPipe::MACLayer::getDurationMicroseconds(size_t lengthInBytes)
 }
 
 
-EMANE::Microseconds 
+EMANE::Microseconds
 EMANE::Models::RFPipe::MACLayer::getJitter()
 {
   if(fJitterSeconds_ > 0.0f)
@@ -1246,7 +1263,7 @@ EMANE::Models::RFPipe::MACLayer::getJitter()
 }
 
 
-bool 
+bool
 EMANE::Models::RFPipe::MACLayer::checkPOR(float fSINR, size_t packetSize)
 {
   // find por
@@ -1258,35 +1275,21 @@ EMANE::Models::RFPipe::MACLayer::checkPOR(float fSINR, size_t packetSize)
   // pcr >= random value
   bool bResult{fPCR >= fRandomValue};
 
-  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(), 
-                         DEBUG_LEVEL, 
+  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                         DEBUG_LEVEL,
                          "MACI %03hu %s::%s: sinr %3.2f, pcr %3.2f %s rand %3.3f",
-                         id_, 
+                         id_,
                          pzLayerName,
-                         __func__, 
+                         __func__,
                          fSINR,
                          fPCR,
-                         bResult ? ">=" : "<", 
+                         bResult ? ">=" : "<",
                          fRandomValue);
 
-  return bResult;       
+  return bResult;
 }
 
-/** [timerservice-processtimedevent-snippet] */ 
-void 
-EMANE::Models::RFPipe::MACLayer::processTimedEvent(TimerEventId,
-                                                   const TimePoint &,
-                                                   const TimePoint &,
-                                                   const TimePoint &,
-                                                   const void * arg)
-{
-  auto pCallBack = reinterpret_cast<const std::function<bool()> *>(arg);
-  
-  if((*pCallBack)())
-    {
-      delete pCallBack;
-    }
-}
-/** [timerservice-processtimedevent-snippet] */ 
+/** [timerservice-processtimedevent-snippet] */
+/** [timerservice-processtimedevent-snippet] */
 
 DECLARE_MAC_LAYER(EMANE::Models::RFPipe::MACLayer);

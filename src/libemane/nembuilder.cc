@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -45,7 +46,7 @@
 #include "transportfactorymanager.h"
 #include "logservice.h"
 #include "eventservice.h"
-#include "platformservice.h"
+#include "nemplatformservice.h"
 #include "registrarproxy.h"
 #include "frameworkphy.h"
 #include "radioservice.h"
@@ -88,13 +89,12 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
                                               const ConfigurationUpdateRequest & request,
                                               bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
   // new platform service
-  PlatformService * 
-    pPlatformService{new PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   PHYLayerImplementor * pImpl{};
 
@@ -110,18 +110,20 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
     }
   else
     {
-      const PHYLayerFactory & phyLayerFactory = 
+      const PHYLayerFactory & phyLayerFactory =
         LayerFactoryManagerSingleton::instance()->getPHYLayerFactory(sNativeLibraryFile);
-      
+
       // create plugin
       pImpl =  phyLayerFactory.createLayer(id, pPlatformService);
 
       sRegistrationName = sLibraryFile;
     }
-  
-  // new concrete layer 
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id, 
-        new PHYLayer(id, pImpl, pPlatformService),
+
+
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new PHYLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
         pPlatformService}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -130,10 +132,9 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
 
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
-                                                                          
-  
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -150,8 +151,8 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
       pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
                                                                                    request));
     }
-  
-  return pNEMLayer;
+
+  return std::unique_ptr<NEMLayer>(pNEMLayer.release());
 }
 
 std::unique_ptr<EMANE::NEMLayer>
@@ -160,47 +161,48 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
                                               const ConfigurationUpdateRequest & request,
                                               bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-  const MACLayerFactory & macLayerFactory = 
+  const MACLayerFactory & macLayerFactory =
     LayerFactoryManagerSingleton::instance()->getMACLayerFactory(sNativeLibraryFile);
-      
+
   // new platform service
-  PlatformService * pPlatformService{new PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // new radio service
   RadioService * pRadioService{new RadioService{pImpl_->getSpectrumMonitor(id)}};
 
   // create plugin
-  MACLayerImplementor * impl = 
+  MACLayerImplementor * pImpl =
     macLayerFactory.createLayer(id, pPlatformService,pRadioService);
 
-  // new concreate layer 
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id, 
-        new MACLayer{id, impl, pPlatformService}, 
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new MACLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
         pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
                                                                          COMPONENT_MACILAYER,
                                                                          sLibraryFile)};
-  
+
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
 
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
-  
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
                                                               pNEMLayer.get(),
                                                               id);
 
   RegistrarProxy registrarProxy{buildId};
-  
+
   // initialize
   pNEMLayer->initialize(registrarProxy);
 
@@ -210,7 +212,7 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }
 
 
@@ -220,31 +222,28 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
                                                const ConfigurationUpdateRequest & request,
                                                bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-
-
-  const ShimLayerFactory & shimLayerFactory = 
+  const ShimLayerFactory & shimLayerFactory =
     LayerFactoryManagerSingleton::instance()->getShimLayerFactory(sNativeLibraryFile);
-      
+
   // new platform service
-  PlatformService *
-    pPlatformService{new PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // new radio service
   RadioService * pRadioService{new RadioService{pImpl_->getSpectrumMonitor(id)}};
 
   // create plugin
-  ShimLayerImplementor * impl = 
-    shimLayerFactory.createLayer(id, pPlatformService,pRadioService); 
-     
-  // new concreate layer 
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id, 
-        new ShimLayer{id, impl, pPlatformService}, 
-        pPlatformService}};
+  ShimLayerImplementor * pImpl =
+    shimLayerFactory.createLayer(id, pPlatformService,pRadioService);
 
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new ShimLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
+        pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -254,8 +253,9 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
 
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
@@ -264,7 +264,7 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
 
   RegistrarProxy registrarProxy{buildId};
 
-  // initialize 
+  // initialize
   pNEMLayer->initialize(registrarProxy);
 
   if(!bSkipConfigure)
@@ -273,12 +273,12 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
                                                                                    request));
     }
 
-  return pNEMLayer;
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }
 
 
 std::unique_ptr<EMANE::Application::NEM>
-EMANE::Application::NEMBuilder::buildNEM(NEMId id, 
+EMANE::Application::NEMBuilder::buildNEM(NEMId id,
                                          NEMLayers & layers,
                                          const ConfigurationUpdateRequest & request,
                                          bool bExternalTransport)
@@ -295,27 +295,27 @@ EMANE::Application::NEMBuilder::buildNEM(NEMId id,
     {
       if(pLayer->getNEMId() != id)
         {
-          
+
           throw makeException<BuildException>("NEMId mismatch: NEMLayer (%hu) NEM (%hu)",
                                               pLayer->getNEMId(),
                                               id);
         }
-      
+
       pLayerStack->addLayer(pLayer);
     }
 
   std::unique_ptr<NEM> pNEM{new NEMImpl{id,pLayerStack,bExternalTransport}};
-  
+
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEM.get())};
-  
+
   RegistrarProxy registrarProxy{buildId};
-  
+
   pNEM->initialize(registrarProxy);
 
   pNEM->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
                                                                           request));
-  
+
   return pNEM;
 }
 
@@ -332,7 +332,7 @@ EMANE::Application::NEMBuilder::buildNEMManager(const uuid_t & uuid,
 
   std::unique_ptr<Application::NEMManager> pPlatform{new NEMManagerImpl{uuid}};
 
-  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pPlatform.get())};
+  BuildId buildId{0};
 
   RegistrarProxy registrarProxy{buildId};
 
@@ -357,26 +357,25 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
                                                     const ConfigurationUpdateRequest & request,
                                                     bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-    sLibraryFile + 
-    ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-  const TransportFactory & transportLayerFactory = 
+  const TransportFactory & transportLayerFactory =
     TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
-      
+
   // new platform service
-  PlatformService *
-    pPlatformService{new PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // create plugin
-  Transport * impl = 
-    transportLayerFactory.createTransport(id, pPlatformService); 
-     
-  // new concreate layer 
-  std::unique_ptr<NEMLayer> pNEMLayer{new NEMStatefulLayer{id, 
-        new TransportLayer{id, impl, pPlatformService}, 
-        pPlatformService}};
+  Transport * pImpl =
+    transportLayerFactory.createTransport(id, pPlatformService);
 
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
+        pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -386,24 +385,25 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
   ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
                                                                          pNEMLayer.get());
 
-  // pass nem to platform service
-  pPlatformService->setPlatformServiceUser(buildId,pNEMLayer.get());
-  
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
+
   // register event service handler with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
                                                               pNEMLayer.get(),
                                                               id);
-  
+
   RegistrarProxy registrarProxy{buildId};
-  
-  // initialize 
+
+  // initialize
   pNEMLayer->initialize(registrarProxy);
-  
+
   if(!bSkipConfigure)
     {
       pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
                                                                                    request));
     }
-  
-  return pNEMLayer;
+
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
 }

@@ -1,18 +1,25 @@
-lib_LTLIBRARIES = libemane.la
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libemane.pc
 
+lib_LTLIBRARIES = libemane.la
+
 libemane_la_CPPFLAGS =  \
- -I@top_srcdir@/include
+ -I@top_srcdir@/include \
+ $(AM_CPPFLAGS)         \
+ $(libemane_CFLAGS)
 
-libemane_la_CXXFLAGS =  \
- $(ACE_CFLAGS)          \
- $(AM_CFLAGS)           \
- $(libuuid_CFLAGS)      \
- $(libxml2_CFLAGS)
+libemane_la_LIBADD=      \
+ -lrt                    \
+ $(libxml2_LIBS)         \
+ $(protobuf_LIBS)        \
+ $(libpcre_LIBS)         \
+ $(libuuid_LIBS)
 
-BUILT_SOURCES =                          \
+libemane_la_LDFLAGS=     \
+ $(AM_LDFLAGS)           \
+ -avoid-version
+
+nodist_libemane_la_SOURCES =             \
  antennaprofileevent.pb.cc               \
  antennaprofileevent.pb.h                \
  commeffectevent.pb.cc                   \
@@ -63,6 +70,8 @@ libemane_la_SOURCES =                         \
  configurationupdatehandler.cc                \
  controlmessageserializer.cc                  \
  controlportservice.cc                        \
+ controlportsession.cc                        \
+ datagramsocket.cc                            \
  downstreampacket.cc                          \
  downstreamtransport.cc                       \
  errorresponse.cc                             \
@@ -77,6 +86,7 @@ libemane_la_SOURCES =                         \
  eventregistrarproxy.cc                       \
  eventservice.cc                              \
  eventserviceproxy.cc                         \
+ eventstatisticpublisher.cc                   \
  eventtablepublisher.cc                       \
  flowcontrolclient.cc                         \
  flowcontrolcontrolmessage.cc                 \
@@ -87,6 +97,7 @@ libemane_la_SOURCES =                         \
  frequencyofinterestcontrolmessage.cc         \
  frequencyofinterestcontrolmessageformatter.cc\
  gainmanager.cc                               \
+ inetaddr.cc                                  \
  layerfactorymanager.cc                       \
  libemane.cc                                  \
  locationevent.cc                             \
@@ -100,6 +111,7 @@ libemane_la_SOURCES =                         \
  maclayer.cc                                  \
  main.cc                                      \
  manifestqueryhandler.cc                      \
+ multicastsocket.cc                           \
  neighbormetricmanager.cc                     \
  nembuilder.cc                                \
  nemimpl.cc                                   \
@@ -114,11 +126,15 @@ libemane_la_SOURCES =                         \
  nemmanagerimpl.cc                            \
  nemnetworkadapter.cc                         \
  nemotaadapter.cc                             \
+ nemplatformservice.cc                        \
  nemqueuedlayer.cc                            \
  nemstatefullayer.cc                          \
+ nemtimerserviceproxy.cc                      \
  noiserecorder.cc                             \
+ nopfiledescriptorservice.cc                  \
  orientationformatter.cc                      \
  otamanager.cc                                \
+ otastatisticpublisher.cc                     \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
  pathlosseventformatter.cc                    \
@@ -143,6 +159,7 @@ libemane_la_SOURCES =                         \
  requestmessagehandler.cc                     \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
+ socket.cc                                    \
  spectrummonitor.cc                           \
  spectrumwindowutils.cc                       \
  statisticclearupdatehandler.cc               \
@@ -168,24 +185,6 @@ libemane_la_SOURCES =                         \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \
- antennaprofileevent.pb.cc                    \
- commeffectevent.pb.cc                        \
- commonmacheader.pb.cc                        \
- commonphyheader.pb.cc                        \
- event.pb.cc                                  \
- flowcontrol.pb.cc                            \
- locationevent.pb.cc                          \
- loggermessage.pb.cc                          \
- otaheader.pb.cc                              \
- otatransmitter.pb.cc                         \
- pathlossevent.pb.cc                          \
- radiotorouter.pb.cc                          \
- remotecontrolportapi.pb.cc                   \
- tdmascheduleevent.pb.cc                      
-
-
-
-EXTRA_DIST=                                   \
  antennapattern.h                             \
  antennaprofileexception.h                    \
  antennaprofilemanifest.h                     \
@@ -201,6 +200,8 @@ EXTRA_DIST=                                   \
  controlmessageserializer.h                   \
  controlmessageserializermessages.h           \
  controlportservice.h                         \
+ controlportsession.h                         \
+ datagramsocket.h                             \
  emulator.h                                   \
  errorresponse.h                              \
  eventagentfactory.h                          \
@@ -213,6 +214,7 @@ EXTRA_DIST=                                   \
  eventserviceexception.h                      \
  eventservice.h                               \
  eventserviceproxy.h                          \
+ eventstatisticpublisher.h                    \
  eventtablepublisher.h                        \
  frameworkphy.h                               \
  freespacepropagationmodelalgorithm.h         \
@@ -232,6 +234,7 @@ EXTRA_DIST=                                   \
  maclayer.h                                   \
  main.h                                       \
  manifestqueryhandler.h                       \
+ multicastsocket.h                            \
  nemimpl.h                                    \
  nemlayerstack.h                              \
  nemlayerstateconfigured.h                    \
@@ -244,14 +247,19 @@ EXTRA_DIST=                                   \
  nemmanagerimpl.h                             \
  nemnetworkadapter.h                          \
  nemotaadapter.h                              \
+ nemplatformservice.h                         \
  nemqueuedlayer.h                             \
+ nemqueuedlayer.inl                           \
  nemstatefullayer.h                           \
+ nemtimerserviceproxy.h                       \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
  noiserecorder.h                              \
+ nopfiledescriptorservice.h                   \
  otaexception.h                               \
  otamanager.h                                 \
  otaprovider.h                                \
+ otastatisticpublisher.h                      \
  otauser.h                                    \
  phylayer.h                                   \
  phylayerfactory.h                            \
@@ -271,6 +279,8 @@ EXTRA_DIST=                                   \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
  receivepowertablepublisher.h                 \
+ socket.h                                     \
+ socketexception.h                            \
  shimlayer.h                                  \
  spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
@@ -281,6 +291,7 @@ EXTRA_DIST=                                   \
  statistictablequeryhandler.h                 \
  timerserviceexception.h                      \
  timerservice.h                               \
+ timerservice.inl                             \
  timerserviceproxy.h                          \
  transportadapterimpl.h                       \
  transportfactory.h                           \
@@ -289,7 +300,12 @@ EXTRA_DIST=                                   \
  transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
  wheel.h                                      \
- wheel.inl                                    \
+ wheel.inl
+
+BUILT_SOURCES =                               \
+ $(nodist_libemane_la_SOURCES)
+
+EXTRA_DIST =                                  \
  antennaprofileevent.proto                    \
  commeffectevent.proto                        \
  commonmacheader.proto                        \
@@ -304,16 +320,6 @@ EXTRA_DIST=                                   \
  radiotorouter.proto                          \
  remotecontrolportapi.proto                   \
  tdmascheduleevent.proto
-
-libemane_la_LIBADD=       \
- $(WIN32_EXTRA_LIBADD)
-
-libemane_la_LDFLAGS=     \
- $(WIN32_EXTRA_LDFLAGS)  \
- $(ACE_LIBS)             \
- $(libxml2_LIBS)         \
- $(libuuid_LIBS)         \
- -avoid-version
 
 flowcontrol.pb.cc flowcontrol.pb.h: flowcontrol.proto
 	protoc -I=. --cpp_out=. $<

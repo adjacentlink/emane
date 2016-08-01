@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,17 +34,17 @@
 #ifndef EMANELOGSERVICE_HEADER_
 #define EMANELOGSERVICE_HEADER_
 
-
 #include "emane/logserviceprovider.h"
 #include "emane/componenttypes.h"
+#include "emane/inetaddr.h"
 #include "emane/utils/vectorio.h"
 #include "emane/utils/singleton.h"
+#include "datagramsocket.h"
 
 #include <map>
 #include <atomic>
-
-#include <ace/SOCK_Dgram.h>
-#include <ace/Thread.h>
+#include <thread>
+#include <fstream>
 
 namespace EMANE
 {
@@ -72,37 +72,35 @@ namespace EMANE
 
     void setLogLevel(LogLevel level);
 
-    void redirectLogsToSysLog(const ACE_TCHAR *program);
+    void redirectLogsToFile(const std::string & file);
 
-    void redirectLogsToFile(const char* file); 
-
-    void redirectLogsToRemoteLogger(const ACE_TCHAR *program, const char* addr);
-    
     void open();
 
   protected:
     LogService();
 
   private:
-    ACE_thread_t controlThread_;
+    std::thread thread_;
 
-    ACE_SOCK_Dgram udpLoggerTxSocket_;
+    DatagramSocket udpLoggerTxSocket_;
 
-    ACE_INET_Addr localSocketAddress_;
+    INETAddr localSocketAddress_;
 
     std::atomic<LogLevel> level_;
 
     bool bOpenBackend_;
 
-    bool bDecoupleLogging_;
-
-    bool bACELogging_;
-
-    ACE_INET_Addr addrFrom_;
-
     std::uint32_t u32LogSequenceNumber_;
 
-    ACE_THR_FUNC_RETURN processControlMessages();
+    std::ofstream ofs_;
+
+    std::ostream * pStream_;
+
+    int iEventFd_;
+
+    int iepollFd_;
+
+    void processControlMessages();
 
     bool isLogAllowed(LogLevel level) const;
 
@@ -113,7 +111,7 @@ namespace EMANE
     void log_i(LogLevel level,const char *format, ...)
       __attribute__ ((format (printf, 3, 4)));
 
-    void writeLogString(const char * pzLogMessage, LogLevel level);
+    void writeLogString(const char * pzLogMessage);
   };
 
   using LogServiceSingleton = LogService;

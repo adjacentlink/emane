@@ -3,31 +3,28 @@ lib_LTLIBRARIES = libtransraw.la
 libtransraw_la_CPPFLAGS= \
  -I@top_srcdir@/include  \
  -I../common             \
- $(ACE_CFLAGS)           \
- $(pcap_CFLAGS)          \
- $(libuuid_CFLAGS)       \
- $(AM_CFLAGS)
+ $(AM_CPPFLAGS)          \
+ $(libemane_CFLAGS)
+
+libtransraw_la_LIBADD=                       \
+ $(pcap_LIBS)                                \
+ $(libuuid_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ ../common/.libs/libcommontransport.la
+
+libtransraw_la_LDFLAGS= \
+ $(AM_LDFLAGS)          \
+ -avoid-version
 
 libtransraw_la_SOURCES= \
- rawtransport.cc        
+ rawtransport.cc        \
+ rawtransport.h
 
 EXTRA_DIST=             \
- rawtransport.h         \
  transraw.xml.in
 
 BUILT_SOURCES =         \
  transraw.xml
-
-libtransraw_la_LIBADD=  \
- $(WIN32_EXTRA_LIBADD)        
-
-libtransraw_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS) \
- $(pcap_LIBS)           \
- $(ACE_LIBS)            \
- -L../common            \
- -lcommontransport      \
- -avoid-version
 
 edit = sed                     \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

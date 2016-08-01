@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -70,18 +71,35 @@ namespace EMANE
      *
      * @return identifier corresponding to the event id, or -1 on failure
      */
-    TimerEventId scheduleTimedEvent(const TimePoint & timePoint, 
-                                    const void *arg, 
-                                    const Microseconds & interval,
+    TimerEventId scheduleTimedEvent(const TimePoint & timePoint,
+                                    const void *arg,
+                                    const Duration & interval,
                                     TimerServiceUser *pTimerServiceUser);
+
+
+    /**
+     * Schedules an generic interval timer callable
+     *
+     * @param fn A callable object
+     * @param absoluteTimePoint Absolute time of the timeout
+     * @param interval Repeat interval
+     */
+    template <typename Function>
+    TimerEventId schedule(Function fn,
+                          const TimePoint & timePoint,
+                          const Duration & interval = Duration::zero());
+
+
   protected:
     TimerService() = default;
-    
+
   private:
     Utils::Timer timer_;
   };
 
   using TimerServiceSingleton = TimerService;
 }
+
+#include "timerservice.inl"
 
 #endif //EMANETIMERSERVICE_HEADER_

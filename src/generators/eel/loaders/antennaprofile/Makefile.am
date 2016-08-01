@@ -1,21 +1,17 @@
 lib_LTLIBRARIES = libeelloaderantennaprofile.la
 
-EXTRA_DIST=                   \
- eelloaderantennaprofile.h
-
 libeelloaderantennaprofile_la_CPPFLAGS= \
  -I@top_srcdir@/include      \
- $(ACE_CFLAGS)               \
- $(AM_CFLAGS)                
+ $(AM_CPPFLAGS)              \
+ $(libemane_CFLAGS)
 
-libeelloaderantennaprofile_la_SOURCES= \
- eelloaderantennaprofile.cc
-
-libeelloaderantennaprofile_la_LIBADD= \
- $(WIN32_EXTRA_LIBADD)        
+libeelloaderantennaprofile_la_LIBADD=        \
+ @top_srcdir@/src/libemane/.libs/libemane.la
 
 libeelloaderantennaprofile_la_LDFLAGS= \
- $(WIN32_EXTRA_LDFLAGS)     \
- $(ACE_LIBS)                \
+ $(AM_LDFLAGS)                         \
  -avoid-version
 
+libeelloaderantennaprofile_la_SOURCES= \
+ eelloaderantennaprofile.cc            \
+ eelloaderantennaprofile.h

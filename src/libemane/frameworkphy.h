@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,33 +57,33 @@ namespace EMANE
     FrameworkPHY(NEMId id,
                  PlatformServiceProvider* pPlatformService,
                  SpectrumMonitor * pSpectrumMonitor);
-    
+
     ~FrameworkPHY();
-    
+
     void initialize(Registrar & registrar) override;
-    
+
     void configure(const ConfigurationUpdate & update) override;
-    
+
     void start() override;
-    
+
     void stop() override;
-    
+
     void destroy() throw() override;
 
     void processConfiguration(const ConfigurationUpdate & update) override;
-    
+
     void processUpstreamPacket(const CommonPHYHeader & hdr,
                                UpstreamPacket & pkt,
-                               const ControlMessages & msgs) override;  
+                               const ControlMessages & msgs) override;
 
     // provides test harness access
     void processUpstreamPacket_i(const TimePoint & now,
                                  const CommonPHYHeader & hdr,
                                  UpstreamPacket & pkt,
                                  const ControlMessages & msgs);
-    
+
     void processDownstreamControl(const ControlMessages & msgs) override;
-    
+
     void processDownstreamPacket(DownstreamPacket & pkt,
                                  const ControlMessages & msgs) override;
 
@@ -115,6 +116,7 @@ namespace EMANE
     Microseconds timeSyncThreshold_;
     bool bNoiseMaxClamp_;
     double dSystemNoiseFiguredB_;
+    StatisticNumeric<std::uint64_t> * pTimeSyncThresholdRewrite_;
   };
 }
 
@@ -139,7 +141,7 @@ namespace EMANE
  * In the downstream direction, a @ref EMANE::MACLayerImplementor "radio model" must send a
  * @ref EMANE::Controls::FrequencyControlMessage "FrequencyControlMessage" with
  * every @ref EMANE::DownstreamPacket "DownstreamPacket". This control message is used to specify
- * one or more @ref EMANE::FrequencySegment "FrequencySegments" to use during message transmission and 
+ * one or more @ref EMANE::FrequencySegment "FrequencySegments" to use during message transmission and
  * to optionally set the transmitter bandwidth.
  *
  * Radio model send downstream packet example with a @ref EMANE::Controls::FrequencyControlMessage
@@ -224,7 +226,7 @@ namespace EMANE
  *
  * The @ref EMANE::Controls::AntennaProfileControlMessage "Controls::AntennaProfileControlMessage" is used in
  * downstream processing and only valid when received as an argument to @ref
- * EMANE::DownstreamTransport::processDownstreamPacket "DownstreamTransport::processDownstreamPacket" or 
+ * EMANE::DownstreamTransport::processDownstreamPacket "DownstreamTransport::processDownstreamPacket" or
  * @ref EMANE::DownstreamTransport::processDownstreamControl "DownstreamTransport::processDownstreamControl.
  *
  *

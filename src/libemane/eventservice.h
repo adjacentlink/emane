@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,16 +39,18 @@
 #include "emane/eventserviceprovider.h"
 #include "emane/eventserviceuser.h"
 #include "emane/event.h"
+#include "emane/inetaddr.h"
 #include "emane/serializable.h"
 #include "emane/utils/singleton.h"
+#include "multicastsocket.h"
+#include "eventstatisticpublisher.h"
 
 #include <map>
 #include <tuple>
 #include <atomic>
+#include <thread>
 #include <uuid.h>
 
-#include <ace/SOCK_Dgram_Mcast.h>
-#include <ace/Thread.h>
 
 namespace EMANE
 {
@@ -57,39 +59,41 @@ namespace EMANE
   public:
     ~EventService();
 
-    void open(const ACE_INET_Addr & eventChannelAddress,
+    void open(const INETAddr & eventChannelAddress,
               const std::string & sDevice,
               int iTTL,
               bool loopbackEnable,
               const uuid_t & uuid);
-    
+
     void close();
 
     void registerEventServiceUser(BuildId buildId,
                                   EventServiceUser * pEventServiceUser,
                                   NEMId = 0);
-    
+
     void registerEvent(BuildId buildId,EventId eventId);
 
-    
+
     void sendEvent(BuildId buildId,
-                   NEMId nemId, 
+                   NEMId nemId,
                    const Event & event) const;
-    
+
     void sendEvent(BuildId buildId,
-                   NEMId nemId, 
-                   EventId eventId, 
+                   NEMId nemId,
+                   EventId eventId,
                    const Serialization & serialization) const;
 
 
     void processEventMessage(NEMId nemId,
-                             EventId eventId, 
+                             EventId eventId,
                              const Serialization & serialization,
                              NEMId ignoreNEM = {}) const;
-    
+
+    void setStatEventCountRowLimit(size_t rows);
+
   protected:
     EventService();
-    
+
   private:
     using EventServiceUserMap = std::map<BuildId, std::pair<NEMId,EventServiceUser *>>;
 
@@ -99,20 +103,20 @@ namespace EMANE
 
     EventServiceUserMap eventServiceUserMap_;
 
-    ACE_SOCK_Dgram_Mcast mcast_;
-    ACE_thread_t thread_;
-    ACE_INET_Addr addr_;
-    
+    MulticastSocket mcast_;
+    std::thread thread_;
+
     bool bOpen_;
     bool bCancel_;
     uuid_t uuid_;
 
+    mutable EventStatisticPublisher eventStatisticPublisher_;
     mutable std::atomic<std::uint64_t> u64SequenceNumber_;
 
-    ACE_THR_FUNC_RETURN processEventMessage();
+    void process();
 
   };
-  
+
   using EventServiceSingleton = EventService;
 }
 

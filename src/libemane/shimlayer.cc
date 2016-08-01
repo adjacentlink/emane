@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,7 +35,7 @@
 #include "shimlayer.h"
 
 EMANE::ShimLayer::ShimLayer(NEMId id,
-                            ShimLayerImplementor * pImplementor,
+                            NEMLayer * pImplementor,
                             PlatformServiceProvider * pPlatformService) :
   NEMQueuedLayer{id,pPlatformService},
   pImplementor_{pImplementor},
@@ -133,7 +134,7 @@ void EMANE::ShimLayer::setDownstreamTransport(DownstreamTransport * pDownstreamT
 }
 
 
-void EMANE::ShimLayer::doProcessEvent(const EventId & eventId, 
+void EMANE::ShimLayer::doProcessEvent(const EventId & eventId,
                                       const Serialization & serialization)
 {
   pImplementor_->processEvent(eventId,serialization);

@@ -2,22 +2,34 @@ lib_LTLIBRARIES = librfpipemaclayer.la
 
 librfpipemaclayer_la_CPPFLAGS=   \
  -I@top_srcdir@/include          \
- $(AM_CFLAGS)                    \
- $(libuuid_CFLAGS)               \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                  \
+ $(libemane_CFLAGS)
+
+librfpipemaclayer_la_LIBADD=                  \
+ $(libuuid_LIBS)                              \
+ $(libxml2_LIBS)                              \
+ $(protobuf_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la
+
+librfpipemaclayer_la_LDFLAGS=    \
+ $(AM_LDFLAGS)                   \
+ -avoid-version
 
 librfpipemaclayer_la_SOURCES =   \
  maclayer.cc                     \
  downstreamqueue.cc              \
  pcrmanager.cc                   \
  rfpipemacheadermessage.cc       \
- rfpipemacheader.pb.cc
-
-EXTRA_DIST=                      \
  maclayer.h                      \
  downstreamqueue.h               \
  pcrmanager.h                    \
- rfpipemacheadermessage.h        \
+ rfpipemacheadermessage.h
+
+nodist_librfpipemaclayer_la_SOURCES =   \
+ rfpipemacheader.pb.cc           \
+ rfpipemacheader.pb.h
+
+EXTRA_DIST=                      \
  rfpipenem.xml.in                \
  rfpipemac.xml.in                \
  rfpipepcr.xml.in                \
@@ -27,16 +39,7 @@ BUILT_SOURCES =                  \
  rfpipenem.xml                   \
  rfpipemac.xml                   \
  rfpipepcr.xml                   \
- rfpipemacheader.pb.cc           \
- rfpipemacheader.pb.h
-
-librfpipemaclayer_la_LIBADD=     \
- $(WIN32_EXTRA_LIBADD)        
-
-librfpipemaclayer_la_LDFLAGS=    \
- $(WIN32_EXTRA_LDFLAGS)          \
- $(libxml2_LIBS)                 \
- -avoid-version
+ $(nodist_librfpipemaclayer_la_SOURCES)
 
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  

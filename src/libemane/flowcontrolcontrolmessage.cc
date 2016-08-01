@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +44,7 @@ public:
   {
     return u16Tokens_;
   }
-  
+
 private:
   const std::uint16_t u16Tokens_;
 };
@@ -75,18 +76,11 @@ EMANE::Serialization EMANE::Controls::FlowControlControlMessage::serialize() con
   EMANEMessage::FlowControlControlMessage msg;
   msg.set_tokens(pImpl_->getTokens());
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize FlowControlControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize FlowControlControlMessage");
     }
-  
+
   return serialization;
 }
 
@@ -101,18 +95,11 @@ EMANE::Controls::FlowControlControlMessage::create(const Serialization & seriali
 {
   EMANEMessage::FlowControlControlMessage msg;
 
-  try
-    {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : FlowControlControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.ParseFromString(serialization))
     {
       throw SerializationException("unable to deserialize : FlowControlControlMessage");
     }
-  
+
   return new FlowControlControlMessage{static_cast<std::uint16_t>(msg.tokens())};
 }
 

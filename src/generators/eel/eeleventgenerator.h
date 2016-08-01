@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,10 +42,9 @@
 #include <vector>
 #include <map>
 #include <string>
-
-#include <ace/Thread.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace EMANE
 {
@@ -56,35 +56,35 @@ namespace EMANE
       {
       public:
         Generator(PlatformServiceProvider *pPlatformService);
-        
+
         ~Generator();
-        
+
         void initialize(Registrar & registrar) override;
-        
+
         void configure(const ConfigurationUpdate & update) override;
-        
+
         void start() override;
-        
+
         void stop() override;
-        
+
         void destroy() throw() override;
-        
+
       private:
         using InputFileNameVector = std::vector<std::string>;
         using PluginFactoryList = std::list<LoaderPluginFactory *>;
         using EventPluginMap = std::map<std::string, std::pair<LoaderPlugin *,EventPublishMode>>;
-        
-        ACE_thread_t thread_;
-        ACE_Thread_Mutex mutex_;
-        ACE_Condition<ACE_Thread_Mutex> cond_;
+
+        std::thread thread_;
+        std::mutex mutex_;
+        std::condition_variable cond_;
         bool bCancel_;
         InputFileNameVector inputFileNameVector_;
         PluginFactoryList pluginFactoryList_;
         EventPluginMap eventPluginMap_;
-        
-        ACE_THR_FUNC_RETURN generate();
-        
-        bool waitAndSendEvents(const ACE_Time_Value & tvTestStartTime, 
+
+        void generate();
+
+        bool waitAndSendEvents(const TimePoint & startTime,
                                float fCurrentTime);
       };
     }

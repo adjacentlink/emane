@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -83,9 +83,9 @@ namespace EMANE
          *
          */
 
-        SequenceEntry(std::uint16_t seq, const TimePoint & tp) : 
-          seq_(seq), 
-          tp_(tp) 
+        SequenceEntry(std::uint16_t seq, const TimePoint & tp) :
+          seq_(seq),
+          tp_(tp)
         { }
       };
 
@@ -96,8 +96,8 @@ namespace EMANE
       class TransmissionTxState;
 
       /**
-       * @class MACLayer 
-       *  
+       * @class MACLayer
+       *
        * @brief IEEE 80211 ABG MAC implementation
        *
        */
@@ -114,38 +114,32 @@ namespace EMANE
          * Component Interface
          */
         void initialize(Registrar & registrar) override;
-  
+
         void configure(const ConfigurationUpdate & update) override;
-  
+
         void start() override;
-  
+
         void postStart() override;
 
         void stop() override;
-  
+
         void destroy() throw() override;
 
         void processUpstreamControl(const ControlMessages & msgs) override;
-   
+
 
         void processUpstreamPacket(const CommonMACHeader & hdr,
                                    UpstreamPacket & pkt,
-                                   const ControlMessages & msgs) override;  
-   
+                                   const ControlMessages & msgs) override;
+
         void processDownstreamControl(const ControlMessages & msgs) override;
- 
+
 
         void processDownstreamPacket(DownstreamPacket & pkt,
                                      const ControlMessages & msgs) override;
 
 
         void processEvent(const EventId &, const Serialization &);
-
-        void processTimedEvent(TimerEventId eventId,
-                               const TimePoint & expireTime,
-                               const TimePoint & scheduleTime,
-                               const TimePoint & fireTime,
-                               const void * arg) override;
 
         void processConfiguration(const ConfigurationUpdate & update) override;
 
@@ -154,10 +148,10 @@ namespace EMANE
          * collision type none, clobber or noise
          *
          */
-        enum COLLISION_TYPE { COLLISION_TYPE_NONE                    = 0x00, 
+        enum COLLISION_TYPE { COLLISION_TYPE_NONE                    = 0x00,
                               COLLISION_TYPE_CLOBBER_RX_DURING_TX    = 0x01,
-                              COLLISION_TYPE_NOISE_COMMON_RX         = 0x02, 
-                              COLLISION_TYPE_CLOBBER_RX_HIDDEN_BUSY  = 0x04, 
+                              COLLISION_TYPE_NOISE_COMMON_RX         = 0x02,
+                              COLLISION_TYPE_CLOBBER_RX_HIDDEN_BUSY  = 0x04,
                               COLLISION_TYPE_NOISE_HIDDEN_RX         = 0x08 };
 
 
@@ -174,9 +168,9 @@ namespace EMANE
         /**
          *
          * send a downstream broadcast data packet
-         * 
+         *
          * @param entry downstream queue entry
-         * 
+         *
          */
         void sendDownstreamBroadcastData(DownstreamQueueEntry &);
 
@@ -184,9 +178,9 @@ namespace EMANE
         /**
          *
          * send a downstream unicast data packet
-         * 
+         *
          * @param entry downstream queue entry
-         * 
+         *
          */
         void sendDownstreamUnicastData(DownstreamQueueEntry &entry);
 
@@ -194,10 +188,10 @@ namespace EMANE
         /**
          *
          * send a downstream unicast cts ctrl packet
-         * 
+         *
          * @param entry downstream queue entry
          * @param origin the origin of the unicast rts/cts exchange
-         * 
+         *
          */
         void sendDownstreamUnicastCts(DownstreamQueueEntry & entry,
                                       NEMId origin);
@@ -205,10 +199,10 @@ namespace EMANE
         /**
          *
          * send a downstream message
-         * 
+         *
          * @param entry downstream queue entry
          * @param macHeaderParams specific mac header parameters for the message
-         * 
+         *
          */
         void sendDownstreamMessage(DownstreamQueueEntry & entry,
                                    MACHeaderParams & macHeaderParams);
@@ -219,7 +213,7 @@ namespace EMANE
          *
          * @param src the source nem
          * @param seq sequence number of packet
-         * 
+         *
          * @retval true if src and seq match the last received values, otherwise false.
          *
          */
@@ -260,7 +254,7 @@ namespace EMANE
          *
          * get the type of collision during rx
          *
-         * @param src the src of the pkt 
+         * @param src the src of the pkt
          *
          * @param u8Category the queue service type
          *
@@ -281,7 +275,7 @@ namespace EMANE
 
 
         /**
-         * provides access to the MAC layer mode timing 
+         * provides access to the MAC layer mode timing
          *
          * @return reference to the configuration object
          */
@@ -335,7 +329,7 @@ namespace EMANE
 
         std::unique_ptr<std::function<bool()>> pRadioMetricCallback_;
 
-        Utils::RandomNumberDistribution<std::mt19937, 
+        Utils::RandomNumberDistribution<std::mt19937,
                                         std::uniform_real_distribution<float>> RNDZeroToOne_;
 
         std::vector<std::unique_ptr<Utils::CommonLayerStatistics>> commonLayerStatistics_;
@@ -347,24 +341,24 @@ namespace EMANE
         void setEntrySequenceNumber(DownstreamQueueEntry &entry);
 
         void handleUpstreamPacket(UpstreamPacket & pkt,
-                                  double dRxPowerdBm, 
+                                  double dRxPowerdBm,
                                   double dNoiseFloordBm,
                                   std::uint64_t u64SequenceNumber,
                                   const TimePoint & rBeginTime,
                                   std::uint8_t u8Category);
- 
+
 
         std::pair<bool, std::uint16_t> checkUpstremReception(UpstreamPacket &pkt,
-                                   const TimePoint & currentTime,
-                                   std::uint64_t u64SequenceNumber,
-                                   double dRxPowerdBm, 
-                                   double dNoiseFloordBm,
-                                   const MACHeaderParams & macHeaderParams,
-                                   int tryNum,
-                                   std::uint8_t u8Category);
+                                                             const TimePoint & currentTime,
+                                                             std::uint64_t u64SequenceNumber,
+                                                             double dRxPowerdBm,
+                                                             double dNoiseFloordBm,
+                                                             const MACHeaderParams & macHeaderParams,
+                                                             int tryNum,
+                                                             std::uint8_t u8Category);
 
         void changeDownstreamState(TransmissionTxState *);
-       
+
         bool checkPOR(float fSINR, size_t packetSize, std::uint16_t u16DataRateIndex);
 
         std::uint8_t dscpToCategory(std::uint8_t dscp) const;

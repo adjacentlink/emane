@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,9 @@
 #define EMANEANY_HEADER_
 
 #include "emane/anyexception.h"
+#include "emane/inetaddr.h"
 
 #include <cstdint>
-
-#include <ace/INET_Addr.h>
 
 namespace EMANE
 {
@@ -106,7 +105,7 @@ namespace EMANE
      * Creates an Any instance from a unsigned 8-bit integer
      */
     explicit Any(std::uint8_t u8Value);
-    
+
     /**
      * Creates an Any instance from a float
      */
@@ -118,9 +117,9 @@ namespace EMANE
     explicit Any(double dValue);
 
     /**
-     * Creates an Any instance from an ACE_INET_Addr
+     * Creates an Any instance from an INETAddr
      */
-    explicit Any(const ACE_INET_Addr & addrValue);
+    explicit Any(const INETAddr & addrValue);
 
     /**
      * Creates an Any instance from a NULL terminated string
@@ -131,7 +130,7 @@ namespace EMANE
      * Creates an Any instance from a std::string
      */
     explicit Any(const std::string & sValue);
-    
+
     /**
      * Creates an Any instance from a boolean
      */
@@ -151,7 +150,7 @@ namespace EMANE
      * Destroys an instance
      */
     ~Any();
-    
+
     /**
      * Gets the signed 64-bit integer Any value
      *
@@ -159,7 +158,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_INT64 asINT64() const;
+    std::int64_t asINT64() const;
 
     /**
      * Gets the unsigned 64-bit integer Any value
@@ -168,8 +167,8 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_UINT64 asUINT64() const;
-    
+    std::uint64_t asUINT64() const;
+
     /**
      * Gets the signed 32-bit integer Any value
      *
@@ -177,7 +176,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_INT32 asINT32() const;
+    std::int32_t asINT32() const;
 
     /**
      * Gets the unsigned 32-bit integer Any value
@@ -186,7 +185,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_UINT32 asUINT32() const;
+    std::uint32_t asUINT32() const;
 
     /**
      * Gets the signed 16-bit integer Any value
@@ -195,8 +194,8 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_INT16 asINT16() const;
-    
+    std::int16_t asINT16() const;
+
     /**
      * Gets the unsigned 16-bit integer Any value
      *
@@ -204,7 +203,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_UINT16 asUINT16() const;
+    std::uint16_t asUINT16() const;
 
     /**
      * Gets the signed 8-bit integer Any value
@@ -213,7 +212,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_INT8 asINT8() const;
+    std::int8_t asINT8() const;
 
     /**
      * Gets the unsigned 8-bit integer Any value
@@ -222,7 +221,7 @@ namespace EMANE
      *
      * @throw AnyException if value is a different type
      */
-    ACE_UINT8 asUINT8() const;
+    std::uint8_t asUINT8() const;
 
     /**
      * Gets the float Any value
@@ -242,15 +241,15 @@ namespace EMANE
      */
     double asDouble() const;
 
-    
+
     /**
-     * Gets the ACE_INET_Addr Any value
+     * Gets the INETAddr Any value
      *
      * @return value
      *
      * @throw AnyException if value is a different type
      */
-    ACE_INET_Addr asINETAddr() const;
+    INETAddr asINETAddr() const;
 
     /**
      * Gets the boolean Any value
@@ -269,19 +268,19 @@ namespace EMANE
      * @throw AnyException if value is a different type
      */
     std::string asString() const;
-   
+
     /**
      * Gets the Any type
      *
      * @return value
      */
     Type getType() const;
-    
+
     /**
      * Less than comparison
      *
      * @param rhs INstance to compare
-     
+
      * @return @a true if less than
      */
     bool operator<(const EMANE::Any & rhs) const;
@@ -290,7 +289,7 @@ namespace EMANE
      * Greater than comparison
      *
      * @param rhs INstance to compare
-     
+
      * @return @a true if greater than
      */
     bool operator>(const EMANE::Any & rhs) const;
@@ -299,7 +298,7 @@ namespace EMANE
      * Less than or equal comparison
      *
      * @param rhs INstance to compare
-     
+
      * @return @a true if less than or equal
      */
     bool operator<=(const EMANE::Any & rhs) const;
@@ -308,7 +307,7 @@ namespace EMANE
      * Greater than or equal comparison
      *
      * @param rhs INstance to compare
-     
+
      * @return @a true if greater than or equal
      */
     bool operator>=(const EMANE::Any & rhs) const;
@@ -332,11 +331,11 @@ namespace EMANE
     Type type_;
     union
     {
-      ACE_INT64 i64Value_;
-      ACE_UINT64 u64Value_;
+      std::int64_t i64Value_;
+      std::uint64_t u64Value_;
       double dValue_;
       std::string sValue_;
-      ACE_INET_Addr addrValue_;
+      INETAddr addrValue_;
     };
   };
 
@@ -351,7 +350,7 @@ namespace EMANE
     : public std::false_type{};
 
   template<>
-  struct is_any_convertable_nonnumeric<ACE_INET_Addr>
+  struct is_any_convertable_nonnumeric<INETAddr>
     : public std::true_type{};
 
   template<>

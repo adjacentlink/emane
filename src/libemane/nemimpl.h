@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -64,22 +64,22 @@ namespace EMANE
        * @param pNEMLayerStack pointer to a NEMLayerStack to contain in this NEM
        *
        */
-      NEMImpl(NEMId id, 
+      NEMImpl(NEMId id,
               std::unique_ptr<NEMLayerStack> & pNEMLayerStack,
               bool bExternalTransport);
-    
+
       ~NEMImpl();
 
       void initialize(Registrar & registrar) override;
-    
+
       void configure(const ConfigurationUpdate & update) override;
-    
+
       void start() override;
 
       void postStart() override;
 
       void stop() override;
-    
+
       void destroy()
         throw() override;
 
@@ -87,20 +87,20 @@ namespace EMANE
        * Get the NEM's NEMId
        *
        * @return the NEM's NEMId
-       */    
+       */
       NEMId getNEMId() const override;
 
     private:
       std::unique_ptr<NEMLayerStack> pNEMLayerStack_;
       NEMId id_;
       bool bExternalTransport_;
-      
+
       NEMOTAAdapter     NEMOTAAdapter_;
       NEMNetworkAdapter NEMNetworkAdapter_;
 
-      ACE_INET_Addr platformEndpointAddr_;
-      ACE_INET_Addr transportEndpointAddr_;
-    
+      INETAddr platformEndpointAddr_;
+      INETAddr transportEndpointAddr_;
+
       // prevent NEM copies
       NEMImpl(const NEMImpl &) = delete;
       NEMImpl & operator=(const NEMImpl &) = delete;

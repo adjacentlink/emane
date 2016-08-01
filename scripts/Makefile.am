@@ -1,6 +1,5 @@
 dist_bin_SCRIPTS =        \
- emanegentransportxml     \
- emaneconvertdtdpath
+ emanegentransportxml     
 
 EXTRA_DIST =              \
  emanegenmanifests.sh

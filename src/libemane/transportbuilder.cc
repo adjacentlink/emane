@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,9 +40,11 @@
 #include "logservice.h"
 #include "timerserviceproxy.h"
 #include "eventservice.h"
-#include "platformservice.h"
+#include "nemplatformservice.h"
 #include "buildidservice.h"
 #include "registrarproxy.h"
+#include "transportlayer.h"
+#include "nemstatefullayer.h"
 
 EMANE::Application::TransportBuilder::TransportBuilder(){}
 
@@ -50,7 +53,7 @@ EMANE::Application::TransportBuilder::~TransportBuilder(){}
 std::unique_ptr<EMANE::Application::TransportManager>
 EMANE::Application::TransportBuilder::buildTransportManager(const uuid_t & uuid,
                                                             TransportAdapters & adapters,
-                                                            const ConfigurationUpdateRequest& request)
+                                                            const ConfigurationUpdateRequest& request) const
 {
   if(adapters.empty())
     {
@@ -64,8 +67,8 @@ EMANE::Application::TransportBuilder::buildTransportManager(const uuid_t & uuid,
   RegistrarProxy registrarProxy{buildId};
 
   pManager->initialize(registrarProxy);
-  
-  // configure 
+
+  // configure
   pManager->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
 
   std::for_each(adapters.begin(),
@@ -80,8 +83,8 @@ EMANE::Application::TransportBuilder::buildTransportManager(const uuid_t & uuid,
 
 
 std::unique_ptr<EMANE::Application::TransportAdapter>
-EMANE::Application::TransportBuilder::buildTransportAdapter(std::unique_ptr<Transport> & pTransport,
-                                                            const ConfigurationUpdateRequest& request)
+EMANE::Application::TransportBuilder::buildTransportAdapter(std::unique_ptr<NEMLayer> & pTransport,
+                                                            const ConfigurationUpdateRequest& request) const
 {
   if(pTransport == NULL)
     {
@@ -91,72 +94,135 @@ EMANE::Application::TransportBuilder::buildTransportAdapter(std::unique_ptr<Tran
   std::unique_ptr<TransportAdapter> pAdapter{new TransportAdapterImpl{pTransport->getNEMId()}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pAdapter.get())};
-  
+
   RegistrarProxy registrarProxy{buildId};
-  
+
   pAdapter->initialize(registrarProxy);
 
-  // configure 
+  // configure
   pAdapter->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
-  
+
   pAdapter->setTransport(pTransport);
-  
+
   return pAdapter;
 }
 
 
-std::unique_ptr<EMANE::Transport>
+std::unique_ptr<EMANE::NEMLayer>
 EMANE::Application::TransportBuilder::buildTransport(NEMId id,
                                                      const std::string & sLibraryFile,
                                                      const ConfigurationUpdateRequest & request,
-                                                     bool bSkipConfigure)
+                                                     bool bSkipConfigure) const
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-  const EMANE::TransportFactory & transportFactory = 
-    EMANE::TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
-      
+  const TransportFactory & transportLayerFactory =
+    TransportFactoryManagerSingleton::instance()->getTransportFactory(sNativeLibraryFile);
+
   // new platform service
-  EMANE::PlatformService *
-    pPlatformService{new EMANE::PlatformService{}};
+  NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
-  // create transport
-  std::unique_ptr<Transport> pTransport{transportFactory.createTransport(id, pPlatformService)};
+  // create plugin
+  Transport * pImpl =
+    transportLayerFactory.createTransport(id, pPlatformService);
 
-  initializeTransport(pTransport.get(), pPlatformService, request,bSkipConfigure);
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
+        new NEMStatefulLayer{id,
+          pImpl,
+          pPlatformService},
+        pPlatformService}};
 
-  return pTransport;
-}
+  // register to the component map
+  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
+                                                                         COMPONENT_TRANSPORTILAYER,
+                                                                         sLibraryFile)};
+
+  ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
+                                                                         pNEMLayer.get());
+
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
 
 
-EMANE::PlatformServiceProvider * 
-EMANE::Application::TransportBuilder::newPlatformService() const
-{
-  return new EMANE::PlatformService{};
-}
-
-
-void 
-EMANE::Application::TransportBuilder::initializeTransport(Transport * pTransport, 
-                                                          PlatformServiceProvider * pProvider,
-                                                          const ConfigurationUpdateRequest & request,
-                                                          bool bSkipConfigure) const
-{
-  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pTransport)};
-
-  // pass transport to platform service
-  dynamic_cast<EMANE::PlatformService*>(pProvider)->setPlatformServiceUser(buildId,pTransport);
+  // register event service handler with event service
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pNEMLayer.get(),
+                                                              id);
 
   RegistrarProxy registrarProxy{buildId};
-      
+
   // initialize
-  pTransport->initialize(registrarProxy);
+  pNEMLayer->initialize(registrarProxy);
 
   if(!bSkipConfigure)
     {
-      // configure 
-      pTransport->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
+      pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
+                                                                                   request));
     }
+
+  return std::unique_ptr<EMANE::NEMLayer>(pNEMLayer.release());
+}
+
+
+EMANE::PlatformServiceProvider *
+EMANE::Application::TransportBuilder::newPlatformService() const
+{
+  return new EMANE::NEMPlatformService{};
+}
+
+
+std::unique_ptr<EMANE::Application::TransportAdapter>
+EMANE::Application::TransportBuilder::buildTransportWithAdapter_i(Transport * pTransport,
+                                                                  PlatformServiceProvider * pProvider,
+                                                                  const ConfigurationUpdateRequest & request,
+                                                                  const std::string & sPlatformEndpoint,
+                                                                  const std::string & sTransportEndpoint) const
+{
+  // pass transport to platform service
+  EMANE::NEMPlatformService * pPlatformService{dynamic_cast<EMANE::NEMPlatformService*>(pProvider)};
+
+  NEMId id{pTransport->getNEMId()};
+
+  std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
+        new NEMStatefulLayer{id,
+          pTransport,
+          pPlatformService},
+        pPlatformService}};
+
+  // register to the component map
+
+  BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pTransport)};
+
+  ConfigurationServiceSingleton::instance()->registerRunningStateMutable(buildId,
+                                                                         pNEMLayer.get());
+
+  // pass nem layer to platform service
+  pPlatformService->setNEMLayer(buildId,
+                                pNEMLayer.get());
+
+  // register event service handler with event service
+  EventServiceSingleton::instance()->registerEventServiceUser(buildId,
+                                                              pNEMLayer.get(),
+                                                              id);
+
+  RegistrarProxy registrarProxy{buildId};
+
+  // initialize
+  pNEMLayer->initialize(registrarProxy);
+
+  pNEMLayer->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,
+                                                                               request));
+  std::unique_ptr<NEMLayer> p{pNEMLayer.release()};
+
+  auto pTransportAdapter = buildTransportAdapter(p,
+                                                 {
+                                                   {"platformendpoint",{sPlatformEndpoint}},
+                                                     {"transportendpoint",{sTransportEndpoint}}
+                                                 });
+
+
+  return pTransportAdapter;
 }

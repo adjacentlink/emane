@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +38,13 @@
 #include <libxml/xmlschemas.h>
 #include <numeric>
 
+#include "emane/types.h"
 #include "emane/utils/parameterconvert.h"
 #include "emane/utils/spectrumwindowutils.h"
 
 #include "spectrummonitor.h"
 
-#include <ace/Get_Opt.h>
+#include <getopt.h>
 
 void usage();
 
@@ -53,28 +55,19 @@ int main(int argc, char * argv[])
 {
   LIBXML_TEST_VERSION;
 
-  const ACE_TCHAR options[] = ACE_TEXT("hs:");
-
-  ACE_Get_Opt cmd_opts(argc,argv,options);
-  
-  if(cmd_opts.long_option(ACE_TEXT("help"),'h') == -1)
+  option options[] =
     {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: help")),
-                       EXIT_FAILURE);
-    }
-      
-  if(cmd_opts.long_option(ACE_TEXT("schema"),'s',ACE_Get_Opt::ARG_REQUIRED) == -1)
-    {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: schema")),EXIT_FAILURE);
-    }
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
+    };
 
   int iOption{};
+  int iOptionIndex{};
   std::string sScenario{};
   std::string sSchema{"noisescenario.xsd"};
-  
-  while((iOption = cmd_opts()) != EOF)
+
+  while((iOption = getopt_long(argc,argv,"hs:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -82,38 +75,37 @@ int main(int argc, char * argv[])
           // --help
           usage();
           return 0;
-              
+
         case 's':
           // --schema
-          sSchema = cmd_opts.opt_arg();
+          sSchema = optarg;
           break;
-            
+
         case ':':
           // missing arguement
-          std::cerr<<"-"<<cmd_opts.opt_opt()<<"requires an argument"<<std::endl;
+          std::cerr<<"-"<<static_cast<char>(iOption)<<"requires an argument"<<std::endl;
           return EXIT_FAILURE;
-              
+
         default:
-          std::cerr<<"Unknown option: "<<cmd_opts.last_option()<<std::endl;
+          std::cerr<<"Unknown option: "<<static_cast<char>(iOption)<<std::endl;
           return EXIT_FAILURE;
         }
     }
 
-  if(cmd_opts.opt_ind() < cmd_opts.argc())
+  if(optind >= argc)
     {
-      sScenario = argv[cmd_opts.opt_ind()];
+      std::cerr<<"missing manifest"<<std::endl;
+      return EXIT_FAILURE;
     }
   else
     {
-      std::cerr<<"missing scenario"<<std::endl;
-      return EXIT_FAILURE;
+      sScenario = argv[optind];
     }
 
-      
   EMANE::SpectrumMonitor spectrumMonitor{};
-      
+
   EMANE::FrequencySet foi;
-      
+
   xmlDocPtr pSchemaDoc{xmlReadFile(sSchema.c_str(),
                                    NULL,
                                    XML_PARSE_NONET)};
@@ -124,15 +116,15 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
     }
 
-  
+
   xmlSchemaParserCtxtPtr pParserContext{xmlSchemaNewDocParserCtxt(pSchemaDoc)};
-  
+
   if(!pParserContext)
     {
       std::cerr<<"bad schema context"<<std::endl;
       return EXIT_FAILURE;
     }
-  
+
   xmlSchemaPtr pSchema{xmlSchemaParse(pParserContext)};
 
   if(!pSchema)
@@ -149,29 +141,27 @@ int main(int argc, char * argv[])
       std::cerr<<"bad schema valid context"<<std::endl;
       return EXIT_FAILURE;
     }
-  
+
   xmlDocPtr pDoc = xmlReadFile(sScenario.c_str(),nullptr,0);
 
-  
+
   if(xmlSchemaValidateDoc(pSchemaValidCtxtPtr, pDoc))
     {
       return EXIT_FAILURE;
     }
 
-  
- 
+
+
   xmlNodePtr pRoot = xmlDocGetRootElement(pDoc);
 
   // absoulute start time that allows you to define the rest of the scenario relative to this time
   // 0 is the epoch
   xmlChar * pStart = xmlGetProp(pRoot,BAD_CAST "start");
-  
+
   auto start =
     EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pStart)).toUINT64()};
-  
-  xmlFree(pStart);
 
-  using TimePoint = std::chrono::high_resolution_clock::time_point;
+  xmlFree(pStart);
 
   int iActionIndex{};
 
@@ -188,51 +178,51 @@ int main(int argc, char * argv[])
                       if(!xmlStrcmp(pActionNode->name,BAD_CAST "initialize"))
                         {
                           xmlChar * pBinDuration = xmlGetProp(pActionNode,BAD_CAST "binduration");
-                              
+
                           auto binDuration =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBinDuration)).toUINT64()};
-                                       
+
                           xmlFree(pBinDuration);
 
                           xmlChar * pMaxSegmentOffset = xmlGetProp(pActionNode,BAD_CAST "maxsegmentoffset");
-                              
+
                           auto maxSegmentOffset =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMaxSegmentOffset)).toUINT64()};
-                                       
+
                           xmlFree(pMaxSegmentOffset);
 
                           xmlChar * pMaxSegmentDuration = xmlGetProp(pActionNode,BAD_CAST "maxsegmentduration");
-                              
+
                           auto maxSegmentDuration =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMaxSegmentDuration)).toUINT64()};
-                                       
+
                           xmlFree(pMaxSegmentDuration);
 
                           xmlChar * pMaxMessagePropagation = xmlGetProp(pActionNode,BAD_CAST "maxmessagepropagation");
-                              
+
                           auto maxMessagePropagation =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMaxMessagePropagation)).toUINT64()};
-                                       
+
                           xmlFree(pMaxMessagePropagation);
 
                           xmlChar * pTimeSyncThreshold = xmlGetProp(pActionNode,BAD_CAST "timesyncthreshold");
-                              
+
                           auto timeSyncThreshold =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTimeSyncThreshold)).toUINT64()};
-                                       
+
                           xmlFree(pTimeSyncThreshold);
 
                           xmlChar * pBandwidth = xmlGetProp(pActionNode,BAD_CAST "bandwidth");
-                           
-                          auto bandwidth = 
+
+                          auto bandwidth =
                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidth)).toUINT64();
-                           
+
                           xmlFree(pBandwidth);
 
                           xmlChar * pNoiseMode = xmlGetProp(pActionNode,BAD_CAST "mode");
 
                           EMANE::SpectrumMonitor::NoiseMode mode{};
-                              
+
                           if(!xmlStrcmp(pNoiseMode,BAD_CAST "none"))
                             {
                               mode = EMANE::SpectrumMonitor::NoiseMode::NONE;
@@ -250,23 +240,23 @@ int main(int argc, char * argv[])
                               std::cerr<<"unknown noise mode"<<std::endl;
                               return EXIT_FAILURE;
                             }
-                                
+
 
                           xmlFree(pNoiseMode);
-                              
+
                           // message duration
                           xmlChar * pRxSensitivityMilliWatt = xmlGetProp(pActionNode,BAD_CAST "sensitivity");
-                          
+
                           double dRxSensitivityMilliWatt  =
                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRxSensitivityMilliWatt)).toDouble();
-                              
+
                           xmlFree(pRxSensitivityMilliWatt);
-                              
+
                           xmlChar * pClamp = xmlGetProp(pActionNode,BAD_CAST "clamp");
 
                           auto bClamp =
                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pClamp)).toBool();
-                                       
+
                           xmlFree(pClamp);
 
                           for(xmlNodePtr pChildNode = pActionNode->children; pChildNode; pChildNode = pChildNode->next)
@@ -276,9 +266,9 @@ int main(int argc, char * argv[])
                                   if(!xmlStrcmp(pChildNode->name,BAD_CAST "frequency"))
                                     {
                                       xmlChar * pFrequency = xmlGetProp(pChildNode,BAD_CAST "value");
-                                       
+
                                       foi.insert(EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64());
-                                       
+
                                       xmlFree(pFrequency);
                                     }
                                 }
@@ -333,8 +323,8 @@ int main(int argc, char * argv[])
                                        <<(mode == EMANE::SpectrumMonitor::NoiseMode::ALL ? "all" :
                                           (mode == EMANE::SpectrumMonitor::NoiseMode::NONE ? "none" : "outofband"))
                                       <<std::endl;
-                              
-                           
+
+
                               spectrumMonitor.initialize(foi,
                                                          bandwidth,
                                                          dRxSensitivityMilliWatt,
@@ -353,33 +343,33 @@ int main(int argc, char * argv[])
                           // what would get gettimeofday() in running code
                           xmlChar * pNow = xmlGetProp(pActionNode,BAD_CAST "now");
 
-                          auto now = 
+                          auto now =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNow)).toUINT64()};
-                           
+
                           xmlFree(pNow);
-                           
+
                           // actual tx time presumed to be <= 'now'
                           xmlChar * pTxTime = xmlGetProp(pActionNode,BAD_CAST "txtime");
-                           
+
                           auto txTime =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTxTime)).toUINT64()};
-                           
+
                           xmlFree(pTxTime);
-                           
-                           
+
+
                           // propagation delay
                           xmlChar * pPropagation = xmlGetProp(pActionNode,BAD_CAST "propagation");
-                           
-                          auto propagation = 
+
+                          auto propagation =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pPropagation)).toUINT64()};
-                           
+
                           xmlFree(pPropagation);
 
                           xmlChar * pTransmitterBandwidth = xmlGetProp(pActionNode,BAD_CAST "transmitterbandwidth");
 
-                          auto transmitterBandwidth = 
+                          auto transmitterBandwidth =
                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTransmitterBandwidth)).toUINT64();
-                           
+
                           xmlFree(pTransmitterBandwidth);
 
                           xmlChar * pInBand = xmlGetProp(pActionNode,BAD_CAST "inband");
@@ -389,7 +379,7 @@ int main(int argc, char * argv[])
 
                           bInBand =
                             EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pInBand)).toBool();
-                                       
+
                           xmlFree(pInBand);
 
 
@@ -404,34 +394,34 @@ int main(int argc, char * argv[])
                                   if(!xmlStrcmp(pChildNode->name,BAD_CAST "segment"))
                                     {
                                       xmlChar * pFrequency = xmlGetProp(pChildNode,BAD_CAST "frequency");
-                                       
+
                                       auto frequency = EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64();
-                                       
+
                                       xmlFree(pFrequency);
-                                       
+
                                       xmlChar * pOffset = xmlGetProp(pChildNode,BAD_CAST "offset");
-                                       
-                                      auto offset = 
+
+                                      auto offset =
                                         EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pOffset)).toUINT64()};
 
                                       xmlFree(pOffset);
-                           
+
                                       // message duration
                                       xmlChar * pDuration = xmlGetProp(pChildNode,BAD_CAST "duration");
-                                       
+
                                       auto duration =
                                         EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pDuration)).toUINT64()};
-                                       
+
                                       xmlFree(pDuration);
-                                       
+
                                       segments.push_back({frequency,duration,offset});
 
                                       // message duration
                                       xmlChar * pRxPowerMilliWatt = xmlGetProp(pChildNode,BAD_CAST "rxpower");
-                                       
+
                                       double dRxPowerMilliWatt  =
                                         EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pRxPowerMilliWatt)).toDouble();
-                                       
+
                                       xmlFree(pRxPowerMilliWatt);
 
                                       powers.push_back(dRxPowerMilliWatt);
@@ -447,12 +437,12 @@ int main(int argc, char * argv[])
                                               if(!xmlStrcmp(pTransmitterNode->name,BAD_CAST "transmitter"))
                                                 {
                                                   xmlChar * pTransmitter = xmlGetProp(pTransmitterNode,BAD_CAST "nem");
-                                                  
-                                                  auto transmitter = 
+
+                                                  auto transmitter =
                                                     EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTransmitter)).toUINT16();
-                                                  
+
                                                   xmlFree(pTransmitter);
-                                                  
+
                                                   transmitters.push_back(transmitter);
                                                 }
                                             }
@@ -460,12 +450,12 @@ int main(int argc, char * argv[])
                                     }
                                 }
                             }
-                          
+
                           try
                             {
                               std::cout<<"["<<++iActionIndex
                                        <<"] update abs time: "
-                                       <<std::chrono::duration_cast<EMANE::Microseconds>(TimePoint{start+now}.time_since_epoch()).count()
+                                       <<std::chrono::duration_cast<EMANE::Microseconds>(EMANE::TimePoint{start+now}.time_since_epoch()).count()
                                        <<" relative time: "
                                        <<std::chrono::duration_cast<EMANE::Microseconds>(now).count()
                                        <<std::endl;
@@ -479,14 +469,14 @@ int main(int argc, char * argv[])
                                        <<"] bandwidth: "
                                        <<transmitterBandwidth
                                        <<std::endl;
-                              
+
                               std::cout<<"["<<iActionIndex
                                        <<"] in-band: "
                                        <<(bInBand ? "yes" : "no")
                                        <<std::endl;
 
                               int i = 0;
-                              
+
                               for(const auto & segment : segments)
                                 {
                                   std::cout<<"["<<iActionIndex
@@ -519,7 +509,7 @@ int main(int argc, char * argv[])
                                            <<transmitter
                                            <<std::endl;
                                 }
-                              
+
                               EMANE::TimePoint  bin0Time{};
                               EMANE::Microseconds reportablePropagation{};
                               EMANE::Microseconds span{};
@@ -530,15 +520,15 @@ int main(int argc, char * argv[])
                                        reportablePropagation,
                                        span,
                                        reportableSegments,
-                                       bTreatAsInBand)  = spectrumMonitor.update(TimePoint{start+now},
-                                                                                 TimePoint{start+txTime},
+                                       bTreatAsInBand)  = spectrumMonitor.update(EMANE::TimePoint{start+now},
+                                                                                 EMANE::TimePoint{start+txTime},
                                                                                  propagation,
                                                                                  segments,
                                                                                  transmitterBandwidth,
                                                                                  powers,
                                                                                  bInBand,
                                                                                  transmitters);
-                              
+
 
                               //std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool>
                               std::cout<<"["<<iActionIndex
@@ -583,11 +573,11 @@ int main(int argc, char * argv[])
                                            <<segment.getRxPowerdBm()
                                            <<std::endl;
                                 }
-                                  
+
                               for(const auto & freq : spectrumMonitor.getFrequencies())
                                 {
                                   std::cout<<" Frequency: "<<freq<<std::endl;
-                                      
+
                                   for(const auto & entry : EMANE::Utils::spectrumCompress(spectrumMonitor.dump(freq)))
                                     {
                                       std::cout<<"  "<<entry.first<<":"<<entry.second<<std::endl;
@@ -606,41 +596,41 @@ int main(int argc, char * argv[])
                         {
                           // what would get gettimeofday() in running code
                           xmlChar * pNow = xmlGetProp(pActionNode,BAD_CAST "now");
-              
-                          auto now = 
+
+                          auto now =
                             EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pNow)).toUINT64()};
-                           
+
                           xmlFree(pNow);
-                           
-                           
+
+
                           xmlChar * pFrequency = xmlGetProp(pActionNode,BAD_CAST "frequency");
-                           
+
                           auto frequency = EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64();
-                           
+
                           xmlFree(pFrequency);
 
                           EMANE::TimePoint timepoint = EMANE::TimePoint::min();
-                              
+
                           // what would get gettimeofday() in running code
                           xmlChar * pTime = xmlGetProp(pActionNode,BAD_CAST "time");
-              
+
                           if(pTime)
                             {
-                              timepoint = 
-                                TimePoint{start + EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTime)).toUINT64()}};
-                           
+                              timepoint =
+                                EMANE::TimePoint{start + EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pTime)).toUINT64()}};
+
                               xmlFree(pTime);
                             }
 
                           EMANE::Microseconds duration{0};
-                              
+
                           xmlChar * pDuration = xmlGetProp(pActionNode,BAD_CAST "duration");
-              
+
                           if(pDuration)
                             {
-                              duration = 
+                              duration =
                                 EMANE::Microseconds{EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pDuration)).toUINT64()};
-                                  
+
                               xmlFree(pDuration);
                             }
 
@@ -651,13 +641,13 @@ int main(int argc, char * argv[])
                               EMANE::Microseconds binSize;
                               double dReceiverSensativityMilliWatt;
                               bool bSignalInNoise;
-                              
+
                               std::tie(bins,startOfBinTime,binSize,dReceiverSensativityMilliWatt,bSignalInNoise) =
-                                spectrumMonitor.request_i(TimePoint{start+now},frequency,duration,timepoint);
+                                spectrumMonitor.request_i(EMANE::TimePoint{start+now},frequency,duration,timepoint);
 
                               std::cout<<"["<<++iActionIndex
                                        <<"] request abs time: "
-                                       <<std::chrono::duration_cast<EMANE::Microseconds>(TimePoint{start+now}.time_since_epoch()).count()
+                                       <<std::chrono::duration_cast<EMANE::Microseconds>(EMANE::TimePoint{start+now}.time_since_epoch()).count()
                                        <<" relative time: "
                                        <<std::chrono::duration_cast<EMANE::Microseconds>(now).count()
                                        <<" bin size: "
@@ -688,12 +678,12 @@ int main(int argc, char * argv[])
                                            <<std::chrono::duration_cast<EMANE::Microseconds>(startOfBinTime.time_since_epoch()).count()
                                            <<std::endl;
                                 }
-                                      
+
                               for(const auto & entry : EMANE::Utils::spectrumCompress(bins))
                                 {
                                   std::cout<<"  "<<entry.first<<":"<<entry.second<<std::endl;
                                 }
-                                 
+
                               std::cout<<std::endl;
                             }
                           catch(...)

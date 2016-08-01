@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,9 +48,9 @@
 namespace
 {
   const int DEFAULT_LOG_LEVEL{2};
-  
+
   const int DEFAULT_PRIORITY_LEVEL{50};
-  
+
   void usage(const std::string & sAppName,std::vector<std::string> additionalOptions)
   {
     std::cout<<"usage: "<<sAppName <<" [OPTIONS]... CONFIG_URL"<<std::endl;
@@ -72,11 +72,11 @@ namespace
     std::cout<<"  --uuidfile FILE                Write the application instance UUID to file."<<std::endl;
     std::cout<<"  -v, --version                  Print version and exit."<<std::endl;
     std::cout<<std::endl;
-    
+
     if(!additionalOptions.empty())
       {
         std::cout<<"additional options:"<<std::endl;
-    
+
         for(const auto & option : additionalOptions)
           {
             std::cerr<<option<<std::endl;
@@ -98,7 +98,7 @@ EMANE::Application::Main::Main(const std::string & sName):
 {
   uuid_generate(uuid_);
 
-  EMANE::Application::initialize();  
+  EMANE::Application::initialize();
 }
 
 EMANE::Application::Main::~Main()
@@ -114,8 +114,8 @@ const uuid_t & EMANE::Application::Main::getUUID() const
 
 int EMANE::Application::Main::main(int argc, char * argv[])
 {
-  EMANE::Application::Logger logger;
-  
+  EMANE::Application::Logger logger{};
+
   try
     {
       std::vector<option> options =
@@ -151,7 +151,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
       options.insert(options.end(),
                      additionalOptions.begin(),
                      additionalOptions.end());
-      
+
       // add any specialized optsting items
       sOptString += doGetOptString();
 
@@ -174,7 +174,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
                   std::cout<<optarg<<std::endl;
                 }
               break;
-          
+
             case 1:
               bSysLog = true;
               break;
@@ -198,7 +198,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
             case 3:
               sUUIDFile = optarg;
               break;
-          
+
             case 'p':
               try
                 {
@@ -209,7 +209,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
                   std::cerr<<"invalid priority: "<<optarg<<std::endl;
                   return EXIT_FAILURE;
                 }
-          
+
               break;
 
             case 'l':
@@ -222,10 +222,10 @@ int EMANE::Application::Main::main(int argc, char * argv[])
                   std::cerr<<"invalid log level: "<<optarg<<std::endl;
                   return EXIT_FAILURE;
                 }
-          
+
               break;
 
-          
+
             case '?':
               if(optopt == 't')
                 {
@@ -244,7 +244,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
             default:
               if(!doProcessOption(iOption,optarg))
                 {
-                  return EXIT_FAILURE; 
+                  return EXIT_FAILURE;
                 }
             }
         }
@@ -261,30 +261,25 @@ int EMANE::Application::Main::main(int argc, char * argv[])
           sConfigurationXML = argv[optind];
 
         }
- 
+
       doConfigure(sConfigurationXML);
-  
-      if(bDaemonize) 
+
+      if(bDaemonize)
         {
           if(sLogFile.empty() && !bSysLog && iLogLevel != 0)
             {
               std::cerr<<"unable to daemonize log level must be 0 when logging to stdout"<<std::endl;;
               return EXIT_FAILURE;
             }
-      
-          if(daemon(1,0)) 
+
+          if(daemon(1,0))
             {
               std::cerr<<"unable to daemonize"<<std::endl;
               return EXIT_FAILURE;
             }
         }
 
-
-      if(bSysLog)
-        {
-          logger.redirectLogsToSysLog(argv[0]);
-        }
-      else if(!sLogFile.empty())
+      if(!sLogFile.empty())
         {
           logger.redirectLogsToFile(sLogFile.c_str());
         }
@@ -292,7 +287,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
       if(iLogLevel > 0)
         {
           logger.setLogLevel(static_cast<EMANE::LogLevel>(iLogLevel));
-     
+
           logger.open();
         }
       else
@@ -306,24 +301,24 @@ int EMANE::Application::Main::main(int argc, char * argv[])
         {
           ss<<argv[i]<<" ";
         }
- 
+
       char uuidBuf[37];
       uuid_unparse(uuid_,uuidBuf);
-      
+
       logger.log(EMANE::INFO_LEVEL,"application: %s",ss.str().c_str());
       logger.log(EMANE::INFO_LEVEL,"application uuid: %s",uuidBuf);
 
       if(bRealtime)
         {
           struct sched_param schedParam{iPriority};
-      
+
           if(sched_setscheduler(0,SCHED_RR,&schedParam))
             {
               if(bSysLog || !sLogFile.empty() || !iLogLevel)
-                { 
+                {
                   std::cerr<<"unable to set realtime scheduler"<<std::endl;
                 }
-              
+
               logger.log(EMANE::ABORT_LEVEL,"unable to set realtime scheduler");
 
               return EXIT_FAILURE;
@@ -335,14 +330,14 @@ int EMANE::Application::Main::main(int argc, char * argv[])
             {
               std::cerr<<"Please consider using the realtime scheduler to improve fidelity."<<std::endl;
             }
-          
+
           logger.log(EMANE::ERROR_LEVEL,"Please consider using the realtime scheduler to improve fidelity.");
         }
 
 
       if(!sPIDFile.empty())
         {
-          std::ofstream pidFile{sPIDFile.c_str(), ios::out};
+          std::ofstream pidFile{sPIDFile.c_str(), std::ios::out};
 
           if(pidFile)
             {
@@ -356,8 +351,8 @@ int EMANE::Application::Main::main(int argc, char * argv[])
 
       if(!sUUIDFile.empty())
         {
-          std::ofstream uuidFile{sUUIDFile.c_str(), ios::out};
-      
+          std::ofstream uuidFile{sUUIDFile.c_str(), std::ios::out};
+
           if(uuidFile)
             {
               uuidFile<<uuidBuf<<std::endl;
@@ -370,36 +365,36 @@ int EMANE::Application::Main::main(int argc, char * argv[])
 
 
       doStart();
-      
-      
+
+
       struct sigaction action;
-      
+
       memset(&action,0,sizeof(action));
-      
+
       action.sa_handler = sighandler;
-      
+
       sigaction(SIGINT,&action,nullptr);
       sigaction(SIGQUIT,&action,nullptr);
-      
+
       mutex.lock();
-      
+
       // signal handler unlocks mutex
       mutex.lock();
-      
+
       doStop();
-      
+
       doDestroy();
     }
   catch(const EMANE::Exception & exp)
     {
       logger.log(EMANE::ABORT_LEVEL,"%s: %s",exp.type(),exp.what());
-      
+
       return EXIT_FAILURE;
     }
   catch(const std::exception & exp)
     {
       logger.log(EMANE::ABORT_LEVEL,"%s",exp.what());
-      
+
       return EXIT_FAILURE;
     }
 

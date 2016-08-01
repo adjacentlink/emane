@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,25 +38,18 @@ EMANE::Models::CommEffect::ShimHeader::ShimHeader(const void * p, size_t len)
 {
   EMANEMessage::CommEffectShimHeader msg;
 
-  try
-    {
-      if(!msg.ParseFromArray(p,len))
-        {
-          throw SerializationException("unable to deserialize CommEffectShimHeader");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.ParseFromArray(p,len))
     {
       throw SerializationException("unable to deserialize CommEffectShimHeader");
     }
-  
+
   txTimePoint_ = TimePoint{static_cast<Microseconds>(msg.txtimemicroseconds())};
-  
+
   u32GroupId_ = msg.groupid();
-  
+
   u32SequenceNumber_ = msg.sequencenumber();
 }
-      
+
 EMANE::Models::CommEffect::ShimHeader::ShimHeader(const TimePoint & txTimePoint,
                                                   std::uint32_t u32GroupId,
                                                   std::uint32_t u32SequenceNumber):
@@ -71,19 +65,12 @@ EMANE::Serialization EMANE::Models::CommEffect::ShimHeader::serialize() const
   msg.set_txtimemicroseconds(std::chrono::duration_cast<Microseconds>(txTimePoint_.time_since_epoch()).count());
 
   msg.set_groupid(u32GroupId_);
-  
+
   msg.set_sequencenumber(u32SequenceNumber_);
 
   Serialization serialization;
 
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize CommEffectShimHeader");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize CommEffectShimHeader");
     }

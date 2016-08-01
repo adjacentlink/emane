@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,12 +41,12 @@ public:
 
   Implementation(const R2RIQueueMetrics & queueMetrics):
     queueMetrics_{queueMetrics}{}
-  
+
   const R2RIQueueMetrics & getQueueMetrics() const
   {
     return queueMetrics_;
   }
-  
+
 private:
   const R2RIQueueMetrics queueMetrics_;
 };
@@ -94,52 +95,35 @@ EMANE::Serialization EMANE::Controls::R2RIQueueMetricControlMessage::serialize()
       pQueueMetric->set_numdiscards(iter->getNumDiscards());
       pQueueMetric->set_avgdelay(std::chrono::duration_cast<DoubleSeconds>(iter->getAvgDelay()).count());
     }
-  
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize R2RIQueueMetricControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize R2RIQueueMetricControlMessage");
     }
-  
+
   return serialization;
 }
-    
+
 EMANE::Controls::R2RIQueueMetricControlMessage *
 EMANE::Controls::R2RIQueueMetricControlMessage::create(const Serialization & serialization)
 {
   EMANEMessage::RadioToRouterQueueMetrics msg;
 
-  try
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : R2RIQueueMetricControlMessage");
-        }
+      throw SerializationException("unable to deserialize : R2RIQueueMetricControlMessage");
     }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : R2RIQueueMetricControlMessage");
-    }
-  
+
   R2RIQueueMetrics metrics;
 
-  google::protobuf::RepeatedPtrField<EMANEMessage::RadioToRouterQueueMetrics::QueueMetric> 
-    repeatedPtrField(msg.metrics());
-
-  for(const auto & metric : repeatedPtrField)
+  for(const auto & metric : msg.metrics())
     {
       metrics.push_back(R2RIQueueMetric{metric.queueid(),
             metric.maxsize(),
             metric.currentdepth(),
             metric.numdiscards(),
             std::chrono::duration_cast<Microseconds>(DoubleSeconds{metric.avgdelay()})});
-      
+
     }
 
   return new R2RIQueueMetricControlMessage{metrics};

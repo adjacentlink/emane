@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
  */
 
 #include "emane/statistictableexception.h"
+#include <algorithm>
 
 template<typename Key,typename Compare,std::size_t sortIndex>
 EMANE::StatisticTable<Key,Compare,sortIndex>::StatisticTable(const StatisticTableLabels & labels):
@@ -46,7 +47,7 @@ void EMANE::StatisticTable<Key,Compare,sortIndex>::setCell(const Key & key,
                                          const Any & any)
 {
   std::lock_guard<std::mutex> m(mutex_);
-  
+
   auto iter = table_.find(key);
 
   if(iter != table_.end())
@@ -101,7 +102,7 @@ void EMANE::StatisticTable<Key,Compare,sortIndex>::addRow(const Key & key,
 
   if(anys.size() == labels_.size())
     {
-      
+
       if(!table_.insert(std::make_pair(key,anys)).second)
         {
           throw StatisticTableException("duplicate row key");
@@ -135,11 +136,11 @@ EMANE::StatisticTableValues
 EMANE::StatisticTable<Key,Compare,sortIndex>::getValues() const
 {
   StatisticTableValues values{};
-  
+
   // lock guard block scope
   {
     std::lock_guard<std::mutex> m(mutex_);
-    
+
     std::transform(table_.begin(),
                    table_.end(),
                    std::back_inserter(values),
@@ -154,7 +155,7 @@ EMANE::StatisticTable<Key,Compare,sortIndex>::getValues() const
             {
               return cmp(a1[sortIndex],a2[sortIndex]);
             });
-  
+
   return values;
 }
 
@@ -169,7 +170,7 @@ EMANE::StatisticTable<Key,Compare,sortIndex>::getLabels() const
 template<typename Key,typename Compare,std::size_t sortIndex>
 void
 EMANE::StatisticTable<Key,Compare,sortIndex>::clear()
-{ 
+{
   std::lock_guard<std::mutex> m(mutex_);
   table_.clear();
 }

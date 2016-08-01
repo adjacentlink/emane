@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -33,9 +34,8 @@
 
 #include "emane/flowcontrolclient.h"
 
-#include <ace/Guard_T.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
+#include <mutex>
+#include <condition_variable>
 
 class EMANE::FlowControlClient::Implementation
 {
@@ -43,45 +43,42 @@ public:
   Implementation(EMANE::UpstreamTransport & transport):
     rTransport_(transport),
     bCancel_{false},
-    cond_{mutex_},
     u16TokensAvailable_{}{}
 
   ~Implementation(){}
 
   void start()
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
-    // send message 
+    std::lock_guard<std::mutex> m(mutex_);
+
+    // send message
     rTransport_.sendDownstreamControl({Controls::FlowControlControlMessage::create(u16TokensAvailable_)});
   }
 
   void stop()
   {
-    mutex_.acquire();
-    
+    std::lock_guard<std::mutex> m(mutex_);
+
     // set cancel flag
     bCancel_ = true;
-    
-    // unblock pending request if any
-    cond_.signal();
 
-    mutex_.release();
+    // unblock pending request if any
+    cond_.notify_one();
   }
 
   std::pair<std::uint16_t,bool> removeToken()
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
-    
-    // request status 
+    std::unique_lock<std::mutex> lock{mutex_};
+
+    // request status
     bool bStatus{false};
-    
-    // wait unitil tokens are available, and not canceled 
+
+    // wait unitil tokens are available, and not canceled
     while(u16TokensAvailable_ == 0 && !bCancel_)
       {
-        cond_.wait();
+        cond_.wait(lock);
       }
- 
+
     // check canceled flag
     if(bCancel_)
       {
@@ -92,35 +89,35 @@ public:
       {
       // success
         bStatus = true;
-        
-        // remove token 
+
+        // remove token
         --u16TokensAvailable_;
       }
-    
+
     return {u16TokensAvailable_,bStatus};
   }
 
   void processFlowControlMessage(const Controls::FlowControlControlMessage * pMessage)
   {
-    ACE_Guard<ACE_Thread_Mutex> m(mutex_);
+    std::lock_guard<std::mutex> m(mutex_);
 
     u16TokensAvailable_ = pMessage->getTokens();
 
     rTransport_.sendDownstreamControl({Controls::FlowControlControlMessage::create(u16TokensAvailable_)});
 
     // unblock pending request if any
-    cond_.signal();     
+    cond_.notify_one();
   }
 
 private:
   EMANE::UpstreamTransport & rTransport_;
-  
+
   bool bCancel_;
-  
-  ACE_Thread_Mutex mutex_;
-  
-  ACE_Condition<ACE_Thread_Mutex> cond_;
-  
+
+  std::mutex mutex_;
+
+  std::condition_variable cond_;
+
   std::uint16_t u16TokensAvailable_;
 };
 
@@ -157,4 +154,3 @@ void EMANE::FlowControlClient::processFlowControlMessage(const Controls::FlowCon
 {
   return  pImpl_->processFlowControlMessage(pMessage);
 }
- 

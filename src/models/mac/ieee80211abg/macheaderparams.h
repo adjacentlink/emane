@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Adjacent Link, LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 Adjacent Link, LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,6 @@
 #include "msgtypes.h"
 #include "ieee80211abgmacheadermessage.h"
 
-#include <ace/Time_Value.h>
-
 #include <string>
 
 namespace EMANE
@@ -79,7 +77,7 @@ namespace EMANE
            * @param dst      destination NEM
            * @param duration message duration
            *
-           */ 
+           */
            MACHeaderParams(std::uint8_t type,
                            std::uint8_t retries,
                            std::uint16_t rate,
@@ -93,7 +91,7 @@ namespace EMANE
            std::uint8_t getNumRetries() const;
 
            std::uint16_t getDataRateIndex() const;
- 
+
            std::uint16_t getSequenceNumber() const;
 
            std::uint16_t getSrcNEM() const;

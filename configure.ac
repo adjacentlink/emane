@@ -1,5 +1,5 @@
 %AC_COPYRIGHT([
- Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,13 +32,15 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],0.9.3,[emane at adjacent link dot com])
+AC_INIT([emane],1.0.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([])
+
+: ${CXXFLAGS="-g -O3 -Wall -Wextra"}
 
 AC_PROG_CXX
 
@@ -48,7 +50,6 @@ AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
 
 AC_PROG_INSTALL
 
-AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
 AC_LANG([C++])
@@ -74,9 +75,6 @@ AC_ARG_WITH([testcases],
            [AM_CONDITIONAL(WITH_TESTCASES,false)])
 
 
-AC_ARG_VAR([ACE_CFLAGS],[C compiler flags for ACE])
-AC_ARG_VAR([ACE_LIBS], [linker flags for ACE])
-
 AC_ARG_VAR([pcap_CFLAGS],[C compiler flags for libpcap])
 AC_ARG_VAR([pcap_LIBS], [linker flags for libpcap])
 
@@ -89,49 +87,8 @@ AC_CHECK_HEADER(sys/timerfd.h,
  [],
  [AC_MSG_ERROR("Missing sys/timerfd.h header")])
 
-_cppflags=${CPPFLAGS}
-_ldflags=${LDFLAGS}
 
-# Checks for libraries.
-if test "${ACE_CFLAGS}" != ""; then
-   CPPFLAGS="${ACE_CFLAGS} ${CPPFLAGS}"
-fi
-
-if test "${ACE_LIBS}" != ""; then
-   LDFLAGS="${ACE_LIBS} ${LDFLAGS}"
-fi
-
-AC_CHECK_HEADER(ace/OS_main.h,
- [AC_CHECK_LIB([ACE],main,[ACE_LIBS+=' -lACE'],
- [AC_MSG_ERROR("ACE not installed")])],
- [AC_MSG_ERROR("Missing ACE development headers")])
-
-
-CPPFLAGS=${_cppflags}
-LDFLAGS=${_ldflags}
-
-AC_SUBST(ACE_CFLAGS)
-AC_SUBST(ACE_LIBS)
-
-PCAP_LIB_NAME=pcap
-
-WIN32_EXTRA_LIBADD=
-WIN32_EXTRA_LDFLAGS=
-
-case "$host" in
- *-mingw*)
- CPPFLAGS="$CPPFLAGS -DWIN32"
- WIN32_EXTRA_LIBADD="-lws2_32 -liphlpapi"
- WIN32_EXTRA_LDFLAGS=-no-undefined
- PCAP_LIB_NAME=wpcap
- ;;
-*)
- LDFLAGS="$LDFLAGS -lpthread -ldl"
- ;;
-esac
-
-AC_SUBST(WIN32_EXTRA_LIBADD)
-AC_SUBST(WIN32_EXTRA_LDFLAGS)
+LDFLAGS="$LDFLAGS -lpthread -ldl"
 
 _cppflags=${CPPFLAGS}
 _ldflags=${LDFLAGS}
@@ -146,9 +103,9 @@ if test "${pcap_LIBS}" != ""; then
 fi
 
 AC_CHECK_HEADER(pcap.h,
- [AC_CHECK_LIB([${PCAP_LIB_NAME}],pcap_open_live,[pcap_LIBS+=" -l${PCAP_LIB_NAME}"],
- [AC_MSG_ERROR("${PCAP_LIB_NAME} not installed")])],
- [AC_MSG_ERROR("Missing ${PCAP_LIB_NAME} development headers")])
+ [AC_CHECK_LIB([pcap],pcap_open_live,[pcap_LIBS+=" -lpcap"],
+ [AC_MSG_ERROR("pcap not installed")])],
+ [AC_MSG_ERROR("Missing pcap development headers")])
 
 
 CPPFLAGS=${_cppflags}
@@ -162,21 +119,22 @@ AC_DEFINE([__BYTE_ORDER],__LITTLE_ENDIAN,[Little Endian]))
 AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
 AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
 
-# compiler options
-CXXFLAGS="$CXXFLAGS -W -Wall -O3"
-
 # options for use with gprof
 if test "$with_profile" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -pg"
+CXXFLAGS="$CXXFLAGS -g -pg"
 LDFLAGS="$LDFLAGS -g -pg"
 fi
 
 # options for use with debug
 if test "$with_debug" = "yes"
 then
-CPPFLAGS="$CPPFLAGS -g -O0"
-LDFLAGS="$LDFLAGS -g -O0"
+AX_CHECK_COMPILE_FLAG([-Og],
+ [CXXFLAGS="$CXXFLAGS -g -Og"],
+ [CXXFLAGS="$CXXFLAGS -g -O0"])
+AX_CHECK_LINK_FLAG([-Og],
+ [LDFLAGS="$LDFLAGS -g -Og"],
+ [LDFLAGS="$LDFLAGS -g -O0"])
 fi
 
 # options for use with verbose logging
@@ -186,10 +144,7 @@ CPPFLAGS="$CPPFLAGS -DVERBOSE_LOGGING"
 fi
 
 AC_SUBST(libemane_CFLAGS,
-["${libxml2_CFLAGS} ${ACE_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
-
-AC_SUBST(libemane_LIBS,
-["-lemane -lrt ${libxml2_LIBS} ${ACE_LIBS} ${protobuf_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
+["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
 
 LANG=C
 AC_SUBST(LANG)
@@ -213,6 +168,8 @@ else
 AM_CONDITIONAL(HAVE_DOT,false)
 fi
 
+AM_PATH_PYTHON([2.6])
+
 # check for rpmbuild
 AC_CHECK_PROG(HAVE_RPMBUILD, rpmbuild, true, false)
 AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
@@ -221,11 +178,15 @@ AM_CONDITIONAL(HAVE_RPMBUILD,$HAVE_RPMBUILD)
 AC_CHECK_PROG(HAVE_DEB, dh_clean, true, false)
 AM_CONDITIONAL(HAVE_DEB,$HAVE_DEB)
 
-AC_CHECK_FILE(/etc/debian_version,[DEBIAN_VERSION=`cat /etc/debian_version | awk -F/ '{print $1}'`],)
-AC_SUBST(DEBIAN_VERSION)
+AC_CHECK_FILE(/etc/lsb-release,[. /etc/lsb-release],)
+AC_SUBST(DISTRIB_CODENAME)
+
+AC_SUBST(RELDATE,`date -I`)
+
+AC_SUBST(DATE_RFC2822,`date -R`)
 
 AC_SUBST(PACKAGE_VERSION_CODE,
- [`echo $PACKAGE_VERSION | gawk 'match($0, /([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)/,m){printf "%d",lshift(m[[1]],16)+lshift(m[[2]],8)+m[[3]];}'`])
+ [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
 AC_OUTPUT(
  Makefile 

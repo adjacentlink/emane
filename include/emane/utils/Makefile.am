@@ -9,12 +9,11 @@ emaneinc_HEADERS =                       \
  parameterconvert.h                      \
  parameterconvert.inl                    \
  randomnumberdistribution.h              \
- recvcancelable.h                        \
  singleton.h                             \
- spawnmemberfunc.h                       \
  spectrumwindowutils.h                   \
  statistichistogramtable.h               \
  statistichistogramtable.inl             \
+ threadutils.h                           \
  timer.h                                 \
  timer.inl                               \
  runningaverage.h                        \

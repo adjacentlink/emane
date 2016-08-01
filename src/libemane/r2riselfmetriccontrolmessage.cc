@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,14 +42,14 @@ public:
     u64BroadcastDataRatebps_{},
     u64MaxDataRatebps_{},
     reportInteral_{Microseconds::zero()}{}
-  
+
   Implementation(std::uint64_t u64BroadcastDataRatebps,
                  std::uint64_t u64MaxDataRatebps,
                  const Microseconds & reportInteral):
     u64BroadcastDataRatebps_{u64BroadcastDataRatebps},
     u64MaxDataRatebps_{u64MaxDataRatebps},
     reportInteral_{reportInteral}{}
-  
+
   std::uint64_t getBroadcastDataRatebps() const
   {
     return u64BroadcastDataRatebps_;
@@ -63,7 +64,7 @@ public:
   {
     return reportInteral_;
   }
-  
+
 private:
   const std::uint64_t u64BroadcastDataRatebps_;
   const std::uint64_t u64MaxDataRatebps_;
@@ -90,7 +91,7 @@ std::uint64_t EMANE::Controls::R2RISelfMetricControlMessage::getBroadcastDataRat
 {
   return  pImpl_->getBroadcastDataRatebps();
 }
-  
+
 std::uint64_t EMANE::Controls::R2RISelfMetricControlMessage::getMaxDataRatebps() const
 {
   return  pImpl_->getMaxDataRatebps();
@@ -103,12 +104,12 @@ const EMANE::Microseconds & EMANE::Controls::R2RISelfMetricControlMessage::getRe
 
 EMANE::Controls::R2RISelfMetricControlMessage *
 EMANE::Controls::R2RISelfMetricControlMessage::create(std::uint64_t u64BroadcastDataRatebps,
-                                                     std::uint64_t u64MaxDataRatebps,
-                                                     const Microseconds & reportInteral)
+                                                      std::uint64_t u64MaxDataRatebps,
+                                                      const Microseconds & reportInteral)
 {
   return new R2RISelfMetricControlMessage{u64BroadcastDataRatebps,
-                                          u64MaxDataRatebps,
-                                          reportInteral};
+      u64MaxDataRatebps,
+      reportInteral};
 }
 
 EMANE::Serialization EMANE::Controls::R2RISelfMetricControlMessage::serialize() const
@@ -120,43 +121,29 @@ EMANE::Serialization EMANE::Controls::R2RISelfMetricControlMessage::serialize() 
   msg.set_broadcastdataratebps(pImpl_->getBroadcastDataRatebps());
   msg.set_maxdataratebps(pImpl_->getMaxDataRatebps());
   msg.set_reportinterval(std::chrono::duration_cast<DoubleSeconds>(pImpl_->getReportInterval()).count());
-                         
-  try
-    {
-      if(!msg.SerializeToString(&serialization))
-        {
-          throw SerializationException("unable to serialize R2RISelfMetricControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
+
+  if(!msg.SerializeToString(&serialization))
     {
       throw SerializationException("unable to serialize R2RISelfMetricControlMessage");
     }
-  
+
   return serialization;
 }
-    
-EMANE::Controls::R2RISelfMetricControlMessage * 
+
+EMANE::Controls::R2RISelfMetricControlMessage *
 EMANE::Controls::R2RISelfMetricControlMessage::create(const Serialization & serialization)
 {
   EMANEMessage::RadioToRouterSelfMetric msg;
 
-  try
+  if(!msg.ParseFromString(serialization))
     {
-      if(!msg.ParseFromString(serialization))
-        {
-          throw SerializationException("unable to deserialize : R2RISelfMetricControlMessage");
-        }
-    }
-  catch(google::protobuf::FatalException & exp)
-    {
-      throw SerializationException("unable to deserialize  : R2RISelfMetricControlMessage");
+      throw SerializationException("unable to deserialize : R2RISelfMetricControlMessage");
     }
 
   return new R2RISelfMetricControlMessage{msg.broadcastdataratebps(),
       msg.maxdataratebps(),
       std::chrono::duration_cast<Microseconds>(DoubleSeconds{msg.reportinterval()})};
-  
+
 }
 
 EMANE::Controls::R2RISelfMetricControlMessage *
@@ -164,5 +151,3 @@ EMANE::Controls::R2RISelfMetricControlMessage::clone() const
 {
   return new R2RISelfMetricControlMessage{*this};
 }
-
-

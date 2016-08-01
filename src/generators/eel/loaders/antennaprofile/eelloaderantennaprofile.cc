@@ -109,7 +109,7 @@ void EMANE::Generators::EEL::LoaderAntennaProfile::load(const ModuleType & modul
               throw FormatException(sstream.str());
             }
 
-          AntennaProfile antennaProfile{moduleId,
+          Events::AntennaProfile antennaProfile{moduleId,
               profileId,
               dAntennaAzimuthDegrees,
               dAntennaElevationDegrees};
@@ -151,7 +151,7 @@ EMANE::Generators::EEL::EventInfoList EMANE::Generators::EEL::LoaderAntennaProfi
     }
 
   AntennaProfileEntryMap::const_iterator iter =  pCache->begin();
-  AntennaProfiles profiles;
+  Events::AntennaProfiles profiles;
   
   for(const auto & entry : *pCache)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,16 +35,20 @@
 #define EMANEOTAMANAGER_HEADER_
 
 #include "otaprovider.h"
+#include "emane/inetaddr.h"
+#include "multicastsocket.h"
+#include "otastatisticpublisher.h"
+#include "eventstatisticpublisher.h"
+
 #include "emane/utils/singleton.h"
 
 #include <map>
 #include <queue>
 #include <atomic>
+#include <thread>
 
 #include <uuid.h>
 
-#include <ace/Thread.h>
-#include <ace/SOCK_Dgram_Mcast.h>
 
 namespace EMANE
 {
@@ -59,13 +63,13 @@ namespace EMANE
   {
   public:
     OTAManager();
-    
+
     ~OTAManager();
-   
+
     void sendOTAPacket(NEMId id,
-                       DownstreamPacket & pkt,
+                       const DownstreamPacket & pkt,
                        const ControlMessages & msgs) const override;
-    
+
     void registerOTAUser(NEMId id, OTAUser * pOTAUser) override;
 
     void unregisterOTAUser(NEMId id) override;
@@ -74,29 +78,34 @@ namespace EMANE
      * Open the event server channel
      *
      * @param otaGroupAddress Multicast group address of event service OTA channel
-     * @param otaManagerDevice Name of the OTA device
+     * @param sDevice Name of the OTA device
      * @param bLoopback Flag indicating whether to set LOOPBACK socket option
      * @param iTTL Mutlicast TTL
      * @param uuid Emulator instance UUID
      */
-    void open(const ACE_INET_Addr & otaGroupAddress,
-              const ACE_TCHAR* otaManagerDevice,
+    void open(const INETAddr & otaGroupAddress,
+              const std::string & sDevice,
               bool bLoopback,
               int iTTL,
               const uuid_t & uuid);
-    
+
+    void setStatPacketCountRowLimit(size_t rows);
+
+    void setStatEventCountRowLimit(size_t rows);
+
   private:
     typedef std::map<NEMId,OTAUser *> NEMUserMap;
-    ACE_thread_t thread_;
+    std::thread thread_;
     NEMUserMap nemUserMap_;
-    ACE_INET_Addr otaGroupAddress_;
-    ACE_SOCK_Dgram_Mcast mcast_;
+    INETAddr otaGroupAddress_;
+    MulticastSocket mcast_;
     bool bOpen_;
-    ACE_INET_Addr addr_;
     uuid_t uuid_;
+    mutable OTAStatisticPublisher otaStatisticPublisher_;
+    mutable EventStatisticPublisher eventStatisticPublisher_;
     mutable std::atomic<std::uint64_t> u64SequenceNumber_;
 
-    ACE_THR_FUNC_RETURN processOTAMessage();
+    void processOTAMessage();
   };
 
   using OTAManagerSingleton = OTAManager;

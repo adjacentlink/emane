@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,38 +39,28 @@
 #include "antennaprofilemanifest.h"
 #include "emane/utils/parameterconvert.h"
 
-#include <ace/Get_Opt.h>
+#include <getopt.h>
 
 void usage();
 
 int main(int argc, char* argv[])
 {
   LIBXML_TEST_VERSION;
-  
-  const ACE_TCHAR options[] = ACE_TEXT("hs:");
 
-  ACE_Get_Opt cmd_opts(argc,argv,options);
-  
-  if(cmd_opts.long_option(ACE_TEXT("help"),'h') == -1)
+  option options[] =
     {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: help")),
-                       EXIT_FAILURE);
-    }
-  
-  if(cmd_opts.long_option(ACE_TEXT("schema"),'s',ACE_Get_Opt::ARG_REQUIRED) == -1)
-    {
-      ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%s\n"),
-                        ACE_TEXT("config long option: schema")),EXIT_FAILURE);
-    }
-  
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
+    };
+
   int iOption{};
-
+  int iOptionIndex{};
   std::string sScenario{};
   std::string sManifest{};
   std::string sSchema{"profilescenario.xsd"};
-  
-  while((iOption = cmd_opts()) != EOF)
+
+  while((iOption = getopt_long(argc,argv,"hs:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -78,48 +68,45 @@ int main(int argc, char* argv[])
           // --help
           usage();
           return 0;
-              
+
         case 's':
           // --schema
-          sSchema = cmd_opts.opt_arg();
+          sSchema = optarg;
           break;
 
         case ':':
           // missing arguement
-          std::cerr<<"-"<<cmd_opts.opt_opt()<<"requires an argument"<<std::endl;
+          std::cerr<<"-"<<static_cast<char>(iOption)<<"requires an argument"<<std::endl;
           return EXIT_FAILURE;
-              
+
         default:
-          std::cerr<<"Unknown option: "<<cmd_opts.last_option()<<std::endl;
+          std::cerr<<"Unknown option: "<<static_cast<char>(iOption)<<std::endl;
           return EXIT_FAILURE;
         }
     }
 
-  int iIndex = cmd_opts.opt_ind();
-  
-  if(iIndex < cmd_opts.argc())
-    {
-      sManifest = argv[iIndex];
-    }
-  else
+  if(optind >= argc)
     {
       std::cerr<<"missing manifest"<<std::endl;
       return EXIT_FAILURE;
     }
-
-  ++iIndex;
-  
-  if(iIndex < cmd_opts.argc())
-    {
-      sScenario = argv[iIndex];
-    }
   else
+    {
+      sManifest = argv[optind];
+    }
+
+  ++optind;
+
+ if(optind >= argc)
     {
       std::cerr<<"missing scenario"<<std::endl;
       return EXIT_FAILURE;
     }
+  else
+    {
+      sScenario = argv[optind];
+    }
 
-      
   std::cout.precision(10);
 
   try
@@ -137,15 +124,15 @@ int main(int argc, char* argv[])
           return EXIT_FAILURE;
         }
 
-  
+
       xmlSchemaParserCtxtPtr pParserContext{xmlSchemaNewDocParserCtxt(pSchemaDoc)};
-  
+
       if(!pParserContext)
         {
           std::cerr<<"bad schema context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlSchemaPtr pSchema{xmlSchemaParse(pParserContext)};
 
       if(!pSchema)
@@ -162,19 +149,19 @@ int main(int argc, char* argv[])
           std::cerr<<"bad schema valid context"<<std::endl;
           return EXIT_FAILURE;
         }
-  
+
       xmlDocPtr pDoc = xmlReadFile(sScenario.c_str(),nullptr,0);
 
-  
+
       if(xmlSchemaValidateDoc(pSchemaValidCtxtPtr, pDoc))
         {
           return EXIT_FAILURE;
         }
 
       xmlNodePtr pRoot = xmlDocGetRootElement(pDoc);
-      
+
       int iActionIndex{};
-      
+
       for(xmlNodePtr pNode = pRoot->children; pNode; pNode = pNode->next)
         {
           if(pNode->type == XML_ELEMENT_NODE)
@@ -190,30 +177,30 @@ int main(int argc, char* argv[])
                           if(!xmlStrcmp(pActionNode->name,BAD_CAST "gain"))
                             {
                               ++iActionIndex;
-                              
+
                               xmlChar * pProfileId = xmlGetProp(pActionNode,BAD_CAST "id");
-                              
+
                               auto profileId =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pProfileId)).toUINT16();
-                                          
+
                               xmlFree(pProfileId);
-                              
+
                               xmlChar * pBearing = xmlGetProp(pActionNode,BAD_CAST "bearing");
-                              
+
                               auto bearing =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBearing)).toUINT16();
-                              
+
                               xmlFree(pBearing);
-                              
+
                               xmlChar * pElevation = xmlGetProp(pActionNode,BAD_CAST "elevation");
-                              
+
                               auto elevation =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toINT16();
-                              
-                              xmlFree(pElevation); 
-                              
+
+                              xmlFree(pElevation);
+
                               //profiles.push_back({nemId,profileId,azimuth,elevation});
-                              
+
                               std::cout<<"["<<iActionIndex<<"] gain  profileId: "<<profileId<<" bearing: "<<bearing<<" elevation: "<<elevation<<std::endl;
 
                               auto ret = EMANE::AntennaProfileManifest::instance()->getProfileInfo(profileId);
@@ -221,7 +208,7 @@ int main(int argc, char* argv[])
                               if(ret.second)
                                 {
                                   auto pAntennaPattern = std::get<0>(ret.first);
-                                  
+
                                   if(pAntennaPattern)
                                     {
                                       std::cout<<"  gain: "<<pAntennaPattern->getGain(bearing,elevation)<<std::endl;
@@ -241,28 +228,28 @@ int main(int argc, char* argv[])
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "blockage"))
                             {
                               ++iActionIndex;
-                              
+
                               xmlChar * pProfileId = xmlGetProp(pActionNode,BAD_CAST "id");
-                              
+
                               auto profileId =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pProfileId)).toUINT16();
-                                          
+
                               xmlFree(pProfileId);
-                              
+
                               xmlChar * pBearing = xmlGetProp(pActionNode,BAD_CAST "bearing");
-                              
+
                               auto bearing =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBearing)).toUINT16();
-                              
+
                               xmlFree(pBearing);
-                              
+
                               xmlChar * pElevation = xmlGetProp(pActionNode,BAD_CAST "elevation");
-                              
+
                               auto elevation =
                                 EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pElevation)).toINT16();
-                              
-                              xmlFree(pElevation); 
-                              
+
+                              xmlFree(pElevation);
+
                               std::cout<<"["<<iActionIndex<<"] blockage  profileId: "<<profileId<<" bearing: "<<bearing<<" elevation: "<<elevation<<std::endl;
 
                               auto ret = EMANE::AntennaProfileManifest::instance()->getProfileInfo(profileId);
@@ -270,7 +257,7 @@ int main(int argc, char* argv[])
                               if(ret.second)
                                 {
                                   auto pBlockagePattern = std::get<1>(ret.first);
-                                  
+
                                   if(pBlockagePattern)
                                     {
                                       std::cout<<"  blockage: "<<pBlockagePattern->getGain(bearing,elevation)<<std::endl;
@@ -297,7 +284,7 @@ int main(int argc, char* argv[])
       std::cout<<exp.what();
       return EXIT_FAILURE;
     }
-  
+
   return EXIT_SUCCESS;
 }
 

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,16 +36,16 @@
 #define EMANENEMQUEUEDLAYER_HEADER_
 
 #include "emane/nemlayer.h"
-
-#include <queue>
-#include <functional>
-#include <ace/Basic_Types.h>
-#include <ace/Time_Value.h>
-#include <ace/Thread.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
+#include "emane/filedescriptorserviceprovider.h"
 #include "emane/utils/runningaverage.h"
 #include "emane/utils/statistichistogramtable.h"
+#include "emane/timerserviceprovider.h"
+
+#include <deque>
+#include <functional>
+#include <thread>
+#include <mutex>
+#include <unordered_map>
 
 namespace EMANE
 {
@@ -59,7 +60,8 @@ namespace EMANE
    * processing packets, control, and events in a thread safe sequential
    * manner.
    */
-  class NEMQueuedLayer :  public NEMLayer
+  class NEMQueuedLayer :  public NEMLayer,
+                          public FileDescriptorServiceProvider
   {
   public:
     ~NEMQueuedLayer();
@@ -67,56 +69,71 @@ namespace EMANE
     void initialize(Registrar & registrar) override;
 
     void start() override;
-    
+
     void stop() override;
-   
+
     void processConfiguration(const ConfigurationUpdate & update) override;
 
     void processDownstreamControl(const ControlMessages & msgs) override;
-    
+
     void processDownstreamPacket(DownstreamPacket &pkt, const ControlMessages & msgs) override;
-    
+
     void processUpstreamPacket(UpstreamPacket &pkt, const ControlMessages & msgs) override;
-    
+
     void processUpstreamControl(const ControlMessages & msgs) override;
 
     void processEvent(const EventId &eventId, const Serialization &serialization) override;
-    
+
     void processTimedEvent(TimerEventId eventId,
                            const TimePoint & expireTime,
                            const TimePoint & scheduleTime,
                            const TimePoint & fireTime,
                            const void * arg) override;
 
+
+    template <typename Function>
+    void processTimer(Function fn,
+                      const TimePoint & expireTime,
+                      const TimePoint & scheduleTime,
+                      const TimePoint & fireTime);
+
   protected:
     NEMQueuedLayer(NEMId id, PlatformServiceProvider * pPlatformService);
-    
+
     virtual void doProcessConfiguration(const ConfigurationUpdate &) = 0;
 
     virtual void doProcessDownstreamControl(const ControlMessages &) = 0;
-    
+
     virtual void doProcessDownstreamPacket(DownstreamPacket &, const ControlMessages &) = 0;
-    
+
     virtual void doProcessUpstreamPacket(UpstreamPacket &, const ControlMessages &) = 0;
-    
+
     virtual void doProcessUpstreamControl(const ControlMessages &) = 0;
 
     virtual void doProcessEvent(const EventId &, const Serialization &) = 0;
-    
+
     virtual void doProcessTimedEvent(TimerEventId eventId,
                                      const TimePoint & expireTime,
                                      const TimePoint & scheduleTime,
                                      const TimePoint & fireTime,
                                      const void * arg) = 0;
 
+
   private:
-    using MessageProcessingQueue = std::queue<std::function<void()>>;
+    using QCallback = std::function<void()>;
+    using MessageProcessingQueue = std::deque<QCallback>;
     PlatformServiceProvider * pPlatformService_;
-    ACE_thread_t thread_;
+    std::thread thread_;
     MessageProcessingQueue queue_;
-    ACE_Thread_Mutex mutex_;
-    ACE_Condition<ACE_Thread_Mutex> cond_;
+    std::mutex mutex_;
+    int iFd_;
+    int iepollFd_;
     bool bCancel_;
+
+    using FileDescriptorStore = std::unordered_map<int,
+                                                   std::pair<DescriptorType,
+                                                             Callback>>;
+    FileDescriptorStore fileDescriptorStore_;
 
     StatisticNumeric<std::uint64_t> * pProcessedDownstreamPacket_;
     StatisticNumeric<std::uint64_t> * pProcessedUpstreamPacket_;
@@ -125,7 +142,7 @@ namespace EMANE
     StatisticNumeric<std::uint64_t> * pProcessedEvent_;
     StatisticNumeric<std::uint64_t> * pProcessedTimedEvent_;
     StatisticNumeric<std::uint64_t> * pProcessedConfiguration_;
-    
+
     Utils::RunningAverage<double> avgQueueWait_;
     Utils::RunningAverage<double> avgQueueDepth_;
     Utils::RunningAverage<double> avgTimedEventLatency_;
@@ -134,23 +151,23 @@ namespace EMANE
     std::unique_ptr<Utils::StatisticHistogramTable<EventId>> pStatisticHistogramTable_;
 
     NEMQueuedLayer(const NEMQueuedLayer &);
-    
-    ACE_THR_FUNC_RETURN processWorkQueue();
+
+    void processWorkQueue();
 
     void handleProcessConfiguration(TimePoint enqueueTime,
                                     const ConfigurationUpdate);
 
     void handleProcessDownstreamControl(TimePoint enqueueTime,
                                         const ControlMessages);
-    
+
     void handleProcessDownstreamPacket(TimePoint enqueueTime,
-                                       DownstreamPacket,
+                                       DownstreamPacket &,
                                        const ControlMessages);
-    
+
     void handleProcessUpstreamPacket(TimePoint enqueueTime,
-                                     UpstreamPacket,
+                                     UpstreamPacket &,
                                      const ControlMessages);
-    
+
     void handleProcessUpstreamControl(TimePoint enqueueTime,
                                       const ControlMessages);
 
@@ -164,8 +181,27 @@ namespace EMANE
                                  const TimePoint & scheduleTime,
                                  const TimePoint & fireTime,
                                  const void * arg);
-    
+
+    void removeFileDescriptor(int iFd) override;
+
+    void addFileDescriptor_i(int iFd,
+                             DescriptorType type,
+                             Callback callback) override;
+
+    void enqueue_i(QCallback && callback);
+
+    void processTimer_i(TimerServiceProvider::TimerCallback callback,
+                        const TimePoint & expireTime,
+                        const TimePoint & scheduleTime,
+                        const TimePoint & fireTime);
+
+    void updateTimerStats(TimePoint enqueueTime,
+                          const TimePoint & expireTime,
+                          const TimePoint & scheduleTime,
+                          const TimePoint & fireTime);
   };
 }
+
+#include "nemqueuedlayer.inl"
 
 #endif //EMANENEMQUEUEDLAYER_HEADER_

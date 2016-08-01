@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,8 +42,7 @@
 #include "timerserviceproxy.h"
 #include "buildidservice.h"
 #include "registrarproxy.h"
-
-
+#include "nopfiledescriptorservice.h"
 
 EMANE::Application::EventGeneratorBuilder::EventGeneratorBuilder(){}
 
@@ -59,7 +59,7 @@ EMANE::Application::EventGeneratorBuilder::buildEventGeneratorManager(const uuid
     }
 
   std::unique_ptr<EventGeneratorManager> pManager{new EventGeneratorManagerImpl{uuid}};
-    
+
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pManager.get())};
 
   RegistrarProxy registrarProxy{buildId};
@@ -74,7 +74,7 @@ EMANE::Application::EventGeneratorBuilder::buildEventGeneratorManager(const uuid
                 {
                   pManager->add(pGenerator);
                 });
-  
+
   return pManager;
 }
 
@@ -84,15 +84,15 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
                                                                const ConfigurationUpdateRequest& request,
                                                                bool bSkipConfigure)
 {
-   std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                    sLibraryFile + 
-                                    ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-  const EMANE::EventGeneratorFactory & eventGeneratorFactory = 
+  const EMANE::EventGeneratorFactory & eventGeneratorFactory =
     EMANE::EventGeneratorFactoryManagerSingleton::instance()->getEventGeneratorFactory(sNativeLibraryFile);
 
-  // new platform service 
-  EMANE::PlatformService * 
+  // new platform service
+  EMANE::PlatformService *
     pPlatformService{new EMANE::PlatformService{}};
 
   // create generator
@@ -104,6 +104,9 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
   // pass generator to platform service
   pPlatformService->setPlatformServiceUser(buildId,pGenerator.get());
 
+  // set the NOPFileDescriptorService (not available to generators)
+  pPlatformService->setFileDescriptorServiceProvider(NOPFileDescriptorService::instance());
+
   // register event service user with event service
   // event generators will get any event they register for
   // regardless of target nem
@@ -113,7 +116,7 @@ EMANE::Application::EventGeneratorBuilder::buildEventGenerator(const std::string
 
   RegistrarProxy registrarProxy{buildId};
 
-  // initialize 
+  // initialize
   pGenerator->initialize(registrarProxy);
 
   if(!bSkipConfigure)

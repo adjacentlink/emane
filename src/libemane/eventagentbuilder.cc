@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,6 +42,7 @@
 #include "platformservice.h"
 #include "buildidservice.h"
 #include "registrarproxy.h"
+#include "nopfiledescriptorservice.h"
 
 EMANE::Application::EventAgentBuilder::EventAgentBuilder(){}
 
@@ -59,12 +61,12 @@ EMANE::Application::EventAgentBuilder::buildEventAgentManager(const uuid_t & uui
   std::unique_ptr<EventAgentManager> pManager{new EventAgentManagerImpl{uuid}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pManager.get())};
-  
+
   RegistrarProxy registrarProxy{buildId};
 
   pManager->initialize(registrarProxy);
 
-  // configure 
+  // configure
   pManager->configure(ConfigurationServiceSingleton::instance()->buildUpdates(buildId,request));
 
   std::for_each(agents.begin(),
@@ -84,14 +86,14 @@ EMANE::Application::EventAgentBuilder::buildEventAgent(EMANE::NEMId nemId,
                                                        const ConfigurationUpdateRequest& request,
                                                        bool bSkipConfigure)
 {
-  std::string sNativeLibraryFile = ACE_DLL_PREFIX + 
-                                   sLibraryFile + 
-                                   ACE_DLL_SUFFIX;
+  std::string sNativeLibraryFile = "lib" +
+    sLibraryFile +
+    ".so";
 
-  const EMANE::EventAgentFactory & eventAgentFactory = 
+  const EMANE::EventAgentFactory & eventAgentFactory =
     EMANE::EventAgentFactoryManagerSingleton::instance()->getEventAgentFactory(sNativeLibraryFile);
-      
-  // new platform service 
+
+  // new platform service
   EMANE::PlatformService *
     pPlatformService{new EMANE::PlatformService{}};
 
@@ -104,6 +106,9 @@ EMANE::Application::EventAgentBuilder::buildEventAgent(EMANE::NEMId nemId,
   // pass agent to platform service
   pPlatformService->setPlatformServiceUser(buildId,pAgent.get());
 
+  // set the NOPFileDescriptorService (not available to agents)
+  pPlatformService->setFileDescriptorServiceProvider(NOPFileDescriptorService::instance());
+
   // register event service user with event service
   EventServiceSingleton::instance()->registerEventServiceUser(buildId,
                                                               pAgent.get(),
@@ -113,7 +118,7 @@ EMANE::Application::EventAgentBuilder::buildEventAgent(EMANE::NEMId nemId,
 
   RegistrarProxy registrarProxy{buildId};
 
-  // initialize 
+  // initialize
   pAgent->initialize(registrarProxy);
 
   if(!bSkipConfigure)

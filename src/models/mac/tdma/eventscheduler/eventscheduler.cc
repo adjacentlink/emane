@@ -41,6 +41,7 @@ EMANE::Models::TDMA::EventScheduler::EventScheduler(NEMId id,
   pNumScheduleRejectSlotIndexOutOfRange_{},
   pNumScheduleRejectFrameIndexOutOfRange_{},
   pNumScheduleRejectUpdateBeforeFull_{},
+  pNumScheduleRejectOther_{},
   pNumScheduleFullAccept_{},
   pNumScheduleUpdateAccept_{}
 {}
@@ -77,6 +78,12 @@ void EMANE::Models::TDMA::EventScheduler::initialize(Registrar & registrar)
                                                       StatisticProperties::CLEARABLE,
                                                       "Number of schedules rejected"
                                                       " due to an update before full schedule.");
+
+  pNumScheduleRejectOther_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleRejectOther",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Number of schedules rejected"
+                                                      " due to other reasons.");
 
   pNumScheduleFullAccept_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("scheduler.scheduleAcceptFull",
@@ -310,6 +317,8 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
                                   id_,
                                   __func__,
                                   exp.what());
+
+          ++*pNumScheduleRejectOther_;
         }
 
     }

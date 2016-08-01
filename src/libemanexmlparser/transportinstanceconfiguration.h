@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -74,7 +74,7 @@ namespace EMANE
      *
      * @return Id of this instance
      */
-    ACE_UINT16 getId();
+    NEMId getId();
 
     /**
      * Returns the container with Layers
@@ -86,7 +86,7 @@ namespace EMANE
   protected:
     /**
      * Does processing of a child node as if it was a 'layer'
-     * 
+     *
      * @param pNode Pointer to the node
      *
      * @exception ParseException ValidateException
@@ -97,7 +97,7 @@ namespace EMANE
     /**
      * Id of this TransportInstance
      */
-    ACE_UINT16 u16Id_;
+    NEMId u16Id_;
 
     /**
      * Container with LayerConfigurations

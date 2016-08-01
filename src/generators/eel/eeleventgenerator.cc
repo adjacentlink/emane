@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
+ * Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,18 +40,13 @@
 #include "emane/configureexception.h"
 
 #include "emane/utils/parameterconvert.h"
-#include "emane/utils/spawnmemberfunc.h"
 
 #include <sstream>
 #include <fstream>
 
-#include <ace/OS_NS_sys_time.h>
-
 EMANE::Generators::EEL::Generator::Generator(PlatformServiceProvider *pPlatformService):
   EventGenerator(pPlatformService),
-  thread_(0),
-  cond_(mutex_),
-  bCancel_(false)
+  bCancel_{}
 {}
 
 EMANE::Generators::EEL::Generator::~Generator(){}
@@ -58,7 +54,7 @@ EMANE::Generators::EEL::Generator::~Generator(){}
 void EMANE::Generators::EEL::Generator::initialize(Registrar & registrar)
 {
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNonNumeric<std::string>("inputfile",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
@@ -86,8 +82,8 @@ void EMANE::Generators::EEL::Generator::configure(const ConfigurationUpdate & up
 
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       INFO_LEVEL,
-                                      "EEL::Generator::start %s: %s", 
-                                      item.first.c_str(), 
+                                      "EEL::Generator::start %s: %s",
+                                      item.first.c_str(),
                                       sInputFile.c_str());
 
               inputFileNameVector_.push_back(sInputFile);
@@ -100,23 +96,23 @@ void EMANE::Generators::EEL::Generator::configure(const ConfigurationUpdate & up
               for(const auto & any : item.second)
                 {
                   std::string sLoaderPlugin = any.asString();
-                  
+
                   size_t pos = sLoaderPlugin.find(':');
-              
+
                   if(pos != std::string::npos)
                     {
                       std::string sEventTypes = sLoaderPlugin.substr(0,pos);
-                  
+
                       size_t pos2 = sLoaderPlugin.find(':',pos + 1);
-                  
+
                       std::string sLibraryName = sLoaderPlugin.substr(pos + 1,pos2- pos -1);
-                  
+
                       EventPublishMode publishMode = DELTA;
-                  
+
                       if(pos2 != std::string::npos)
                         {
                           std::string sPublishMode = sLoaderPlugin.substr(pos2 + 1);
-                      
+
                           if(sPublishMode == "delta")
                             {
                               publishMode = DELTA;
@@ -132,50 +128,50 @@ void EMANE::Generators::EEL::Generator::configure(const ConfigurationUpdate & up
                                                                       sPublishMode.c_str());
                             }
                         }
-                  
+
                       LoaderPluginFactory * pPluginFactory = new LoaderPluginFactory();
-                  
-                      pPluginFactory->construct(ACE_DLL_PREFIX + sLibraryName + ACE_DLL_SUFFIX);
-                  
+
+                      pPluginFactory->construct("lib" + sLibraryName + ".so");
+
                       pluginFactoryList_.push_back(pPluginFactory);
-                  
+
                       std::pair<LoaderPlugin *,EventPublishMode> loaderEntry =
                         std::make_pair(pPluginFactory->createPlugin(),publishMode);
-                  
+
                       size_t pos1 = 0;
-                  
+
                       pos2 = sLoaderPlugin.find(',');
-                  
+
                       while(pos2 != std::string::npos)
                         {
                           std::string sEventType = sEventTypes.substr(pos1,pos2 - pos1);
-                      
+
                           eventPluginMap_.insert(std::make_pair(sEventType,loaderEntry));
-                      
+
                           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                                   INFO_LEVEL,
-                                                  "EEL::Generator::configure %s: plugin %s will load %s sentences mode:%s", 
+                                                  "EEL::Generator::configure %s: plugin %s will load %s sentences mode:%s",
                                                   item.first.c_str(),
-                                                  sLoaderPlugin.c_str(), 
+                                                  sLoaderPlugin.c_str(),
                                                   sEventType.c_str(),
                                                   publishMode == DELTA ? "delta" : "full");
                           pos1 = pos2 + 1;
-                      
+
                           pos2 = sEventTypes.find(',',pos1);
                         }
-                  
+
                       std::string sEventType = sEventTypes.substr(pos1);
-                  
+
                       eventPluginMap_.insert(std::make_pair(sEventType,loaderEntry));
-                  
+
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               INFO_LEVEL,
                                               "EEL::Generator::configure %s: plugin %s will load %s sentences mode:%s",
                                               item.first.c_str(),
-                                              sLoaderPlugin.c_str(), 
+                                              sLoaderPlugin.c_str(),
                                               sEventType.c_str(),
                                               publishMode == DELTA ? "delta" : "full");
-                    } 
+                    }
                   else
                     {
                       throw makeException<ConfigureException>("EEL::Generator: Bad configuration 'loader' "
@@ -201,18 +197,18 @@ void EMANE::Generators::EEL::Generator::configure(const ConfigurationUpdate & up
 
 void EMANE::Generators::EEL::Generator::start()
 {
-  Utils::spawn(*this,&Generator::generate,&thread_);
+  thread_ = std::thread{&Generator::generate,this};
 }
 
 void EMANE::Generators::EEL::Generator::stop()
 {
-  if(thread_)
+  if(thread_.joinable())
     {
-      mutex_.acquire();
+      mutex_.lock();
       bCancel_ = true;
-      cond_.signal();
-      mutex_.release();
-      ACE_OS::thr_join(thread_,0,0);
+      cond_.notify_one();
+      mutex_.unlock();
+      thread_.join();
     }
 }
 
@@ -220,7 +216,7 @@ void EMANE::Generators::EEL::Generator::destroy()
   throw()
 {}
 
-ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
+void EMANE::Generators::EEL::Generator::generate()
 {
   char buf[2048];
   float fCurrentTime = 0;
@@ -231,14 +227,14 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
 
   try
     {
-      ACE_Time_Value tvTestStartTime =  ACE_OS::gettimeofday();
-      
+      auto testStartTime =  Clock::now();
+
       for(; iterFileName != inputFileNameVector_.end(); ++iterFileName)
         {
-          ifstream eelInputStream;
-          
+          std::ifstream eelInputStream;
+
           eelInputStream.open(iterFileName->c_str());
-          
+
           if(!eelInputStream)
             {
               std::stringstream sstream;
@@ -251,19 +247,19 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
                                      DEBUG_LEVEL,
                                      "EEL::Generator: Parsing %s",
                                      iterFileName->c_str());
-              
+
               ulCurrentLine = 1;
             }
-          
+
           // parse the next EEL entrty
           while(eelInputStream.getline(buf,sizeof(buf)))
             {
               std::string sEventType;
               std::string sModuleId;
               InputArguments inputArguments;
-              
+
               LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(), DEBUG_LEVEL,"%s",buf);
-              
+
               if(parser.parse(std::string(buf),
                               fEventTime,
                               sEventType,
@@ -273,28 +269,28 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
                   ModuleType sModuleType(sModuleId);
                   ModuleId u16ModuleId = 0;
                   size_t pos = sModuleId.find(':');
-                  
+
                   if(pos != std::string::npos)
                     {
                       sModuleType = sModuleId.substr(0,pos);
-                      
+
                       u16ModuleId =
                         Utils::ParameterConvert(sModuleId.substr(pos + 1)).toUINT16();
                     }
-                  
+
                   if(fEventTime != fCurrentTime)
                     {
-                      if(!waitAndSendEvents(tvTestStartTime,fCurrentTime))
+                      if(!waitAndSendEvents(testStartTime,fCurrentTime))
                         {
-                          return 0;
+                          return;
                         }
 
                       fCurrentTime = fEventTime;
                     }
-        
+
                   EventPluginMap::iterator iterPlugin;
-                  
-                  if((iterPlugin = eventPluginMap_.find(sEventType)) != 
+
+                  if((iterPlugin = eventPluginMap_.find(sEventType)) !=
                      eventPluginMap_.end())
                     {
                       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
@@ -303,7 +299,7 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
                                              sEventType.c_str(),
                                              fEventTime,
                                              sModuleId.c_str());
-                      
+
                       iterPlugin->second.first->load(sModuleType,
                                                      u16ModuleId,
                                                      sEventType,
@@ -324,7 +320,7 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
             }
         }
 
-      waitAndSendEvents(tvTestStartTime,fCurrentTime);
+      waitAndSendEvents(testStartTime,fCurrentTime);
 
     }
   catch(Exception & exp)
@@ -334,65 +330,56 @@ ACE_THR_FUNC_RETURN EMANE::Generators::EEL::Generator::generate()
                               exp.what(),
                               iterFileName->c_str(),
                               ulCurrentLine);
-
-      return reinterpret_cast<ACE_THR_FUNC_RETURN>(1);
     }
-
-  return 0;
 }
 
-bool EMANE::Generators::EEL::Generator::waitAndSendEvents(const ACE_Time_Value & tvTestStartTime, 
-                                                                  float fCurrentTime)
+bool EMANE::Generators::EEL::Generator::waitAndSendEvents(const TimePoint & testStartTime,
+                                                          float fCurrentTime)
 {
   EventInfoList currentTimeEventList;
-  
+
   EventPluginMap::iterator iterPlugin = eventPluginMap_.begin();
-  
+
   for(;iterPlugin != eventPluginMap_.end(); ++iterPlugin)
     {
-      EventInfoList eventList = 
+      EventInfoList eventList =
         iterPlugin->second.first->getEvents(iterPlugin->second.second);
-      
+
       currentTimeEventList.insert(currentTimeEventList.end(),
                                   eventList.begin(),
                                   eventList.end());
     }
-  
+
   // time to schedule the next event publications
-  
+
   if(!currentTimeEventList.empty())
     {
-      mutex_.acquire();
-      
-      int iRet = 0;
-      
-      ACE_Time_Value tvWait;
-      
-      tvWait.set(fCurrentTime);
-      
-      tvWait += tvTestStartTime;
-      
-      while(!bCancel_ && iRet != -1)
+      std::unique_lock<std::mutex> lock{mutex_};
+
+      std::cv_status status{};
+
+      while(!bCancel_ && status != std::cv_status::timeout)
         {
-          iRet = cond_.wait(&tvWait);
+          status = cond_.wait_until(lock,
+                                    testStartTime +
+                                    DoubleSeconds{fCurrentTime});
         }
-      
+
       if(bCancel_)
         {
-          mutex_.release();
           return false;
         }
-      
-      mutex_.release();
-      
+
+      lock.unlock();
+
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
                              "Sending all events for time %f",
                              fCurrentTime);
-      
-      EventInfoList::iterator eventIter = 
+
+      EventInfoList::iterator eventIter =
         currentTimeEventList.begin();
-      
+
       for(; eventIter != currentTimeEventList.end(); ++eventIter)
         {
           pPlatformService_->eventService().sendEvent(eventIter->getNEMId(),

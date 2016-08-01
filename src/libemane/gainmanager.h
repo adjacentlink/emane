@@ -37,7 +37,7 @@
 #include "positionneu.h"
 #include "locationinfo.h"
 #include "emane/types.h"
-#include "emane/antennaprofile.h"
+#include "emane/events/antennaprofile.h"
 
 namespace EMANE
 {
@@ -46,7 +46,7 @@ namespace EMANE
   public:
     GainManager(NEMId nemId);
     
-    void update(const AntennaProfiles & antennaProfiles);
+    void update(const Events::AntennaProfiles & antennaProfiles);
 
     enum class GainStatus {
       SUCCESS = 0,
@@ -61,7 +61,7 @@ namespace EMANE
                                                const std::pair<double, bool> & optionalTxFixedGaindBi) const;
 
   private:
-    using AntennaProfileStore = std::map<NEMId,AntennaProfile>;
+    using AntennaProfileStore = std::map<NEMId,Events::AntennaProfile>;
     NEMId nemId_;
     AntennaProfileStore antennaProfileStore_;
     AntennaPattern * pLocalPattern_;

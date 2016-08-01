@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,102 +31,148 @@
  */
 
 #include "controlportservice.h"
-#include "requestmessagehandler.h"
-#include "remotecontrolportapi.pb.h"
+#include "controlportsession.h"
+#include "socketexception.h"
+
+#include <cstring>
+#include <map>
+#include <algorithm>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/eventfd.h>
 
 
-EMANE::ControlPort::ControlPortService::ControlPortService():
-  u32MessageSizeBytes_{},
-  u32Sequence_{}{}
+EMANE::ControlPort::Service::Service():
+  iSignalEvent_{},
+  iSock_{},
+  thread_{}{}
 
-int EMANE::ControlPort::ControlPortService::handle_input(ACE_HANDLE)
+void EMANE::ControlPort::Service::open(const INETAddr & endpoint)
 {
-  char buf[1024];
-  
-  if(u32MessageSizeBytes_ == 0)
+  iSignalEvent_ = eventfd(0,0);
+
+  if((iSock_ = socket(endpoint.getFamily(),
+                      SOCK_STREAM,
+                      0)) == -1)
     {
-      ssize_t length = 0; // number of bytes received
-      
-      // read at most 4 bytes from peer to determine message length
-      length = peer().recv(buf,4 - message_.size());
-        
-      // if recv returns 0 or less (error), return -1 which will cause
-      // the reactor to stop detecting input events and call handle_close().
-      // This service does not specialize handle_close(), so the default
-      // implementation (base class's) is used.
-      if(length <= 0)
-        {
-          return -1;
-        }
-        
-      // save the contents of the message (frame length encoding)
-      message_.insert(message_.end(),&buf[0],&buf[length]);
-        
-      // is the entire frame length present
-      if(message_.size() == 4)
-        {
-          u32MessageSizeBytes_ = ACE_NTOHL(*reinterpret_cast<std::uint32_t *>(&message_[0]));
-            
-          message_.clear();
-
-          // a message frame of 0 length is not allowed
-          if(!u32MessageSizeBytes_)
-            {
-              return -1;
-            }
-        }
-    }
-  else
-    {
-      // attempt to read message length remaining or max buffer size
-      ssize_t length{peer_.recv(buf,
-                                u32MessageSizeBytes_ - message_.size() > sizeof(buf) ? 
-                                sizeof(buf) : u32MessageSizeBytes_ - message_.size())};
-
-      if(length <= 0)
-        {
-          return -1;
-        }
-
-      message_.insert(message_.end(),&buf[0],&buf[length]);
-        
-      // process message when full message is read
-      if(message_.size() == u32MessageSizeBytes_)
-        {
-          EMANERemoteControlPortAPI::Request request{};
-          try
-            {
-              if(!request.ParseFromArray(&message_[0],message_.size()))
-                {
-                  // invalid message - terminate the connection
-                  return -1;
-                }
-            }
-          catch(google::protobuf::FatalException & exp)
-            {
-              // invalid message - terminate the connection
-              return -1;
-            }
-          
-          std::string sSerialization{RequestMessageHandler::process(request,
-                                                                    ++u32Sequence_)};
-          
-          std::uint32_t u32MessageFrameLength = ACE_HTONL(sSerialization.size());
-
-          iovec iov[2] =
-            {
-              {reinterpret_cast<char *>(&u32MessageFrameLength),sizeof(u32MessageFrameLength)},
-              {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}
-            };
-        
-          peer_.sendv_n(iov,2);
-          
-          message_.clear();
-
-          u32MessageSizeBytes_ = 0;
-        }
+      throw SocketException(strerror(errno));
     }
 
-  return 0;
+  int iOption{1};
+
+  if(setsockopt(iSock_,
+                SOL_SOCKET,
+                SO_REUSEADDR,
+                reinterpret_cast<void*>(&iOption),
+                sizeof(iOption)) < 0)
+    {
+      makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
+                                     strerror(errno));
+
+    }
+
+  if(bind(iSock_,endpoint.getSockAddr(),endpoint.getAddrLength()) < 0)
+    {
+      makeException<SocketException>("bind: %s",
+                                     strerror(errno));
+    }
+
+
+  if(listen(iSock_,10) < 0)
+    {
+       makeException<SocketException>("listen: %s",
+                                      strerror(errno));
+    }
+
+  thread_ = std::thread(&Service::process,this);
 }
 
+
+void EMANE::ControlPort::Service::close()
+{
+  eventfd_write(iSignalEvent_,1);
+  thread_.join();
+  ::close(iSock_);
+  ::close(iSignalEvent_);
+}
+
+void EMANE::ControlPort::Service::process()
+{
+  std::map<int,std::unique_ptr<Session>> sessionMap;
+
+  while(1)
+    {
+      int nfds{iSignalEvent_};
+
+      fd_set rfds;
+
+      FD_ZERO(&rfds);
+      FD_SET(iSignalEvent_,&rfds);
+      FD_SET(iSock_,&rfds);
+
+      nfds = std::max(iSock_,nfds);
+
+      for(const auto & entry : sessionMap)
+        {
+          FD_SET(entry.first,&rfds);
+          nfds = std::max(entry.first,nfds);
+        }
+
+      auto result = select(nfds+1,&rfds,nullptr,nullptr,nullptr);
+
+      if(result == -1)
+        {
+          if(errno == EINTR)
+            {
+              continue;
+            }
+          else
+            {
+              break;
+            }
+        }
+
+      if(FD_ISSET(iSignalEvent_,&rfds))
+        {
+          break;
+        }
+
+      if(FD_ISSET(iSock_,&rfds))
+        {
+          int iNewFd{};
+
+          if((iNewFd = accept(iSock_,nullptr,nullptr)) > 0)
+            {
+              sessionMap.insert(std::make_pair(iNewFd,std::unique_ptr<Session>{new Session{}}));
+            }
+        }
+
+      auto iter = sessionMap.begin();
+
+      while(iter !=  sessionMap.end())
+        {
+          if(FD_ISSET(iter->first,&rfds))
+            {
+              // process the session data
+              if(iter->second->process(iter->first))
+                {
+                  sessionMap.erase(iter++);
+                }
+              else
+                {
+                  ++iter;
+                }
+            }
+          else
+            {
+              ++iter;
+            }
+        }
+    }
+
+  for(const auto & entry : sessionMap)
+    {
+      ::close(entry.first);
+      //delete entry.second;
+    }
+}

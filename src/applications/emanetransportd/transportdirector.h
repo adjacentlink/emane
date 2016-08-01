@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -47,7 +48,7 @@
  * @brief Director used to build EventDaemon (s) with TransportBuilder.
  *
  * The TransportDirector class is the implementation of the Director
- * part of the Builder design pattern from the GoF book (see 
+ * part of the Builder design pattern from the GoF book (see
  * reference, at end of file). Its task is to manage the creation
  * of Transports with the use of the TransportBuilder
  *
@@ -58,64 +59,64 @@ namespace EMANE
 {
   namespace Application
   {
-  class TransportDirector
-  {
-  public:
-    /**
-     * Constructor
-     *
-     * @param filename reference to the base XML filename
-     * @param builder reference to the TransportBuilder
-     *
-     * @throw ParseException when an XML  parse error occurs.
-     * @throw ValidateException when an XML validation error occurs.
-     */
-    TransportDirector(const std::string &filename, 
-                      TransportBuilder &builder);
+    class TransportDirector
+    {
+    public:
+      /**
+       * Constructor
+       *
+       * @param filename reference to the base XML filename
+       * @param builder reference to the TransportBuilder
+       *
+       * @throw ParseException when an XML  parse error occurs.
+       * @throw ValidateException when an XML validation error occurs.
+       */
+      TransportDirector(const std::string &filename,
+                        TransportBuilder &builder);
 
-    /**
-     * Destructor
-     */
-    ~TransportDirector();
-  
-    /**
-     * Constructs the passed-in platform
-     *
-     * @param uuid Instance UUID
-     */
-    std::unique_ptr<TransportManager> construct(const uuid_t & uuid);
+      /**
+       * Destructor
+       */
+      ~TransportDirector();
 
-  private:
-    /**
-     * Container for configuration data
-     */
-    EMANE::TransportDaemonConfiguration transportConfig_;
+      /**
+       * Constructs the passed-in platform
+       *
+       * @param uuid Instance UUID
+       */
+      std::unique_ptr<TransportManager> construct(const uuid_t & uuid);
 
-    /**
-     * Container for the Event Builder
-     */
-    TransportBuilder &rTransportBuilder_;
+    private:
+      /**
+       * Container for configuration data
+       */
+      EMANE::TransportDaemonConfiguration transportConfig_;
 
-    /**
-     * Uses the passed-in builder to create a Transport and return
-     * a pointer to it.
-     *
-     * @param pTIConfig Pointer to the Instance XML configuration
-     * @return New Transport Instance
-     *
-     * @exception ConfigureException
-     */
-    std::unique_ptr<Transport>
-    createTransport(TransportInstanceConfiguration *pTIConfig);
-  };
+      /**
+       * Container for the Event Builder
+       */
+      TransportBuilder &rTransportBuilder_;
+
+      /**
+       * Uses the passed-in builder to create a Transport and return
+       * a pointer to it.
+       *
+       * @param pTIConfig Pointer to the Instance XML configuration
+       * @return New Transport Instance
+       *
+       * @exception ConfigureException
+       */
+      std::unique_ptr<NEMLayer>
+      createTransport(TransportInstanceConfiguration *pTIConfig);
+    };
   }
-/* 
- * Reference:
- *  Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
- *  Design Patterns: Elements of Reusable Object-Oriented Software.
- *  Addison-Wesley, Reading MA, 1995
- *  Builder, p 97
- */
+  /*
+   * Reference:
+   *  Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides.
+   *  Design Patterns: Elements of Reusable Object-Oriented Software.
+   *  Addison-Wesley, Reading MA, 1995
+   *  Builder, p 97
+   */
 }
 
 #endif //EMANETRANSPORTDIRECTOR_HEADER_

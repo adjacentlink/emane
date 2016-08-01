@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2009-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -36,12 +36,11 @@
 
 #include "emane/transport.h"
 #include "emane/utils/netutils.h"
-#include <ace/Basic_Types.h>
-#include <ace/Thread_Mutex.h>
 
+#include <mutex>
 #include <map>
 
-namespace EMANE 
+namespace EMANE
 {
   namespace Transports
   {
@@ -57,13 +56,13 @@ namespace EMANE
       {
       public:
         EthernetTransport(EMANE::NEMId id, EMANE::PlatformServiceProvider *pPlatformService);
-  
+
         ~EthernetTransport();
-  
+
       protected:
         virtual int parseFrame(const Utils::EtherHeader *pEthHeader,
                                EMANE::NEMId & dst,
-                               ACE_UINT8 & dscp);
+                               std::uint8_t & dscp);
 
         virtual int verifyFrame(const void * buf, size_t len);
 
@@ -77,7 +76,7 @@ namespace EMANE
         bool bArpCacheMode_;
 
       private:
-        ACE_Thread_Mutex mutex_;
+        std::mutex mutex_;
 
         /**
          * @brief EtherAddr compare operator
@@ -95,12 +94,12 @@ namespace EMANE
 
           bool operator()(const Utils::EtherAddr& a1, const Utils::EtherAddr& a2) const
           {
-            return ACE_OS::memcmp(&a1, &a2, Utils::ETH_ALEN) < 0;
+            return memcmp(&a1, &a2, Utils::ETH_ALEN) < 0;
           }
         };
 
         using EthAddrMap = std::map<Utils::EtherAddr, EMANE::NEMId, ltmacaddr>;
-        
+
         EthAddrMap macCache_;
       };
     }

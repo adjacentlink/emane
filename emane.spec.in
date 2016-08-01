@@ -7,9 +7,10 @@ Group: Applications/System
 URL: https://github.com/adjacentlink/emane
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: emane-libs = %{version} emane-dtds = %{version}
-BuildRequires: libxml2-devel ace-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
-Prefix: /usr
+Provides: %{name}-transportfactory%{?_isa} = %{version}-%{release}
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+Requires: %{name}-dtds = %{version}-%{release}
+BuildRequires: python-setuptools libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
 Vendor: Adjacent Link LLC
 
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
@@ -20,7 +21,7 @@ heterogeneous network emulation using a pluggable MAC and PHY layer
 architecture.
 
 %package devel
-Requires: emane-libs = %{version} ace-devel
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 Summary: Headers necessary to build EMANE network emulation modules.
 Group: Development/Libraries
 
@@ -30,14 +31,17 @@ Headers necessary to build EMANE network emulation modules.
 %package dtds
 Summary: EMANE DTDs
 Group: Applications/System
+BuildArch: noarch
 
 %description  dtds
 EMANE DTDs required for EMANE XML.
 
 %package utils
-Requires: emane-dtds = %{version} python-lxml
+Requires: %{name}-dtds = %{version}-%{release}
+Requires: python-lxml
 Summary: EMANE utilities
 Group:  Applications/System
+BuildArch: noarch
 
 %description  utils
 EMANE utilities
@@ -50,7 +54,9 @@ Group: Libraries
 EMANE Libraries required for components
 
 %package transportdaemon
-Requires: emane-libs = %{version} emane-dtds = %{version}
+Provides: %{name}-transportfactory%{?_isa} = %{version}-%{release}
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+Requires: %{name}-dtds = %{version}-%{release}
 Summary: EMANE transport daemon
 Group: Applications/System
 
@@ -58,7 +64,8 @@ Group: Applications/System
 EMANE transport daemon.  Creates and manages one or more transports.
 
 %package eventdaemon
-Requires: emane-libs = %{version} emane-dtds = %{version}
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+Requires: %{name}-dtds = %{version}-%{release}
 Summary: EMANE event daemon
 Group: Applications/System
 
@@ -66,7 +73,8 @@ Group: Applications/System
 EMANE event daemon forwards events to registered agents.
 
 %package eventservice
-Requires: emane-libs = %{version} emane-dtds = %{version}
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+Requires: %{name}-dtds = %{version}-%{release}
 Summary: EMANE event service
 Group: Applications/System
 
@@ -74,7 +82,7 @@ Group: Applications/System
 EMANE event service creates and manages event generators. 
 
 %package model-rfpipe
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE RF Pipe MAC Layer
 Group: Libraries
 
@@ -82,7 +90,7 @@ Group: Libraries
 EMANE RF Pipe MAC Layer
 
 %package model-ieee80211abg
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE  802.11abg MAC Layer
 Group: Libraries
 
@@ -90,7 +98,7 @@ Group: Libraries
 EMANE 802.11abg MAC Layer
 
 %package model-bypass
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE Bypass MAC and PHY Layer
 Group: Libraries
 
@@ -99,7 +107,7 @@ EMANE Bypass MAC and PHY Layer
 
 %package model-commeffect
 Summary: EMANE commeffect shim model.
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Group: Libraries
 
 %description model-commeffect
@@ -107,14 +115,14 @@ EMANE commeffect model replacement for commercial network emulators.
 
 %package model-tdmaeventscheduler
 Summary: EMANE TDMA Event Scheduler radio model.
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Group: Libraries
 
 %description model-tdmaeventscheduler
 EMANE TDMA event scheduler model.
 
 %package agent-gpsdlocation
-Requires: emane-eventdaemon = %{version}
+Requires: %{name}-eventdaemon%{?_isa} = %{version}-%{release}
 Summary: EMANE gpsd location agent 
 Group: Libraries
 
@@ -123,7 +131,7 @@ EMANE gpsd location agent translates location events into NMEA strings
 and transmits them to gpsd via a pseudo terminal device.
 
 %package trans-virtual
-Requires: emane-transportdaemon = %{version} emane-trans-common = %{version}
+Requires: %{name}-trans-common%{?_isa} = %{version}-%{release}
 Summary: EMANE virtual transport implementation
 Group: Libraries
 
@@ -132,7 +140,7 @@ EMANE virtual transport.  Uses tun device to create a network layer
 entry point for the NEM stack.
 
 %package trans-raw
-Requires: emane-transportdaemon = %{version} emane-trans-common = %{version}
+Requires: %{name}-trans-common%{?_isa} = %{version}-%{release}
 Summary: EMANE raw transport implementation
 Group: Libraries
 
@@ -141,7 +149,7 @@ EMANE raw transport.  Uses raw IP to create a network layer
 entry point for the NEM stack.
 
 %package trans-common
-Requires: emane-transportdaemon = %{version}
+Requires: %{name}-transportfactory%{?_isa} = %{version}-%{release}
 Summary: EMANE common transport ethernet functionality
 Group: Libraries
 
@@ -149,7 +157,7 @@ Group: Libraries
 EMANE common transport ethernet functionality.
 
 %package model-phyapitestshim
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE PHY API Test shim
 Group: Libraries
 
@@ -157,7 +165,7 @@ Group: Libraries
 EMANE PHY API Test shim
 
 %package model-timinganalysisshim
-Requires: emane = %{version}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE Timing Test shim
 Group: Libraries
 
@@ -165,7 +173,7 @@ Group: Libraries
 EMANE Timing Test shim
 
 %package gen-eel
-Requires: emane-eventservice = %{version}
+Requires: %{name}-eventservice%{?_isa} = %{version}-%{release}
 Summary: EMANE Emulation Event Log Generator
 Group: Libraries
 
@@ -175,14 +183,28 @@ EMANE Emulation Event Log Generator
 %package manifest
 Summary: EMANE Plugin Manifests
 Group: Applications/System
+BuildArch: noarch
 
 %description manifest
 EMANE Plugin Manifests
+
+%package -n python-emane
+Requires: python-setuptools
+Requires: protobuf-python
+Requires: python-lxml
+Summary: EMANE Python modules and utilities
+Group: Development/Libraries
+Obsoletes: emanesh
+BuildArch: noarch
+
+%description -n python-emane
+EMANE Python modules and utilities
 
 %prep
 %setup -q
 
 %build
+export CXXFLAGS="%{optflags} -O3 -Wall -Wextra"
 %configure
 make %{?_smp_mflags}
 
@@ -191,7 +213,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 find ${RPM_BUILD_ROOT} -name '*.a' -exec rm '{}'  \;
 find ${RPM_BUILD_ROOT} -name '*.la' -exec rm '{}' \;
 mkdir -p ${RPM_BUILD_ROOT}%{_pkgdocdir}
-install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS %{!?_licensedir:COPYING} ChangeLog NEWS README PROBLEM-REPORT-FORM SPONSOR
+install -t ${RPM_BUILD_ROOT}%{_pkgdocdir} AUTHORS %{!?_licensedir:COPYING} ChangeLog NEWS README SPONSOR
 %if 0%{?_licensedir:1}
 mkdir -p ${RPM_BUILD_ROOT}%{_licensedir}/%{name}
 install -t ${RPM_BUILD_ROOT}%{_licensedir}/%{name} COPYING
@@ -221,7 +243,6 @@ rm -rf $RPM_BUILD_ROOT
 %files utils
 %defattr(-, root, root)
 %{_bindir}/emanegentransportxml
-%{_bindir}/emaneconvertdtdpath
 %{_mandir}/man1/emanegentransportxml.1.gz
 
 %doc %{_pkgdocdir}
@@ -480,7 +501,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %files manifest
-%defattr(-, root, root)
+%defattr(-,root,root,-)
 %dir %{_datadir}/emane
 %dir %{_datadir}/emane/manifest
 %{_datadir}/emane/manifest/*.xml
@@ -491,3 +512,22 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
+%files -n python-emane
+%defattr(-,root,root,-)
+%{_bindir}/emanecommand-eel
+%{_bindir}/emaneevent-antennaprofile
+%{_bindir}/emaneevent-commeffect
+%{_bindir}/emaneevent-dump
+%{_bindir}/emaneevent-location
+%{_bindir}/emaneevent-pathloss
+%{_bindir}/emaneevent-tdmaschedule
+%{_bindir}/emaneota-publisher
+%{_bindir}/emanesh
+%{python_sitelib}/emanesh
+%{python_sitelib}/emanesh-%{version}-*.egg-info
+
+%doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif

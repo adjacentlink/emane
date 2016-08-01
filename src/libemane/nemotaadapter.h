@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,11 +39,10 @@
 
 #include "emane/downstreamtransport.h"
 
-#include <queue>
-
-#include <ace/Thread_Mutex.h>
-#include <ace/Condition_T.h>
-#include <ace/Thread.h>
+#include <deque>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace EMANE
 {
@@ -57,9 +57,9 @@ namespace EMANE
   {
   public:
     NEMOTAAdapter(NEMId id);
-    
+
     ~NEMOTAAdapter();
-    
+
     /**
      * process OTA packet
      *
@@ -68,7 +68,7 @@ namespace EMANE
      */
 
     void processOTAPacket(UpstreamPacket & pkt, const ControlMessages & msgs);
-  
+
     /**
      *
      * process downstream packet
@@ -76,27 +76,27 @@ namespace EMANE
      * @param pkt reference to the DownstreamPacket
      * @param msgs referenceto the ControlMessage
      *
-     */ 
-    void processDownstreamPacket(DownstreamPacket     & pkt,
+     */
+    void processDownstreamPacket(DownstreamPacket & pkt,
                                  const ControlMessages & msgs);
 
     void open();
 
     void close();
-    
-  private:
-    typedef std::pair<DownstreamPacket, ControlMessages> DownstreamQueueEntry;
 
-    typedef std::queue<DownstreamQueueEntry> DownstreamPacketQueue;
+  private:
+    using DownstreamQueueEntry = std::pair<DownstreamPacket, ControlMessages>;
+
+    using DownstreamPacketQueue = std::deque<DownstreamQueueEntry>;
 
     NEMId id_;
-    ACE_thread_t thread_;
+    std::thread thread_;
     DownstreamPacketQueue queue_;
-    ACE_Thread_Mutex mutex_;
-    ACE_Condition<ACE_Thread_Mutex> cond_;
+    std::mutex mutex_;
+    std::condition_variable cond_;
     bool bCancel_;
-    
-    ACE_THR_FUNC_RETURN processPacketQueue();
+
+    void processPacketQueue();
 
     void processDownstreamControl(const ControlMessages &){}
   };

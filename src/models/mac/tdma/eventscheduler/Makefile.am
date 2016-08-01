@@ -2,21 +2,29 @@ lib_LTLIBRARIES = libtdmaeventschedulerradiomodel.la
 
 libtdmaeventschedulerradiomodel_la_CPPFLAGS= \
  -I@top_srcdir@/include              \
- $(ACE_CFLAGS)                       \
- $(AM_CFLAGS)                        \
- $(libuuid_CFLAGS)                   \
- $(libxml2_CFLAGS)
+ $(AM_CPPFLAGS)                      \
+ $(libemane_CFLAGS)
+
+libtdmaeventschedulerradiomodel_la_LIBADD=   \
+ $(libuuid_LIBS)                             \
+ $(libxml2_LIBS)                             \
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ ../.libs/libtdmabase.la
+
+libtdmaeventschedulerradiomodel_la_LDFLAGS= \
+ $(AM_LDFLAGS)                       \
+ -avoid-version
 
 libtdmaeventschedulerradiomodel_la_SOURCES = \
  radiomodel.cc                       \
  eventscheduler.cc                   \
- eventtablepublisher.cc
-
-EXTRA_DIST=                          \
+ eventtablepublisher.cc              \
  eventscheduler.h                    \
  eventtablepublisher.h               \
  slotter.h                           \
- slotter.inl                         \
+ slotter.inl
+
+EXTRA_DIST=                          \
  tdmanem.xml.in                      \
  tdmaradiomodel.xml.in
 
@@ -24,17 +32,10 @@ BUILT_SOURCES =                      \
  tdmanem.xml                         \
  tdmaradiomodel.xml
 
-libtdmaeventschedulerradiomodel_la_LDFLAGS= \
- $(ACE_LIBS)                         \
- $(libxml2_LIBS)                     \
- -L../.libs                          \
- -ltdmabase                          \
- -avoid-version
-
 edit = sed                                \
        -e 's|@datadir[@]|$(pkgdatadir)|g'  
 
-tdmanem.xml: tdmaradiomodel.xml.in
+tdmanem.xml: tdmanem.xml.in
 	$(edit) $< > $@
 
 tdmaradiomodel.xml: tdmaradiomodel.xml.in
