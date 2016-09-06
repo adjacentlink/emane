@@ -164,6 +164,7 @@ class ControlPortClient:
     def stop(self):
         os.write(self._write,"\n")
         self._thread.join()
+        self._sock.close()
 
     def getManifest(self):
         request = remotecontrolportapi_pb2.Request()

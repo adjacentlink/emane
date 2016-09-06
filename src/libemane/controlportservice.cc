@@ -156,6 +156,7 @@ void EMANE::ControlPort::Service::process()
               // process the session data
               if(iter->second->process(iter->first))
                 {
+                  ::close(iter->first);
                   sessionMap.erase(iter++);
                 }
               else
@@ -173,6 +174,5 @@ void EMANE::ControlPort::Service::process()
   for(const auto & entry : sessionMap)
     {
       ::close(entry.first);
-      //delete entry.second;
     }
 }
