@@ -71,8 +71,8 @@ void EMANE::DatagramSocket::open(const INETAddr & address,
                     reinterpret_cast<void*>(&iOption),
                     sizeof(iOption)) < 0)
         {
-          makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
-                                         strerror(errno));
+          throw makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
+                                               strerror(errno));
 
         }
     }
@@ -80,8 +80,8 @@ void EMANE::DatagramSocket::open(const INETAddr & address,
 
   if(bind(iSock_,addr_.getSockAddr(),addr_.getAddrLength()) < 0)
     {
-      makeException<SocketException>("bind: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("bind: %s",
+                                           strerror(errno));
     }
 
 }
@@ -127,8 +127,8 @@ EMANE::INETAddr EMANE::DatagramSocket::getLocalAddress() const
 
       if(getsockname(iSock_, reinterpret_cast<sockaddr*>(&addr), &len))
         {
-          makeException<SocketException>("getsockname: %s",
-                                         strerror(errno));
+          throw makeException<SocketException>("getsockname: %s",
+                                               strerror(errno));
         }
 
       return INETAddr{addr};
@@ -140,8 +140,8 @@ EMANE::INETAddr EMANE::DatagramSocket::getLocalAddress() const
 
       if(getsockname(iSock_, reinterpret_cast<sockaddr*>(&addr), &len))
         {
-          makeException<SocketException>("getsockname: %s",
-                                         strerror(errno));
+          throw makeException<SocketException>("getsockname: %s",
+                                               strerror(errno));
         }
 
       return INETAddr{addr};

@@ -66,22 +66,22 @@ void EMANE::ControlPort::Service::open(const INETAddr & endpoint)
                 reinterpret_cast<void*>(&iOption),
                 sizeof(iOption)) < 0)
     {
-      makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
+                                           strerror(errno));
 
     }
 
   if(bind(iSock_,endpoint.getSockAddr(),endpoint.getAddrLength()) < 0)
     {
-      makeException<SocketException>("bind: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("bind: %s",
+                                           strerror(errno));
     }
 
 
   if(listen(iSock_,10) < 0)
     {
-       makeException<SocketException>("listen: %s",
-                                      strerror(errno));
+      throw makeException<SocketException>("listen: %s",
+                                           strerror(errno));
     }
 
   thread_ = std::thread(&Service::process,this);
