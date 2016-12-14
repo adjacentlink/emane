@@ -41,6 +41,7 @@
 #include <sys/eventfd.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <cstring>
 
 namespace
 {
@@ -267,11 +268,17 @@ void EMANE::NEMQueuedLayer::processWorkQueue()
 
       if(nfds == -1)
         {
+          if(errno == EINTR)
+            {
+              continue;
+            }
+
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   ERROR_LEVEL,
                                   "%03hu NEMQueuedLayer::processWorkQueue:"
-                                  " epoll_wait error",
-                                  id_);
+                                  " epoll_wait error: %s",
+                                  id_,
+                                  strerror(errno));
           break;
         }
 
