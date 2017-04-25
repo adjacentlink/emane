@@ -118,6 +118,13 @@ namespace EMANE
     Utils::VectorIO getVectorIO() const;
 
     /**
+     * Gets a pointer to the internal buffer holding the message
+     *
+     * @return Pointer to message or @c 0 if there is no data
+     */
+    const void * get() const;
+
+    /**
      * Gets the overall packet length which is a summation of all the
      * vectored IO segments.
      *
