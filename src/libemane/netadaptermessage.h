@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -49,7 +49,7 @@ namespace EMANE
   struct NetAdapterHeader
   {
     std::uint16_t u16Id_;     /**< Event id */
-    std::uint16_t u16Length_; /**< Total message length in bytes */
+    std::uint32_t u32Length_; /**< Total message length in bytes */
     std::uint8_t  data_[0];   /**< Pointer to message payload */
   } __attribute__((packed));
 
@@ -64,7 +64,7 @@ namespace EMANE
   NetAdapterHeader * NetAdapterHeaderToHost(NetAdapterHeader * pMsg)
   {
     pMsg->u16Id_     =  ntohs(pMsg->u16Id_);
-    pMsg->u16Length_ =  ntohs(pMsg->u16Length_);
+    pMsg->u32Length_ =  ntohl(pMsg->u32Length_);
     return pMsg;
   }
 
@@ -79,7 +79,7 @@ namespace EMANE
   NetAdapterHeader * NetAdapterHeaderToNet(NetAdapterHeader * pMsg)
   {
     pMsg->u16Id_     =  htons(pMsg->u16Id_);
-    pMsg->u16Length_ =  htons(pMsg->u16Length_);
+    pMsg->u32Length_ =  htonl(pMsg->u32Length_);
     return pMsg;
   }
 
@@ -92,8 +92,8 @@ namespace EMANE
   {
     std::uint16_t u16Src_;
     std::uint16_t u16Dst_;
-    std::uint16_t u16DataLen_;
-    std::uint16_t u16CtrlLen_;
+    std::uint32_t u32DataLen_;
+    std::uint32_t u32CtrlLen_;
     std::uint8_t  u8Priority_;
     std::uint8_t  data_[0];
   } __attribute__((packed));
@@ -105,7 +105,7 @@ namespace EMANE
    */
   struct NetAdapterControlMessage
   {
-    std::uint16_t u16CtrlLen_;
+    std::uint32_t u32CtrlLen_;
     std::uint8_t data_[0];
   } __attribute__((packed));
 
@@ -113,14 +113,14 @@ namespace EMANE
   inline
   NetAdapterControlMessage * NetAdapterControlMessageToHost(NetAdapterControlMessage * ctrl)
   {
-    ctrl->u16CtrlLen_ = ntohs(ctrl->u16CtrlLen_);
+    ctrl->u32CtrlLen_ = ntohl(ctrl->u32CtrlLen_);
     return ctrl;
   }
 
   inline
   NetAdapterControlMessage *  NetAdapterControlMessageToNet(NetAdapterControlMessage * ctrl)
   {
-    ctrl->u16CtrlLen_ = htons(ctrl->u16CtrlLen_);
+    ctrl->u32CtrlLen_ = htonl(ctrl->u32CtrlLen_);
     return ctrl;
   }
 
@@ -134,8 +134,8 @@ namespace EMANE
   {
     pkt->u16Src_      = ntohs(pkt->u16Src_);
     pkt->u16Dst_      = ntohs(pkt->u16Dst_);
-    pkt->u16DataLen_  = ntohs(pkt->u16DataLen_);
-    pkt->u16CtrlLen_  = ntohs(pkt->u16CtrlLen_);
+    pkt->u32DataLen_  = ntohl(pkt->u32DataLen_);
+    pkt->u32CtrlLen_  = ntohl(pkt->u32CtrlLen_);
 
     return pkt;
   }
@@ -150,8 +150,8 @@ namespace EMANE
   {
     pkt->u16Src_      = htons(pkt->u16Src_);
     pkt->u16Dst_      = htons(pkt->u16Dst_);
-    pkt->u16DataLen_  = htons(pkt->u16DataLen_);
-    pkt->u16CtrlLen_  = htons(pkt->u16CtrlLen_);
+    pkt->u32DataLen_  = htonl(pkt->u32DataLen_);
+    pkt->u32CtrlLen_  = htonl(pkt->u32CtrlLen_);
 
     return pkt;
   }

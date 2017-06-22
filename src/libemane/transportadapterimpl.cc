@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -66,6 +66,14 @@ void EMANE::Application::TransportAdapterImpl::initialize(Registrar & registrar)
                                                {},
                                                "IPv4 or IPv6 Transport endpoint.");
 
+  configRegistrar.registerNonNumeric<std::string>("protocol",
+                                                  EMANE::ConfigurationProperties::DEFAULT,
+                                                  {"udp"},
+                                                  "Defines the protocl used for communictation:"
+                                                  " udp or tcp.",
+                                                  1,
+                                                  1,
+                                                  "^(udp|tcp)$");
 }
 
 void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpdate & update)
@@ -78,8 +86,9 @@ void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpda
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "TRANS %03hu TransportAdapterImpl::configure platformendpoint: %s",
+                                  "TRANS %03hu TransportAdapterImpl::configure %s: %s",
                                   id_,
+                                  item.first.c_str(),
                                   platformEndpointAddr_.str().c_str());
 
         }
@@ -89,9 +98,25 @@ void EMANE::Application::TransportAdapterImpl::configure(const ConfigurationUpda
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "TRANS %03hu TransportAdapterImpl::configure Transport endpoint: %s",
+                                  "TRANS %03hu TransportAdapterImpl::configure %s: %s",
                                   id_,
+                                  item.first.c_str(),
                                   transportEndpointAddr_.str().c_str());
+        }
+      else if(item.first == "protocol")
+        {
+          std::string sProtocol{item.second[0].asString()};
+
+          protocol_ = sProtocol == "udp" ?
+            Protocol::PROTOCOL_UDP :
+            Protocol::PROTOCOL_TCP_CLIENT;
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEM  %03hu TransportAdapterImpl::configure %s: %s",
+                                  id_,
+                                  item.first.c_str(),
+                                  sProtocol.c_str());
         }
       else
         {
@@ -112,7 +137,7 @@ void EMANE::Application::TransportAdapterImpl::start()
 
   try
     {
-      open(transportEndpointAddr_, platformEndpointAddr_);
+      open(transportEndpointAddr_, platformEndpointAddr_,protocol_);
     }
   catch(BoundaryMessageManagerException & exp)
     {

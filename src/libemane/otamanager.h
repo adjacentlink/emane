@@ -78,11 +78,21 @@ namespace EMANE
     /**
      * Open the event server channel
      *
-     * @param otaGroupAddress Multicast group address of event service OTA channel
+     * @param otaGroupAddress Multicast group address of event service
+     * OTA channel
      * @param sDevice Name of the OTA device
-     * @param bLoopback Flag indicating whether to set LOOPBACK socket option
+     * @param bLoopback Flag indicating whether to set LOOPBACK socket
+     * option
      * @param iTTL Mutlicast TTL
      * @param uuid Emulator instance UUID
+     * @param otaMTU MTU to enforce. Set to 0 to disable
+     * fragmentation
+     * @param partCheckThreshold Rate in seconds to check if part
+     * reassembly efforts should be abandoned due to missing
+     * fragments
+     * @param partTimeoutThreshold Threshold in seconds to wait for
+     * another fragment before abandoning a specific packet
+     * reassembly.
      */
     void open(const INETAddr & otaGroupAddress,
               const std::string & sDevice,
