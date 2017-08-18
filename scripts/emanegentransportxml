@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,21 +41,21 @@ usage = "%prog [OPTION].. PLATFORMXML..."
 
 optionParser =  OptionParser(usage=usage)
 
-optionParser.add_option("-v", 
+optionParser.add_option("-v",
                         "--verbose",
                         action="store_true",
                         dest="verbose",
                         help="Verbose output mode")
 
-optionParser.add_option("", 
+optionParser.add_option("",
                         "--dtd",
                         action="store",
                         type="string",
                         dest="dtd",
                         default='file:///usr/share/emane/dtd/transportdaemon.dtd',
-                        help="Transport Daemon XML DTD [default: %default]")  
+                        help="Transport Daemon XML DTD [default: %default]")
 
-optionParser.add_option("-o", 
+optionParser.add_option("-o",
                         "--outpath",
                         action="store",
                         type="string",
@@ -103,27 +103,32 @@ try:
 
             if nemTransportLocation == "internal":
                 continue
-            
+
             if nemId not in instances:
                 instances[nemId] = {}
 
             platformendpoint = nem.find("param/[@name='platformendpoint']")
             transportendpoint = nem.find("param/[@name='transportendpoint']")
+            protocol = nem.find("param/[@name='protocol']")
 
             if platformendpoint is None:
                 print >>sys.stderr, "error %s:" % platform," missing 'platformendpoint' for NEM",nemId
-                exit(1) 
+                exit(1)
 
             if transportendpoint is None:
                 print >>sys.stderr, "error %s:" % platform," missing 'transportendpoint' for NEM",nemId
-                exit(1) 
-            
+                exit(1)
+
+
             # store platform and transport endpoints
             metas[nemId] = {
                 'platformendpoint' : platformendpoint.get('value'),
                 'transportendpoint' : transportendpoint.get('value')
             }
-            
+
+            if protocol is not None:
+                metas[nemId]['protocol'] = protocol.get('value')
+
             # load nem XML
             try:
                 if options.verbose:
@@ -138,7 +143,7 @@ try:
                         metas[nemId]['definition'] = transportDefinition
                     elif metas[nemId]['definition'] != transportDefinition:
                         print >>sys.stderr, "error %s:" % nemDefinition," inconsistent transport selected for NEM",nemId
-                        exit(1) 
+                        exit(1)
 
                     # load transport XML
                     try:
@@ -155,14 +160,14 @@ try:
                         for paramlist in transportTree.xpath('/transport/paramlist'):
 
                             instances[nemId][paramlist.get('name')] = []
-                            
+
                             for item in paramlist.xpath('item'):
                                 instances[nemId][paramlist.get('name')].append(item.get('value'))
 
                     except etree.XMLSyntaxError, exp:
                         print >>sys.stderr, "error %s:" % transportDefinition,exp
-                        exit(1)        
-                    
+                        exit(1)
+
                     # process nem XML parameters
                     for param in nemTree.xpath('/nem/transport/param'):
                         instances[nemId][param.get('name')] = [param.get('value')]
@@ -171,7 +176,7 @@ try:
                     for paramlist in nemTree.xpath('/nem/transport/paramlist'):
 
                         instances[nemId][paramlist.get('name')] = []
-                            
+
                         for item in paramlist.xpath('item'):
                             instances[nemId][paramlist.get('name')].append(item.get('value'))
 
@@ -188,7 +193,7 @@ try:
                 transportDefinition = transport.get('definition')
 
                 group = transport.get("group")
-                
+
                 if group is None:
                     group = str(nemId)
 
@@ -196,7 +201,7 @@ try:
                     metas[nemId]['definition'] = transportDefinition
                 elif metas[nemId]['definition'] != transportDefinition:
                     print >>sys.stderr, "error %s:" % platform," inconsistent transport selected for NEM",nemId
-                    exit(1) 
+                    exit(1)
 
                 # process platform XML nem element transport parameters
                 for param in transport.xpath('param'):
@@ -204,9 +209,9 @@ try:
 
                 # process nem XML parameter lists
                 for paramlist in transport.xpath('paramlist'):
-                    
+
                     instances[nemId][paramlist.get('name')] = []
-                            
+
                     for item in paramlist.xpath('item'):
                         instances[nemId][paramlist.get('name')].append(item.get('value'))
 
@@ -215,12 +220,12 @@ try:
 
             # add the nem to a group
             groups[group].append(nemId)
-                    
+
 
 except IOError,exp:
     print >>sys.stderr, "error:",exp
     exit(1)
-    
+
 # create the transport daemon files
 for members in sorted(groups.values()):
     output="transportdaemon%d.xml" % min(members)
@@ -242,17 +247,25 @@ for members in sorted(groups.values()):
                          name='transportendpoint',
                          value=metas[nemId]['transportendpoint'])
 
-        transportElement = etree.SubElement(instanceElement,'transport', definition=metas[nemId]['definition'])
+        if 'protocol' in metas[nemId]:
+            etree.SubElement(instanceElement,
+                             'param',
+                             name='protocol',
+                             value=metas[nemId]['protocol'])
+
+        transportElement = etree.SubElement(instanceElement,
+                                            'transport',
+                                            definition=metas[nemId]['definition'])
 
 
         for name,value in params.items():
             if len(value) == 1:
                 etree.SubElement(transportElement,'param', name=name,value=value[0])
             else:
-                paramlist = etree.SubElement(transportElement,'paramlist', name=name) 
+                paramlist = etree.SubElement(transportElement,'paramlist', name=name)
 
                 for item in value:
-                    etree.SubElement(paramlist,'item', value=item) 
+                    etree.SubElement(paramlist,'item', value=item)
 
 
     target = "transportdaemon%d.xml" % min(members)
@@ -269,9 +282,9 @@ for members in sorted(groups.values()):
 
         if options.verbose:
             print "generating XML:",target
-        
+
         output=open(os.path.join(options.outpath,target),'w')
-        
+
         print >>output,xml
 
         output.close()
@@ -280,6 +293,3 @@ for members in sorted(groups.values()):
         print >>sys.stderr, "error %s:" % target, "unable to validate target xml"
         print >>sys.stderr, exp
         exit(1)
-
-
-

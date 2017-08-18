@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015,2017 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -61,13 +62,22 @@ void EMANE::Application::NEMImpl::initialize(Registrar & registrar)
 
       configRegistrar.registerNonNumeric<INETAddr>("platformendpoint",
                                                    ConfigurationProperties::REQUIRED,
-        {},
+                                                   {},
                                                    "IPv4 or IPv6 NEM Platform Service endpoint.");
 
       configRegistrar.registerNonNumeric<INETAddr>("transportendpoint",
                                                    ConfigurationProperties::REQUIRED,
-        {},
+                                                   {},
                                                    "IPv4 or IPv6 Transport endpoint.");
+
+      configRegistrar.registerNonNumeric<std::string>("protocol",
+                                                      EMANE::ConfigurationProperties::DEFAULT,
+                                                      {"udp"},
+                                                      "Defines the protocl used for communictation:"
+                                                      " udp or tcp.",
+                                                      1,
+                                                      1,
+                                                      "^(udp|tcp)$");
     }
 
   pNEMLayerStack_->initialize(registrar);
@@ -98,6 +108,21 @@ void EMANE::Application::NEMImpl::configure(const ConfigurationUpdate & update)
                                   id_,
                                   transportEndpointAddr_.str().c_str());
         }
+      else if(item.first == "protocol")
+        {
+          std::string sProtocol{item.second[0].asString()};
+
+          protocol_ = sProtocol == "udp" ?
+            NEMNetworkAdapter::Protocol::PROTOCOL_UDP :
+            NEMNetworkAdapter::Protocol::PROTOCOL_TCP_SERVER;
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEM  %03hu NEMImpl::configure %s: %s",
+                                  id_,
+                                  item.first.c_str(),
+                                  sProtocol.c_str());
+        }
       else
         {
           throw makeException<ConfigureException>("NEMImpl::configure: "
@@ -115,7 +140,9 @@ void EMANE::Application::NEMImpl::start()
     {
       try
         {
-          NEMNetworkAdapter_.open(platformEndpointAddr_,transportEndpointAddr_);
+          NEMNetworkAdapter_.open(platformEndpointAddr_,
+                                  transportEndpointAddr_,
+                                  protocol_);
         }
       catch(NetworkAdapterException & exp)
         {

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015,2017 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -61,8 +62,10 @@ namespace EMANE
        * Constructor
        *
        * @param id NEMid of this NEM
-       * @param pNEMLayerStack pointer to a NEMLayerStack to contain in this NEM
-       *
+       * @param pNEMLayerStack pointer to a NEMLayerStack to contain
+       * in this NEM
+       * @param bExternalTransport Flag inficating use of external
+       * transport
        */
       NEMImpl(NEMId id,
               std::unique_ptr<NEMLayerStack> & pNEMLayerStack,
@@ -100,6 +103,7 @@ namespace EMANE
 
       INETAddr platformEndpointAddr_;
       INETAddr transportEndpointAddr_;
+      NEMNetworkAdapter::Protocol protocol_;
 
       // prevent NEM copies
       NEMImpl(const NEMImpl &) = delete;

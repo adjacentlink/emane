@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -372,10 +372,10 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
                               // missing a fragment - record all bytes received and discontinue assembly
                               size_t totalBytes{message.getData().size()};
 
-                               for(const auto & part : parts)
-                                 {
-                                   totalBytes += part.second.size();
-                                 }
+                              for(const auto & part : parts)
+                                {
+                                  totalBytes += part.second.size();
+                                }
 
                               pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                                dst,
@@ -494,5 +494,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
               ++iter;
             }
         }
+
+      lastFragmentCheckTime_ = now;
     }
 }
