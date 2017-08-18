@@ -119,7 +119,7 @@ namespace EMANE
     double dAltitudeMeters_;
     double dLatitudeRadians_;
     double dLongitudeRadians_;
-    double dAltitudeRadians_;
+    double dReserved_{};
   };
 }
 
