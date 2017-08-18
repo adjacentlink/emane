@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -85,13 +85,18 @@ EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatfo
 
 EMANE::NEMQueuedLayer::~NEMQueuedLayer()
 {
-  std::lock_guard<std::mutex> m(mutex_);
+  mutex_.lock();
 
   if(!bCancel_ && thread_.joinable())
     {
       bCancel_ = true;
       write(iFd_,&one,sizeof(one));
+      mutex_.unlock();
+      thread_.join();
+      mutex_.lock();
     }
+
+  mutex_.unlock();
 
   close(iFd_);
 }
