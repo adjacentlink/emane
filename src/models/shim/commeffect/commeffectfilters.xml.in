@@ -79,8 +79,8 @@
       <duplicate>0</duplicate>
       <latency sec="0" usec="0"/>
       <jitter  sec="0" usec="0"/>
-      <unicastbitrate>10000</unicastbitrate>
       <broadcastbitrate>1000</broadcastbitrate>
+      <unicastbitrate>10000</unicastbitrate>
     </effect>
   </filter>
   

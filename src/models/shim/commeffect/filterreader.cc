@@ -291,7 +291,7 @@ EMANE::Models::CommEffect::FilterReader::load(const char * pzFilename)
           if(!(pDoc = xmlCtxtReadFile(pContext,
                                       pzFilename,
                                       0,
-                                      XML_PARSE_DTDVALID|XML_PARSE_NOERROR)))
+                                      XML_PARSE_DTDVALID)))
             {
               xmlFreeParserCtxt(pContext);
 
