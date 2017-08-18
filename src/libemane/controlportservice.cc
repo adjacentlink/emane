@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,13 @@ void EMANE::ControlPort::Service::open(const INETAddr & endpoint)
   thread_ = std::thread(&Service::process,this);
 }
 
+EMANE::ControlPort::Service::~Service()
+{
+  if(thread_.joinable())
+    {
+      close();
+    }
+}
 
 void EMANE::ControlPort::Service::close()
 {
