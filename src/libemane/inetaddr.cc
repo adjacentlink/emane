@@ -410,3 +410,8 @@ std::string EMANE::INETAddr::str(bool bWithPort) const
 {
   return pImpl_->str(bWithPort);
 }
+
+std::uint16_t EMANE::INETAddr::getPort() const
+{
+  return pImpl_->getPort();
+}
