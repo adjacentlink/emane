@@ -260,7 +260,7 @@ void EMANE::BoundaryMessageManager::sendControlMessage(const ControlMessages & m
   memset(&header,0,sizeof(header));
 
   header.u16Id_ =  NETADAPTER_CTRL_MSG;
-  header.u32Length_ = sizeof(header) + controlMessageSerializer.getLength() + 2;
+  header.u32Length_ = sizeof(header) + controlMessageSerializer.getLength() + 4;
 
   NetAdapterHeaderToNet(&header);
 
