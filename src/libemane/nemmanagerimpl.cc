@@ -128,7 +128,7 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
   configRegistrar.registerNonNumeric<std::string>("antennaprofilemanifesturi",
                                                   EMANE::ConfigurationProperties::NONE,
                                                   {},
-                                                  "Absolute URI of the antenna profile manifest to load."
+                                                  "URI of the antenna profile manifest to load."
                                                   " The antenna profile manifest contains a list of"
                                                   " antenna profile entries. Each entry contains a unique"
                                                   " profile identifier, an antenna pattern URI and an"

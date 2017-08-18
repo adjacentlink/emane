@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,7 +138,7 @@ EMANE::Models::TDMA::BaseModel::Implementation::initialize(Registrar & registrar
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
-                                                  "Defines the absolute URI of the Packet Completion Rate (PCR) curve"
+                                                  "Defines the URI of the Packet Completion Rate (PCR) curve"
                                                   " file. The PCR curve file contains probability of reception curves"
                                                   " as a function of Signal to Interference plus Noise Ratio (SINR).");
 
