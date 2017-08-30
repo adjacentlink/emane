@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+#ifndef EMANEEVENTSFADINGSELECTIONEVENTFORMATTER_HEADER_
+#define EMANEEVENTSFADINGSELECTIONEVENTFORMATTER_HEADER_
 
-#define EMANE_EVENT_LOCATION 100
+#include "emane/events/fadingselectionevent.h"
+#include "emane/types.h"
 
-#define EMANE_EVENT_PATHLOSS 101
+namespace EMANE
+{
+  namespace Events
+  {
+    /**
+     * @class FadingSelectionEventFormatter
+     *
+     * @brief Callable formatter object for FadingSelectionEvent
+     * instances.
+     */
+    class FadingSelectionEventFormatter
+    {
+    public:
+      /**
+       * Creates an FadingSelectionEventFormatter instance
+       *
+       * @param event %Event reference
+       */
+      FadingSelectionEventFormatter(const FadingSelectionEvent & event);
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
+      /**
+       * Gets the formatted output
+       *
+       * @return list of output strings
+       */
+      Strings operator()() const;
 
-#define EMANE_EVENT_COMMEFFECT 103
+    private:
+      const FadingSelectionEvent & event_;
+    };
+  }
+}
 
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
-
-#define EMANE_EVENT_TDMA_SCHEDULE 105
-
-#define EMANE_EVENT_FADING_SELECTION 106
-
-#endif // EMANEEVENTIDS_HEADER_
+#endif // EMANEEVENTSFADINGSELECTIONEVENTFORMATTER_HEADER_

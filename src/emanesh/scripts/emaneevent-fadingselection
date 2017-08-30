@@ -1,6 +1,6 @@
+#!/bin/bash -
 #
-# Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
-# New Jersey
+# Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,5 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-
-from event import Event
-from eventserviceexception import EventServiceException
-from eventservice import EventService
-from locationevent import LocationEvent
-from pathlossevent import PathlossEvent
-from commeffectevent import CommEffectEvent
-from antennaprofileevent import AntennaProfileEvent
-from onehopneighborsevent import OneHopNeighborsEvent
-from tdmascheduleevent import TDMAScheduleEvent
-from tdmaschedule import TDMASchedule
-from fadingselectionevent import FadingSelectionEvent
+set -f
+python -m emanesh.events.fadingselectionevent "$@"

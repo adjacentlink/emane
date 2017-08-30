@@ -491,6 +491,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libeelloaderpathloss.*
 %{_libdir}/libeelloaderantennaprofile.*
 %{_libdir}/libeelloadercommeffect.*
+%{_libdir}/libeelloaderfadingselection.*
 %dir %{_datadir}/emane/xml/generators/eel
 %{_datadir}/emane/xml/generators/eel/eelgenerator.xml
 
@@ -521,6 +522,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-location
 %{_bindir}/emaneevent-pathloss
 %{_bindir}/emaneevent-tdmaschedule
+%{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
 %{python_sitelib}/emanesh

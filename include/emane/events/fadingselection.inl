@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+inline
+EMANE::Events::FadingSelection::FadingSelection():
+  nemId_{},
+  fadingModel_{FadingModel::NONE}{}
 
-#define EMANE_EVENT_LOCATION 100
+inline
+EMANE::Events::FadingSelection::FadingSelection(NEMId nemId,
+                                                FadingModel fadingModel):
+  nemId_{nemId},
+  fadingModel_{fadingModel}{}
 
-#define EMANE_EVENT_PATHLOSS 101
+inline
+EMANE::NEMId EMANE::Events::FadingSelection::getNEMId() const
+{
+  return nemId_;
+}
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
-
-#define EMANE_EVENT_COMMEFFECT 103
-
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
-
-#define EMANE_EVENT_TDMA_SCHEDULE 105
-
-#define EMANE_EVENT_FADING_SELECTION 106
-
-#endif // EMANEEVENTIDS_HEADER_
+inline
+EMANE::Events::FadingModel EMANE::Events::FadingSelection::getFadingModel() const
+{
+  return fadingModel_;
+}

@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013-2015,2017 - Adjacent Link LLC, Bridgewater,
+# New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -334,7 +335,8 @@ if __name__ == "__main__":
     from emanesh.events import AntennaProfileEvent
     from emanesh.events import OneHopNeighborsEvent
     from emanesh.events import TDMAScheduleEvent
-
+    from emanesh.events import FadingSelectionEvent
+ 
     usage = "emaneeventdump [OPTION]..."
 
     optionParser = OptionParser(usage=usage)
@@ -459,7 +461,12 @@ if __name__ == "__main__":
         for i in e:
             pprint.pprint(i)
             
-
+    def handleFadingSelection(nemId,eventId,data,uuid,sequence):
+        e = FadingSelectionEvent()
+        e.restore(data)
+        header(nemId,eventId,data,'FadingSelection',uuid,sequence)
+        for i in e:
+            print "  ",i
 
     service.subscribe(PathlossEvent.IDENTIFIER,handlePathloss)
     service.subscribe(LocationEvent.IDENTIFIER,handleLocation)
@@ -467,7 +474,8 @@ if __name__ == "__main__":
     service.subscribe(AntennaProfileEvent.IDENTIFIER,handleAntennaProfile)
     service.subscribe(OneHopNeighborsEvent.IDENTIFIER,handleOneHopNeighbors)
     service.subscribe(TDMAScheduleEvent.IDENTIFIER,handleTDMASchedule)
-
+    service.subscribe(FadingSelectionEvent.IDENTIFIER,handleFadingSelection)
+ 
     if options.next_only:
         data = service.nextEvent()
 

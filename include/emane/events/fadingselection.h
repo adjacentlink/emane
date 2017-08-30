@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+#ifndef EMANEEVENTSFADINGSELECTION_HEADER_
+#define EMANEEVENTSFADINGSELECTION_HEADER_
 
-#define EMANE_EVENT_LOCATION 100
+#include "emane/types.h"
+#include "emane/events/fadingmodel.h"
 
-#define EMANE_EVENT_PATHLOSS 101
+#include <list>
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
+namespace EMANE
+{
+  namespace Events
+  {
+    /**
+     * @class FadingProfile
+     *
+     * @brief Holds NEM Id and fading model
+     *
+     * @note Instances are immutable
+     */
+    class FadingSelection
+    {
+    public:
+      /**
+       * Creates an FadingSelection instance with a NEM Id and fading
+       * model.
+       */
+      FadingSelection();
 
-#define EMANE_EVENT_COMMEFFECT 103
+      /**
+       * Creates an FadingSelection instance
+       *
+       * @param nemId Id of NEM
+       * @param fadingModel Fading model
+       */
+      FadingSelection(NEMId nemId,
+                      FadingModel fadingModel);
 
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
+      /**
+       * Gets the NEM Id
+       *
+       * @return NEM Id
+       */
+      NEMId getNEMId() const;
 
-#define EMANE_EVENT_TDMA_SCHEDULE 105
+      /**
+       * Gets the fading model
+       *
+       * @return fading model
+       */
+      FadingModel getFadingModel() const;
 
-#define EMANE_EVENT_FADING_SELECTION 106
+    private:
+      NEMId nemId_;
+      FadingModel fadingModel_;
+    };
 
-#endif // EMANEEVENTIDS_HEADER_
+    using FadingSelections = std::list<FadingSelection>;
+  }
+}
+
+#include "emane/events/fadingselection.inl"
+
+#endif // EMANEEVENTSFADINGSELECTION_HEADER_

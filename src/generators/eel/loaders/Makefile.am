@@ -3,5 +3,5 @@ SUBDIRS=  \
  location \
  pathloss \
  antennaprofile \
- commeffect
-
+ commeffect \
+ fadingselection

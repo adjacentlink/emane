@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,22 +39,29 @@ void EMANE::EventTablePublisher::registerStatistics(StatisticRegistrar & statist
 {
   /** [statisticservice-registertable-snippet] */
   pLocationTable_ =
-    statisticRegistrar.registerTable<NEMId>("LocationEventInfoTable", 
-      {"NEM","Latitude","Longitude","Altitude","Pitch","Roll","Yaw","Azimuth","Elevation","Magnitude"},
-      StatisticProperties::NONE,
-      "Shows the location event information received");
+    statisticRegistrar.registerTable<NEMId>("LocationEventInfoTable",
+                                            {"NEM","Latitude","Longitude","Altitude","Pitch","Roll","Yaw","Azimuth","Elevation","Magnitude"},
+                                            StatisticProperties::NONE,
+                                            "Shows the location event information received");
 
   pPathlossTable_ =
-    statisticRegistrar.registerTable<NEMId>("PathlossEventInfoTable", 
-      {"NEM","Forward Pathloss","Reverse Pathloss"},
-      StatisticProperties::NONE,
-      "Shows the precomputed pathloss information received");
+    statisticRegistrar.registerTable<NEMId>("PathlossEventInfoTable",
+                                            {"NEM","Forward Pathloss","Reverse Pathloss"},
+                                            StatisticProperties::NONE,
+                                            "Shows the precomputed pathloss information received");
 
   pAntennaProfileTable_ =
-    statisticRegistrar.registerTable<NEMId>("AntennaProfileEventInfoTable", 
-      {"NEM","Antenna Profile","Antenna Azimuth","Antenna Elevation"},
-      StatisticProperties::NONE,
-      "Shows the antenna profile information received");
+    statisticRegistrar.registerTable<NEMId>("AntennaProfileEventInfoTable",
+                                            {"NEM","Antenna Profile","Antenna Azimuth","Antenna Elevation"},
+                                            StatisticProperties::NONE,
+                                            "Shows the antenna profile information received");
+
+  pFadingSelectionTable_ =
+    statisticRegistrar.registerTable<NEMId>("FadingSelectionInfoTable",
+                                            {"NEM","Model"},
+                                            StatisticProperties::NONE,
+                                            "Shows the selected fading model information received");
+
   /** [statisticservice-registertable-snippet] */
 }
 
@@ -63,15 +70,15 @@ void EMANE::EventTablePublisher::update(const Events::Locations & locations)
   for(const auto & location : locations)
     {
       auto targetNEM = location.getNEMId();
-       
+
       if(locationNEMSet_.find(targetNEM) == locationNEMSet_.end())
         {
           auto position = location.getPosition();
-           
+
           auto optionalOrientation = location.getOrientation();
 
           auto optionalVelocity = location.getVelocity();
-           
+
           pLocationTable_->addRow(targetNEM,{Any{targetNEM},
                 Any{position.getLatitudeDegrees()},
                   Any{position.getLongitudeDegrees()},
@@ -88,11 +95,11 @@ void EMANE::EventTablePublisher::update(const Events::Locations & locations)
       else
         {
           auto position = location.getPosition();
-           
+
           auto optionalOrientation = location.getOrientation();
-           
+
           auto optionalVelocity = location.getVelocity();
-           
+
           pLocationTable_->setCell(targetNEM,1,Any{position.getLatitudeDegrees()});
           pLocationTable_->setCell(targetNEM,2,Any{position.getLongitudeDegrees()});
           pLocationTable_->setCell(targetNEM,3,Any{position.getAltitudeMeters()});
@@ -109,7 +116,7 @@ void EMANE::EventTablePublisher::update(const Events::Locations & locations)
               pLocationTable_->setCell(targetNEM,7,Any{optionalVelocity.first.getAzimuthDegrees()});
               pLocationTable_->setCell(targetNEM,8,Any{optionalVelocity.first.getElevationDegrees()});
               pLocationTable_->setCell(targetNEM,9,Any{optionalVelocity.first.getMagnitudeMetersPerSecond()});
-               
+
             }
         }
     }
@@ -120,15 +127,15 @@ void EMANE::EventTablePublisher::update(const Events::Pathlosses & pathlosses)
   for(const auto & pathloss : pathlosses)
     {
       auto targetNEM = pathloss.getNEMId();
-      
+
       std::vector<Any> row{Any{targetNEM},
           Any{pathloss.getForwardPathlossdB()},
             Any{pathloss.getReversePathlossdB()}};
-      
+
       if(pathlossNEMSet_.find(targetNEM) == pathlossNEMSet_.end())
         {
           pPathlossTable_->addRow(targetNEM,row);
-          
+
           pathlossNEMSet_.insert(targetNEM);
         }
       else
@@ -140,25 +147,59 @@ void EMANE::EventTablePublisher::update(const Events::Pathlosses & pathlosses)
 
 void EMANE::EventTablePublisher::update(const Events::AntennaProfiles & profiles)
 {
-  
+
   for(const auto & profile : profiles)
     {
       auto targetNEM = profile.getNEMId();
-      
+
       std::vector<Any> row{Any{targetNEM},
           Any{profile.getAntennaProfileId()},
             Any{profile.getAntennaAzimuthDegrees()},
               Any{profile.getAntennaElevationDegrees()}};
-      
+
       if(antennaProfileNEMSet_.find(targetNEM) == antennaProfileNEMSet_.end())
         {
           pAntennaProfileTable_->addRow(targetNEM,row);
-          
+
           antennaProfileNEMSet_.insert(targetNEM);
         }
       else
         {
           pAntennaProfileTable_->setRow(targetNEM,row);
+        }
+    }
+}
+
+void EMANE::EventTablePublisher::update(const Events::FadingSelections & selections)
+{
+  for(const auto & selection : selections)
+    {
+      auto targetNEM = selection.getNEMId();
+
+      std::string sModel{"unknown"};
+
+      switch(selection.getFadingModel())
+        {
+        case Events::FadingModel::NONE:
+          sModel = "none";
+          break;
+        case Events::FadingModel::NAKAGAMI:
+          sModel = "nakagami";
+          break;
+        }
+
+      std::vector<Any> row{Any{targetNEM},
+          Any{sModel}};
+
+      if(fadingSelectionNEMSet_.find(targetNEM) == fadingSelectionNEMSet_.end())
+        {
+          pFadingSelectionTable_->addRow(targetNEM,row);
+
+          fadingSelectionNEMSet_.insert(targetNEM);
+        }
+      else
+        {
+          pFadingSelectionTable_->setRow(targetNEM,row);
         }
     }
 }

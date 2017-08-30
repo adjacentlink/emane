@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+package EMANEMessage;
 
-#define EMANE_EVENT_LOCATION 100
+option optimize_for = SPEED;
 
-#define EMANE_EVENT_PATHLOSS 101
+message FadingSelectionEvent
+{
+  enum Model
+  {
+    TYPE_NONE = 1;
+    TYPE_NAKAGAMI = 2;
+  }
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
+  message Entry
+  {
+    required uint32 nemId = 1;
+    required Model model = 2;
+  }
 
-#define EMANE_EVENT_COMMEFFECT 103
-
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
-
-#define EMANE_EVENT_TDMA_SCHEDULE 105
-
-#define EMANE_EVENT_FADING_SELECTION 106
-
-#endif // EMANEEVENTIDS_HEADER_
+  repeated Entry entries = 1;
+}

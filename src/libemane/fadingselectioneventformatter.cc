@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+#include "emane/events/fadingselectioneventformatter.h"
 
-#define EMANE_EVENT_LOCATION 100
+EMANE::Events::FadingSelectionEventFormatter::
+FadingSelectionEventFormatter(const FadingSelectionEvent & event):
+  event_(event)
+{}
 
-#define EMANE_EVENT_PATHLOSS 101
+EMANE::Strings EMANE::Events::FadingSelectionEventFormatter::operator()() const
+{
+  Strings strings;
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
+  for(const auto & selection : event_.getFadingSelections())
+    {
+      strings.push_back("nem: " +
+                        std::to_string(selection.getNEMId()) +
+                        " model: " +
+                        (selection.getFadingModel() ==  Events::FadingModel::NONE ? "none" :
+                         selection.getFadingModel() ==  Events::FadingModel::NAKAGAMI ? "nakagami" :
+                         "unknown"));
+    }
 
-#define EMANE_EVENT_COMMEFFECT 103
-
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
-
-#define EMANE_EVENT_TDMA_SCHEDULE 105
-
-#define EMANE_EVENT_FADING_SELECTION 106
-
-#endif // EMANEEVENTIDS_HEADER_
+  return strings;
+}

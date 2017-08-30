@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,47 +30,63 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTTABLEPUBLISHER_HEADER_
-#define EMANEEVENTTABLEPUBLISHER_HEADER_
+#ifndef EMANENAKAGAMIFADINGALGORITHM_HEADER_
+#define EMANENAKAGAMIFADINGALGORITHM_HEADER_
 
-#include "emane/events/antennaprofileevent.h"
-#include "emane/events/fadingselectionevent.h"
-#include "emane/events/locationevent.h"
-#include "emane/events/pathlossevent.h"
-#include "emane/statistictable.h"
-#include "emane/statisticregistrar.h"
-
-#include <set>
+#include "fadingalgorithm.h"
+#include "emane/platformserviceprovider.h"
+#include "emane/utils/conversionutils.h"
+#include <random>
 
 namespace EMANE
 {
-  class EventTablePublisher
+  class NakagamiFadingAlgorithm: public FadingAlgorithm
   {
   public:
-    EventTablePublisher(NEMId nemId);
+    NakagamiFadingAlgorithm(NEMId id,
+                            PlatformServiceProvider * pPlatformService,
+                            const std::string & sPrefix);
 
-    void registerStatistics(StatisticRegistrar & registrar);
+    void initialize(Registrar & registrar) override;
 
-    void update(const Events::Locations & locations);
+    void configure(const ConfigurationUpdate & update);
 
-    void update(const Events::Pathlosses & pathlosses);
+    void modify(const ConfigurationUpdate & update) override;
 
-    void update(const Events::AntennaProfiles & profiles);
+    double operator()(double dPowerdBm, double dDistanceMeters) override
+    {
+      double m{};
 
-    void update(const Events::FadingSelections & selections);
+      if(dDistanceMeters < dDistance0Meters_)
+        {
+          m = dm0_;
+        }
+      else if (dDistanceMeters < dDistance1Meters_)
+        {
+          m = dm1_;
+        }
+      else
+        {
+          m = dm2_;
+        }
+
+      return Utils::MILLIWATT_TO_DB(distribution_(generator_,
+                                                  Distribution::param_type{m,
+                                                      Utils::DB_TO_MILLIWATT(dPowerdBm) / m}));
+    }
 
   private:
-    NEMId nemId_;
-    std::set<NEMId> locationNEMSet_;
-    std::set<NEMId> pathlossNEMSet_;
-    std::set<NEMId> antennaProfileNEMSet_;
-    std::set<NEMId> fadingSelectionNEMSet_;
+    double dm0_;
+    double dm1_;
+    double dm2_;
+    double dDistance0Meters_;
+    double dDistance1Meters_;
+    std::mt19937 generator_;
+    using  Distribution = std::gamma_distribution<>;
+    Distribution distribution_;
 
-    StatisticTable<NEMId> * pLocationTable_;
-    StatisticTable<NEMId> * pPathlossTable_;
-    StatisticTable<NEMId> * pAntennaProfileTable_;
-    StatisticTable<NEMId> * pFadingSelectionTable_;
+    void configure_i(const ConfigurationUpdate & update);
   };
 }
 
-#endif //EMANEEVENTTABLEPUBLISHER_HEADER_
+#endif // EMANENAKAGAMIFADINGALGORITHM_HEADER_
