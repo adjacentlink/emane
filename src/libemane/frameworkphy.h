@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -44,6 +44,7 @@
 #include "propagationmodelalgorithm.h"
 #include "eventtablepublisher.h"
 #include "receivepowertablepublisher.h"
+#include "fadingmanager.h"
 
 #include <set>
 #include <cstdint>
@@ -117,6 +118,7 @@ namespace EMANE
     bool bNoiseMaxClamp_;
     double dSystemNoiseFiguredB_;
     StatisticNumeric<std::uint64_t> * pTimeSyncThresholdRewrite_;
+    FadingManager fadingManager_;
   };
 }
 

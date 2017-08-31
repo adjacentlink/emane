@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+#ifndef EMANEEVENTSFADINGMODEL_HEADER_
+#define EMANEEVENTSFADINGMODEL_HEADER_
 
-#define EMANE_EVENT_LOCATION 100
+namespace EMANE
+{
+  namespace Events
+  {
+    enum class FadingModel
+      {
+        NONE,
+        NAKAGAMI,
+      };
+  };
+}
 
-#define EMANE_EVENT_PATHLOSS 101
-
-#define EMANE_EVENT_ANTENNA_PROFILE 102
-
-#define EMANE_EVENT_COMMEFFECT 103
-
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
-
-#define EMANE_EVENT_TDMA_SCHEDULE 105
-
-#define EMANE_EVENT_FADING_SELECTION 106
-
-#endif // EMANEEVENTIDS_HEADER_
+#endif // EMANEEVENTSFADINGMODEL_HEADER_

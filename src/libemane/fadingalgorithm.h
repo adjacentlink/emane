@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +30,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTIDS_HEADER_
-#define EMANEEVENTIDS_HEADER_
+#ifndef EMANEFADINGALGORITHM_HEADER_
+#define EMANEFADINGALGORITHM_HEADER_
 
-#define EMANE_EVENT_LOCATION 100
+#include "emane/platformserviceprovider.h"
+#include "emane/registrar.h"
 
-#define EMANE_EVENT_PATHLOSS 101
+namespace EMANE
+{
+  class FadingAlgorithm
+  {
+  public:
+    FadingAlgorithm(const std::string & sName,
+                    NEMId id,
+                    PlatformServiceProvider * pPlatformService,
+                    const std::string & sPrefix):
+      sName_{sName},
+      id_{id},
+      pPlatformService_(pPlatformService),
+      sPrefix_{sPrefix}{}
 
-#define EMANE_EVENT_ANTENNA_PROFILE 102
+    virtual ~FadingAlgorithm(){};
 
-#define EMANE_EVENT_COMMEFFECT 103
+    virtual void initialize(Registrar & registrar) = 0;
 
-#define EMANE_EVENT_IEEE80211ABG_ONEHOP_NEIGHBORS 104
+    virtual void configure(const ConfigurationUpdate & update) = 0;
 
-#define EMANE_EVENT_TDMA_SCHEDULE 105
+    virtual void modify(const ConfigurationUpdate & update) = 0;
 
-#define EMANE_EVENT_FADING_SELECTION 106
+    virtual double operator()(double dPowerdBm,
+                              double dDistanceMeters) = 0;
 
-#endif // EMANEEVENTIDS_HEADER_
+    std::string name() const {return sName_;}
+
+  protected:
+    const std::string sName_;
+    const NEMId id_;
+    PlatformServiceProvider * const pPlatformService_;
+    const std::string sPrefix_;
+  };
+}
+
+#endif // EMANEFADINGALGORITHM_HEADER_

@@ -1,5 +1,5 @@
 %AC_COPYRIGHT([
- Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -237,6 +237,7 @@ AC_OUTPUT(
  src/generators/eel/loaders/pathloss/Makefile
  src/generators/eel/loaders/antennaprofile/Makefile
  src/generators/eel/loaders/commeffect/Makefile
+ src/generators/eel/loaders/fadingselection/Makefile
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile

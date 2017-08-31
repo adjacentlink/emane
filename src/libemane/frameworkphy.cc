@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -45,6 +45,8 @@
 #include "emane/events/locationeventformatter.h"
 #include "emane/events/pathlossevent.h"
 #include "emane/events/pathlosseventformatter.h"
+#include "emane/events/fadingselectionevent.h"
+#include "emane/events/fadingselectioneventformatter.h"
 
 #include "emane/controls/frequencycontrolmessage.h"
 #include "emane/controls/frequencyofinterestcontrolmessage.h"
@@ -72,6 +74,9 @@ namespace
   const std::uint16_t DROP_CODE_GAINMANAGER_ANTENNAPROFILE  = 6;
   const std::uint16_t DROP_CODE_NOT_FOI                     = 7;
   const std::uint16_t DROP_CODE_SPECTRUM_CLAMP              = 8;
+  const std::uint16_t DROP_CODE_FADINGMANAGER_LOCATION      = 9;
+  const std::uint16_t DROP_CODE_FADINGMANAGER_ALGORITHM     = 10;
+  const std::uint16_t DROP_CODE_FADINGMANAGER_SELECTION     = 11;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS{"Out-of-Band",
       "Rx Sensitivity",
@@ -80,7 +85,12 @@ namespace
       "Gain Horizon",
       "Gain Profile",
       "Not FOI",
-      "Spectrum Clamp"};
+      "Spectrum Clamp",
+      "Fade Location",
+      "Fade Algorithm",
+      "Fade Select"};
+
+  const std::string FADINGMANAGER_PREFIX{"fading."};
 }
 
 EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
@@ -105,7 +115,8 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   maxSegmentDuration_{},
   timeSyncThreshold_{},
   bNoiseMaxClamp_{},
-  dSystemNoiseFiguredB_{}{}
+  dSystemNoiseFiguredB_{},
+  fadingManager_{id, pPlatformService,FADINGMANAGER_PREFIX}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -116,8 +127,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<double>("fixedantennagain",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                         {0},
-                                         "Defines the antenna gain in dBi and is valid only when"
+                                          {0},
+                                          "Defines the antenna gain in dBi and is valid only when"
                                           " fixedantennagainenable is enabled.");
 
   configRegistrar.registerNumeric<bool>("fixedantennagainenable",
@@ -238,9 +249,9 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  1);
 
   configRegistrar.registerNumeric<double>("txpower",
-                                         EMANE::ConfigurationProperties::DEFAULT |
-                                         EMANE::ConfigurationProperties::MODIFIABLE,
-                                         {0.0},
+                                          EMANE::ConfigurationProperties::DEFAULT |
+                                          EMANE::ConfigurationProperties::MODIFIABLE,
+                                          {0.0},
                                           "Defines the transmit power in dBm.");
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
@@ -250,6 +261,9 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
 
   eventRegistrar.registerEvent(Events::AntennaProfileEvent::IDENTIFIER);
+
+  eventRegistrar.registerEvent(Events::FadingSelectionEvent::IDENTIFIER);
+
   /** [eventservice-registerevent-snippet] */
 
   auto & statisticRegistrar = registrar.statisticRegistrar();
@@ -263,11 +277,14 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   pTimeSyncThresholdRewrite_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("numTimeSyncThresholdRewrite",
                                                       StatisticProperties::CLEARABLE);
+
+  fadingManager_.initialize(registrar);
 }
 
 void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
 {
   FrequencySet foi{};
+  ConfigurationUpdate fadingManagerConfiguration{};
 
   for(const auto & item : update)
     {
@@ -293,7 +310,7 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                   optionalFixedAntennaGaindBi_.first);
+                                  optionalFixedAntennaGaindBi_.first);
 
         }
       else if(item.first == "fixedantennagainenable")
@@ -511,10 +528,19 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
         }
       else
         {
-          throw makeException<ConfigureException>("FrameworkPHY: Unexpected configuration item %s",
-                                                  item.first.c_str());
+          if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
+            {
+              fadingManagerConfiguration.push_back(item);
+            }
+          else
+            {
+              throw makeException<ConfigureException>("FrameworkPHY: Unexpected configuration item %s",
+                                                      item.first.c_str());
+            }
         }
     }
+
+  fadingManager_.configure(fadingManagerConfiguration);
 
   dReceiverSensitivitydBm_ = THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
 
@@ -568,6 +594,8 @@ void EMANE::FrameworkPHY::destroy() throw()
 
 void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & update)
 {
+  ConfigurationUpdate fadingManagerConfiguration{};
+
   for(const auto & item : update)
     {
       if(item.first == "fixedantennagain")
@@ -595,7 +623,16 @@ void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & updat
                                   item.first.c_str(),
                                   dTxPowerdBm_);
         }
+      else
+        {
+          if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
+            {
+              fadingManagerConfiguration.push_back(item);
+            }
+        }
     }
+
+  fadingManager_.modify(fadingManagerConfiguration);
 }
 
 void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
@@ -1000,15 +1037,66 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                           gainInfodBi.first -
                           dPathlossdB};
 
-                      receivePowerTableUpdate.insert(ReceivePowerPubisherUpdate{transmitter.getNEMId(),
-                            freqIter->getFrequencyHz(),
-                            powerdBm});
+                      auto powerdBmInfo = fadingManager_.calculate(transmitter.getNEMId(),
+                                                                   powerdBm,
+                                                                   locationPairInfoRet);
 
-                      ++freqIter;
+                      if(powerdBmInfo.second == FadingManager::FadingStatus::SUCCESS)
+                        {
+                          receivePowerTableUpdate.insert(ReceivePowerPubisherUpdate{transmitter.getNEMId(),
+                                freqIter->getFrequencyHz(),
+                                powerdBmInfo.first});
 
-                      rxPowerSegments[i++] += Utils::DB_TO_MILLIWATT(powerdBm);
+                          ++freqIter;
+
+                          rxPowerSegments[i++] += Utils::DB_TO_MILLIWATT(powerdBmInfo.first);
+                        }
+                      else
+                        {
+                          // drop due to FadingManager not enough info
+                          bDrop = true;
+
+                          std::uint16_t u16Code{};
+
+                          const char * pzReason{};
+
+                          switch(powerdBmInfo.second)
+                            {
+                            case FadingManager::FadingStatus::ERROR_LOCATIONINFO:
+                              pzReason = "fading missing location info";
+                              u16Code = DROP_CODE_FADINGMANAGER_LOCATION;
+                              break;
+                            case FadingManager::FadingStatus::ERROR_ALGORITHM:
+                              pzReason = "fading algorithm error/missing info";
+                              u16Code = DROP_CODE_FADINGMANAGER_ALGORITHM;
+                              break;
+                            case FadingManager::FadingStatus::ERROR_SELECTION:
+                              pzReason = "fading algorithm selection unkown";
+                              u16Code = DROP_CODE_FADINGMANAGER_SELECTION;
+                              break;
+                            default:
+                              pzReason = "unknown";
+                              break;
+                            }
+
+                          commonLayerStatistics_.processOutbound(pkt,
+                                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - now),
+                                                                 u16Code);
+
+                          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                                  DEBUG_LEVEL,
+                                                  "PHYI %03hu FrameworkPHY::%s transmitter %hu,"
+                                                  " src %hu, dst %hu, drop %s",
+                                                  id_,
+                                                  __func__,
+                                                  transmitter.getNEMId(),
+                                                  pktInfo.getSource(),
+                                                  pktInfo.getDestination(),
+                                                  pzReason);
+
+                          break;
+                        }
                     }
-
 
                   for(const auto & entry : receivePowerTableUpdate)
                     {
@@ -1087,7 +1175,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
 
               commonLayerStatistics_.processOutbound(pkt,
                                                      std::chrono::duration_cast<Microseconds>(Clock::now() - now),
-                                                      DROP_CODE_PROPAGATIONMODEL);
+                                                     DROP_CODE_PROPAGATIONMODEL);
 
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
@@ -1171,7 +1259,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                     {
                       commonLayerStatistics_.processOutbound(pkt,
                                                              std::chrono::duration_cast<Microseconds>(Clock::now() - now),
-                                                          DROP_CODE_RX_SENSITIVITY);
+                                                             DROP_CODE_RX_SENSITIVITY);
 
                       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                               DEBUG_LEVEL,
@@ -1282,6 +1370,21 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
                                          id_,
                                          __func__);
 
+      }
+      break;
+
+    case Events::FadingSelectionEvent::IDENTIFIER:
+      {
+        Events::FadingSelectionEvent fadingSelection{serialization};
+        fadingManager_.update(fadingSelection.getFadingSelections());
+        eventTablePublisher_.update(fadingSelection.getFadingSelections());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::FadingSelectionEventFormatter(fadingSelection),
+                                         "PHYI %03hu FrameworkPHY::%s fading selection event: ",
+                                         id_,
+                                         __func__);
       }
       break;
 
