@@ -553,8 +553,8 @@ void EMANE::OTAManager::processOTAMessage()
                                   size_t & totalEventBytes{std::get<1>(iter->second)};
                                   size_t & totalControlBytes{std::get<2>(iter->second)};
                                   size_t & totalDataBytes{std::get<3>(iter->second)};
-                                  auto & parts{std::get<4>(iter->second)};
-                                  auto & lastPartTime{std::get<5>(iter->second)};
+                                  auto & parts = std::get<4>(iter->second);
+                                  auto & lastPartTime = std::get<5>(iter->second);
 
                                   // check to see if first part has been received
                                   if(otaHeader.has_payloadinfo())
@@ -621,23 +621,25 @@ void EMANE::OTAManager::processOTAMessage()
                                     {
                                       auto & payloadInfo = otaHeader.payloadinfo();
 
-                                      partStore_.insert({partKey,{static_cast<size_t>(pPartInfo->u32Size_),
-                                              payloadInfo.eventlength(),
-                                              payloadInfo.controllength(),
-                                              payloadInfo.datalength(),
-                                              parts,
-                                              now,
-                                              uuid}});
+                                      partStore_.insert({partKey,
+					    std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+							    payloadInfo.eventlength(),
+							    payloadInfo.controllength(),
+							    payloadInfo.datalength(),
+							    parts,
+							    now,
+							    uuid)});
                                     }
                                   else
                                     {
-                                      partStore_.insert({partKey,{static_cast<size_t>(pPartInfo->u32Size_),
-                                              0, // event length
-                                              0, // control length
-                                              0, // data length
-                                              parts,
-                                              now,
-                                              uuid}});
+                                      partStore_.insert({partKey,
+					    std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+							    0, // event length
+							    0, // control length
+							    0, // data length
+							    parts,
+							    now,
+							    uuid)});
                                     }
                                 }
                             }
@@ -669,7 +671,7 @@ void EMANE::OTAManager::processOTAMessage()
             {
               for(auto iter = partStore_.begin(); iter != partStore_.end();)
                 {
-                  auto & lastPartTime{std::get<5>(iter->second)};
+                  auto & lastPartTime = std::get<5>(iter->second);
 
                   if(lastPartTime + partTimeoutThreshold_ <= now)
                     {
