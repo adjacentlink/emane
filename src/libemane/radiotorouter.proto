@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -43,17 +45,17 @@ message RadioToRouterNeighborMetrics
     required uint64 numTxFrames = 3;          // number of received frames
     required uint64 numMissedFrames =4 ;      // number of missed frames
     required double bandwidthConsumption = 5; // bandwidth consumption sec
-    required float  sinrAverage = 6;          // avg sinr 
+    required float  sinrAverage = 6;          // avg sinr
     required float  sinrStddev = 7;           // std dev sinr
-    required float  noiseFloorAvg = 8;        // avg noise floor 
-    required float  noiseFloorStddev = 9;     // std dev noise floor 
+    required float  noiseFloorAvg = 8;        // avg noise floor
+    required float  noiseFloorStddev = 9;     // std dev noise floor
     required uint64 rxAvgDataRatebps = 10;    // avg rx data rate in bps
     required uint64 txAvgDataRatebps = 11;    // avg tx data rate in bps
   };
-    
+
   repeated NeighborMetric metrics = 1;
 }
-  
+
 message RadioToRouterQueueMetrics
 {
   message QueueMetric
@@ -64,7 +66,7 @@ message RadioToRouterQueueMetrics
     required uint32 numDiscards = 4;      // queue num discards
     required double avgDelay = 5;         // queue avg delay in seconds
   }
-  
+
   repeated QueueMetric metrics = 1;
 }
 

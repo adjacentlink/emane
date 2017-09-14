@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEEventMessage;
 
 option optimize_for = SPEED;
@@ -37,7 +39,7 @@ option optimize_for = SPEED;
 message OneHopNeighborsEvent
 {
   required uint32 eventSource = 1;
-  
+
   message Neighbor
   {
     required uint32 nemId = 1;
@@ -45,4 +47,3 @@ message OneHopNeighborsEvent
 
   repeated Neighbor neighbors = 2;
 }
-

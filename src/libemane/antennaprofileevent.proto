@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
