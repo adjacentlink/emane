@@ -54,7 +54,7 @@ namespace
 {
   struct PartInfo
   {
-    bool bMore_; /**< More parts to follow*/
+    std::uint8_t u8More_; /**< More parts to follow*/
     std::uint32_t u32Offset_; /**< Offset of payload */
     std::uint32_t u32Size_;     /**< Part size */
   } __attribute__((packed));
@@ -329,7 +329,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
 
           if(otaMTU_ != 0 and totalWireSize > otaMTU_)
             {
-              partInfo.bMore_ = true;
+              partInfo.u8More_ = 1;
               // size of payload only (event + control + packet data)
               // adjusted for MTU and overhead (OTAHeader +
               // PartInfo)
@@ -338,7 +338,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
             }
           else
             {
-              partInfo.bMore_ = false;
+              partInfo.u8More_ = 0;
               // size of payload only (event + control + packet data)
               payloadSize = totalSizeBytes - sentBytes;
               partInfo.u32Size_ = HTONL(payloadSize);
@@ -529,7 +529,7 @@ void EMANE::OTAManager::processOTAMessage()
                          pPartInfo->u32Size_)
                         {
                           // message contained in a single part
-                          if(!pPartInfo->bMore_  && !pPartInfo->u32Offset_)
+                          if(!pPartInfo->u8More_  && !pPartInfo->u32Offset_)
                             {
                               auto & payloadInfo = otaHeader.payloadinfo();
                               handleOTAMessage(otaHeader.source(),
@@ -622,24 +622,24 @@ void EMANE::OTAManager::processOTAMessage()
                                       auto & payloadInfo = otaHeader.payloadinfo();
 
                                       partStore_.insert({partKey,
-					    std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
-							    payloadInfo.eventlength(),
-							    payloadInfo.controllength(),
-							    payloadInfo.datalength(),
-							    parts,
-							    now,
-							    uuid)});
+                                            std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+                                                            payloadInfo.eventlength(),
+                                                            payloadInfo.controllength(),
+                                                            payloadInfo.datalength(),
+                                                            parts,
+                                                            now,
+                                                            uuid)});
                                     }
                                   else
                                     {
                                       partStore_.insert({partKey,
-					    std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
-							    0, // event length
-							    0, // control length
-							    0, // data length
-							    parts,
-							    now,
-							    uuid)});
+                                            std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+                                                            0, // event length
+                                                            0, // control length
+                                                            0, // data length
+                                                            parts,
+                                                            now,
+                                                            uuid)});
                                     }
                                 }
                             }
