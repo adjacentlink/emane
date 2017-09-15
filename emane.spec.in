@@ -1,3 +1,5 @@
+%define with_python3 %{?_with_python3:1} %{?!_with_python3:0}
+
 Summary: EMANE - Extendable Mobile Ad-hoc Network Emulator 
 Name: emane
 Version: @VERSION@
@@ -10,8 +12,39 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Provides: %{name}-transportfactory%{?_isa} = %{version}-%{release}
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 Requires: %{name}-dtds = %{version}-%{release}
-BuildRequires: python-setuptools libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
+BuildRequires: libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
 Vendor: Adjacent Link LLC
+
+
+%if 0%{?fc26}
+%if %{with_python3}
+BuildRequires: python3-devel
+%define use_python_package python3-emane
+%define use_python_setuptools python3-setuptools
+%define use_python_protobuf python3-protobuf
+%define use_python_lxml python3-lxml
+%define use_python_sitelib %{python3_sitelib}
+%else
+BuildRequires: python2-devel
+%define use_python_package python2-emane
+%define use_python_setuptools python2-setuptools
+%define use_python_protobuf python2-protobuf
+%define use_python_lxml python2-lxml
+%define use_python_sitelib %{python2_sitelib}
+%endif
+%else
+%if %{with_python3}
+%{warn: "python3 packaging currently not supported, falling back to python2"}
+%endif
+BuildRequires: python-devel
+%define use_python_package python-emane
+%define use_python_setuptools python-setuptools
+%define use_python_protobuf protobuf-python
+%define use_python_lxml python-lxml
+%define use_python_sitelib %{python_sitelib}
+%endif
+
+BuildRequires: %{use_python_setuptools}
 
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
@@ -38,7 +71,7 @@ EMANE DTDs required for EMANE XML.
 
 %package utils
 Requires: %{name}-dtds = %{version}-%{release}
-Requires: python-lxml
+Requires: %{use_python_lxml}
 Summary: EMANE utilities
 Group:  Applications/System
 BuildArch: noarch
@@ -188,16 +221,16 @@ BuildArch: noarch
 %description manifest
 EMANE Plugin Manifests
 
-%package -n python-emane
-Requires: python-setuptools
-Requires: protobuf-python
-Requires: python-lxml
+%package -n %{use_python_package}
+Requires: %{use_python_setuptools}
+Requires: %{use_python_protobuf}
+Requires: %{use_python_lxml}
 Summary: EMANE Python modules and utilities
 Group: Development/Libraries
 Obsoletes: emanesh
 BuildArch: noarch
 
-%description -n python-emane
+%description -n %{use_python_package}
 EMANE Python modules and utilities
 
 %prep
@@ -205,6 +238,12 @@ EMANE Python modules and utilities
 
 %build
 export CXXFLAGS="%{optflags} -O3 -Wall -Wextra"
+%if %{with_python3}
+export PYTHON=python3
+%else
+export PYTHON=python2
+%endif
+
 %configure
 make %{?_smp_mflags}
 
@@ -513,7 +552,7 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
-%files -n python-emane
+%files -n %{use_python_package}
 %defattr(-,root,root,-)
 %{_bindir}/emanecommand-eel
 %{_bindir}/emaneevent-antennaprofile
@@ -525,8 +564,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
-%{python_sitelib}/emanesh
-%{python_sitelib}/emanesh-%{version}-*.egg-info
+%{use_python_sitelib}/emanesh
+%{use_python_sitelib}/emanesh-%{version}-*.egg-info
+
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}

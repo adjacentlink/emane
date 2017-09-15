@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 #
 
 from . import Event
-import onehopneighborsevent_pb2
+from . import onehopneighborsevent_pb2
 
 class OneHopNeighborsEvent(Event):
     IDENTIFIER = 104
@@ -44,7 +44,7 @@ class OneHopNeighborsEvent(Event):
 
     def getSource(self):
         return self._event.eventSource
-        
+
     def __iter__(self):
         for neighbor in self._event.neighbors:
             yield neighbor.nemId

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,7 @@
 #
 
 from . import Event
-
-import tdmascheduleevent_pb2
+from . import tdmascheduleevent_pb2
 from collections import namedtuple
 import os
 
@@ -48,10 +47,10 @@ class TDMAScheduleEvent(Event):
         self._event = tdmascheduleevent_pb2.TDMAScheduleEvent()
         self._frames = {}
 
-        for (name,value) in kwargs.items():
+        for (name,value) in list(kwargs.items()):
             if name == 'frequency':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value >= 0:
                     self._event.frequencyHz = value
                 else:
@@ -59,7 +58,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'datarate':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value >= 0:
                     self._event.dataRatebps = value
                 else:
@@ -67,7 +66,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'service':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value >= 0:
                     self._event.serviceClass = value
                 else:
@@ -75,7 +74,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'power':
                 if (isinstance(value,int) or \
-                    isinstance(value,long) or \
+                    isinstance(value,int) or \
                     isinstance(value,float)):
                     self._event.powerdBm = value
                 else:
@@ -102,10 +101,10 @@ class TDMAScheduleEvent(Event):
             else:
                 return None
 
-        for (name,value) in kwargs.items():
+        for (name,value) in list(kwargs.items()):
             if name == 'slots':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value > 0:
                     slotsPerFrame = value
                 else:
@@ -113,7 +112,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'frames':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value > 0:
                     framesPerMultiFrame = value
                 else:
@@ -121,7 +120,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'slotduration':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value > 0:
                     slotDurationMicroseconds = value
                 else:
@@ -129,7 +128,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'slotoverhead':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value >= 0:
                     slotOverheadMicroseconds = value
                 else:
@@ -137,7 +136,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'bandwidth':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                     value > 0:
                     bandwidthHz = value
                 else:
@@ -177,10 +176,10 @@ class TDMAScheduleEvent(Event):
            slotIndex in self._frames[frameIndex].slots:
             raise ValueError("slot index already defined for frame")
 
-        for (name,value) in kwargs.items():
+        for (name,value) in list(kwargs.items()):
             if name == 'frame.frequency':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value > 0:
                     frameFrequencyHz = value
                 else:
@@ -188,7 +187,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'frame.datarate':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value > 0:
                     frameDataRatebps = value
                 else:
@@ -196,7 +195,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'frame.service':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value >= 0 and value <= 3:
                     frameClass = value
                 else:
@@ -204,7 +203,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'frame.power':
                 if (isinstance(value,int) or \
-                    isinstance(value,long) or \
+                    isinstance(value,int) or \
                     isinstance(value,float)):
 
                     framePowerdBm = value
@@ -213,7 +212,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'frequency':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value > 0:
                     slotFrequencyHz = value
                 else:
@@ -221,7 +220,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'datarate':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value > 0:
                     slotDataRatebps = value
                 else:
@@ -229,7 +228,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'service':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value >= 0 and value <= 3:
                     slotClass = value
                 else:
@@ -237,7 +236,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'power':
                 if (isinstance(value,int) or \
-                    isinstance(value,long) or \
+                    isinstance(value,int) or \
                     isinstance(value,float)):
                     slotPowerdBm = value
                 else:
@@ -246,7 +245,7 @@ class TDMAScheduleEvent(Event):
 
             elif name == 'destination':
                 if (isinstance(value,int) or \
-                    isinstance(value,long)) and \
+                    isinstance(value,int)) and \
                 value > 0:
                     slotDestination = value
                 else:
@@ -423,85 +422,3 @@ class TDMAScheduleEvent(Event):
             kwargs['slots'] = slots
 
             yield kwargs
-
-
-if __name__ == "__main__":
-    import sys
-    from optparse import OptionParser
-    from emanesh.events import EventService
-    import copy
-    from . import TDMASchedule
-
-    usage="""%prog [OPTION]... TDMASCHEDULEXML
-
-  TDMASCHEDULEXML       TDMA schedule XML file"""
-
-    description="Publish TDMA schedule events to all nodes referenced within the \
-schedule XML. Each node only receives their own schedule information."
-    
-    epilog=""
-
-    class LocalParser(OptionParser):
-        def format_epilog(self, formatter):
-            return self.epilog
-
-    optionParser = LocalParser(usage=usage,
-                               description=description,
-                               epilog=epilog)
-
-    optionParser.add_option("-p",
-                            "--port",
-                            action="store",
-                            type="int",
-                            dest="port",
-                            default=45703,
-                            help="Event channel listen port [default: %default]")
-
-    optionParser.add_option("-g",
-                            "--group",
-                            action="store",
-                            type="string",
-                            dest="group",
-                            default="224.1.2.8",
-                            help="Event channel multicast group [default: %default]")
-
-    optionParser.add_option("-i",
-                            "--device",
-                            action="store",
-                            type="string",
-                            dest="device",
-                            help="Event channel multicast device")
-
-    (options, args) = optionParser.parse_args()
-
-    if len(args) == 1:
-        if os.path.isfile(args[0]):
-            schedule = TDMASchedule(args[0])
-        else:
-            print >>sys.stderr, "unable to open:",args[0]
-            exit(1)
-    else:
-        print >>sys.stderr, "invalid number of arguments"
-        exit(1)
-
-    eventService = EventService((options.group,options.port,options.device))
-
-    info = schedule.info()
-
-    structure = schedule.structure()
-
-    frameDefaults =  schedule.defaultsFrame();
-
-    for nodeId in info:
-        event = TDMAScheduleEvent(**schedule.defaults())
-        for frameIndex in info[nodeId]:
-            for slotIndex,args in info[nodeId][frameIndex].items():
-                defaults = args
-                for key,value in frameDefaults[frameIndex].items():
-                    defaults["frame." + key] = value
-                event.append(frameIndex,slotIndex,**defaults)
-
-        if structure != None:
-            event.structure(**structure)
-
-        eventService.publish(nodeId,event)

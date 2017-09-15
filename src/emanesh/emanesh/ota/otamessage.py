@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import otaheader_pb2
-import commonphyheader_pb2
+from . import otaheader_pb2
+from . import commonphyheader_pb2
 import uuid
 import struct
 
@@ -45,20 +45,20 @@ class OTAMessage:
                  transmitters,
                  segments,
                  fixedAntennaGain = None):
-    
+
         self._sequence = 0
         self._otaHeader = otaheader_pb2.OTAHeader()
         self._otaHeader.source = source
         self._otaHeader.destination = destination
-        self._otaHeader.eventLength = 0
-        self._otaHeader.controlLength = 2
-        self._otaHeader.dataLength = 0
+        self._otaHeader.payloadInfo.eventLength = 0
+        self._otaHeader.payloadInfo.controlLength = 2
+        self._otaHeader.payloadInfo.dataLength = 0
 
         self._phyHeader = commonphyheader_pb2.CommonPHYHeader()
         self._phyHeader.registrationId = registrationId;
         self._phyHeader.subId = subId;
         self._phyHeader.bandwidthHz = bandwidthHz;
-        
+
         if fixedAntennaGain is not None:
             self._phyHeader.fixedAntennaGain = fixedAntennaGain
 
@@ -75,20 +75,26 @@ class OTAMessage:
 
     def generate(self,txTimeMicroseconds,sequence,uuid):
         self._otaHeader.uuid = uuid.bytes
-        self._otaHeader.sequenceNumber = sequence
+        self._otaHeader.sequence = sequence
         self._phyHeader.sequenceNumber = self._sequence;
         self._sequence += 1
         self._phyHeader.txTimeMicroseconds = txTimeMicroseconds;
 
         phyHeader = self._phyHeader.SerializeToString()
-        
-        self._otaHeader.dataLength = len(phyHeader) + 2;
-        
+
+        self._otaHeader.payloadInfo.dataLength = len(phyHeader) + 2;
+
         otaHeader = self._otaHeader.SerializeToString()
-        
+
         return "".join((struct.pack("!H",len(otaHeader)),
                         otaHeader,
+                        # PartInfo: no more parts, offset 0, size
+                        struct.pack("!BII",
+                                    0,
+                                    0,
+                                    self._otaHeader.payloadInfo.dataLength +
+                                    self._otaHeader.payloadInfo.controlLength +
+                                    self._otaHeader.payloadInfo.eventLength),
                         struct.pack("!H",0),
                         struct.pack("!H",len(phyHeader)),
                         phyHeader))
-                       

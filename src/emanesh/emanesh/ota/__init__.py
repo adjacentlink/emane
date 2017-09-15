@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from otapublisherexception import OTAPublisherException
-from otamessage import OTAMessage
-from otapublisher import OTAPublisher
+from .otapublisherexception import OTAPublisherException
+from .otamessage import OTAMessage
+from .otapublisher import OTAPublisher

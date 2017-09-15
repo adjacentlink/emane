@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,13 +35,13 @@ from lxml import etree
 from . import ManifestException
 
 def toBool(value):
-    
+
     if value == "yes" or \
             value == "true":
         return True
     else:
         return False
-    
+
 class Manifest:
     def __init__(self,filename):
         self._statistics = {}
@@ -81,7 +81,7 @@ class Manifest:
 
             if regexes:
                 regex = regexes[0].text
-            
+
             entry = { 'default' : toBool(parameter.get('default')),
                       'required' : toBool(parameter.get('required')),
                       'modifiable' : toBool(parameter.get('modifiable')),
@@ -90,7 +90,7 @@ class Manifest:
                       'minOccurs' : int(values.get("minOccurs")),
                       'maxOccurs' : int(values.get("maxOccurs")),
                       'values' : [x.text for x in  values.xpath('value')]}
-            
+
             numeric = parameter.xpath('numeric')
 
             if numeric:
@@ -104,8 +104,8 @@ class Manifest:
                 entry['nonnumeric'] = { 'type' : nonnumeric.get('type')}
 
             self._configuration[parameter.get('name')] = entry
-        
-    
+
+
         for element in root.xpath('/manifest/plugin/statistics/element'):
             description = ""
 
@@ -134,25 +134,25 @@ class Manifest:
         return self._name
 
     def getAllConfiguration(self):
-        return self._configuration.keys()
+        return list(self._configuration.keys())
 
     def getModifiableConfiguration(self):
-        return [name for name,value in self._configuration.items()
+        return [name for name,value in list(self._configuration.items())
                 if value['modifiable']]
 
     def getAllStatistics(self):
-        return self._statistics.keys()
+        return list(self._statistics.keys())
 
     def getClearableStatistics(self):
-        return [name for name,value in self._statistics.items()
+        return [name for name,value in list(self._statistics.items())
                 if value['clearable']]
 
     def getClearableTables(self):
-        return [name for name,value in self._tables.items()
+        return [name for name,value in list(self._tables.items())
                 if value['clearable']]
 
     def getAllTables(self):
-        return self._tables.keys()
+        return list(self._tables.keys())
 
     def getConfigurationInfo(self,name):
         if name in self._configuration:
@@ -164,13 +164,10 @@ class Manifest:
         if name in self._statistics:
             return self._statistics[name]
         else:
-            raise ManifestException("unknown statistic element: %s" % name)    
+            raise ManifestException("unknown statistic element: %s" % name)
 
     def getTableInfo(self,name):
         if name in self._tables:
             return self._tables[name]
         else:
             raise ManifestException("unknown table: %s" % name)
-
-
-

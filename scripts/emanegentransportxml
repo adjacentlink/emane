@@ -31,11 +31,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import absolute_import, division, print_function
 from lxml import etree
 from optparse import OptionParser
 import sys
 import os.path
-from urlparse import urljoin
+
+try:
+    from urlparse import urljoin
+except:
+    from urllib.parse import urljoin
 
 usage = "%prog [OPTION].. PLATFORMXML..."
 
@@ -67,7 +72,7 @@ optionParser.add_option("-o",
 
 if options.outpath:
     if not os.path.isdir(options.outpath):
-        print >>sys.stderr, "error output directory does not exist:",options.outpath
+        print("error output directory does not exist:",options.outpath, file=sys.stderr)
         exit(1)
 
 
@@ -79,22 +84,22 @@ try:
     # process all platform XML files present on the command line
     for platform in args:
         if options.verbose:
-            print "processing XML:",platform
+            print("processing XML:",platform)
 
         parser = etree.XMLParser(dtd_validation=True)
 
         # parse and validate
         try:
             tree = etree.parse(platform, parser)
-        except etree.XMLSyntaxError, exp:
-            print >>sys.stderr, "error %s:" %platform,exp
+        except etree.XMLSyntaxError as exp:
+            print("error %s:" %platform,exp, file=sys.stderr)
             exit(1)
 
         root = tree.getroot()
 
         # verify the XML is platform file
         if root.tag != 'platform':
-            print >>sys.stderr,  "error %s:" % platform,"wrong document type"
+            print("error %s:" % platform,"wrong document type", file=sys.stderr)
 
         for nem in root.xpath('nem'):
             nemId = int(nem.get('id'))
@@ -112,11 +117,11 @@ try:
             protocol = nem.find("param/[@name='protocol']")
 
             if platformendpoint is None:
-                print >>sys.stderr, "error %s:" % platform," missing 'platformendpoint' for NEM",nemId
+                print("error %s:" % platform," missing 'platformendpoint' for NEM",nemId, file=sys.stderr)
                 exit(1)
 
             if transportendpoint is None:
-                print >>sys.stderr, "error %s:" % platform," missing 'transportendpoint' for NEM",nemId
+                print("error %s:" % platform," missing 'transportendpoint' for NEM",nemId, file=sys.stderr)
                 exit(1)
 
 
@@ -132,7 +137,7 @@ try:
             # load nem XML
             try:
                 if options.verbose:
-                    print "processing XML:",nemDefinition
+                    print("processing XML:",nemDefinition)
 
                 nemTree = etree.parse(urljoin(platform,nemDefinition),parser)
 
@@ -142,13 +147,13 @@ try:
                     if 'definition' not in metas[nemId]:
                         metas[nemId]['definition'] = transportDefinition
                     elif metas[nemId]['definition'] != transportDefinition:
-                        print >>sys.stderr, "error %s:" % nemDefinition," inconsistent transport selected for NEM",nemId
+                        print("error %s:" % nemDefinition," inconsistent transport selected for NEM",nemId, file=sys.stderr)
                         exit(1)
 
                     # load transport XML
                     try:
                         if options.verbose:
-                            print "processing XML:",transportDefinition
+                            print("processing XML:",transportDefinition)
 
                         transportTree = etree.parse(urljoin(platform,transportDefinition),parser)
 
@@ -164,8 +169,8 @@ try:
                             for item in paramlist.xpath('item'):
                                 instances[nemId][paramlist.get('name')].append(item.get('value'))
 
-                    except etree.XMLSyntaxError, exp:
-                        print >>sys.stderr, "error %s:" % transportDefinition,exp
+                    except etree.XMLSyntaxError as exp:
+                        print("error %s:" % transportDefinition,exp, file=sys.stderr)
                         exit(1)
 
                     # process nem XML parameters
@@ -180,8 +185,8 @@ try:
                         for item in paramlist.xpath('item'):
                             instances[nemId][paramlist.get('name')].append(item.get('value'))
 
-            except etree.XMLSyntaxError, exp:
-                print >>sys.stderr, "error %s:" % nemDefinition,exp
+            except etree.XMLSyntaxError as exp:
+                print("error %s:" % nemDefinition,exp, file=sys.stderr)
                 exit(1)
 
             transport = nem.find('transport')
@@ -200,7 +205,7 @@ try:
                 if 'definition' not in metas[nemId]:
                     metas[nemId]['definition'] = transportDefinition
                 elif metas[nemId]['definition'] != transportDefinition:
-                    print >>sys.stderr, "error %s:" % platform," inconsistent transport selected for NEM",nemId
+                    print("error %s:" % platform," inconsistent transport selected for NEM",nemId, file=sys.stderr)
                     exit(1)
 
                 # process platform XML nem element transport parameters
@@ -222,8 +227,8 @@ try:
             groups[group].append(nemId)
 
 
-except IOError,exp:
-    print >>sys.stderr, "error:",exp
+except IOError as exp:
+    print("error:",exp, file=sys.stderr)
     exit(1)
 
 # create the transport daemon files
@@ -258,7 +263,7 @@ for members in sorted(groups.values()):
                                             definition=metas[nemId]['definition'])
 
 
-        for name,value in params.items():
+        for name,value in list(params.items()):
             if len(value) == 1:
                 etree.SubElement(transportElement,'param', name=name,value=value[0])
             else:
@@ -281,15 +286,15 @@ for members in sorted(groups.values()):
         etree.XML(xml,parser)
 
         if options.verbose:
-            print "generating XML:",target
+            print("generating XML:",target)
 
         output=open(os.path.join(options.outpath,target),'w')
 
-        print >>output,xml
+        print(xml, file=output)
 
         output.close()
 
-    except etree.XMLSyntaxError, exp:
-        print >>sys.stderr, "error %s:" % target, "unable to validate target xml"
-        print >>sys.stderr, exp
+    except etree.XMLSyntaxError as exp:
+        print("error %s:" % target, "unable to validate target xml", file=sys.stderr)
+        print(exp, file=sys.stderr)
         exit(1)

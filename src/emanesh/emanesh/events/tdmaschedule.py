@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import absolute_import, division, print_function
 from pkg_resources import resource_filename
 import sys
 import re
@@ -85,7 +86,7 @@ def expandIndex(index):
         match = re.match("(\d+):(\d+)",item)
 
         if match:
-            map(lambda x: result.add(x),range(int(match.group(1)),int(match.group(2))+1))
+            list(map(lambda x: result.add(x),list(range(int(match.group(1)),int(match.group(2))+1))))
         else:
             result.add(int(item))
 
@@ -110,14 +111,14 @@ class TDMASchedule(object):
             message = []
             for entry in schema.error_log:
                 message.append("%d: %s" % (entry.line,entry.message))
-            print >>sys.stderr, "\n".join(message)
+            print("\n".join(message), file=sys.stderr)
             exit(1)
 
         # if structrure is present this is a full schedule
         for structure in root.xpath('/emane-tdma-schedule/structure'):
-            self._structure = {'slotduration' : long(structure.get('slotduration')),
-                               'slotoverhead' : long(structure.get('slotoverhead')),
-                               'bandwidth' : long(decodeSI(structure.get('bandwidth'))),
+            self._structure = {'slotduration' : int(structure.get('slotduration')),
+                               'slotoverhead' : int(structure.get('slotoverhead')),
+                               'bandwidth' : int(decodeSI(structure.get('bandwidth'))),
                                'slots' : int(structure.get('slots')),
                                'frames' : int(structure.get('frames'))}
 
@@ -129,7 +130,7 @@ class TDMASchedule(object):
             defaults = {}
 
             if frequency != None:
-                defaults['frequency'] = long(frequency)
+                defaults['frequency'] = int(frequency)
 
             if power != None:
                 defaults['power'] = float(power)
@@ -138,7 +139,7 @@ class TDMASchedule(object):
                 defaults['service'] = int(serviceClass)
 
             if datarate != None:
-                defaults['datarate'] = long(datarate)
+                defaults['datarate'] = int(datarate)
 
             return defaults
 
@@ -172,7 +173,7 @@ class TDMASchedule(object):
                         frequency = decodeSI(child.get('frequency'))
 
                         if frequency != None:
-                            args['frequency'] = long(frequency)
+                            args['frequency'] = int(frequency)
 
                         power = child.get('power')
 
@@ -188,7 +189,7 @@ class TDMASchedule(object):
                         datarate = decodeSI(child.get('datarate'))
 
                         if datarate != None:
-                            args['datarate'] = long(datarate)
+                            args['datarate'] = int(datarate)
 
                         destination = child.get('destination')
 
@@ -201,7 +202,7 @@ class TDMASchedule(object):
                         frequency = decodeSI(child.get('frequency'))
 
                         if frequency != None:
-                            args['frequency'] = long(frequency)
+                            args['frequency'] = int(frequency)
 
                     else:
                         args['type'] = 'idle'

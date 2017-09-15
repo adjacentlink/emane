@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013-2014,2017 - Adjacent Link LLC, Bridgewater,
+# New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,13 +31,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import remotecontrolportapi_pb2
+from . import remotecontrolportapi_pb2
 from . import ControlPortException
 import socket
 import sys
 import select
 import struct
-import threading 
+import threading
 import os
 
 def fromAny(any):
@@ -142,9 +143,9 @@ class ControlPortClient:
         self._disconnect = disconnect
         self._buffer = None
         self._messageLengthBytes = 0
-        self._sock =  socket.socket()  
+        self._sock =  socket.socket()
         self._connected = True
-        
+
         try:
             self._sock.connect((hostname,port))
         except:
@@ -156,10 +157,10 @@ class ControlPortClient:
         self._lock = threading.Lock()
         self._read,self._write = os.pipe()
         self._thread = threading.Thread(target=self._run)
-        self._thread.start() 
+        self._thread.start()
 
     def start(self):
-        self._thread.start() 
+        self._thread.start()
 
     def stop(self):
         os.write(self._write,"\n")
@@ -170,7 +171,7 @@ class ControlPortClient:
         request = remotecontrolportapi_pb2.Request()
         request.type = remotecontrolportapi_pb2.Request.TYPE_REQUEST_QUERY
         request.query.type = remotecontrolportapi_pb2.TYPE_QUERY_MANIFEST
-        
+
         response = self._sendMessage(request)
 
         if response.type == remotecontrolportapi_pb2.Response.TYPE_RESPONSE_QUERY:
@@ -324,14 +325,14 @@ class ControlPortClient:
         request.type = remotecontrolportapi_pb2.Request.TYPE_REQUEST_UPDATE
         request.update.type = remotecontrolportapi_pb2.TYPE_UPDATE_CONFIGURATION
         request.update.configuration.buildId = buildId
-        
+
         for (name,dataType,values) in updates:
             parameter = request.update.configuration.parameters.add()
             parameter.name = name
             for value in values:
                 any = parameter.values.add()
                 toAny(any,value,dataType)
-            
+
         response = self._sendMessage(request)
 
         if response.type == remotecontrolportapi_pb2.Response.TYPE_RESPONSE_UPDATE:
@@ -388,7 +389,7 @@ class ControlPortClient:
 
         if self._connected:
             response =  self._responseMap[sequence]
-        
+
             del self._responseMap[sequence]
 
             del self._eventMap[sequence]
@@ -411,7 +412,7 @@ class ControlPortClient:
 
         while running:
             readable,_,_ = select.select([self._sock,self._read],[],[])
-    
+
             for fd in readable:
                 if fd is self._sock:
                     if not messageLengthBytes:
@@ -438,7 +439,7 @@ class ControlPortClient:
 
                         if(len(buffer) == messageLengthBytes):
                             response = remotecontrolportapi_pb2.Response()
-                            
+
                             response.ParseFromString(buffer)
 
                             self._lock.acquire()
@@ -446,7 +447,7 @@ class ControlPortClient:
                             if response.reference in self._eventMap:
                                 self._responseMap[response.reference] = response
                                 self._eventMap[response.reference].set()
-                                
+
                             self._lock.release()
 
                             messageLengthBytes = 0
@@ -460,11 +461,10 @@ class ControlPortClient:
 
         self._connected = False
 
-        for event in self._eventMap.values():
+        for event in list(self._eventMap.values()):
             event.set()
 
         self._lock.release()
 
         if self._disconnect:
             self._disconnect()
-                    

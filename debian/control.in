@@ -26,7 +26,7 @@ Description:  EMANE DTDs required for EMANE XML.
 Package: emane-utils
 Section: text
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, emane-dtds (= ${binary:Version}), python-lxml
+Depends: ${python-lxml:Depends}, ${misc:Depends}, emane-dtds (= ${binary:Version})
 Description:  EMANE utilities
 
 Package: emane-libs
@@ -128,10 +128,9 @@ Architecture: all
 Depends: ${misc:Depends}
 Description:  EMANE Plugin Manifests
 
-Package: python-emane
+Package: python@PYTHON_MAJOR_VERSION@-emane
 Section: python
 Architecture: all
-Provides: ${python:Provides}
-Depends: ${python:Depends}, ${misc:Depends}, python-pkg-resources, python-protobuf, python-lxml
+Depends: ${python:Depends}, ${misc:Depends}
 Replaces: emanesh
 Description: EMANE Python modules and utilities

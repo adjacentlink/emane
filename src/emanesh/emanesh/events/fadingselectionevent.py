@@ -31,7 +31,7 @@
 #
 
 from . import Event
-import fadingselectionevent_pb2
+from . import fadingselectionevent_pb2
 
 class FadingSelectionEvent(Event):
     IDENTIFIER = 106
@@ -47,7 +47,7 @@ class FadingSelectionEvent(Event):
 
         entry.nemId = nemId
 
-        for (name,value) in kwargs.items():
+        for (name,value) in list(kwargs.items()):
 
             if name == 'model':
                 if value == 'none':
@@ -82,174 +82,3 @@ class FadingSelectionEvent(Event):
             kwargs = {'model' : model}
 
             yield (entry.nemId,kwargs)
-
-
-
-if __name__ == "__main__":
-    import sys
-    from optparse import OptionParser
-    from emanesh.events import EventService
-
-    usage = "emaneevent-fadingselection [OPTION]... NEMID[:NEMID] MODEL"
-
-    description="Publish a fading selection event to all or some of the NEMs specified in a range."
-
-    epilog="""
-The NEM range specification creates a logical two dimensional matrix.
-
-For example:
-
-  emaneevent-fadingselection 1:10 nakagami
-
-Will create the following logical matrix:
-
-       Transmitters
-
-       1  2  3  4  5  6  7  8  9  10
-R   1     M  M  M  M  M  M  M  M  M
-e   2  M     M  M  M  M  M  M  M  M
-c   3  M  M     M  M  M  M  M  M  M
-e   4  M  M  M     M  M  M  M  M  M
-i   5  M  M  M  M     M  M  M  M  M
-v   6  M  M  M  M  M     M  M  M  M
-e   7  M  M  M  M  M  M     M  M  M
-r   8  M  M  M  M  M  M  M     M  M
-s   9  M  M  M  M  M  M  M  M     M
-   10  M  M  M  M  M  M  M  M  M
-
-where, M is nakagami.
-
-Each NEM receives one event with its respective matrix slice
-containing the fading selection to use for each respective
-transmitter.
-
-This example will publish 10 fading selection events, each event will
-target a specific NEM in the range [1,10].
-
-You can use the '--target' option and the '--reference' to specifically
-target one or more NEMs with one of more of the transmitter values. The
-NEMs specified with '--target' do not have to be in the range.
-
-For example:
-
-  emaneevent-fadingselection 1:10 nakagami -t 3 -t 4 -r 8 -r 9 -r 10
-
-Will send events to NEM 3 and 4 containing the transmitter information
-for NEMs 8, 9 and 10.
-
-  emaneevent-fadingselection 13 none -t 7 -t 8
-
-will send a fading selection event to NEM 7 and 8 with a single fading
-selection of none for packets transmitted by NEM 13.
-
-  emaneevent-fadingselection 15 110 -t nakagami
-
-will send a fading selection event to all NEMs with a single entry of
-nakagami for packets transmitted by NEM 15.
-
-Asymmetric fading can be achieved my invoking
-emaneevent-fadingselection multiple times with different targets.
-
-"""
-
-    class LocalParser(OptionParser):
-        def format_epilog(self, formatter):
-            return self.epilog
-
-    optionParser = LocalParser(usage=usage,
-                               description=description,
-                               epilog=epilog)
-
-    optionParser.add_option("-p",
-                            "--port",
-                            action="store",
-                            type="int",
-                            dest="port",
-                            default=45703,
-                            help="Event channel listen port [default: %default]")
-
-    optionParser.add_option("-g",
-                            "--group",
-                            action="store",
-                            type="string",
-                            dest="group",
-                            default="224.1.2.8",
-                            help="Event channel multicast group [default: %default]")
-
-    optionParser.add_option("-i",
-                            "--device",
-                            action="store",
-                            type="string",
-                            dest="device",
-                            help="Event channel multicast device")
-
-    optionParser.add_option("-t",
-                            "--target",
-                            action="append",
-                            type="int",
-                            dest="target",
-                            help="Only send an event to the target")
-
-    optionParser.add_option("-r",
-                            "--reference",
-                            action="append",
-                            type="int",
-                            dest="reference",
-                            help="Send events to targeted NEMs but only include information for the reference NEM.")
-
-
-    (options, args) = optionParser.parse_args()
-
-    service = EventService((options.group,options.port,options.device))
-
-    if len(args) < 2:
-        print >>sys.stderr,"missing arguments"
-        exit(1)
-
-    nems = args[0].split(':')
-
-    if len(nems) == 0 or len(nems) > 2:
-        print >>sys.stderr,"invalid NEMID format:",args[0]
-        exit(1)
-
-    try:
-        nems = [int(x) for x in nems]
-    except:
-        print >>sys.stderr,"invalid NEMID format:",args[0]
-        exit(1)
-
-    if len(nems) > 1:
-        nems = range(nems[0],nems[1]+1)
-
-    if not nems:
-        print >>sys.stderr,"invalid NEMID format:",args[0]
-        exit(1)
-
-    model = args[1]
-
-    if model not in FadingSelectionEvent.MODELS:
-        print >>sys.stderr,"invalid model:",args[1]
-        exit(1)
-
-    if nems[0] == 0:
-        print >>sys.stderr,"0 is not a valid NEMID"
-        exit(1)
-
-
-    if options.target:
-        targets = options.target
-    else:
-        targets = nems
-
-    if options.reference:
-        references = options.reference
-    else:
-        references = nems
-
-    for i in targets:
-        event = FadingSelectionEvent()
-        for j in nems:
-            if i != j and j in references:
-                event.append(j,model=model)
-
-        service.publish(i,event)

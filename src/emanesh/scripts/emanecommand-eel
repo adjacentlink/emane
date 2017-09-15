@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2014 ,2017- Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import absolute_import, division, print_function
 import re
 import sys
 import time
@@ -45,15 +46,14 @@ class TimeStampedLog:
 
    def write(self, data):
        self._buffer  =  self._buffer + data
-       
+
        index = self._buffer.find("\n")
-       
+
        if index != -1:
            now = time.time()
 
-           print >>self._stream, \
-              "%s:%06d" % (time.strftime("%H:%M:%S",time.localtime(now)), \
-                           (now - int(now)) * 1000000), self._buffer[:index]
+           print("%s:%06d" % (time.strftime("%H:%M:%S",time.localtime(now)), \
+                           (now - int(now)) * 1000000), self._buffer[:index], file=self._stream)
 
            self._stream.flush()
            self._buffer = self._buffer[index:].lstrip()
@@ -88,24 +88,24 @@ optionParser =  LocalParser(usage=usage,
                             description=description,
                             epilog=epilog)
 
-optionParser.add_option("", 
+optionParser.add_option("",
                         "--starttime",
                         action="store",
                         type="string",
                         dest="starttime",
                         help="Specify test start time HH:MM:SS")
 
-optionParser.add_option("", 
+optionParser.add_option("",
                         "--logfile",
                         action="store",
                         type="string",
                         dest="logfile",
-                        help="Write logs to file")      
+                        help="Write logs to file")
 
 (options, args) = optionParser.parse_args()
 
 if len(args) != 1:
-    print >>sys.stderr,"invalid number of arguments"
+    print("invalid number of arguments", file=sys.stderr)
     exit(1)
 
 scenario = open(args[0], 'r')
@@ -115,7 +115,7 @@ if options.starttime:
 
     if m:
         now = time.localtime()
-        
+
         startTime = time.mktime((now.tm_year,
                                 now.tm_mon,
                                 now.tm_mday,
@@ -127,11 +127,11 @@ if options.starttime:
                                 -1))
 
         if startTime < time.time():
-           print >>sys.stderr,"start time in the past"
-           exit(1) 
+           print("start time in the past", file=sys.stderr)
+           exit(1)
 
     else:
-        print >>sys.stderr,"invalid start time format"
+        print("invalid start time format", file=sys.stderr)
         exit(1)
 
 else:
@@ -143,10 +143,10 @@ if options.logfile:
 sys.stdout = TimeStampedLog(sys.stdout)
 sys.stderr = sys.stdout
 
-# parse the input file and create/send events 
+# parse the input file and create/send events
 for line in scenario:
    m = re.match("^(\d+(\.\d+){0,1})\s+([^:]+):(\d+)\s+emanesh+(.+)$",line)
-   
+
    if m:
       eventTime =  float(m.group(1))
       node =  m.group(3)
@@ -156,19 +156,19 @@ for line in scenario:
       try:
          # connect to emulator instance
          shell = EMANEShell(node,port)
-         
+
          currentTime = time.time()
          absEventTime = eventTime + startTime
-         
+
          # wait for the event time
          if absEventTime > currentTime:
             time.sleep(absEventTime - currentTime)
-            
-         print "emanesh %s:%d" % (node,port),remainder
+
+         print("emanesh %s:%d" % (node,port),remainder)
          shell.onecmd(remainder)
          shell.onecmd('exit')
-      except ControlPortException, exp:
-         print >>sys.stderr,exp
+      except ControlPortException as exp:
+         print(exp, file=sys.stderr)
          exit(1)
       except KeyboardInterrupt:
          if shell:

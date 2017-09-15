@@ -31,14 +31,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from event import Event
-from eventserviceexception import EventServiceException
-from eventservice import EventService
-from locationevent import LocationEvent
-from pathlossevent import PathlossEvent
-from commeffectevent import CommEffectEvent
-from antennaprofileevent import AntennaProfileEvent
-from onehopneighborsevent import OneHopNeighborsEvent
-from tdmascheduleevent import TDMAScheduleEvent
-from tdmaschedule import TDMASchedule
-from fadingselectionevent import FadingSelectionEvent
+from .event import Event
+from .eventserviceexception import EventServiceException
+from .eventservice import EventService
+from .locationevent import LocationEvent
+from .pathlossevent import PathlossEvent
+from .commeffectevent import CommEffectEvent
+from .antennaprofileevent import AntennaProfileEvent
+from .onehopneighborsevent import OneHopNeighborsEvent
+from .tdmascheduleevent import TDMAScheduleEvent
+from .tdmaschedule import TDMASchedule
+from .fadingselectionevent import FadingSelectionEvent

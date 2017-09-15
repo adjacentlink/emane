@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from controlportexception import ControlPortException
-from controlportclient import ControlPortClient
-from manifestexception import ManifestException
-from manifest import Manifest
-from emaneshell import EMANEShell
+from .controlportexception import ControlPortException
+from .controlportclient import ControlPortClient
+from .manifestexception import ManifestException
+from .manifest import Manifest
+from .emaneshell import EMANEShell

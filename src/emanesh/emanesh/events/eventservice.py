@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import event_pb2
+from . import event_pb2
 from ..ota import otaheader_pb2
 from . import EventServiceException
 import os
@@ -42,7 +42,7 @@ import struct
 import select
 import time
 import uuid
-import pprint
+import sys
 
 def get_ip_address(ifname):
     # http://code.activestate.com/recipes/439094/
@@ -50,7 +50,7 @@ def get_ip_address(ifname):
     return socket.inet_ntoa(fcntl.ioctl(
         s.fileno(),
         0x8915,  # SIOCGIFADDR
-        struct.pack('256s', ifname[:15])
+        struct.pack('256s', ifname[:15].encode() if sys.version_info >= (3,0) else ifname[:15])
     )[20:24])
 
 
@@ -58,28 +58,43 @@ def init_multicast_socket(group,port,device):
     try:
         sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
-    except socket.error, msg :
-        raise EventServiceException("event socket failure %s %s" % (str(msg[0]), msg[1]),True)
+    except socket.error as msg :
+        if sys.version_info >= (3,3):
+            raise EventServiceException("event socket failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("event socket failure %s %s" % (str(msg[0]), msg[1]),True)
 
     try:
         sock.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL,32)
-    except socket.error, msg :
-        raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
+    except socket.error as msg :
+        if sys.version_info >= (3,3):
+            raise EventServiceException("event socket option failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
 
     try:
         sock.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_LOOP,1)
-    except socket.error, msg :
-        raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
+    except socket.error as msg :
+        if sys.version_info >= (3,3):
+            raise EventServiceException("event socket option failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
 
     try:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    except socket.error, msg :
-        raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
+    except socket.error as msg :
+        if sys.version_info >= (3,3):
+            raise EventServiceException("event socket option failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("event socket option failure %s %s" % (str(msg[0]), msg[1]),True)
 
     try:
         sock.bind((group,port))
     except socket.error as msg:
-        raise EventServiceException("bind failure %s %s" % (str(msg[0]), msg[1]),True)
+        if sys.version_info >= (3,3):
+            raise EventServiceException("bind failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("bind failure %s %s" % (str(msg[0]), msg[1]),True)
 
     try:
         if device:
@@ -89,7 +104,7 @@ def init_multicast_socket(group,port,device):
 
         sock.setsockopt(socket.SOL_IP,
                         socket.IP_ADD_MEMBERSHIP,
-                        socket.inet_aton(group) + 
+                        socket.inet_aton(group) +
                         devAddress)
 
         sock.setsockopt(socket.SOL_IP,
@@ -98,7 +113,10 @@ def init_multicast_socket(group,port,device):
 
 
     except socket.error as msg:
-        raise EventServiceException("mulicast add membership failure %s %s" % (str(msg[0]), msg[1]),True)
+        if sys.version_info >= (3,3):
+            raise EventServiceException("mulicast add membership failure %s" % str(msg),True)
+        else:
+            raise EventServiceException("mulicast add membership failure %s %s" % (str(msg[0]), msg[1]),True)
 
     except IOError:
         raise  EventServiceException("unknown device %s" % device,True)
@@ -125,7 +143,7 @@ class EventService:
         self._lock = threading.Lock()
 
     def breakloop(self):
-        os.write(self._writeFd,"\n")
+        os.write(self._writeFd,"\n".encode())
 
     def loop(self,default=None):
         buffer = ""
@@ -136,12 +154,12 @@ class EventService:
 
             if self._socketOTA:
                 rdfds.append(self._socketOTA)
-                
+
             try:
                 readable,_,_ = select.select(rdfds,[],[])
             except select.error:
                 continue
-    
+
             for fd in readable:
                 if fd is self._socket:
                     data,_ = self._socket.recvfrom(65535)
@@ -173,9 +191,9 @@ class EventService:
                                             serialization.eventId,
                                             serialization.data,
                                             uuid.UUID(bytes=event.uuid),
-                                            event.sequenceNumber)                              
+                                            event.sequenceNumber)
                             finally:
-                                self._lock.release()  
+                                self._lock.release()
 
                 elif fd is self._readFd:
                     running = False
@@ -183,15 +201,15 @@ class EventService:
 
                 elif fd is self._socketOTA:
                     data,_ = self._socketOTA.recvfrom(65535)
-                    
+
                     if not len(data):
                         running = False
                         break
-                    
+
                     (headerLength,) = struct.unpack_from("!H",data)
-                    
+
                     otaHeader = otaheader_pb2.OTAHeader()
-                    
+
                     otaHeader.ParseFromString(data[2:headerLength+2])
 
                     eventData = event_pb2.Event.Data()
@@ -202,7 +220,7 @@ class EventService:
                         self._lock.acquire()
 
                         try:
-                            
+
                             if serialization.eventId in self._handlers:
                                 self._handlers[serialization.eventId](serialization.nemId,
                                                                       serialization.eventId,
@@ -214,9 +232,9 @@ class EventService:
                                         serialization.eventId,
                                         serialization.data,
                                         uuid.UUID(bytes=otaHeader.uuid),
-                                        otaHeader.sequenceNumber)                              
+                                        otaHeader.sequenceNumber)
                         finally:
-                            self._lock.release()   
+                            self._lock.release()
 
 
     def nextEvent(self):
@@ -230,11 +248,11 @@ class EventService:
 
                 if self._socketOTA:
                     rdfds.append(self._socketOTA)
-                
+
                 readable,_,_ = select.select(rdfds,[],[])
             except select.error:
                 continue
-    
+
             for fd in readable:
                 if fd is self._socket:
                     data,_ = self._socket.recvfrom(65535)
@@ -265,15 +283,15 @@ class EventService:
 
                 elif fd is self._socketOTA:
                     data,_ = self._socketOTA.recvfrom(65535)
-                    
+
                     if not len(data):
                         running = False
                         break
-                    
+
                     (headerLength,) = struct.unpack_from("!H",data)
-                    
+
                     otaHeader = otaheader_pb2.OTAHeader()
-                    
+
                     otaHeader.ParseFromString(data[2:headerLength+2])
 
                     eventData = event_pb2.Event.Data()
@@ -308,186 +326,19 @@ class EventService:
             del self._handlers[eventId]
 
         self._lock.release()
- 
+
 
     def publish(self,nemId,event):
         self._sequenceNumber += 1
-        msg = event_pb2.Event() 
+        msg = event_pb2.Event()
         msg.uuid = self._uuid.bytes
         msg.sequenceNumber =  self._sequenceNumber
         serialization = msg.data.serializations.add()
         serialization.nemId = nemId
         serialization.eventId = event.IDENTIFIER
         serialization.data = event.serialize()
-        
+
         buf = msg.SerializeToString()
-        
+
         self._socket.sendto(struct.pack("!H",len(buf)) + buf,
                             (self._multicastGroup,self._port))
-
-
-if __name__ == "__main__":
-    import signal
-    from optparse import OptionParser
-    from emanesh.events import LocationEvent
-    from emanesh.events import PathlossEvent
-    from emanesh.events import CommEffectEvent
-    from emanesh.events import AntennaProfileEvent
-    from emanesh.events import OneHopNeighborsEvent
-    from emanesh.events import TDMAScheduleEvent
-    from emanesh.events import FadingSelectionEvent
- 
-    usage = "emaneeventdump [OPTION]..."
-
-    optionParser = OptionParser(usage=usage)
-
-    optionParser.add_option("-p", 
-                            "--port",
-                            action="store",
-                            type="int",
-                            dest="port",
-                            default=45703,
-                            help="Event channel listen port [default: %default]")
-
-    optionParser.add_option("-g", 
-                            "--group",
-                            action="store",
-                            type="string",
-                            dest="group",
-                            default="224.1.2.8",
-                            help="Event channel multicast group [default: %default]")
-
-    optionParser.add_option("-i",
-                            "--device",
-                            action="store",
-                            type="string",
-                            dest="device",
-                            help="Event channel multicast device")
-
-
-    optionParser.add_option("--port-ota",
-                            action="store",
-                            type="int",
-                            dest="port_ota",
-                            default=45702,
-                            help="OTA channel listen port [default: %default]")
-
-    optionParser.add_option("--group-ota",
-                            action="store",
-                            type="string",
-                            dest="group_ota",
-                            default="224.1.2.8",
-                            help="OTA channel multicast group [default: %default]")
-
-    optionParser.add_option("--device-ota",
-                            action="store",
-                            type="string",
-                            dest="device_ota",
-                            help="OTA channel multicast device")
-
-    optionParser.add_option("--next-only",
-                            action="store_true",
-                            dest="next_only",
-                            default=False,
-                            help="Wait for next event the return")
-
-
-    (options, args) = optionParser.parse_args()
-
-
-    def handler(signum, frame):
-        global service
-        service.breakloop()
-
-    service = EventService((options.group,options.port,options.device),
-                           (options.group_ota,options.port_ota,options.device_ota))
-
-    signal.signal(signal.SIGQUIT, handler)
-    signal.signal(signal.SIGINT, handler)
-
-    def header(nemId,eventId,data,name,uuid,sequence):
-        print "[%.6lf]" % time.time(),\
-            'nem:',nemId,\
-            'event:',eventId,\
-            'len:',len(data),\
-            'seq:',sequence,\
-            "[%s]" % name
-
-        print " UUID:",uuid
-
-    def default(nemId,eventId,data,uuid,sequence):
-        header(nemId,eventId,data,'unknown',uuid,sequence)
-
-    def handleLocation(nemId,eventId,data,uuid,sequence):
-        e = LocationEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'Location',uuid,sequence)
-        for i in e:
-            print "  ",i
-
-    def handlePathloss(nemId,eventId,data,uuid,sequence):
-        e = PathlossEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'Pathloss',uuid,sequence)
-        for i in e:
-            print "  ",i
-
-    def handleCommEffect(nemId,eventId,data,uuid,sequence):
-        e = CommEffectEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'CommEffect',uuid,sequence)
-        for i in e:
-            print "  ",i
-
-    def handleAntennaProfile(nemId,eventId,data,uuid,sequence):
-        e = AntennaProfileEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'AntennaProfile',uuid,sequence)
-        for i in e:
-            print "  ",i
-
-    def handleOneHopNeighbors(nemId,eventId,data,uuid,sequence):
-        e = OneHopNeighborsEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'802.11 OneHopNeighbors',uuid,sequence)
-        print "source:",e.getSource(),[x for x in e]
-
-
-    def handleTDMASchedule(nemId,eventId,data,uuid,sequence):
-        e = TDMAScheduleEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'TDMASchedule',uuid,sequence)
-        print e.structure()
-        for i in e:
-            pprint.pprint(i)
-            
-    def handleFadingSelection(nemId,eventId,data,uuid,sequence):
-        e = FadingSelectionEvent()
-        e.restore(data)
-        header(nemId,eventId,data,'FadingSelection',uuid,sequence)
-        for i in e:
-            print "  ",i
-
-    service.subscribe(PathlossEvent.IDENTIFIER,handlePathloss)
-    service.subscribe(LocationEvent.IDENTIFIER,handleLocation)
-    service.subscribe(CommEffectEvent.IDENTIFIER,handleCommEffect)
-    service.subscribe(AntennaProfileEvent.IDENTIFIER,handleAntennaProfile)
-    service.subscribe(OneHopNeighborsEvent.IDENTIFIER,handleOneHopNeighbors)
-    service.subscribe(TDMAScheduleEvent.IDENTIFIER,handleTDMASchedule)
-    service.subscribe(FadingSelectionEvent.IDENTIFIER,handleFadingSelection)
- 
-    if options.next_only:
-        data = service.nextEvent()
-
-        if data:
-            (uuid,sequence,events) = data
-
-            for event in events:
-                (nemId,eventId,data) = event
-                header(nemId,eventId,data,"",uuid,sequence)
-
-    else:
-        service.loop(default)
-
-
-
