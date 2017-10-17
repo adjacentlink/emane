@@ -214,27 +214,41 @@ class EventService:
 
                     eventData = event_pb2.Event.Data()
 
-                    eventData.ParseFromString(data[2+headerLength:2 + headerLength +otaHeader.eventLength])
+                    # currently we only process attached events that
+                    # are fully contained in the first part (fragment)
+                    # of a one-part (no fragmentation) or multi-part
+                    # (fragmented) OTA message
+                    #
+                    # Notes for below logic:
+                    #  2 + headerLength = 2 byte header length field
+                    #                      + header length
+                    #
+                    #  9 = OTA PartInfo header length. Where PartInfo
+                    #       is used to support fragmentation.
+                    if otaHeader.HasField("payloadInfo") and \
+                       len(data) >= 2 + headerLength + 9 + otaHeader.payloadInfo.eventLength:
 
-                    for serialization in eventData.serializations:
-                        self._lock.acquire()
+                        eventData.ParseFromString(data[2+headerLength + 9:2 + headerLength + 9 + otaHeader.payloadInfo.eventLength])
 
-                        try:
+                        for serialization in eventData.serializations:
+                            self._lock.acquire()
 
-                            if serialization.eventId in self._handlers:
-                                self._handlers[serialization.eventId](serialization.nemId,
-                                                                      serialization.eventId,
-                                                                      serialization.data,
-                                                                      uuid.UUID(bytes=otaHeader.uuid),
-                                                                      otaHeader.sequenceNumber)
-                            elif default:
-                                default(serialization.nemId,
-                                        serialization.eventId,
-                                        serialization.data,
-                                        uuid.UUID(bytes=otaHeader.uuid),
-                                        otaHeader.sequenceNumber)
-                        finally:
-                            self._lock.release()
+                            try:
+
+                                if serialization.eventId in self._handlers:
+                                    self._handlers[serialization.eventId](serialization.nemId,
+                                                                          serialization.eventId,
+                                                                          serialization.data,
+                                                                          uuid.UUID(bytes=otaHeader.uuid),
+                                                                          otaHeader.sequence)
+                                elif default:
+                                    default(serialization.nemId,
+                                            serialization.eventId,
+                                            serialization.data,
+                                            uuid.UUID(bytes=otaHeader.uuid),
+                                            otaHeader.sequence)
+                            finally:
+                                self._lock.release()
 
 
     def nextEvent(self):
