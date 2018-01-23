@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016,2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,15 +57,15 @@ namespace EMANE
       {
       public:
         enum class Status
-        {TX_GOOD,
-            TX_MISSED,
-            TX_TOOBIG,
-            RX_GOOD,
-            RX_MISSED,
-            RX_IDLE,
-            RX_TX,
-            RX_TOOLONG,
-            RX_WRONGFREQ};
+          {TX_GOOD,
+           TX_MISSED,
+           TX_TOOBIG,
+           RX_GOOD,
+           RX_MISSED,
+           RX_IDLE,
+           RX_TX,
+           RX_TOOLONG,
+           RX_WRONGFREQ};
 
         void registerStatistics(StatisticRegistrar & registrar);
 
@@ -102,13 +103,13 @@ namespace EMANE
                       std::uint32_t u32RelativeFrameIndex,
                       std::uint32_t u32RelativeSlotIndex,
                       Status status,
-                      double dSlotRemainingRatio);
+                      double dSlotPortionRatio);
 
         void updateTx(std::uint32_t u32RelativeIndex,
                       std::uint32_t u32RelativeFrameIndex,
                       std::uint32_t u32RelativeSlotIndex,
                       Status status,
-                      double dSlotRemainingRatio);
+                      double dSlotPortionRatio);
 
       };
     }

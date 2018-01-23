@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016,2018 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,15 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::registerStatistics(Statistic
 {
   pTxSlotStatusTable_ =
     statisticRegistrar.registerTable<std::uint32_t>("TxSlotStatusTable",
-      {"Index","Frame","Slot","Valid","Missed","Big",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
-      StatisticProperties::NONE,
-      "Shows the number of Tx slot opportunities that were valid or missed based on slot timing deadlines");
+                                                    {"Index","Frame","Slot","Valid","Missed","Big",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
+                                                    StatisticProperties::NONE,
+                                                    "Shows the number of Tx slot opportunities that were valid or missed based on slot timing deadlines");
 
   pRxSlotStatusTable_ =
     statisticRegistrar.registerTable<std::uint32_t>("RxSlotStatusTable",
-      {"Index","Frame","Slot","Valid","Missed","Idle","Tx","Long","Freq",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
-      StatisticProperties::NONE,
-      "Shows the number of Rx slot receptions that were valid or missed based on slot timing deadlines");
+                                                    {"Index","Frame","Slot","Valid","Missed","Idle","Tx","Long","Freq",".25",".50",".75","1.0","1.25","1.50","1.75",">1.75"},
+                                                    StatisticProperties::NONE,
+                                                    "Shows the number of Rx slot receptions that were valid or missed based on slot timing deadlines");
 }
 
 void EMANE::Models::TDMA::SlotStatusTablePublisher::clear()
@@ -63,7 +63,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::update(std::uint32_t u32Rela
                                                            Status status,
                                                            double dSlotRemainingRatio)
 {
-   switch(status)
+  switch(status)
     {
     case Status::TX_GOOD:
     case Status::TX_MISSED:
@@ -94,7 +94,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
                                                              std::uint32_t u32RelativeSlotIndex,
                                                              std::uint32_t u32RelativeFrameIndex,
                                                              Status status,
-                                                             double dSlotRemainingRatio)
+                                                             double dSlotPortionRatio)
 {
   auto iter = txSlotCounterMap_.find(u32RelativeIndex);
 
@@ -103,20 +103,20 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
       iter = txSlotCounterMap_.insert({u32RelativeIndex,std::make_tuple(0ULL,0ULL,0ULL,std::array<std::uint64_t,8>())}).first;
 
       pTxSlotStatusTable_->addRow(u32RelativeIndex,
-                               {Any{u32RelativeIndex},
-                                   Any{u32RelativeSlotIndex},
-                                     Any{u32RelativeFrameIndex},
-                                       Any{0L},
-                                         Any{0L},
-                                           Any{0L},
-                                             Any{0L},
-                                               Any{0L},
-                                                 Any{0L},
-                                                   Any{0L},
-                                                       Any{0L},
-                                                         Any{0L},
-                                                           Any{0L},
-                                                             Any{0L}});
+                                  {Any{u32RelativeIndex},
+                                      Any{u32RelativeSlotIndex},
+                                        Any{u32RelativeFrameIndex},
+                                          Any{0L},
+                                            Any{0L},
+                                              Any{0L},
+                                                Any{0L},
+                                                  Any{0L},
+                                                    Any{0L},
+                                                      Any{0L},
+                                                        Any{0L},
+                                                          Any{0L},
+                                                            Any{0L},
+                                                              Any{0L}});
 
     }
 
@@ -140,34 +140,33 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
       break;
     }
 
-  double dSlotPassedRatio = 1 - dSlotRemainingRatio;
   int iQuantileIndex {};
 
-  if(dSlotPassedRatio <= 0.25)
+  if(dSlotPortionRatio <= 0.25)
     {
       iQuantileIndex = 0;
     }
-  else if(dSlotPassedRatio <= 0.50)
+  else if(dSlotPortionRatio <= 0.50)
     {
       iQuantileIndex = 1;
     }
-  else if(dSlotPassedRatio <= 0.75)
+  else if(dSlotPortionRatio <= 0.75)
     {
       iQuantileIndex = 2;
     }
-  else if(dSlotPassedRatio <= 1.00)
+  else if(dSlotPortionRatio <= 1.00)
     {
       iQuantileIndex = 3;
     }
-  else if(dSlotPassedRatio <= 1.25)
+  else if(dSlotPortionRatio <= 1.25)
     {
       iQuantileIndex = 4;
     }
-  else if(dSlotPassedRatio <= 1.50)
+  else if(dSlotPortionRatio <= 1.50)
     {
       iQuantileIndex = 5;
     }
-  else if(dSlotPassedRatio <= 1.75)
+  else if(dSlotPortionRatio <= 1.75)
     {
       iQuantileIndex = 6;
     }
@@ -183,7 +182,7 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
                                                              std::uint32_t u32RelativeSlotIndex,
                                                              std::uint32_t u32RelativeFrameIndex,
                                                              Status status,
-                                                             double dSlotRemainingRatio)
+                                                             double dSlotPortionRatio)
 {
   auto iter = rxSlotCounterMap_.find(u32RelativeIndex);
 
@@ -244,41 +243,33 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
       break;
     }
 
-  // ratio is either how much is left (< 1) or how much went over
-  double dSlotPassedRatio{dSlotRemainingRatio};
-
-  if(dSlotRemainingRatio < 1)
-    {
-      dSlotPassedRatio = 1 - dSlotRemainingRatio;
-    }
-
   int iQuantileIndex {};
 
-  if(dSlotPassedRatio <= 0.25)
+  if(dSlotPortionRatio <= 0.25)
     {
       iQuantileIndex = 0;
     }
-  else if(dSlotPassedRatio <= 0.50)
+  else if(dSlotPortionRatio <= 0.50)
     {
       iQuantileIndex = 1;
     }
-  else if(dSlotPassedRatio <= 0.75)
+  else if(dSlotPortionRatio <= 0.75)
     {
       iQuantileIndex = 2;
     }
-  else if(dSlotPassedRatio <= 1.00)
+  else if(dSlotPortionRatio <= 1.00)
     {
       iQuantileIndex = 3;
     }
-  else if(dSlotPassedRatio <= 1.25)
+  else if(dSlotPortionRatio <= 1.25)
     {
       iQuantileIndex = 4;
     }
-  else if(dSlotPassedRatio <= 1.50)
+  else if(dSlotPortionRatio <= 1.50)
     {
       iQuantileIndex = 5;
     }
-  else if(dSlotPassedRatio <= 1.75)
+  else if(dSlotPortionRatio <= 1.75)
     {
       iQuantileIndex = 6;
     }

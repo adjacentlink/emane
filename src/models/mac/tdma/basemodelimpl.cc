@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2018 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -558,30 +558,11 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
           // determine current slot based on now time to update rx slot status table
           auto slotInfo = pScheduler_->getSlotInfo(now);
 
-          Microseconds timeRemainingInSlot{};
-
-          // ratio calcualtion for slot status tables
-          if(slotInfo.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
-            {
-              timeRemainingInSlot = slotDuration_ -
-                std::chrono::duration_cast<Microseconds>(now -
-                                                         slotInfo.timePoint_);
-            }
-          else
-            {
-              timeRemainingInSlot = slotDuration_ +
-                std::chrono::duration_cast<Microseconds>(now -
-                                                         slotInfo.timePoint_);
-            }
-
-          double dSlotRemainingRatio =
-            timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
-
           slotStatusTablePublisher_.update(slotInfo.u32RelativeIndex_,
                                            slotInfo.u32RelativeFrameIndex_,
                                            slotInfo.u32RelativeSlotIndex_,
                                            SlotStatusTablePublisher::Status::RX_TOOLONG,
-                                           dSlotRemainingRatio);
+                                           slotPortionRatio(now,slotInfo.timePoint_));
 
           packetStatusPublisher_.inbound(pktInfo.getSource(),
                                          baseModelMessage.getMessages(),
@@ -602,27 +583,21 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
         }
 
       // rx slot info for now
-      auto entry = pScheduler_->getRxSlotInfo(now);
+      auto nowSlotInfoEntry = pScheduler_->getRxSlotInfo(now);
 
-      if(entry.first.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
+      if(nowSlotInfoEntry.first.u64AbsoluteSlotIndex_ == baseModelMessage.getAbsoluteSlotIndex())
         {
-          Microseconds timeRemainingInSlot{slotDuration_ -
-              std::chrono::duration_cast<Microseconds>(now -
-                                                       entry.first.timePoint_)};
-
-          double dSlotRemainingRatio =
-            timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
-
-          if(entry.second)
+          if(nowSlotInfoEntry.second)
             {
-              if(entry.first.u64FrequencyHz_ == frequencySegment.getFrequencyHz())
+              if(nowSlotInfoEntry.first.u64FrequencyHz_ == frequencySegment.getFrequencyHz())
                 {
                   // we are in an RX Slot
-                  slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
-                                                   entry.first.u32RelativeFrameIndex_,
-                                                   entry.first.u32RelativeSlotIndex_,
+                  slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                                   nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                                   nowSlotInfoEntry.first.u32RelativeSlotIndex_,
                                                    SlotStatusTablePublisher::Status::RX_GOOD,
-                                                   dSlotRemainingRatio);
+                                                   slotPortionRatio(now,
+                                                                    nowSlotInfoEntry.first.timePoint_));
 
                   Microseconds span{pReceivePropertiesControlMessage->getSpan()};
 
@@ -638,17 +613,18 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                       pPlatformService_->timerService().
                         schedule(std::bind(&ReceiveManager::process,
                                            &receiveManager_,
-                                           entry.first.u64AbsoluteSlotIndex_+1),
-                                 entry.first.timePoint_+ slotDuration_);
+                                           nowSlotInfoEntry.first.u64AbsoluteSlotIndex_+1),
+                                 nowSlotInfoEntry.first.timePoint_+ slotDuration_);
                     }
                 }
               else
                 {
-                  slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
-                                                   entry.first.u32RelativeFrameIndex_,
-                                                   entry.first.u32RelativeSlotIndex_,
+                  slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                                   nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                                   nowSlotInfoEntry.first.u32RelativeSlotIndex_,
                                                    SlotStatusTablePublisher::Status::RX_WRONGFREQ,
-                                                   dSlotRemainingRatio);
+                                                   slotPortionRatio(now,
+                                                                    nowSlotInfoEntry.first.timePoint_));
 
                   packetStatusPublisher_.inbound(pktInfo.getSource(),
                                                  baseModelMessage.getMessages(),
@@ -660,9 +636,9 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                           " rframe: %u rslot: %u but frequency mismatch expected: %zu got: %zu",
                                           id_,
                                           __func__,
-                                          entry.first.u32RelativeFrameIndex_,
-                                          entry.first.u32RelativeSlotIndex_,
-                                          entry.first.u64FrequencyHz_,
+                                          nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                          nowSlotInfoEntry.first.u32RelativeSlotIndex_,
+                                          nowSlotInfoEntry.first.u64FrequencyHz_,
                                           frequencySegment.getFrequencyHz());
 
                   // drop
@@ -672,15 +648,16 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
           else
             {
               // not an rx slot but it is the correct abs slot
-              auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
+              auto slotInfo = pScheduler_->getSlotInfo(nowSlotInfoEntry.first.u64AbsoluteSlotIndex_);
 
-              slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
-                                               entry.first.u32RelativeFrameIndex_,
-                                               entry.first.u32RelativeSlotIndex_,
+              slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeSlotIndex_,
                                                slotInfo.type_ == SlotInfo::Type::IDLE ?
                                                SlotStatusTablePublisher::Status::RX_IDLE :
                                                SlotStatusTablePublisher::Status::RX_TX,
-                                               dSlotRemainingRatio);
+                                               slotPortionRatio(now,
+                                                                nowSlotInfoEntry.first.timePoint_));
 
               packetStatusPublisher_.inbound(pktInfo.getSource(),
                                              baseModelMessage.getMessages(),
@@ -694,8 +671,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       __func__,
                                       slotInfo.type_ == SlotInfo::Type::IDLE ?
                                       "in idle" : "in tx",
-                                      entry.first.u32RelativeFrameIndex_,
-                                      entry.first.u32RelativeSlotIndex_);
+                                      nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                      nowSlotInfoEntry.first.u32RelativeSlotIndex_);
 
 
               // drop
@@ -704,23 +681,17 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
         }
       else
         {
-          auto slotInfo = pScheduler_->getSlotInfo(entry.first.u64AbsoluteSlotIndex_);
-
-          Microseconds timeRemainingInSlot{slotDuration_ +
-              std::chrono::duration_cast<Microseconds>(now -
-                                                       slotInfo.timePoint_)};
-          double dSlotRemainingRatio =
-            timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
-
+          auto slotInfo = pScheduler_->getSlotInfo(baseModelMessage.getAbsoluteSlotIndex());
 
           // were we supposed to be in rx on the pkt abs slot
           if(slotInfo.type_ == SlotInfo::Type::RX)
             {
-              slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
-                                               entry.first.u32RelativeFrameIndex_,
-                                               entry.first.u32RelativeSlotIndex_,
+              slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeSlotIndex_,
                                                SlotStatusTablePublisher::Status::RX_MISSED,
-                                               dSlotRemainingRatio);
+                                               slotPortionRatio(now,
+                                                                slotInfo.timePoint_));
 
               packetStatusPublisher_.inbound(pktInfo.getSource(),
                                              baseModelMessage.getMessages(),
@@ -732,20 +703,21 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       id_,
                                       __func__,
                                       baseModelMessage.getAbsoluteSlotIndex(),
-                                      entry.first.u64AbsoluteSlotIndex_);
+                                      nowSlotInfoEntry.first.u64AbsoluteSlotIndex_);
 
               // drop
               return;
             }
           else
             {
-              slotStatusTablePublisher_.update(entry.first.u32RelativeIndex_,
-                                               entry.first.u32RelativeFrameIndex_,
-                                               entry.first.u32RelativeSlotIndex_,
+              slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                               nowSlotInfoEntry.first.u32RelativeSlotIndex_,
                                                slotInfo.type_ == SlotInfo::Type::IDLE ?
                                                SlotStatusTablePublisher::Status::RX_IDLE :
                                                SlotStatusTablePublisher::Status::RX_TX,
-                                               dSlotRemainingRatio);
+                                               slotPortionRatio(now,
+                                                                slotInfo.timePoint_));
 
               packetStatusPublisher_.inbound(pktInfo.getSource(),
                                              baseModelMessage.getMessages(),
@@ -760,7 +732,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                       slotInfo.type_ == SlotInfo::Type::IDLE ?
                                       "in idle" : "in tx",
                                       baseModelMessage.getAbsoluteSlotIndex(),
-                                      entry.first.u64AbsoluteSlotIndex_);
+                                      nowSlotInfoEntry.first.u64AbsoluteSlotIndex_);
 
               // drop
               return;
@@ -1072,7 +1044,7 @@ EMANE::Models::TDMA::QueueInfos EMANE::Models::TDMA::BaseModel::Implementation::
   return pQueueManager_->getPacketQueueInfo();
 }
 
-void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double dSlotRemainingRatio)
+void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double dSlotPortionRatio)
 {
   // calculate the number of bytes allowed in the slot
   size_t bytesAvailable =
@@ -1177,7 +1149,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                            pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                            pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                            SlotStatusTablePublisher::Status::TX_GOOD,
-                                           dSlotRemainingRatio);
+                                           dSlotPortionRatio);
 
           neighborMetricManager_.updateNeighborTxMetric(dst,
                                                         pendingTxSlotInfo_.u64DataRatebps_,
@@ -1202,7 +1174,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::sendDownstreamPacket(double
                                        pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                        pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                        SlotStatusTablePublisher::Status::TX_GOOD,
-                                       dSlotRemainingRatio);
+                                       dSlotPortionRatio);
     }
 }
 
@@ -1226,16 +1198,11 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::u
 
   auto nowSlotInfo = pScheduler_->getSlotInfo(now);
 
-  Microseconds timeRemainingInSlot{slotDuration_ -
-      std::chrono::duration_cast<Microseconds>(now -
-                                               pendingTxSlotInfo_.timePoint_)};
-  double dSlotRemainingRatio =
-    timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
-
   if(nowSlotInfo.u64AbsoluteSlotIndex_ == pendingTxSlotInfo_.u64AbsoluteSlotIndex_)
     {
       // transmit in this slot
-      sendDownstreamPacket(dSlotRemainingRatio);
+      sendDownstreamPacket(slotPortionRatio(now,
+                                            pendingTxSlotInfo_.timePoint_));
     }
   else
     {
@@ -1243,7 +1210,8 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::u
                                        pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                        pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                        SlotStatusTablePublisher::Status::TX_MISSED,
-                                       dSlotRemainingRatio);
+                                       slotPortionRatio(now,
+                                                        pendingTxSlotInfo_.timePoint_));
     }
 
 
@@ -1285,31 +1253,19 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::u
             }
           else if(pendingTxSlotInfo_.u64AbsoluteSlotIndex_ < nowSlotInfo.u64AbsoluteSlotIndex_)
             {
-              // missed opportunity
-              double dSlotRemainingRatio = \
-                std::chrono::duration_cast<Microseconds>(pendingTxSlotInfo_.timePoint_ - now).count() /
-                static_cast<double>(slotDuration_.count());
-
               // blown tx opportunity
               slotStatusTablePublisher_.update(pendingTxSlotInfo_.u32RelativeIndex_,
                                                pendingTxSlotInfo_.u32RelativeFrameIndex_,
                                                pendingTxSlotInfo_.u32RelativeSlotIndex_,
                                                SlotStatusTablePublisher::Status::TX_MISSED,
-                                               dSlotRemainingRatio);
+                                               slotPortionRatio(now,
+                                                                pendingTxSlotInfo_.timePoint_));
             }
           else
             {
               // send the packet
-              timeRemainingInSlot = slotDuration_ -
-                std::chrono::duration_cast<Microseconds>(now -
-                                                         pendingTxSlotInfo_.timePoint_);
-
-
-              double dSlotRemainingRatio =
-                timeRemainingInSlot.count() / static_cast<double>(slotDuration_.count());
-
-
-              sendDownstreamPacket(dSlotRemainingRatio);
+              sendDownstreamPacket(slotPortionRatio(now,
+                                                    pendingTxSlotInfo_.timePoint_));
             }
         }
 
@@ -1324,4 +1280,13 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processTxOpportunity(std::u
     }
 
   return;
+}
+
+double EMANE::Models::TDMA::BaseModel::Implementation::slotPortionRatio(const TimePoint & current,
+                                                                        const TimePoint & slotTime)
+{
+  Microseconds delta = std::chrono::duration_cast<Microseconds>(current -
+                                                                slotTime);
+
+  return delta.count() / static_cast<double>(slotDuration_.count());
 }
