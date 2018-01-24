@@ -591,14 +591,6 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
             {
               if(nowSlotInfoEntry.first.u64FrequencyHz_ == frequencySegment.getFrequencyHz())
                 {
-                  // we are in an RX Slot
-                  slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
-                                                   nowSlotInfoEntry.first.u32RelativeFrameIndex_,
-                                                   nowSlotInfoEntry.first.u32RelativeSlotIndex_,
-                                                   SlotStatusTablePublisher::Status::RX_GOOD,
-                                                   slotPortionRatio(now,
-                                                                    nowSlotInfoEntry.first.timePoint_));
-
                   Microseconds span{pReceivePropertiesControlMessage->getSpan()};
 
                   if(receiveManager_.enqueue(std::move(baseModelMessage),
@@ -615,6 +607,28 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
                                            &receiveManager_,
                                            nowSlotInfoEntry.first.u64AbsoluteSlotIndex_+1),
                                  nowSlotInfoEntry.first.timePoint_+ slotDuration_);
+
+                      // we have a good Rx
+                      slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                                       nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                                       nowSlotInfoEntry.first.u32RelativeSlotIndex_,
+                                                       SlotStatusTablePublisher::Status::RX_GOOD,
+                                                       slotPortionRatio(now,
+                                                                        nowSlotInfoEntry.first.timePoint_));
+                    }
+                  else
+                    {
+                      // enqueue of false indicates there is already a
+                      // pending packet on this rx slot, so either
+                      // this packet or the previous one has been
+                      // discarded depending on which has earlier
+                      // start-of-reception
+                      slotStatusTablePublisher_.update(nowSlotInfoEntry.first.u32RelativeIndex_,
+                                                       nowSlotInfoEntry.first.u32RelativeFrameIndex_,
+                                                       nowSlotInfoEntry.first.u32RelativeSlotIndex_,
+                                                       SlotStatusTablePublisher::Status::RX_LOCK,
+                                                       slotPortionRatio(now,
+                                                                        nowSlotInfoEntry.first.timePoint_));
                     }
                 }
               else

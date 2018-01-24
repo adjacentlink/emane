@@ -65,7 +65,8 @@ namespace EMANE
            RX_IDLE,
            RX_TX,
            RX_TOOLONG,
-           RX_WRONGFREQ};
+           RX_WRONGFREQ,
+           RX_LOCK};
 
         void registerStatistics(StatisticRegistrar & registrar);
 
@@ -95,6 +96,7 @@ namespace EMANE
                                                      std::uint64_t, // rx during tx
                                                      std::uint64_t, // rx too long for slot
                                                      std::uint64_t, // rx wrong freq for slot
+                                                     std::uint64_t, // rx lock
                                                      std::array<std::uint64_t,8>>>;
         TxSlotCounterMap txSlotCounterMap_;
         RxSlotCounterMap rxSlotCounterMap_;
