@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2017-2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,7 +129,8 @@ namespace EMANE
                                         FragmentParts,
                                         TimePoint, // last fragment time
                                         NEMId, // destination
-                                        Priority>;
+                                        Priority,
+                                        size_t>; // total number of fragments
         using FragmentStore = std::map<FragmentKey,FragmentInfo>;
 
         FragmentStore fragmentStore_;
