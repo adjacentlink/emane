@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -116,6 +117,14 @@ namespace EMANE
      * @return The prefixed length value
      */
     std::uint16_t stripLengthPrefixFraming();
+
+    /**
+     * Removes 4 bytes for the beginning of the packet and returns them
+     * as an unsigned 32-bit integer in host byte order.
+     *
+     * @return The prefixed length value
+     */
+    std::uint32_t stripLengthPrefixFramingLong();
 
     /**
      * Gets a pointer to the internal buffer holding the message
