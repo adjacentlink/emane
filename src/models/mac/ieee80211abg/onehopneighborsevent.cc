@@ -58,8 +58,7 @@ private:
 };
 
 
-EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::OneHopNeighborsEvent(const Serialization & serialization)
-  throw(SerializationException):
+EMANE::Models::IEEE80211ABG::OneHopNeighborsEvent::OneHopNeighborsEvent(const Serialization & serialization):
   Event(IDENTIFIER)
 {
   EMANEEventMessage::OneHopNeighborsEvent msg;

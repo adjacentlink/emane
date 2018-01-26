@@ -101,8 +101,7 @@ namespace EMANE
          * @param uri  location of the PCR file
          *
          */
-        void load(const std::string &uri)
-          throw (StartException);
+        void load(const std::string &uri);
 
         /**
          *  get the PCR for a given sinr and pkt size
