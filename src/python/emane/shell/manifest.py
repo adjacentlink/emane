@@ -51,7 +51,8 @@ class Manifest:
         tree = etree.parse(filename)
         root = tree.getroot()
 
-        schemaDoc = etree.parse(resource_filename('emanesh', 'schema/manifest.xsd'))
+        schemaDoc = etree.parse(resource_filename('emane.shell',
+                                                  'schema/manifest.xsd'))
 
         schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
 

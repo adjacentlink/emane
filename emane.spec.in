@@ -16,7 +16,7 @@ BuildRequires: libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-dev
 Vendor: Adjacent Link LLC
 
 
-%if 0%{?fc26}
+%if 0%{?fc26} ||  0%{?fc27}
 %if %{with_python3}
 BuildRequires: python3-devel
 %define use_python_package python3-emane
@@ -564,8 +564,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
-%{use_python_sitelib}/emanesh
-%{use_python_sitelib}/emanesh-%{version}-*.egg-info
+%{use_python_sitelib}/emane
+%{use_python_sitelib}/emane-%{version}-*.egg-info
 
 
 %doc %{_pkgdocdir}

@@ -33,8 +33,8 @@
 
 from __future__ import absolute_import, division, print_function
 from optparse import OptionParser
-from emanesh.ota import OTAMessage
-from emanesh.ota import OTAPublisher
+from emane.ota import OTAMessage
+from emane.ota import OTAPublisher
 from pkg_resources import resource_filename
 from lxml import etree
 import sys
@@ -147,7 +147,8 @@ flows = []
 tree = etree.parse(args[0])
 root = tree.getroot()
 
-schemaDoc = etree.parse(resource_filename('emanesh', 'schema/otapublisherscenario.xsd'))
+schemaDoc = etree.parse(resource_filename('emane.ota',
+                                          'schema/otapublisherscenario.xsd'))
 
 schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
 

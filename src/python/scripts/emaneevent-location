@@ -34,39 +34,46 @@
 from __future__ import absolute_import, division, print_function
 import sys
 from optparse import OptionParser
-from emanesh.events import EventService
-from emanesh.events import AntennaProfileEvent
+from emane.events import EventService
+from emane.events import LocationEvent
 
-usage = """emaneevent-antennaprofile [OPTION]... NEMID[:NEMID] \\
-         PROFILE ANTENNAAZIMUTH ANTENNAELEVATION
+usage = """emaneevent-location [OPTION]... NEMID[:NEMID] LATITUDE \\
+         LONGITUDE ALTITUDE [VELOCITY] [ORIENTATION]
 
-       PROFILE := 'profile'=ID
+       LATITUDE := 'latitude'=DEGREES
 
-       ANTENNAAZIMUTH := 'azimuth'=DEGREES
+       LONGITUDE := 'longitude'=DEGREES
 
-       ANTENNAELEVATION := 'elevation'=DEGREES
+       ALTITUDE := 'altitude'=MPS
+
+       VELOCITY := 'azimuth'=DEGREES 'elevation'=DEGREES 'magnitude'=MPS
+
+       ORIENTATION := 'pitch'=DEGREES 'roll'=DEGREES  'yaw'=DEGREES
 
        DEGREES := degrees (float)
 
-       ID := Profile Id (uint)
+       MPS := Meters/Second (float)
 """
 
-description="Publish an antenna profile event containing NEMs in a \
-specified range. Unless one or more targets are specified the antenna \
-profile event will be sent to the 'all NEMs' event address. This is \
-always what you want to do since all NEMs must be aware of all other \
-NEM antenna profiles."
+description="Publish a location event containing NEMs in a specified \
+range. Unless one or more targets are specified the location event will \
+be sent to the 'all NEMs' event address.  This is always what you want \
+to do since all NEMs must be aware of all other NEM locations."
 
 epilog="""
 The NEM range specification creates a list of NEMs that will have the
-specified antenna profile information.
+specified location information.
 
 For example
 
-  emaneevent-antennaprofile 1:10 profile=1 azimuth=45.0 elevation=0.0
+  emaneevent-location 1:10 latitude=40.031075 longitude=-74.523518 \\
+   altitude=3.000000
 
-Will create a single antenna profile event that contains 10 entries
-for NEM 1 to 10, all with the same profile and pointing information.
+Will create a single location event that contains 10 entries for NEM
+1 to 10, all with the same location: 40.031075 -74.52351 3.0
+
+Velocity and orientation are optional. When missing NEMs will you any
+previously received values.
 
 You can use the '--target' option and the '--reference' to specifically
 target one or more NEMs in the range with one of more of the
@@ -75,23 +82,21 @@ in the range.
 
 For example
 
-  emaneevent-antennaprofile 1:10 profile=1 azimuth=45.0 elevation=0.0 \\
-    -t 3 -t 4 -r 8 -r 9 -r 10
+  emaneevent-location 1:10 latitude=40.031075 longitude=-74.523518 \\
+    altitude=3.000000 -t 3 -t 4 -r 8 -r 9 -r 10
 
-will send antenna profile events to NEM 3 and 4 containing the profile
-information for NEMs 8, 9 and 10.
+will send location events to NEM 3 and 4 containing the location information
+for NEMs 8, 9 and 10.
 
-  emaneevent-antennaprofile 13 profile=1 azimuth=45.0 elevation=0.0 \\
-     -t 7 -t 8
+  emaneevent-location 13 latitude=40.031075 longitude=-74.523518 \\
+    altitude=3.000000 -t 7 -t 8
 
-will send an antenna profile event to NEM 7 and 8 with the profile \\
-information for NEM 13.
+will send a location event to NEM 7 and 8 with the location of NEM 13.
 
-  emaneevent-antennaprofile 15 -t 0 profile=1 azimuth=45.0 \\
-    elevation=0.0
+  emaneevent-location 15 -t 0 latitude=40.031075 longitude=-74.523518 \\
+    altitude=3.000000
 
-will send an antenna profile event to all NEMs with the profile information
-for NEM 15.
+will send a location event to all NEMs with the location of NEM 15.
 
 """
 
@@ -140,6 +145,7 @@ optionParser.add_option("-r",
                         dest="reference",
                         help="Send events to NEMs in the range but only include information for the reference NEM.")
 
+
 (options, args) = optionParser.parse_args()
 
 service = EventService((options.group,options.port,options.device))
@@ -176,19 +182,20 @@ for component in args[1:]:
        print("invalid component format:",component, file=sys.stderr)
        exit(1)
 
-    if param == 'azimuth' or \
-       param == 'elevation':
+    if param == 'latitude' or \
+       param == 'longitude' or \
+       param == 'altitude' or \
+       param == 'azimuth' or \
+       param == 'elevation' or \
+       param == 'magnitude' or \
+       param == 'pitch' or \
+       param == 'roll' or \
+       param == 'yaw':
         try:
             kwargs[param] = float(value)
         except:
             print("invalid %s format:"% param,value, file=sys.stderr)
             exit(1)
-    elif  param == 'profile':
-       try:
-           kwargs[param] = int(value)
-       except:
-           print("invalid %s format:"% param,value, file=sys.stderr)
-           exit(1)
     else:
         print("invalid location component:",param, file=sys.stderr)
         exit(1)
@@ -208,7 +215,7 @@ else:
     references = nems
 
 for i in targets:
-    event = AntennaProfileEvent()
+    event = LocationEvent()
     for j in nems:
         if j in references:
             try:

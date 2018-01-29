@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
@@ -31,45 +30,3 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import absolute_import, division, print_function
-from optparse import OptionParser
-from emanesh import EMANEShell
-from emanesh import ControlPortException
-import sys
-
-usage = "emanesh [OPTION].. hostname [command]"
-
-optionParser = OptionParser(usage=usage)
-
-optionParser.add_option("-p",
-                        "--port",
-                        action="store",
-                        type="int",
-                        dest="port",
-                        default=47000,
-                        help="Server listen port [default: %default]")
-
-(options, args) = optionParser.parse_args()
-
-if len(args) < 1 :
-    print("invalid number of arguments", file=sys.stderr)
-    exit(1)
-
-
-try:
-    shell = EMANEShell(args[0],options.port)
-except ControlPortException as exp:
-    print(exp, file=sys.stderr)
-    exit(1)
-
-if(len(args[1:])):
-    shell.onecmd(" ".join(args[1:]))
-    shell.onecmd('exit')
-else:
-    try:
-        shell.cmdloop()
-    except KeyboardInterrupt as exp:
-        shell.onecmd('exit')
-        print()
-
-exit(0)

@@ -1,4 +1,4 @@
-%AC_COPYRIGHT([
+AC_COPYRIGHT([
  Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
@@ -212,7 +212,8 @@ AC_OUTPUT(
  src/applications/emanetransportd/Makefile
  src/applications/emaneeventd/Makefile
  src/applications/emaneeventservice/Makefile
- src/emanesh/Makefile
+ src/python/Makefile
+ src/python/emane/info/__init__.py
  src/transports/Makefile
  src/transports/common/Makefile
  src/transports/virtual/Makefile

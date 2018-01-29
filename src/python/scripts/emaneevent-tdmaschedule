@@ -34,9 +34,9 @@
 from __future__ import absolute_import, division, print_function
 import sys
 from optparse import OptionParser
-from emanesh.events import EventService
-from emanesh.events import TDMAScheduleEvent
-from emanesh.events import TDMASchedule
+from emane.events import EventService
+from emane.events import TDMAScheduleEvent
+from emane.events import TDMASchedule
 import copy
 import os
 

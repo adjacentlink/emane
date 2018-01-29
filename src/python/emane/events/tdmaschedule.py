@@ -103,7 +103,8 @@ class TDMASchedule(object):
 
         root = tree.getroot()
 
-        schemaDoc = etree.parse(resource_filename('emanesh', 'schema/tdmaschedule.xsd'))
+        schemaDoc = etree.parse(resource_filename('emane.events',
+                                                  'schema/tdmaschedule.xsd'))
 
         schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
 

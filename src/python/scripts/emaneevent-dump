@@ -36,14 +36,14 @@ import signal
 import time
 import pprint
 from optparse import OptionParser
-from emanesh.events import EventService
-from emanesh.events import LocationEvent
-from emanesh.events import PathlossEvent
-from emanesh.events import CommEffectEvent
-from emanesh.events import AntennaProfileEvent
-from emanesh.events import OneHopNeighborsEvent
-from emanesh.events import TDMAScheduleEvent
-from emanesh.events import FadingSelectionEvent
+from emane.events import EventService
+from emane.events import LocationEvent
+from emane.events import PathlossEvent
+from emane.events import CommEffectEvent
+from emane.events import AntennaProfileEvent
+from emane.events import OneHopNeighborsEvent
+from emane.events import TDMAScheduleEvent
+from emane.events import FadingSelectionEvent
 
 usage = "emaneeventdump [OPTION]..."
 

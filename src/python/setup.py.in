@@ -1,13 +1,17 @@
 from distutils.core import setup
 
-setup(name='emanesh',
+setup(name='emane',
       version='@VERSION@',
-      description='EMANE Shell',
-      long_description='EMANE Shell',
+      description='EMANE modules and utilities',
+      long_description='EMANE modules and utilities',
       author='Adjacent Link',
       author_email='emane at adjacent link dot com',
       url="https://github.com/adjacentlink/emane",
-      packages=['emanesh','emanesh.events','emanesh.ota'],
+      packages=['emane',
+                'emane.shell',
+                'emane.events',
+                'emane.ota',
+                'emane.info'],
       scripts=['scripts/emanesh',
                'scripts/emaneevent-dump',
                'scripts/emaneevent-pathloss',
@@ -18,7 +22,9 @@ setup(name='emanesh',
                'scripts/emaneevent-fadingselection',
                'scripts/emaneota-publisher',
                'scripts/emanecommand-eel'],
-      package_data={'emanesh' :['schema/*.xsd']},
+      package_data={'emane.shell' : ['schema/*.xsd'],
+                    'emane.events' : ['schema/*.xsd'],
+                    'emane.ota' : ['schema/*.xsd']},
       license = 'BSD'
       )
 

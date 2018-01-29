@@ -35,8 +35,8 @@ from __future__ import absolute_import, division, print_function
 import re
 import sys
 import time
-from emanesh import EMANEShell
-from emanesh import ControlPortException
+from emane.shell import EMANEShell
+from emane.shell import ControlPortException
 from optparse import OptionParser
 
 class TimeStampedLog:
