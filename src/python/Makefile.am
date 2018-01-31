@@ -54,6 +54,7 @@ clean-local: setup.py
 	-rm -rf build dist
 	-rm -f MANIFEST $(BUILT_SOURCES)
 	if test -d emane/shell/schema; then rmdir emane/shell/schema; fi
+	-rm -f .installedfiles
 
 sdist:
 	$(PYTHON) setup.py sdist
@@ -109,6 +110,10 @@ setup.py:	setup.py.in
 install-exec-hook: $(BUILT_SOURCES)
 	$(PYTHON) setup.py install \
 	    -O1 \
+        --record .installedfiles \
 	    --prefix=$(prefix) \
 	    --exec-prefix=$(exec_prefix) \
 	    $(if $(DESTDIR),--root=$(DESTDIR))
+
+uninstall-hook:
+	if test -f .installedfiles; then xargs -a .installedfiles rm -f; fi

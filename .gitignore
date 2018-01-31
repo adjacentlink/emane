@@ -54,6 +54,9 @@ emane.spec
 # dist
 emane-*.tar.gz
 
+# make install
+src/python/.installedfiles
+
 # documentation output
 doc/emane.doxygen
 doc/html
