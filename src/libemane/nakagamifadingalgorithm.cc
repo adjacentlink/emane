@@ -76,15 +76,15 @@ void EMANE::NakagamiFadingAlgorithm::initialize(Registrar & registrar)
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                           {80},
-                                          "Defines the distance used for lower bound"
-                                          " shape selection.");
+                                          "Defines the distance in meters used for"
+                                          " lower bound shape selection.");
 
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.distance1",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                           {200},
-                                          "Defines the distance used for upper bound"
-                                          " shape selection.");
+                                          "Defines the distance in meters used for"
+                                          " upper bound shape selection.");
 
   configRegistrar.registerValidator([this](const ConfigurationUpdate & update) noexcept
                                     {
