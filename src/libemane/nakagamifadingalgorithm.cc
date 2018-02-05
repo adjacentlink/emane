@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017-2018 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,36 +53,39 @@ void EMANE::NakagamiFadingAlgorithm::initialize(Registrar & registrar)
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m0",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {1.25},
+                                          {0.75},
                                           "Defines the shape factor to use for distance"
-                                          " < fading.nakagami.distance0.");
+                                          " < fading.nakagami.distance0.",
+                                          0.5);
 
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m1",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {0.75},
+                                          {1.0},
                                           "Defines the shape factor to use for distance"
                                           " >= fading.nakagami.distance0 and <"
-                                          " fading.nakagami.distance1.");
+                                          " fading.nakagami.distance1.",
+                                          0.5);
 
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m2",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {0.75},
+                                          {200},
                                           "Defines the shape factor to use for distance"
-                                          " >= fading.nakagami.distance1.");
+                                          " >= fading.nakagami.distance1.",
+                                          0.5);
 
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.distance0",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {80},
+                                          {100},
                                           "Defines the distance in meters used for"
                                           " lower bound shape selection.");
 
   configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.distance1",
                                           EMANE::ConfigurationProperties::DEFAULT |
                                           EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {200},
+                                          {250},
                                           "Defines the distance in meters used for"
                                           " upper bound shape selection.");
 
