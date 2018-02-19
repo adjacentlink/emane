@@ -30,27 +30,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
 
 message IEEE80211ABGMACHeader
 {
-  enum MessageType 
-   {
-     NONE = 0;
-     BROADCAST_DATA = 1;
-     UNICAST_DATA = 2;
-     UNICAST_RTS_CTS_DATA = 3;
-     UNICAST_CTS_CTRL = 4;
-   }
+  enum MessageType
+  {
+    NONE = 0;
+    BROADCAST_DATA = 1;
+    UNICAST_DATA = 2;
+    UNICAST_RTS_CTS_DATA = 3;
+    UNICAST_CTS_CTRL = 4;
+  }
 
   required MessageType messageType = 1;
   required uint32 numRetries = 2;
-  required uint32 dataRateIndex = 3; 
+  required uint32 dataRateIndex = 3;
   required uint32 sequenceNumber = 4;
   required uint32 srcNEM = 5;
   required uint32 dstNEM = 6;
   required uint64 durationMicroseconds = 7;
 }
-

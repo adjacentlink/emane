@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,17 +30,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
 
 message OTAHeader
 {
+  message PayloadInfo
+  {
+    required uint32 eventLength = 1;
+    required uint32 controlLength = 2;
+    required uint32 dataLength = 3;
+  }
   required uint32 source = 1;
   required uint32 destination = 2;
-  required uint32 eventLength = 3;
-  required uint32 controlLength = 4;
-  required uint32 dataLength = 5;
-  required uint64 sequenceNumber = 6;
-  required bytes  uuid = 7;
+  required uint64 sequence = 3;
+  required bytes uuid = 4;
+  optional PayloadInfo payloadInfo = 5;
 }

@@ -12,6 +12,8 @@
  MIT Lincoln Laboratory - TDMA radio model
  https://github.com/adjacentlink/emane/wiki/TDMA-Model
 
+ MIT Lincoln Laboratory - OTA message fragmentation support and
+ external transport TCP connection support.
 
  For more information on sponsoring EMANE features contact us at
  emane-info at adjacentlink dot com.

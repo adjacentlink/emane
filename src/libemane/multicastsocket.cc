@@ -233,8 +233,8 @@ void EMANE::MulticastSocket::open(const INETAddr & address,
                     reinterpret_cast<void*>(&iOption),
                     sizeof(iOption)) < 0)
         {
-          makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
-                                         strerror(errno));
+          throw makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
+                                               strerror(errno));
 
         }
     }
@@ -242,8 +242,8 @@ void EMANE::MulticastSocket::open(const INETAddr & address,
 
   if(bind(iSock_,addr_.getSockAddr(),addr_.getAddrLength()) < 0)
     {
-      makeException<SocketException>("bind: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("bind: %s",
+                                           strerror(errno));
     }
 
 }

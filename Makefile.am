@@ -12,7 +12,9 @@ SUBDIRS= src                            \
 edit = sed                                               \
        -e 's|@VERSION[@]|$(VERSION)|g'                   \
        -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
-       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
+       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g' \
+       -e 's|@PYTHON[@]|$(PYTHON)|g'                     \
+       -e 's|@PYTHON_MAJOR_VERSION[@]|$(PYTHON_MAJOR_VERSION)|g'
 
 cleantar:
 	@(rm -f emane*.tar.gz)
@@ -29,17 +31,17 @@ rpm: emane.spec dist-gzip
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
 	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
-    --define "_tmppath $$PWD/.rpmbuild/tmp"
+    --define "_tmppath $$PWD/.rpmbuild/tmp" \
+    --with python$(PYTHON_MAJOR_VERSION)
 	@echo "============================================================"
 	@echo "RPMs located in .rpmbuild/RPMS and .rpmbuild/SRPMS"
 
 endif
 
-clean-local: cleantar cleandeb
+clean-local: cleantar
 	-rm -rf .rpmbuild
 	-rm -rf .debbuild
 	-rm -f emane.spec
-	-rm -f debian/changelog
 
 emane.spec: emane.spec.in
 	if test -f $@; then chmod u+w $@; fi
@@ -56,14 +58,14 @@ deb: dist-gzip
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
+	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/rules.in > \
+          .debbuild/$(PACKAGE)-$(VERSION)/debian/rules
+	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/control.in > \
+          .debbuild/$(PACKAGE)-$(VERSION)/debian/control
+	sed -i s/python2-emane/python-emane/g .debbuild/$(PACKAGE)-$(VERSION)/debian/control
 	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	@echo "============================================================"
 	@echo "debs located in .debbuild"
-cleandeb:
-	dh_clean
-else
-
-cleandeb:
 
 endif
 

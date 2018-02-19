@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015-2016,2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -140,6 +141,9 @@ namespace EMANE
         void sendDownstreamPacket(double dSlotRemainingRatio);
 
         void processTxOpportunity(std::uint64_t u64ScheduleIndex);
+
+        double slotPortionRatio(const TimePoint & current,
+                                const TimePoint & slotTime);
       };
     }
   }

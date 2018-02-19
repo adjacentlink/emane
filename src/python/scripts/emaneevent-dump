@@ -1,0 +1,198 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of Adjacent Link LLC nor the names of its
+#   contributors may be used to endorse or promote products derived
+#   from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+from __future__ import absolute_import, division, print_function
+import signal
+import time
+import pprint
+from optparse import OptionParser
+from emane.events import EventService
+from emane.events import LocationEvent
+from emane.events import PathlossEvent
+from emane.events import CommEffectEvent
+from emane.events import AntennaProfileEvent
+from emane.events import OneHopNeighborsEvent
+from emane.events import TDMAScheduleEvent
+from emane.events import FadingSelectionEvent
+
+usage = "emaneeventdump [OPTION]..."
+
+optionParser = OptionParser(usage=usage)
+
+optionParser.add_option("-p",
+                        "--port",
+                        action="store",
+                        type="int",
+                        dest="port",
+                        default=45703,
+                        help="Event channel listen port [default: %default]")
+
+optionParser.add_option("-g",
+                        "--group",
+                        action="store",
+                        type="string",
+                        dest="group",
+                        default="224.1.2.8",
+                        help="Event channel multicast group [default: %default]")
+
+optionParser.add_option("-i",
+                        "--device",
+                        action="store",
+                        type="string",
+                        dest="device",
+                        help="Event channel multicast device")
+
+
+optionParser.add_option("--port-ota",
+                        action="store",
+                        type="int",
+                        dest="port_ota",
+                        default=45702,
+                        help="OTA channel listen port [default: %default]")
+
+optionParser.add_option("--group-ota",
+                        action="store",
+                        type="string",
+                        dest="group_ota",
+                        default="224.1.2.8",
+                        help="OTA channel multicast group [default: %default]")
+
+optionParser.add_option("--device-ota",
+                        action="store",
+                        type="string",
+                        dest="device_ota",
+                        help="OTA channel multicast device")
+
+optionParser.add_option("--next-only",
+                        action="store_true",
+                        dest="next_only",
+                        default=False,
+                        help="Wait for next event the return")
+
+
+(options, args) = optionParser.parse_args()
+
+
+def handler(signum, frame):
+    global service
+    service.breakloop()
+
+service = EventService((options.group,options.port,options.device),
+                       (options.group_ota,options.port_ota,options.device_ota))
+
+signal.signal(signal.SIGQUIT, handler)
+signal.signal(signal.SIGINT, handler)
+
+def header(nemId,eventId,data,name,uuid,sequence):
+    print("[%.6lf]" % time.time(),\
+        'nem:',nemId,\
+        'event:',eventId,\
+        'len:',len(data),\
+        'seq:',sequence,\
+        "[%s]" % name)
+
+    print(" UUID:",uuid)
+
+def default(nemId,eventId,data,uuid,sequence):
+    header(nemId,eventId,data,'unknown',uuid,sequence)
+
+def handleLocation(nemId,eventId,data,uuid,sequence):
+    e = LocationEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'Location',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
+def handlePathloss(nemId,eventId,data,uuid,sequence):
+    e = PathlossEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'Pathloss',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
+def handleCommEffect(nemId,eventId,data,uuid,sequence):
+    e = CommEffectEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'CommEffect',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
+def handleAntennaProfile(nemId,eventId,data,uuid,sequence):
+    e = AntennaProfileEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'AntennaProfile',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
+def handleOneHopNeighbors(nemId,eventId,data,uuid,sequence):
+    e = OneHopNeighborsEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'802.11 OneHopNeighbors',uuid,sequence)
+    print("source:",e.getSource(),[x for x in e])
+
+
+def handleTDMASchedule(nemId,eventId,data,uuid,sequence):
+    e = TDMAScheduleEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'TDMASchedule',uuid,sequence)
+    print(e.structure())
+    for i in e:
+        pprint.pprint(i)
+
+def handleFadingSelection(nemId,eventId,data,uuid,sequence):
+    e = FadingSelectionEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'FadingSelection',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
+service.subscribe(PathlossEvent.IDENTIFIER,handlePathloss)
+service.subscribe(LocationEvent.IDENTIFIER,handleLocation)
+service.subscribe(CommEffectEvent.IDENTIFIER,handleCommEffect)
+service.subscribe(AntennaProfileEvent.IDENTIFIER,handleAntennaProfile)
+service.subscribe(OneHopNeighborsEvent.IDENTIFIER,handleOneHopNeighbors)
+service.subscribe(TDMAScheduleEvent.IDENTIFIER,handleTDMASchedule)
+service.subscribe(FadingSelectionEvent.IDENTIFIER,handleFadingSelection)
+
+if options.next_only:
+    data = service.nextEvent()
+
+    if data:
+        (uuid,sequence,events) = data
+
+        for event in events:
+            (nemId,eventId,data) = event
+            header(nemId,eventId,data,"",uuid,sequence)
+
+else:
+    service.loop(default)

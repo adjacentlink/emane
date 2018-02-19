@@ -1,6 +1,18 @@
 [1] configure 
 [1]  bandwidth:
 [1]    1200000
+[1]  fading.model:
+[1]    none
+[1]  fading.nakagami.distance0:
+[1]    100.000000
+[1]  fading.nakagami.distance1:
+[1]    250.000000
+[1]  fading.nakagami.m0:
+[1]    0.750000
+[1]  fading.nakagami.m1:
+[1]    1.000000
+[1]  fading.nakagami.m2:
+[1]    200.000000
 [1]  fixedantennagain:
 [1]    0.000000
 [1]  fixedantennagainenable:
@@ -206,10 +218,10 @@ Processing upstream packet...
 [16]  Packet dropped
 
 [16] BroadcastPacketDropTable0
-[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[16] |2  |1          |0             |0                |0            |0           |0           |0      |0             |
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[16] |2  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [16] UnicastPacketDropTable0
-[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [17] packet
 [17]  Common PHY Header data:
@@ -271,10 +283,10 @@ Processing upstream packet...
 [19]  Packet dropped
 
 [19] BroadcastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[19] |2  |2          |0             |0                |0            |0           |0           |0      |0             |
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[19] |2  |2          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [19] UnicastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [20] frequencyofinterest 
 [20]    bandwidth: 1200000

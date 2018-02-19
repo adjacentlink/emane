@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -46,7 +46,8 @@
 #include <queue>
 #include <atomic>
 #include <thread>
-
+#include <tuple>
+#include <array>
 #include <uuid.h>
 
 
@@ -77,17 +78,30 @@ namespace EMANE
     /**
      * Open the event server channel
      *
-     * @param otaGroupAddress Multicast group address of event service OTA channel
+     * @param otaGroupAddress Multicast group address of event service
+     * OTA channel
      * @param sDevice Name of the OTA device
-     * @param bLoopback Flag indicating whether to set LOOPBACK socket option
+     * @param bLoopback Flag indicating whether to set LOOPBACK socket
+     * option
      * @param iTTL Mutlicast TTL
      * @param uuid Emulator instance UUID
+     * @param otaMTU MTU to enforce. Set to 0 to disable
+     * fragmentation
+     * @param partCheckThreshold Rate in seconds to check if part
+     * reassembly efforts should be abandoned due to missing
+     * fragments
+     * @param partTimeoutThreshold Threshold in seconds to wait for
+     * another fragment before abandoning a specific packet
+     * reassembly.
      */
     void open(const INETAddr & otaGroupAddress,
               const std::string & sDevice,
               bool bLoopback,
               int iTTL,
-              const uuid_t & uuid);
+              const uuid_t & uuid,
+              size_t otaMTU,
+              Seconds partCheckThreshold,
+              Seconds partTimeoutThreshold);
 
     void setStatPacketCountRowLimit(size_t rows);
 
@@ -101,11 +115,43 @@ namespace EMANE
     MulticastSocket mcast_;
     bool bOpen_;
     uuid_t uuid_;
+    size_t otaMTU_;
+    Seconds partCheckThreshold_;
+    Seconds partTimeoutThreshold_;
+
     mutable OTAStatisticPublisher otaStatisticPublisher_;
     mutable EventStatisticPublisher eventStatisticPublisher_;
     mutable std::atomic<std::uint64_t> u64SequenceNumber_;
 
+    using PartKey = std::tuple<NEMId, // source NEM
+                               std::uint64_t>; // sequence number
+
+    using Parts = std::map<size_t, // offset
+                           std::vector<std::uint8_t>>;
+
+    using PartsData = std::tuple<size_t, // total size in map
+                                 size_t, // events size bytes
+                                 size_t, // controls size bytes
+                                 size_t, // data size bytes
+                                 Parts, // parts map
+                                 TimePoint, // last part time
+                                 std::array<uint8_t,sizeof(uuid_t)>>; // emulator uuid instance
+
+    using PartStore = std::map<PartKey,PartsData>;
+    PartStore partStore_;
+    TimePoint lastPartCheckTime_;
+
+
     void processOTAMessage();
+
+    void handleOTAMessage(NEMId source,
+                          NEMId destination,
+                          const uuid_t & remoteUUID,
+                          const TimePoint & now,
+                          size_t eventsSize,
+                          size_t controlsSize,
+                          size_t dataSize,
+                          const Utils::VectorIO & vectorIO);
   };
 
   using OTAManagerSingleton = OTAManager;

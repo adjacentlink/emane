@@ -37,6 +37,7 @@
 #include "emane/utils/conversionutils.h"
 
 #include <algorithm>
+#include <functional>
 
 namespace
 {
@@ -75,7 +76,7 @@ void EMANE::SpectrumMonitor::initialize(const FrequencySet & foi,
   mode_ = mode;
 
   maxOffset_ = maxOffset;
-  
+
   maxPropagation_ = maxPropagation;
 
   maxDuration_ = maxDuration;
@@ -92,11 +93,11 @@ void EMANE::SpectrumMonitor::initialize(const FrequencySet & foi,
   transmitterBandwidthCache_.clear();
 
   TransmitterBandwidthCache transmitterBandwidthCache_;
-  
+
   transmitterBandwidthCache_.insert(std::make_pair(u64BandwidthHz,std::unique_ptr<Cache>(new Cache{})));
-  
+
   noiseRecorderMap_.clear();
-  
+
   for(const auto & frequency : foi)
     {
       noiseRecorderMap_.insert(std::make_pair(frequency,
@@ -108,7 +109,7 @@ void EMANE::SpectrumMonitor::initialize(const FrequencySet & foi,
     }
 
 }
-    
+
 std::tuple<EMANE::TimePoint,EMANE::Microseconds,EMANE::Microseconds,EMANE::FrequencySegments,bool>
 EMANE::SpectrumMonitor::update(const TimePoint & now,
                                const TimePoint & txTime,
@@ -132,7 +133,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
 
   // validate txTime in case of time sync issues
   auto validTxTime = txTime;
-      
+
   if(txTime > now + timeSyncThreshold_ || now - txTime > timeSyncThreshold_)
     {
       validTxTime = now;
@@ -206,10 +207,10 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                         }
                     }
 
-                  maxEoR = 
+                  maxEoR =
                     std::max(maxEoR,validTxTime + validOffset + validDuration + validPropagation);
-                  
-                  minSoR = 
+
+                  minSoR =
                     std::min(minSoR,validTxTime + validOffset + validPropagation);
 
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
@@ -229,11 +230,11 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
   else
     {
       Cache * pCache{};
-  
+
       // find the cache for the transmitter bandwidth
       const auto transmitterBandwidthCacheIter =
         transmitterBandwidthCache_.find(u64SegmentBandwidthHz);
-  
+
       // cache found
       if(transmitterBandwidthCacheIter != transmitterBandwidthCache_.end())
         {
@@ -244,13 +245,13 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
         {
           // none found - create a transmitter bandwidth cache
           pCache = new Cache{};
-      
+
           transmitterBandwidthCache_.insert(std::make_pair(u64SegmentBandwidthHz,
                                                            std::unique_ptr<Cache>(pCache)));
         }
 
       size_t i{};
-      
+
       for(const auto & segment : segments)
         {
           bool bFrequencyMatch{};
@@ -294,7 +295,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                                                                 bMaxClamp_ ? "on" : "off");
                 }
             }
-          
+
           if(iter != pCache->end())
             {
               for(const auto & entry : iter->second)
@@ -306,14 +307,14 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                   std::tie(pNoiseRecorder,
                            dOverlapRatio,
                            u64RecorderFrequencyHz) = entry;
-                
+
                   if(dOverlapRatio > 0)
                     {
                       double dOverlapRxPowerMillWatt{rxPowersMilliWatt[i] * dOverlapRatio};
 
                       if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                         {
-                          bAboveSensitivity = true; 
+                          bAboveSensitivity = true;
 
                           std::tie(startOfReception,endOfReception) =
                             pNoiseRecorder->update(now,
@@ -324,7 +325,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                                                    dOverlapRxPowerMillWatt,
                                                    transmitters);
                         }
-                      
+
                       if(!bFrequencyMatch)
                         {
                           bFrequencyMatch = (u64RecorderFrequencyHz == segment.getFrequencyHz());
@@ -344,15 +345,15 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                                                              u64ReceiverBandwidthHz_,
                                                              segment.getFrequencyHz(),
                                                              u64SegmentBandwidthHz)};
-              
+
                   if(dOverlapRatio > 0)
                     {
                       double dOverlapRxPowerMillWatt{rxPowersMilliWatt[i] * dOverlapRatio};
 
                       if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                         {
-                          bAboveSensitivity = true; 
-                          
+                          bAboveSensitivity = true;
+
                           std::tie(startOfReception,endOfReception) =
                             entry.second->update(now,
                                                  validTxTime,
@@ -381,13 +382,13 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                 {
                   bReportAsInBand = true;
                 }
-              
+
               if(bAboveSensitivity)
                 {
                   maxEoR = std::max(maxEoR,endOfReception);
-                  
+
                   minSoR = std::min(minSoR,startOfReception);
-              
+
                   reportableFrequencySegments.push_back({segment.getFrequencyHz(),
                         Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
                         validDuration,
@@ -398,7 +399,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
           ++i;
         }
     }
-  
+
   return std::make_tuple(validTxTime,
                          validPropagation,
                          std::chrono::duration_cast<Microseconds>(maxEoR - minSoR),
@@ -452,13 +453,13 @@ EMANE::SpectrumMonitor::request_i(const TimePoint & now,
                                                         bMaxClamp_ ? "on" : "off");
         }
     }
-  
+
   const auto iter = noiseRecorderMap_.find(u64FrequencyHz);
-  
+
   if(iter!= noiseRecorderMap_.end())
     {
       auto ret = iter->second->get(now,validDuration,timepoint);
-      
+
       return std::tuple_cat(std::move(ret),std::make_tuple(binSize_,dReceiverSensitivityMilliWatt_,mode_==NoiseMode::ALL));
     }
   else
@@ -480,7 +481,7 @@ std::vector<double> EMANE::SpectrumMonitor::dump(std::uint64_t u64FrequencyHz) c
   std::lock_guard<std::mutex> m(mutex_);
 
   const auto iter = noiseRecorderMap_.find(u64FrequencyHz);
-  
+
   if(iter!= noiseRecorderMap_.end())
     {
       return iter->second->dump();
@@ -501,7 +502,7 @@ namespace
 
     double u64UpperFrequencyHz2{u64FrequencyHz2 + u64BandwidthHz2 / 2.0};
     double u64LowerFrequencyHz2{u64FrequencyHz2 - u64BandwidthHz2 / 2.0};
-    
+
     // percent in band, defaults to no coverage
     double dRatio{};
 
@@ -539,8 +540,8 @@ namespace
               }
           }
       }
-    
-    // return ratio 
+
+    // return ratio
     return dRatio;
   }
 }

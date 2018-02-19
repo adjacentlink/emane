@@ -30,6 +30,8 @@ nodist_libemane_la_SOURCES =             \
  commonphyheader.pb.h                    \
  event.pb.cc                             \
  event.pb.h                              \
+ fadingselectionevent.pb.cc              \
+ fadingselectionevent.pb.h               \
  flowcontrol.pb.cc                       \
  flowcontrol.pb.h                        \
  locationevent.pb.cc                     \
@@ -88,6 +90,9 @@ libemane_la_SOURCES =                         \
  eventserviceproxy.cc                         \
  eventstatisticpublisher.cc                   \
  eventtablepublisher.cc                       \
+ fadingmanager.cc                             \
+ fadingselectionevent.cc                      \
+ fadingselectioneventformatter.cc             \
  flowcontrolclient.cc                         \
  flowcontrolcontrolmessage.cc                 \
  flowcontrolmanager.cc                        \
@@ -112,6 +117,7 @@ libemane_la_SOURCES =                         \
  main.cc                                      \
  manifestqueryhandler.cc                      \
  multicastsocket.cc                           \
+ nakagamifadingalgorithm.cc                   \
  neighbormetricmanager.cc                     \
  nembuilder.cc                                \
  nemimpl.cc                                   \
@@ -216,6 +222,8 @@ libemane_la_SOURCES =                         \
  eventserviceproxy.h                          \
  eventstatisticpublisher.h                    \
  eventtablepublisher.h                        \
+ fadingalgorithm.h                            \
+ fadingmanager.h                              \
  frameworkphy.h                               \
  freespacepropagationmodelalgorithm.h         \
  gainmanager.h                                \
@@ -235,6 +243,7 @@ libemane_la_SOURCES =                         \
  main.h                                       \
  manifestqueryhandler.h                       \
  multicastsocket.h                            \
+ nakagamifadingalgorithm.h                    \
  nemimpl.h                                    \
  nemlayerstack.h                              \
  nemlayerstateconfigured.h                    \
@@ -311,6 +320,7 @@ EXTRA_DIST =                                  \
  commonmacheader.proto                        \
  commonphyheader.proto                        \
  event.proto                                  \
+ fadingselectionevent.proto                   \
  flowcontrol.proto                            \
  locationevent.proto                          \
  loggermessage.proto                          \
@@ -361,6 +371,9 @@ remotecontrolportapi.pb.cc remotecontrolportapi.pb.h: remotecontrolportapi.proto
 	protoc -I=. --cpp_out=. $<
 
 tdmascheduleevent.pb.cc tdmascheduleevent.pb.h: tdmascheduleevent.proto
+	protoc -I=. --cpp_out=. $<
+
+fadingselectionevent.pb.cc fadingselectionevent.pb.h: fadingselectionevent.proto
 	protoc -I=. --cpp_out=. $<
 
 clean-local:

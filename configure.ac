@@ -1,5 +1,5 @@
-%AC_COPYRIGHT([
- Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+AC_COPYRIGHT([
+ Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -188,6 +188,8 @@ AC_SUBST(DATE_RFC2822,`date -R`)
 AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
+AC_SUBST(PYTHON_MAJOR_VERSION,[`echo $PYTHON_VERSION | awk -F . '{print $1}'`])
+
 AC_OUTPUT(
  Makefile 
  include/emane/Makefile
@@ -210,7 +212,8 @@ AC_OUTPUT(
  src/applications/emanetransportd/Makefile
  src/applications/emaneeventd/Makefile
  src/applications/emaneeventservice/Makefile
- src/emanesh/Makefile
+ src/python/Makefile
+ src/python/emane/info/__init__.py
  src/transports/Makefile
  src/transports/common/Makefile
  src/transports/virtual/Makefile
@@ -237,6 +240,7 @@ AC_OUTPUT(
  src/generators/eel/loaders/pathloss/Makefile
  src/generators/eel/loaders/antennaprofile/Makefile
  src/generators/eel/loaders/commeffect/Makefile
+ src/generators/eel/loaders/fadingselection/Makefile
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile

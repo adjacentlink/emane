@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -84,6 +84,7 @@ namespace EMANE
       std::unique_ptr<NEMLayer> pTransport_;
       INETAddr transportEndpointAddr_;
       INETAddr platformEndpointAddr_;
+      Protocol protocol_;
 
       void doProcessPacketMessage(const PacketInfo &,
                                   const void * pPacketData,

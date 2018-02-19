@@ -118,7 +118,6 @@ EMANE::Models::RFPipe::PCRManager::Close(xmlParserCtxtPtr * ppContext, xmlDoc **
 
 
 void EMANE::Models::RFPipe::PCRManager::load(const std::string & uri)
-  throw(StartException)
 {
   xmlDoc  * doc{};
   xmlNode * root{};

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -98,6 +99,21 @@ public:
     return u16LengthPrefixFraming;
   }
 
+  std::uint32_t stripLengthPrefixFramingLong()
+  {
+    std::uint32_t u32LengthPrefixFraming{};
+
+    if(head_ + sizeof(uint32_t) < pShared_->packetSegment_.size())
+      {
+        u32LengthPrefixFraming =
+          NTOHL(*reinterpret_cast<const std::uint32_t *>(&pShared_->packetSegment_[head_]));
+
+        head_ += sizeof(uint32_t);
+      }
+
+    return u32LengthPrefixFraming;
+  }
+
 
   const void * get() const
   {
@@ -172,6 +188,10 @@ std::uint16_t EMANE::UpstreamPacket::stripLengthPrefixFraming()
   return pImpl_->stripLengthPrefixFraming();
 }
 
+std::uint32_t EMANE::UpstreamPacket::stripLengthPrefixFramingLong()
+{
+  return pImpl_->stripLengthPrefixFramingLong();
+}
 
 const void * EMANE::UpstreamPacket::get() const
 {

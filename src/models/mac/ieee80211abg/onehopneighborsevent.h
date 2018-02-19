@@ -51,8 +51,7 @@ namespace EMANE
         /**
          * @throw SerializationException
          */
-        OneHopNeighborsEvent(const std::string & sSerialization)
-          throw(SerializationException);
+        OneHopNeighborsEvent(const std::string & sSerialization);
       
         OneHopNeighborsEvent(NEMId id, const NbrSet & neighbors);
        

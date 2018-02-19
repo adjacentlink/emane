@@ -10,6 +10,11 @@ emaneinc_HEADERS =                       \
  commeffect.h                            \
  commeffect.inl                          \
  eventids.h                              \
+ fadingmodel.h                           \
+ fadingselection.h                       \
+ fadingselection.inl                     \
+ fadingselectionevent.h                  \
+ fadingselectioneventformatter.h         \
  locationevent.h                         \
  locationeventformatter.h                \
  location.h                              \

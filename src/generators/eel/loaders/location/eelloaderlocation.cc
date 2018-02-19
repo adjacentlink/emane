@@ -323,8 +323,6 @@ EMANE::Generators::EEL::EventInfoList EMANE::Generators::EEL::LoaderLocation::ge
           pCache = &locationEntryMap_;
         }
       
-      LocationEntryMap::const_iterator iter =  pCache->begin();
-
       Events::Locations locations;
 
       for(const auto & entry : *pCache)

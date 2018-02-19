@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -49,7 +51,7 @@ message CommonPHYHeader
     required uint64 durationMicroseconds = 3;
     optional double powerdBm = 4;
   }
-  
+
   required uint32 registrationId = 1;
   required uint32 subId = 2;
   required uint32 sequenceNumber = 3;

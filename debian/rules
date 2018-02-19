@@ -1,9 +1,0 @@
-#!/usr/bin/make -f
-export DEB_CXXFLAGS_MAINT_APPEND=-O3 -Wall -Wextra
-
-# Workaround for unversioned SONAMEs in EMANE shared libraries
-override_dh_makeshlibs:
-	dh_listpackages | xargs -I {} dpkg-gensymbols -Pdebian/{} -p{} -q
-
-%:
-	dh $@ --parallel --with autotools-dev --with python2

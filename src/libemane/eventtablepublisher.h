@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 #define EMANEEVENTTABLEPUBLISHER_HEADER_
 
 #include "emane/events/antennaprofileevent.h"
+#include "emane/events/fadingselectionevent.h"
 #include "emane/events/locationevent.h"
 #include "emane/events/pathlossevent.h"
 #include "emane/statistictable.h"
@@ -56,15 +57,19 @@ namespace EMANE
 
     void update(const Events::AntennaProfiles & profiles);
 
+    void update(const Events::FadingSelections & selections);
+
   private:
     NEMId nemId_;
     std::set<NEMId> locationNEMSet_;
     std::set<NEMId> pathlossNEMSet_;
     std::set<NEMId> antennaProfileNEMSet_;
+    std::set<NEMId> fadingSelectionNEMSet_;
 
     StatisticTable<NEMId> * pLocationTable_;
     StatisticTable<NEMId> * pPathlossTable_;
     StatisticTable<NEMId> * pAntennaProfileTable_;
+    StatisticTable<NEMId> * pFadingSelectionTable_;
   };
 }
 

@@ -1,0 +1,30 @@
+from distutils.core import setup
+
+setup(name='emane',
+      version='@VERSION@',
+      description='EMANE modules and utilities',
+      long_description='EMANE modules and utilities',
+      author='Adjacent Link',
+      author_email='emane at adjacent link dot com',
+      url="https://github.com/adjacentlink/emane",
+      packages=['emane',
+                'emane.shell',
+                'emane.events',
+                'emane.ota',
+                'emane.info'],
+      scripts=['scripts/emanesh',
+               'scripts/emaneevent-dump',
+               'scripts/emaneevent-pathloss',
+               'scripts/emaneevent-commeffect',
+               'scripts/emaneevent-location',
+               'scripts/emaneevent-antennaprofile',
+               'scripts/emaneevent-tdmaschedule',
+               'scripts/emaneevent-fadingselection',
+               'scripts/emaneota-publisher',
+               'scripts/emanecommand-eel'],
+      package_data={'emane.shell' : ['schema/*.xsd'],
+                    'emane.events' : ['schema/*.xsd'],
+                    'emane.ota' : ['schema/*.xsd']},
+      license = 'BSD'
+      )
+

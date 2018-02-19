@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,12 +52,15 @@ namespace EMANE
     OTAStatisticPublisher();
 
     enum class Type
-    {
-      TYPE_UPSTREAM,
-        TYPE_DOWNSTREAM,
-    };
+      {
+        TYPE_UPSTREAM_PACKET_SUCCESS,
+        TYPE_DOWNSTREAM_PACKET_SUCCESS,
+        TYPE_UPSTREAM_PACKET_DROP_MISSING_PARTS,
+      };
 
-    void update(Type type, const uuid_t & uuid, NEMId nemId);
+    void update(Type type,
+                const uuid_t & uuid,
+                NEMId nemId);
 
     void setRowLimit(size_t rows);
 
@@ -67,10 +70,13 @@ namespace EMANE
     using PacketCountInfo =
       std::map<PacketCountTableKey,
                std::tuple<std::uint64_t, // packets Tx
-                          std::uint64_t>>; // packets Rx
+                          std::uint64_t, // packets Rx
+                          std::uint64_t>>; // packets Rx drop missing
+                                           // parts
 
     StatisticNumeric<std::uint64_t> * pNumOTAChannelDownstreamPackets_;
     StatisticNumeric<std::uint64_t> * pNumOTAChannelUpstreamPackets_;
+    StatisticNumeric<std::uint64_t> * pNumOTAChannelUpstreamPacketsDroppedMissingPart_;
 
     StatisticTable<PacketCountTableKey> * pPacketCountTable_;
 

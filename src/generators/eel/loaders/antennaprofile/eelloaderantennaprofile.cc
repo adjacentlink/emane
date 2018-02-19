@@ -150,7 +150,6 @@ EMANE::Generators::EEL::EventInfoList EMANE::Generators::EEL::LoaderAntennaProfi
       pCache = &antennaProfileEntryMap_;
     }
 
-  AntennaProfileEntryMap::const_iterator iter =  pCache->begin();
   Events::AntennaProfiles profiles;
   
   for(const auto & entry : *pCache)

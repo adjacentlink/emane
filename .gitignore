@@ -24,6 +24,7 @@ missing
 
 # version
 include/emane/version.h
+src/python/emane/info/__init__.py
 
 # pkg-config
 src/libemane/libemane.pc
@@ -53,16 +54,19 @@ emane.spec
 # dist
 emane-*.tar.gz
 
+# make install
+src/python/.installedfiles
+
 # documentation output
 doc/emane.doxygen
 doc/html
 
 # emane shell
-src/emanesh/build
-src/emanesh/dist
-src/emanesh/emanesh/schema/manifest.xsd
-src/emanesh/setup.py
-src/emanesh/MANIFEST
+src/python/build
+src/python/dist
+src/python/emane/shell/schema/manifest.xsd
+src/python/setup.py
+src/python/MANIFEST
 
 # man pages
 *.1

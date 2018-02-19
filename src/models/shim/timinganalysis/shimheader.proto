@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -40,4 +42,3 @@ message SHIMHeader
   required uint32 source = 2;
   required uint32 packetid = 3;
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,27 +66,34 @@ void EMANE::ControlPort::Service::open(const INETAddr & endpoint)
                 reinterpret_cast<void*>(&iOption),
                 sizeof(iOption)) < 0)
     {
-      makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("setsockopt SO_REUSEADDR: %s",
+                                           strerror(errno));
 
     }
 
   if(bind(iSock_,endpoint.getSockAddr(),endpoint.getAddrLength()) < 0)
     {
-      makeException<SocketException>("bind: %s",
-                                     strerror(errno));
+      throw makeException<SocketException>("bind: %s",
+                                           strerror(errno));
     }
 
 
   if(listen(iSock_,10) < 0)
     {
-       makeException<SocketException>("listen: %s",
-                                      strerror(errno));
+      throw makeException<SocketException>("listen: %s",
+                                           strerror(errno));
     }
 
   thread_ = std::thread(&Service::process,this);
 }
 
+EMANE::ControlPort::Service::~Service()
+{
+  if(thread_.joinable())
+    {
+      close();
+    }
+}
 
 void EMANE::ControlPort::Service::close()
 {
@@ -156,6 +163,7 @@ void EMANE::ControlPort::Service::process()
               // process the session data
               if(iter->second->process(iter->first))
                 {
+                  ::close(iter->first);
                   sessionMap.erase(iter++);
                 }
               else
@@ -173,6 +181,5 @@ void EMANE::ControlPort::Service::process()
   for(const auto & entry : sessionMap)
     {
       ::close(entry.first);
-      //delete entry.second;
     }
 }
