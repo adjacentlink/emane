@@ -404,3 +404,10 @@ EMANE::Models::TDMA::BasicQueueManager::getPacketQueueInfo() const
 
   return queueInfos;
 }
+
+double EMANE::Models::TDMA::BasicQueueManager::getImplQSDelay()
+{
+  auto delay = pImpl_->queueStatusPublisher_.getDelay();
+
+  return delay;
+}

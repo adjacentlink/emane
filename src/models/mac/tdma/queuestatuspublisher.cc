@@ -32,6 +32,11 @@
 
 #include "queuestatuspublisher.h"
 
+#include "chrono"
+#include "ctime"
+#include "ratio"
+#include "/usr/include/emane/types.h"
+
 EMANE::Models::TDMA::QueueStatusPublisher::QueueStatusPublisher():
   pQueueStatusTable_{},
   statusTableInfo_{{0,{}},{1,{}},{2,{}},{3,{}},{4,{}}},
@@ -209,6 +214,8 @@ void EMANE::Models::TDMA::QueueStatusPublisher::dequeue(std::uint8_t u8RequestQu
     }
 
   depthQueueInfo_[u8ActualQueue] -= packetsCompletedSend;
+
+  updatedelaystat(false, u8ActualQueue);
 }
 
 void EMANE::Models::TDMA::QueueStatusPublisher::enqueue(std::uint8_t u8Queue)
@@ -224,4 +231,59 @@ void EMANE::Models::TDMA::QueueStatusPublisher::enqueue(std::uint8_t u8Queue)
 
       *pHighWaterMarkQueue_[u8Queue] = highWaterMarkQueueInfo_[u8Queue];
     }
+  
+  updatedelaystat(false, u8Queue);
+}
+
+void EMANE::Models::TDMA::QueueStatusPublisher::updatedelaystat(bool ifenqueued, std::uint8_t u8Queue)
+{
+  auto now = std::chrono::system_clock::now();
+  if(ifenqueued == true)
+  {
+    auto enqueuedid = (std::get<0>(statusTableInfo_[u8Queue]))%64;
+    enqueuedQueues_[u8Queue][enqueuedid] = now;
+    us64delays_[u8Queue][enqueuedid] = 0;
+  }
+  else
+  {
+    auto dequeuedid = (std::get<1>(statusTableInfo_[u8Queue]))%64;
+    auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - enqueuedQueues_[u8Queue][dequeuedid]);
+    auto us = microseconds.count();
+    us64delays_[u8Queue][dequeuedid] = us;
+    avgQueueDelay_[u8Queue] = 0;
+    auto d1 = 0, d2 = 0, d3 = 0;
+    for(int i=0; i<64; i++)
+    {
+      if(us64delays_[u8Queue][i])
+      {
+      d1 = us64delays_[u8Queue][i];
+      d2 = d1;
+      d3 = d2;
+      }
+    }
+    auto ifValInitialized = (d1 > 0 ? 1:0) + (d2 > 0 ? 1:0) + (d3 > 0 ? 1:0);
+    if(ifValInitialized)
+      avgQueueDelay_[u8Queue] = (d1 + d2 + d3)/(ifValInitialized);
+  }
+}
+
+double EMANE::Models::TDMA::QueueStatusPublisher::getDelay()
+{
+  double avg = 0;
+  auto enqueue0 = (std::get<0>(statusTableInfo_[0]));
+  auto enqueue1 = (std::get<0>(statusTableInfo_[1]));
+  auto enqueue2 = (std::get<0>(statusTableInfo_[2]));
+  auto enqueue3 = (std::get<0>(statusTableInfo_[3]));
+  auto enqueue4 = (std::get<0>(statusTableInfo_[4]));
+  auto sumenqueue = enqueue0 + enqueue1 + enqueue2 + enqueue3 + enqueue4;
+
+  if(sumenqueue)
+  {
+    avg = (enqueue0*avgQueueDelay_[0]+
+          enqueue1*avgQueueDelay_[1]+
+          enqueue2*avgQueueDelay_[2]+
+          enqueue3*avgQueueDelay_[3]+
+          enqueue4*avgQueueDelay_[4]) / sumenqueue;
+  }
+  return avg;
 }

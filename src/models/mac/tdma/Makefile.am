@@ -31,6 +31,7 @@ libtdmabase_la_SOURCES =             \
  receivemanager.cc                   \
  slotstatustablepublisher.cc         \
  txslotinfosformatter.cc             \
+ downstreamqueue.cc					 \
  aggregationstatuspublisher.h        \
  basemodelimpl.h                     \
  basemodelmessage.h                  \
@@ -42,7 +43,8 @@ libtdmabase_la_SOURCES =             \
  queuestatuspublisher.h              \
  receivemanager.h                    \
  slotstatustablepublisher.h          \
- txslotinfosformatter.h
+ txslotinfosformatter.h				 \
+ downstreamqueue.h
 
 nodist_libtdmabase_la_SOURCES =      \
  tdmabasemodelmessage.pb.cc          \
