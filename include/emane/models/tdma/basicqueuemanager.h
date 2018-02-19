@@ -76,6 +76,8 @@ namespace EMANE
 
         QueueInfos getPacketQueueInfo() const override;
 
+        double getImplQSDelay() override;
+
       private:
         class Implementation;
         std::unique_ptr<Implementation> pImpl_;

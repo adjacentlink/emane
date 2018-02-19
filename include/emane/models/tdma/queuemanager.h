@@ -111,6 +111,8 @@ namespace EMANE
          */
         virtual QueueInfos getPacketQueueInfo() const = 0;
 
+        virtual double getImplQSDelay() = 0;
+
       protected:
         NEMId id_;
 
