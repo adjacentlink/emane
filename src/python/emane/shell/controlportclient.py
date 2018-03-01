@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2014,2017 - Adjacent Link LLC, Bridgewater,
+# Copyright (c) 2013-2014,2017-2018 - Adjacent Link LLC, Bridgewater,
 # New Jersey
 # All rights reserved.
 #
@@ -163,7 +163,7 @@ class ControlPortClient:
         self._thread.start()
 
     def stop(self):
-        os.write(self._write,"\n")
+        os.write(self._write, str.encode("\n") if sys.version_info >= (3,0) else "\n")
         self._thread.join()
         self._sock.close()
 
@@ -406,7 +406,7 @@ class ControlPortClient:
 
 
     def _run(self):
-        buffer = ""
+        buffer = bytes() if sys.version_info >= (3,0) else ""
         messageLengthBytes = 0
         running = True
 
@@ -426,7 +426,7 @@ class ControlPortClient:
 
                         if(len(buffer) == 4):
                             (messageLengthBytes,) = struct.unpack('!I',buffer);
-                            buffer = ""
+                            buffer = bytes() if sys.version_info >= (3,0) else ""
 
                     else:
                         data = self._sock.recv(messageLengthBytes-len(buffer))
@@ -451,7 +451,7 @@ class ControlPortClient:
                             self._lock.release()
 
                             messageLengthBytes = 0
-                            buffer = ""
+                            buffer = bytes() if sys.version_info >= (3,0) else ""
 
                 elif fd is self._read:
                     running = False
