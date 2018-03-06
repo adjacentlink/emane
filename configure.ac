@@ -188,8 +188,6 @@ AC_SUBST(DATE_RFC2822,`date -R`)
 AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
-AC_SUBST(PYTHON_MAJOR_VERSION,[`echo $PYTHON_VERSION | awk -F . '{print $1}'`])
-
 AC_OUTPUT(
  Makefile 
  include/emane/Makefile

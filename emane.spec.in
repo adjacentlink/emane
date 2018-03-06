@@ -1,4 +1,4 @@
-%define with_python3 %{?_with_python3:1} %{?!_with_python3:0}
+%define with_python3 %{?_without_python3:0} %{?!_without_python3:1}
 
 Summary: EMANE - Extendable Mobile Ad-hoc Network Emulator 
 Name: emane
@@ -17,34 +17,26 @@ Vendor: Adjacent Link LLC
 
 
 %if 0%{?fc26} ||  0%{?fc27}
-%if %{with_python3}
-BuildRequires: python3-devel
-%define use_python_package python3-emane
-%define use_python_setuptools python3-setuptools
-%define use_python_protobuf python3-protobuf
-%define use_python_lxml python3-lxml
-%define use_python_sitelib %{python3_sitelib}
-%else
 BuildRequires: python2-devel
-%define use_python_package python2-emane
-%define use_python_setuptools python2-setuptools
-%define use_python_protobuf python2-protobuf
-%define use_python_lxml python2-lxml
-%define use_python_sitelib %{python2_sitelib}
-%endif
+%define use_python2_package python2-emane
+%define use_python2_setuptools python2-setuptools
+%define use_python2_protobuf python2-protobuf
+%define use_python2_lxml python2-lxml
+%define use_python2_sitelib %{python2_sitelib}
 %else
-%if %{with_python3}
-%{warn: "python3 packaging currently not supported, falling back to python2"}
-%endif
 BuildRequires: python-devel
-%define use_python_package python-emane
-%define use_python_setuptools python-setuptools
-%define use_python_protobuf protobuf-python
-%define use_python_lxml python-lxml
-%define use_python_sitelib %{python_sitelib}
+%define use_python2_package python-emane
+%define use_python2_setuptools python-setuptools
+%define use_python2_protobuf protobuf-python
+%define use_python2_lxml python-lxml
+%define use_python2_sitelib %{python_sitelib}
 %endif
 
-BuildRequires: %{use_python_setuptools}
+%if 0%{?fc26} ||  0%{?fc27}
+BuildRequires: python3-devel
+%else
+%define with_python3 0
+%endif
 
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
@@ -71,7 +63,7 @@ EMANE DTDs required for EMANE XML.
 
 %package utils
 Requires: %{name}-dtds = %{version}-%{release}
-Requires: %{use_python_lxml}
+Requires: %{use_python2_lxml}
 Summary: EMANE utilities
 Group:  Applications/System
 BuildArch: noarch
@@ -221,16 +213,32 @@ BuildArch: noarch
 %description manifest
 EMANE Plugin Manifests
 
-%package -n %{use_python_package}
-Requires: %{use_python_setuptools}
-Requires: %{use_python_protobuf}
-Requires: %{use_python_lxml}
+%package -n %{use_python2_package}
+Requires: %{use_python2_setuptools}
+Requires: %{use_python2_protobuf}
+Requires: %{use_python2_lxml}
 Summary: EMANE Python modules and utilities
 Group: Development/Libraries
+%if 0%{?fc26} ||  0%{?fc27}
+Obsoletes: python-emane
+Provides: python-emane
+%else
 Obsoletes: emanesh
+%endif
 BuildArch: noarch
 
-%description -n %{use_python_package}
+%description -n %{use_python2_package}
+EMANE Python modules and utilities
+
+%package -n python3-emane
+Requires: python3-setuptools
+Requires: python3-protobuf
+Requires: python3-lxml
+Summary: EMANE Python modules and utilities
+Group: Development/Libraries
+BuildArch: noarch
+
+%description -n python3-emane
 EMANE Python modules and utilities
 
 %prep
@@ -238,17 +246,78 @@ EMANE Python modules and utilities
 
 %build
 export CXXFLAGS="%{optflags} -O3 -Wall -Wextra"
-%if %{with_python3}
-export PYTHON=python3
-%else
-export PYTHON=python2
-%endif
 
 %configure
 make %{?_smp_mflags}
 
+%if %{with_python3}
+# build the python3 version
+make -C src/python PYTHON=%{__python3}
+%endif
+
 %install
 make DESTDIR=${RPM_BUILD_ROOT} install
+%if %{with_python3}
+make  DESTDIR=${RPM_BUILD_ROOT} -C src/python PYTHON=%{__python3} install
+
+mv %{buildroot}/%{_bindir}/emanecommand-eel %{buildroot}/%{_bindir}/emanecommand-eel-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-antennaprofile %{buildroot}/%{_bindir}/emaneevent-antennaprofile-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-commeffect %{buildroot}/%{_bindir}/emaneevent-commeffect-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-dump %{buildroot}/%{_bindir}/emaneevent-dump-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-location %{buildroot}/%{_bindir}/emaneevent-location-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-pathloss %{buildroot}/%{_bindir}/emaneevent-pathloss-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-tdmaschedule %{buildroot}/%{_bindir}/emaneevent-tdmaschedule-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/emaneevent-fadingselection-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python3_version}
+mv %{buildroot}/%{_bindir}/emanesh %{buildroot}/%{_bindir}/emanesh-%{python3_version}
+
+ln -s emanecommand-eel-%{python3_version} %{buildroot}%{_bindir}/emanecommand-eel-3
+ln -s emaneevent-antennaprofile-%{python3_version} %{buildroot}%{_bindir}/emaneevent-antennaprofile-3
+ln -s emaneevent-commeffect-%{python3_version} %{buildroot}%{_bindir}/emaneevent-commeffect-3
+ln -s emaneevent-dump-%{python3_version} %{buildroot}%{_bindir}/emaneevent-dump-3
+ln -s emaneevent-location-%{python3_version} %{buildroot}%{_bindir}/emaneevent-location-3
+ln -s emaneevent-pathloss-%{python3_version} %{buildroot}%{_bindir}/emaneevent-pathloss-3
+ln -s emaneevent-tdmaschedule-%{python3_version} %{buildroot}%{_bindir}/emaneevent-tdmaschedule-3
+ln -s emaneevent-fadingselection-%{python3_version} %{buildroot}%{_bindir}/emaneevent-fadingselection-3
+ln -s emaneota-publisher-%{python3_version} %{buildroot}%{_bindir}/emaneota-publisher-3
+ln -s emanesh-%{python3_version} %{buildroot}%{_bindir}/emanesh-3
+%endif
+
+make  DESTDIR=${RPM_BUILD_ROOT} -C src/python PYTHON=%{__python2} install
+
+mv %{buildroot}/%{_bindir}/emanecommand-eel %{buildroot}/%{_bindir}/emanecommand-eel-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-antennaprofile %{buildroot}/%{_bindir}/emaneevent-antennaprofile-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-commeffect %{buildroot}/%{_bindir}/emaneevent-commeffect-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-dump %{buildroot}/%{_bindir}/emaneevent-dump-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-location %{buildroot}/%{_bindir}/emaneevent-location-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-pathloss %{buildroot}/%{_bindir}/emaneevent-pathloss-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-tdmaschedule %{buildroot}/%{_bindir}/emaneevent-tdmaschedule-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/emaneevent-fadingselection-%{python2_version}
+mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python2_version}
+mv %{buildroot}/%{_bindir}/emanesh %{buildroot}/%{_bindir}/emanesh-%{python2_version}
+
+ln -s emanecommand-eel-%{python2_version} %{buildroot}%{_bindir}/emanecommand-eel-2
+ln -s emaneevent-antennaprofile-%{python2_version} %{buildroot}%{_bindir}/emaneevent-antennaprofile-2
+ln -s emaneevent-commeffect-%{python2_version} %{buildroot}%{_bindir}/emaneevent-commeffect-2
+ln -s emaneevent-dump-%{python2_version} %{buildroot}%{_bindir}/emaneevent-dump-2
+ln -s emaneevent-location-%{python2_version} %{buildroot}%{_bindir}/emaneevent-location-2
+ln -s emaneevent-pathloss-%{python2_version} %{buildroot}%{_bindir}/emaneevent-pathloss-2
+ln -s emaneevent-tdmaschedule-%{python2_version} %{buildroot}%{_bindir}/emaneevent-tdmaschedule-2
+ln -s emaneevent-fadingselection-%{python2_version} %{buildroot}%{_bindir}/emaneevent-fadingselection-2
+ln -s emaneota-publisher-%{python2_version} %{buildroot}%{_bindir}/emaneota-publisher-2
+ln -s emanesh-%{python2_version} %{buildroot}%{_bindir}/emanesh-2
+
+ln -s emanecommand-eel-2 %{buildroot}%{_bindir}/emanecommand-eel
+ln -s emaneevent-antennaprofile-2 %{buildroot}%{_bindir}/emaneevent-antennaprofile
+ln -s emaneevent-commeffect-2 %{buildroot}%{_bindir}/emaneevent-commeffect
+ln -s emaneevent-dump-2 %{buildroot}%{_bindir}/emaneevent-dump
+ln -s emaneevent-location-2 %{buildroot}%{_bindir}/emaneevent-location
+ln -s emaneevent-pathloss-2 %{buildroot}%{_bindir}/emaneevent-pathloss
+ln -s emaneevent-tdmaschedule-2 %{buildroot}%{_bindir}/emaneevent-tdmaschedule
+ln -s emaneevent-fadingselection-2 %{buildroot}%{_bindir}/emaneevent-fadingselection
+ln -s emaneota-publisher-2 %{buildroot}%{_bindir}/emaneota-publisher
+ln -s emanesh-2 %{buildroot}%{_bindir}/emanesh
+
 find ${RPM_BUILD_ROOT} -name '*.a' -exec rm '{}'  \;
 find ${RPM_BUILD_ROOT} -name '*.la' -exec rm '{}' \;
 mkdir -p ${RPM_BUILD_ROOT}%{_pkgdocdir}
@@ -552,7 +621,7 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
-%files -n %{use_python_package}
+%files -n %{use_python2_package}
 %defattr(-,root,root,-)
 %{_bindir}/emanecommand-eel
 %{_bindir}/emaneevent-antennaprofile
@@ -564,12 +633,64 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
-%{use_python_sitelib}/emane
-%{use_python_sitelib}/emane-%{version}-*.egg-info
-
+%{_bindir}/emanecommand-eel-2
+%{_bindir}/emaneevent-antennaprofile-2
+%{_bindir}/emaneevent-commeffect-2
+%{_bindir}/emaneevent-dump-2
+%{_bindir}/emaneevent-location-2
+%{_bindir}/emaneevent-pathloss-2
+%{_bindir}/emaneevent-tdmaschedule-2
+%{_bindir}/emaneevent-fadingselection-2
+%{_bindir}/emaneota-publisher-2
+%{_bindir}/emanesh-2
+%{_bindir}/emanecommand-eel-%{python2_version}
+%{_bindir}/emaneevent-antennaprofile-%{python2_version}
+%{_bindir}/emaneevent-commeffect-%{python2_version}
+%{_bindir}/emaneevent-dump-%{python2_version}
+%{_bindir}/emaneevent-location-%{python2_version}
+%{_bindir}/emaneevent-pathloss-%{python2_version}
+%{_bindir}/emaneevent-tdmaschedule-%{python2_version}
+%{_bindir}/emaneevent-fadingselection-%{python2_version}
+%{_bindir}/emaneota-publisher-%{python2_version}
+%{_bindir}/emanesh-%{python2_version}
+%{use_python2_sitelib}/emane
+%{use_python2_sitelib}/emane-%{version}-*.egg-info
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}
 %dir %{_licensedir}/%{name}
 %license %{_licensedir}/%{name}/COPYING
+%endif
+
+%if %{with_python3}
+%files -n python3-emane
+%defattr(-,root,root,-)
+%{_bindir}/emanecommand-eel-3
+%{_bindir}/emaneevent-antennaprofile-3
+%{_bindir}/emaneevent-commeffect-3
+%{_bindir}/emaneevent-dump-3
+%{_bindir}/emaneevent-location-3
+%{_bindir}/emaneevent-pathloss-3
+%{_bindir}/emaneevent-tdmaschedule-3
+%{_bindir}/emaneevent-fadingselection-3
+%{_bindir}/emaneota-publisher-3
+%{_bindir}/emanesh-3
+%{_bindir}/emanecommand-eel-%{python3_version}
+%{_bindir}/emaneevent-antennaprofile-%{python3_version}
+%{_bindir}/emaneevent-commeffect-%{python3_version}
+%{_bindir}/emaneevent-dump-%{python3_version}
+%{_bindir}/emaneevent-location-%{python3_version}
+%{_bindir}/emaneevent-pathloss-%{python3_version}
+%{_bindir}/emaneevent-tdmaschedule-%{python3_version}
+%{_bindir}/emaneevent-fadingselection-%{python3_version}
+%{_bindir}/emaneota-publisher-%{python3_version}
+%{_bindir}/emanesh-%{python3_version}
+%{python3_sitelib}/emane
+%{python3_sitelib}/emane-%{version}-*.egg-info
+
+%doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
 %endif

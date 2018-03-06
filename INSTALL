@@ -11,17 +11,21 @@ Install
 =======
 
  # make install
- # cd src/emanesh
- # python setup.py install
-
 
 Build RPMs
 ==========
 
  # make rpm
 
+or without python3 support:
+
+ # make rpm RPMBUILD_ARGS="--without python3"
 
 Build debs
 ==========
 
  # make deb
+
+or without python3 support:
+
+ # make deb WITHOUT_PYTHON3=1
