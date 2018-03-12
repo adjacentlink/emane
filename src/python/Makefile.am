@@ -60,8 +60,7 @@ sdist:
 	$(PYTHON) setup.py sdist
 
 edit = sed                              \
-        -e 's|@VERSION[@]|$(VERSION)|g' \
-        -e 's|@PYTHON[@]|$(PYTHON)|g'
+        -e 's|@VERSION[@]|$(VERSION)|g' 
 
 emane/shell/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emane/shell  $<

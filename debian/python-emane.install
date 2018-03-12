@@ -9,3 +9,13 @@ usr/bin/emaneevent-tdmaschedule
 usr/bin/emaneevent-fadingselection
 usr/bin/emaneota-publisher
 usr/bin/emanesh
+usr/bin/emanecommand-eel-2*
+usr/bin/emaneevent-antennaprofile-2*
+usr/bin/emaneevent-commeffect-2*
+usr/bin/emaneevent-dump-2*
+usr/bin/emaneevent-location-2*
+usr/bin/emaneevent-pathloss-2*
+usr/bin/emaneevent-tdmaschedule-2*
+usr/bin/emaneevent-fadingselection-2*
+usr/bin/emaneota-publisher-2*
+usr/bin/emanesh-2*

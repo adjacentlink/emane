@@ -12,9 +12,7 @@ SUBDIRS= src                            \
 edit = sed                                               \
        -e 's|@VERSION[@]|$(VERSION)|g'                   \
        -e 's|@DATE_RFC2822[@]|$(DATE_RFC2822)|g'         \
-       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g' \
-       -e 's|@PYTHON[@]|$(PYTHON)|g'                     \
-       -e 's|@PYTHON_MAJOR_VERSION[@]|$(PYTHON_MAJOR_VERSION)|g'
+       -e 's|@DISTRIB_CODENAME[@]|$(DISTRIB_CODENAME)|g'
 
 cleantar:
 	@(rm -f emane*.tar.gz)
@@ -32,7 +30,7 @@ rpm: emane.spec dist-gzip
 	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp" \
-    --with python$(PYTHON_MAJOR_VERSION)
+    $(RPMBUILD_ARGS)
 	@echo "============================================================"
 	@echo "RPMs located in .rpmbuild/RPMS and .rpmbuild/SRPMS"
 
@@ -58,11 +56,13 @@ deb: dist-gzip
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
 	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog.in > \
           .debbuild/$(PACKAGE)-$(VERSION)/debian/changelog
-	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/rules.in > \
-          .debbuild/$(PACKAGE)-$(VERSION)/debian/rules
-	$(edit) .debbuild/$(PACKAGE)-$(VERSION)/debian/control.in > \
-          .debbuild/$(PACKAGE)-$(VERSION)/debian/control
-	sed -i s/python2-emane/python-emane/g .debbuild/$(PACKAGE)-$(VERSION)/debian/control
+	if test -n "$(WITHOUT_PYTHON3)"; \
+	   then \
+	    cp .debbuild/$(PACKAGE)-$(VERSION)/debian/control.without-python3 \
+              .debbuild/$(PACKAGE)-$(VERSION)/debian/control; \
+            cp .debbuild/$(PACKAGE)-$(VERSION)/debian/rules.without-python3 \
+              .debbuild/$(PACKAGE)-$(VERSION)/debian/rules; \
+        fi
 	cd .debbuild/$(PACKAGE)-$(VERSION) && dpkg-buildpackage -F -us -uc -j$(JOBS)
 	@echo "============================================================"
 	@echo "debs located in .debbuild"

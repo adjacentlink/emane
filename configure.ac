@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2018 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.0.1,[emane at adjacent link dot com])
+AC_INIT([emane],1.2.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -187,8 +187,6 @@ AC_SUBST(DATE_RFC2822,`date -R`)
 
 AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
-
-AC_SUBST(PYTHON_MAJOR_VERSION,[`echo $PYTHON_VERSION | awk -F . '{print $1}'`])
 
 AC_OUTPUT(
  Makefile 
