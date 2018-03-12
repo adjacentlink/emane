@@ -73,9 +73,9 @@ void EMANE::GainManager::update(const Events::AntennaProfiles & antennaProfiles)
         }
       else
         {
-          makeException<AntennaProfileException>("NEM %hu: unknown antenna profile %hu",
-                                                 nemId_,
-                                                 antennaProfile);
+          throw makeException<AntennaProfileException>("NEM %hu: unknown antenna profile %hu",
+                                                       nemId_,
+                                                       antennaProfile);
         }
     }
 }

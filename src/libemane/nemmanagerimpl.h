@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2015,2017 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -83,8 +84,11 @@ namespace EMANE
       INETAddr OTAManagerGroupAddr_;
       std::string sOTAManagerGroupDevice_;
       std::uint8_t u8OTAManagerTTL_;
+      std::uint32_t u32OTAManagerMTU_;
       bool bOTAManagerChannelLoopback_;
       bool bOTAManagerChannelEnable_;
+      Seconds OTAManagerPartCheckThreshold_;
+      Seconds OTAManagerPartTimeoutThreshold_;
 
       INETAddr eventServiceGroupAddr_;
       std::string sEventServiceDevice_;

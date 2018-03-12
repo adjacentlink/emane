@@ -30,50 +30,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
 
 message TDMAScheduleEvent
 {
-    message Frame
+  message Frame
+  {
+    message Slot
     {
-      message Slot
+      enum Type
       {
-        enum Type
-        {
-          SLOT_TX = 1;
-          SLOT_RX = 2;
-          SLOT_IDLE = 3;
-        }
+        SLOT_TX = 1;
+        SLOT_RX = 2;
+        SLOT_IDLE = 3;
+      }
 
-        message Tx
-        {
-          optional uint64 frequencyHz = 1;
-          optional uint64 dataRatebps = 2;
-          optional uint32 serviceClass = 3;
-          optional double powerdBm = 4;
-          optional uint32 destination = 5;
-        }
+      message Tx
+      {
+        optional uint64 frequencyHz = 1;
+        optional uint64 dataRatebps = 2;
+        optional uint32 serviceClass = 3;
+        optional double powerdBm = 4;
+        optional uint32 destination = 5;
+      }
 
-        message Rx
-        {
-          optional uint64 frequencyHz = 1;
-        }
-
-        required uint32 index = 1;
-        required Type type = 2;
-        optional Tx tx = 3;
-        optional Rx rx = 4;
+      message Rx
+      {
+        optional uint64 frequencyHz = 1;
       }
 
       required uint32 index = 1;
-      optional uint64 frequencyHz = 2;
-      optional uint64 dataRatebps = 3;
-      optional uint32 serviceClass = 4;
-      optional double powerdBm = 5;
-      repeated Slot slots = 6;
+      required Type type = 2;
+      optional Tx tx = 3;
+      optional Rx rx = 4;
     }
+
+    required uint32 index = 1;
+    optional uint64 frequencyHz = 2;
+    optional uint64 dataRatebps = 3;
+    optional uint32 serviceClass = 4;
+    optional double powerdBm = 5;
+    repeated Slot slots = 6;
+  }
 
   message Structure
   {

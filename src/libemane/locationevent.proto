@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -38,21 +40,21 @@ message LocationEvent
 {
   message Location
   {
-    
+
     message Position
     {
       required double latitudeDegrees = 1;
       required double longitudeDegrees = 2;
       required double altitudeMeters = 3;
     }
-    
+
     message Velocity
     {
       required double azimuthDegrees = 1;
       required double elevationDegrees = 2;
       required double magnitudeMetersPerSecond = 3;
     }
-  
+
     message Orientation
     {
       required double rollDegrees = 1;

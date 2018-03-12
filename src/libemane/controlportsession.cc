@@ -36,6 +36,7 @@
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/uio.h>
 
 EMANE::ControlPort::Session::Session():
   u32MessageSizeBytes_{},

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -173,7 +173,7 @@ void EMANE::Models::IEEE80211ABG::MACConfig::registerConfiguration(Configuration
   configRegistrar.registerNonNumeric<std::string>("pcrcurveuri",
                                                   ConfigurationProperties::REQUIRED,
                                                   {},
-                                                  "Defines the absolute URI of the Packet Completion Rate (PCR)"
+                                                  "Defines the URI of the Packet Completion Rate (PCR)"
                                                   " curve file. The PCR curve file contains probability of"
                                                   " reception curves as a function of Signal to Interference"
                                                   " plus Noise Ratio (SINR) for each data rate.");

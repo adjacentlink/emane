@@ -1,0 +1,115 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of Adjacent Link LLC nor the names of its
+#   contributors may be used to endorse or promote products derived
+#   from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+from __future__ import absolute_import, division, print_function
+import sys
+from optparse import OptionParser
+from emane.events import EventService
+from emane.events import TDMAScheduleEvent
+from emane.events import TDMASchedule
+import copy
+import os
+
+usage="""%prog [OPTION]... TDMASCHEDULEXML
+
+  TDMASCHEDULEXML       TDMA schedule XML file"""
+
+description="Publish TDMA schedule events to all nodes referenced within the \
+schedule XML. Each node only receives their own schedule information."
+
+epilog=""
+
+class LocalParser(OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+optionParser = LocalParser(usage=usage,
+                           description=description,
+                           epilog=epilog)
+
+optionParser.add_option("-p",
+                        "--port",
+                        action="store",
+                        type="int",
+                        dest="port",
+                        default=45703,
+                        help="Event channel listen port [default: %default]")
+
+optionParser.add_option("-g",
+                        "--group",
+                        action="store",
+                        type="string",
+                        dest="group",
+                        default="224.1.2.8",
+                        help="Event channel multicast group [default: %default]")
+
+optionParser.add_option("-i",
+                        "--device",
+                        action="store",
+                        type="string",
+                        dest="device",
+                        help="Event channel multicast device")
+
+(options, args) = optionParser.parse_args()
+
+if len(args) == 1:
+    if os.path.isfile(args[0]):
+        schedule = TDMASchedule(args[0])
+    else:
+        print("unable to open:",args[0], file=sys.stderr)
+        exit(1)
+else:
+    print("invalid number of arguments", file=sys.stderr)
+    exit(1)
+
+eventService = EventService((options.group,options.port,options.device))
+
+info = schedule.info()
+
+structure = schedule.structure()
+
+frameDefaults =  schedule.defaultsFrame();
+
+for nodeId in info:
+    event = TDMAScheduleEvent(**schedule.defaults())
+    for frameIndex in info[nodeId]:
+        for slotIndex,args in list(info[nodeId][frameIndex].items()):
+            defaults = args
+            for key,value in list(frameDefaults[frameIndex].items()):
+                defaults["frame." + key] = value
+            event.append(frameIndex,slotIndex,**defaults)
+
+    if structure != None:
+        event.structure(**structure)
+
+    eventService.publish(nodeId,event)

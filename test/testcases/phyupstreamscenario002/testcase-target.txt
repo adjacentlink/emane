@@ -1,6 +1,18 @@
 [1] configure 
 [1]  bandwidth:
 [1]    1200000
+[1]  fading.model:
+[1]    none
+[1]  fading.nakagami.distance0:
+[1]    100.000000
+[1]  fading.nakagami.distance1:
+[1]    250.000000
+[1]  fading.nakagami.m0:
+[1]    0.750000
+[1]  fading.nakagami.m1:
+[1]    1.000000
+[1]  fading.nakagami.m2:
+[1]    200.000000
 [1]  fixedantennagain:
 [1]    5.000000
 [1]  fixedantennagainenable:
@@ -55,10 +67,10 @@
 [3]  Packet dropped
 
 [3] BroadcastPacketDropTable0
-[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[3] |2  |0          |0             |1                |0            |0           |0           |0      |0             |
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[3] |2  |0          |0             |1                |0            |0           |0           |0      |0             |0            |0             |0          |
 [3] UnicastPacketDropTable0
-[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [4] location 1 P:[40.025495,-74.315441,3]
 [4] location 2 P:[40.025495,-74.512888,3]

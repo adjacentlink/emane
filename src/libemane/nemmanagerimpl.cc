@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -87,55 +87,71 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
                                                   {},
                                                   "Device to associate with the OTA channel multicast endpoint.");
 
+  configRegistrar.registerNumeric<std::uint32_t>("otamanagermtu",
+                                                 ConfigurationProperties::DEFAULT,
+    {0},
+                                                 "OTA channel MTU.");
+
+  configRegistrar.registerNumeric<std::uint16_t>("otamanagerpartcheckthreshold",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {2},
+                                                 "Defines the rate in seconds a check is performed to see if any OTA packet"
+                                                 " part reassembly efforts should be abandoned.");
+
+  configRegistrar.registerNumeric<std::uint16_t>("otamanagerparttimeoutthreshold",
+                                                 ConfigurationProperties::DEFAULT,
+    {5},
+                                                 "Defines the threshold in seconds to wait for another OTA packet part"
+                                                 " for an existing reassembly effort before abandoning the effort.");
+
   configRegistrar.registerNumeric<std::uint8_t>("otamanagerttl",
                                                 ConfigurationProperties::DEFAULT,
                                                 {1},
                                                 "OTA channel multicast message TTL.");
-
 
   configRegistrar.registerNumeric<bool>("otamanagerloopback",
                                         ConfigurationProperties::DEFAULT,
                                         {false},
                                         "Enable multicast loopback on the OTA channel multicast channel.");
 
-   configRegistrar.registerNumeric<bool>("otamanagerchannelenable",
-                                         ConfigurationProperties::DEFAULT,
-                                         {true},
-                                         "Enable OTA channel multicast communication.");
+  configRegistrar.registerNumeric<bool>("otamanagerchannelenable",
+                                        ConfigurationProperties::DEFAULT,
+                                        {true},
+                                        "Enable OTA channel multicast communication.");
 
 
-   configRegistrar.registerNonNumeric<INETAddr>("controlportendpoint",
-                                                ConfigurationProperties::REQUIRED,
-                                                {INETAddr{"0.0.0.0",47000 }},
-                                                "IPv4 or IPv6 control port endpoint.");
+  configRegistrar.registerNonNumeric<INETAddr>("controlportendpoint",
+                                               ConfigurationProperties::REQUIRED,
+                                               {INETAddr{"0.0.0.0",47000 }},
+                                               "IPv4 or IPv6 control port endpoint.");
 
-   configRegistrar.registerNonNumeric<std::string>("antennaprofilemanifesturi",
-                                                   EMANE::ConfigurationProperties::NONE,
-                                                   {},
-                                                   "Absolute URI of the antenna profile manifest to load."
-                                                   " The antenna profile manifest contains a list of"
-                                                   " antenna profile entries. Each entry contains a unique"
-                                                   " profile identifier, an antenna pattern URI and an"
-                                                   " antenna blockage URI. This parameter is required when"
-                                                   " antennaprofileenable is on or if any other NEM"
-                                                   " participating in the emulation has antennaprofileenable"
-                                                   " set on, even in the case where antennaprofileenable is"
-                                                   " off locally.");
+  configRegistrar.registerNonNumeric<std::string>("antennaprofilemanifesturi",
+                                                  EMANE::ConfigurationProperties::NONE,
+                                                  {},
+                                                  "URI of the antenna profile manifest to load."
+                                                  " The antenna profile manifest contains a list of"
+                                                  " antenna profile entries. Each entry contains a unique"
+                                                  " profile identifier, an antenna pattern URI and an"
+                                                  " antenna blockage URI. This parameter is required when"
+                                                  " antennaprofileenable is on or if any other NEM"
+                                                  " participating in the emulation has antennaprofileenable"
+                                                  " set on, even in the case where antennaprofileenable is"
+                                                  " off locally.");
 
-   configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxpacketcountrows",
-                                                  ConfigurationProperties::DEFAULT,
-                                                  {0},
-                                                  "OTA channel max packet count table rows.");
+  configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxpacketcountrows",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {0},
+                                                 "OTA channel max packet count table rows.");
 
-   configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxeventcountrows",
-                                                  ConfigurationProperties::DEFAULT,
-                                                  {0},
-                                                  "OTA channel max event count table rows.");
+  configRegistrar.registerNumeric<std::uint32_t>("stats.ota.maxeventcountrows",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {0},
+                                                 "OTA channel max event count table rows.");
 
-   configRegistrar.registerNumeric<std::uint32_t>("stats.event.maxeventcountrows",
-                                                  ConfigurationProperties::DEFAULT,
-                                                  {0},
-                                                  "Event channel max event count table rows.");
+  configRegistrar.registerNumeric<std::uint32_t>("stats.event.maxeventcountrows",
+                                                 ConfigurationProperties::DEFAULT,
+                                                 {0},
+                                                 "Event channel max event count table rows.");
 
 }
 
@@ -149,7 +165,8 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
 
           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                   INFO_LEVEL,
-                                  "NEMManagerImpl::configure OTA Manager Channel Group: %s",
+                                  "NEMManagerImpl::configure %s: %s",
+                                  item.first.c_str(),
                                   OTAManagerGroupAddr_.str().c_str());
 
         }
@@ -173,6 +190,36 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
                                   "NEMManagerImpl::configure %s: %hhu",
                                   item.first.c_str(),
                                   u8OTAManagerTTL_);
+        }
+      else if(item.first == "otamanagermtu")
+        {
+          u32OTAManagerMTU_ = item.second[0].asUINT32();
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s: %u",
+                                  item.first.c_str(),
+                                  u32OTAManagerMTU_);
+        }
+      else if(item.first == "otamanagerpartcheckthreshold")
+        {
+          OTAManagerPartCheckThreshold_= EMANE::Seconds{item.second[0].asUINT16()};
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s = %lu",
+                                  item.first.c_str(),
+                                  OTAManagerPartCheckThreshold_.count());
+        }
+      else if(item.first == "otamanagerparttimeoutthreshold")
+        {
+          OTAManagerPartTimeoutThreshold_ = EMANE::Seconds{item.second[0].asUINT16()};
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s = %lu",
+                                  item.first.c_str(),
+                                  OTAManagerPartTimeoutThreshold_.count());
         }
       else if(item.first == "otamanagerloopback")
         {
@@ -313,7 +360,10 @@ void EMANE::Application::NEMManagerImpl::start()
                                                 sOTAManagerGroupDevice_,
                                                 bOTAManagerChannelLoopback_,
                                                 u8OTAManagerTTL_,
-                                                uuid_);
+                                                uuid_,
+                                                u32OTAManagerMTU_,
+                                                OTAManagerPartCheckThreshold_,
+                                                OTAManagerPartTimeoutThreshold_);
         }
       catch(OTAException & exp)
         {

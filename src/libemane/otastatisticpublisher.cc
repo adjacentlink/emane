@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 #include "otastatisticpublisher.h"
 #include "statisticregistrarproxy.h"
 
-// specialized hash for PacketCounTable
+// specialized hash for PacketCountTable
 namespace std
 {
   template<>
@@ -58,7 +58,8 @@ namespace
       "Src",
       "Emulator UUID",
       "Num Pkts Tx",
-      "Num Pkts Rx"
+      "Num Pkts Rx",
+      "Pkts Rx Drop Miss Part",
     };
 
   enum PacketCountColumn
@@ -67,6 +68,7 @@ namespace
       PACKET_COUNT_COLUMN_UUID = 1,
       PACKET_COUNT_COLUMN_NUM_PACKETS_TX = 2,
       PACKET_COUNT_COLUMN_NUM_PACKETS_RX = 3,
+      PACKET_COUNT_COLUMN_NUM_PACKETS_RX_DROP_MISS_PART = 4,
     };
 }
 
@@ -81,6 +83,10 @@ EMANE::OTAStatisticPublisher::OTAStatisticPublisher():
   pNumOTAChannelUpstreamPackets_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("numOTAChannelUpstreamPackets",
                                                       StatisticProperties::CLEARABLE);
+  pNumOTAChannelUpstreamPacketsDroppedMissingPart_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numOTAChannelUpstreamPacketsDroppedMissingPart",
+                                                      StatisticProperties::CLEARABLE);
+
   pPacketCountTable_ =
     statisticRegistrar.registerTable<PacketCountTableKey>("OTAChannelPacketCountTable",
                                                           PacketCountLabels,
@@ -107,17 +113,18 @@ void EMANE::OTAStatisticPublisher::update(Type type, const uuid_t & uuid, NEMId 
     {
       if(packetCountInfo_.size() < rowLimit_)
         {
-          iter = packetCountInfo_.insert({key,std::make_tuple(0,0)}).first;
+          iter = packetCountInfo_.insert({key,std::make_tuple(0,0,0)}).first;
 
           pPacketCountTable_->addRow(key,
                                      {Any{nemId},
                                          Any{buf},
                                            Any{0L},
-                                             Any{0L}});
+                                             Any{0L},
+                                               Any{0L}});
         }
     }
 
-  if(type == Type::TYPE_UPSTREAM)
+  if(type == Type::TYPE_UPSTREAM_PACKET_SUCCESS)
     {
       ++*pNumOTAChannelUpstreamPackets_;
 
@@ -133,7 +140,7 @@ void EMANE::OTAStatisticPublisher::update(Type type, const uuid_t & uuid, NEMId 
         }
 
     }
-  else if(type == Type::TYPE_DOWNSTREAM)
+  else if(type == Type::TYPE_DOWNSTREAM_PACKET_SUCCESS)
     {
       ++*pNumOTAChannelDownstreamPackets_;
 
@@ -145,6 +152,21 @@ void EMANE::OTAStatisticPublisher::update(Type type, const uuid_t & uuid, NEMId 
 
           pPacketCountTable_->setCell(key,
                                       PACKET_COUNT_COLUMN_NUM_PACKETS_TX,
+                                      Any{packets});
+        }
+    }
+  else if(type == Type::TYPE_UPSTREAM_PACKET_DROP_MISSING_PARTS)
+    {
+      ++*pNumOTAChannelUpstreamPacketsDroppedMissingPart_;
+
+      if(iter !=  packetCountInfo_.end())
+        {
+          auto & packets = std::get<PACKET_COUNT_COLUMN_NUM_PACKETS_RX_DROP_MISS_PART-2>(iter->second);
+
+          packets += 1;
+
+          pPacketCountTable_->setCell(key,
+                                      PACKET_COUNT_COLUMN_NUM_PACKETS_RX_DROP_MISS_PART,
                                       Any{packets});
         }
     }

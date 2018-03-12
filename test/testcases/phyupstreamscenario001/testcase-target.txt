@@ -1,6 +1,18 @@
 [1] configure 
 [1]  bandwidth:
 [1]    20000000
+[1]  fading.model:
+[1]    none
+[1]  fading.nakagami.distance0:
+[1]    100.000000
+[1]  fading.nakagami.distance1:
+[1]    250.000000
+[1]  fading.nakagami.m0:
+[1]    0.750000
+[1]  fading.nakagami.m1:
+[1]    1.000000
+[1]  fading.nakagami.m2:
+[1]    200.000000
 [1]  fixedantennagain:
 [1]    5.000000
 [1]  fixedantennagainenable:
@@ -51,10 +63,10 @@
 [2]  Packet dropped
 
 [2] BroadcastPacketDropTable0
-[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[2] |2  |0          |0             |1                |0            |0           |0           |0      |0             |
+[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[2] |2  |0          |0             |1                |0            |0           |0           |0      |0             |0            |0             |0          |
 [2] UnicastPacketDropTable0
-[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[2] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [3] pathloss 2 Forward Pathloss: 90 Reverse Pathloss: 90
 [3] pathloss 3 Forward Pathloss: 100 Reverse Pathloss: 100
@@ -77,10 +89,10 @@
 [4]  Packet dropped
 
 [4] BroadcastPacketDropTable0
-[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[4] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
+[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[4] |2  |0          |0             |1                |0            |0           |0           |1      |0             |0            |0             |0          |
 [4] UnicastPacketDropTable0
-[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[4] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [5] packet
 [5]  Common PHY Header data:
@@ -99,11 +111,11 @@
 [5]  Packet dropped
 
 [5] BroadcastPacketDropTable0
-[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[5] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
-[5] |4  |1          |0             |0                |0            |0           |0           |0      |0             |
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[5] |2  |0          |0             |1                |0            |0           |0           |1      |0             |0            |0             |0          |
+[5] |4  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [5] UnicastPacketDropTable0
-[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [6] packet
 [6]  Common PHY Header data:
@@ -217,12 +229,12 @@ Processing upstream packet...
 [11]  Packet dropped
 
 [11] BroadcastPacketDropTable0
-[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
-[11] |2  |0          |0             |1                |0            |0           |0           |1      |0             |
-[11] |3  |0          |1             |0                |0            |0           |0           |0      |0             |
-[11] |4  |1          |0             |0                |0            |0           |0           |0      |0             |
+[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[11] |2  |0          |0             |1                |0            |0           |0           |1      |0             |0            |0             |0          |
+[11] |3  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[11] |4  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [11] UnicastPacketDropTable0
-[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|
+[11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
 [12] packet
 [12]  Common PHY Header data:

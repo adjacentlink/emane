@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2018 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -74,6 +74,17 @@ public:
     segments_.emplace_front(&c[0],&c[sizeof(u16Length)]);
 
     totalLengthBytes_ += sizeof(u16Length);
+  }
+
+  void prependLengthPrefixFramingLong(std::uint32_t u32Length)
+  {
+    std::uint32_t u32LengthNet{HTONL(u32Length)};
+
+    auto c = reinterpret_cast<const std::uint8_t *>(&u32LengthNet);
+
+    segments_.emplace_front(&c[0],&c[sizeof(u32Length)]);
+
+    totalLengthBytes_ += sizeof(u32Length);
   }
 
   size_t length() const
@@ -170,6 +181,10 @@ void EMANE::DownstreamPacket::prependLengthPrefixFraming(std::uint16_t u16Length
   pImpl_->prependLengthPrefixFraming(u16Length);
 }
 
+void EMANE::DownstreamPacket::prependLengthPrefixFramingLong(std::uint32_t u32Length)
+{
+  pImpl_->prependLengthPrefixFramingLong(u32Length);
+}
 
 EMANE::Utils::VectorIO EMANE::DownstreamPacket::getVectorIO() const
 {

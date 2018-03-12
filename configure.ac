@@ -1,5 +1,5 @@
-%AC_COPYRIGHT([
- Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+AC_COPYRIGHT([
+ Copyright (c) 2013-2018 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.0.1,[emane at adjacent link dot com])
+AC_INIT([emane],1.2.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -210,7 +210,8 @@ AC_OUTPUT(
  src/applications/emanetransportd/Makefile
  src/applications/emaneeventd/Makefile
  src/applications/emaneeventservice/Makefile
- src/emanesh/Makefile
+ src/python/Makefile
+ src/python/emane/info/__init__.py
  src/transports/Makefile
  src/transports/common/Makefile
  src/transports/virtual/Makefile
@@ -237,6 +238,7 @@ AC_OUTPUT(
  src/generators/eel/loaders/pathloss/Makefile
  src/generators/eel/loaders/antennaprofile/Makefile
  src/generators/eel/loaders/commeffect/Makefile
+ src/generators/eel/loaders/fadingselection/Makefile
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile

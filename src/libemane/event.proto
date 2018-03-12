@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -44,13 +46,13 @@ message Event
       required uint32 eventId = 2;
       required bytes data = 3;
     }
-    
+
     repeated Serialization serializations = 1;
   }
-  
+
   required bytes uuid = 1;
 
   required uint64 sequenceNumber = 2;
-    
+
   required Data data = 3;
 }

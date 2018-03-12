@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2018 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -107,6 +107,16 @@ namespace EMANE
      * @note Value prepended in network byte order
      */
     void prependLengthPrefixFraming(std::uint16_t u16Length);
+
+   /**
+     * Prepends an unsigned 32 bit length value to the beginning of the packet. This
+     * method is used in conjunction with prefix length framing.
+     *
+     * @param u32Length value to be prepended
+     *
+     * @note Value prepended in network byte order
+     */
+    void prependLengthPrefixFramingLong(std::uint32_t u32Length); 
 
     /**
      * Gets a vectored IO representation of the packet.

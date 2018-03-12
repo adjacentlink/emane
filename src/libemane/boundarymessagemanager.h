@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013,2015-2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013,2015-2017 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@
 #include "emane/utils/vectorio.h"
 #include "datagramsocket.h"
 
+#include <mutex>
 #include <thread>
 
 namespace EMANE
@@ -50,11 +51,19 @@ namespace EMANE
   public:
     virtual ~BoundaryMessageManager();
 
+    enum class Protocol
+      {
+        PROTOCOL_UDP,
+        PROTOCOL_TCP_SERVER,
+        PROTOCOL_TCP_CLIENT,
+      };
+
     /**
      * @throw BoundaryMessageManagerException
      */
     void open(const INETAddr & localAddress,
-              const INETAddr & remoteAddress);
+              const INETAddr & remoteAddress,
+              Protocol protocol);
 
     void close();
 
@@ -86,12 +95,19 @@ namespace EMANE
   private:
     NEMId id_;
     DatagramSocket udp_;
+    Protocol protocol_;
     INETAddr localAddress_;
     INETAddr remoteAddress_;
     std::thread thread_;
     bool bOpen_;
+    int iSockFd_;
+    int iSessionSockFd_;
+    bool bConnected_;
+    std::mutex mutex_;
 
-    void processNetworkMessage();
+    void handleNetworkMessage(void * buf,size_t len);
+    void processNetworkMessageUDP();
+    void processNetworkMessageTCP();
   };
 }
 

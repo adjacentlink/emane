@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2017-2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -307,11 +308,12 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
                   auto iter = fragmentStore_.find(key);
 
-                  if(iter !=  fragmentStore_.end())
+                  if(iter != fragmentStore_.end())
                     {
                       auto & indexSet = std::get<0>(iter->second);
                       auto & parts = std::get<1>(iter->second);
                       auto & lastFragmentTime = std::get<2>(iter->second);
+                      auto & totalNumFragments = std::get<5>(iter->second);
 
                       if(indexSet.insert(message.getFragmentIndex()).second)
                         {
@@ -319,96 +321,76 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
                           lastFragmentTime = now;
 
-                          // check that all previous fragments have been received
-                          if(indexSet.size() == message.getFragmentIndex() + 1)
+                          // this is a new fragment. If the more
+                          // fragments bit is not set then this is the
+                          // last fragment piece so set the
+                          // totalNumFragments appropriately.
+                          if(!message.isMoreFragments())
                             {
-                              if(!message.isMoreFragments())
-                                {
-                                  Utils::VectorIO vectorIO{};
-
-                                  for(const auto & part : parts)
-                                    {
-                                      vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(&part.second[0]),
-                                                                           part.second.size()));
-                                    }
-
-                                  UpstreamPacket pkt{{pktInfo.getSource(),
-                                        dst,
-                                        priority,
-                                        pktInfo.getCreationTime(),
-                                        pktInfo.getUUID()},vectorIO};
-
-
-                                  pPacketStatusPublisher_->inbound(pktInfo.getSource(),
-                                                                   dst,
-                                                                   priority,
-                                                                   pkt.length(),
-                                                                   PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
-
-
-                                  PacketMetaInfo packetMetaInfo{pktInfo.getSource(),
-                                      u64AbsoluteSlotIndex-1,
-                                      frequencySegment.getRxPowerdBm(),
-                                      dSINR,
-                                      baseModelMessage.getDataRate()};
-
-                                  if(message.getType() == MessageComponent::Type::DATA)
-                                    {
-                                      pDownstreamTransport_->sendUpstreamPacket(pkt);
-
-                                      pScheduler_->processPacketMetaInfo(packetMetaInfo);
-                                    }
-                                  else
-                                    {
-                                      pScheduler_->processSchedulerPacket(pkt,packetMetaInfo);
-                                    }
-
-
-                                  fragmentStore_.erase(iter);
-                                }
+                              totalNumFragments = message.getFragmentIndex() + 1;
                             }
-                          else
-                            {
-                              // missing a fragment - record all bytes received and discontinue assembly
-                              size_t totalBytes{message.getData().size()};
 
-                               for(const auto & part : parts)
-                                 {
-                                   totalBytes += part.second.size();
-                                 }
+                          // check to see if all fragments have been received
+                          if(totalNumFragments && indexSet.size() == totalNumFragments)
+                            {
+                              Utils::VectorIO vectorIO{};
+
+                              for(const auto & part : parts)
+                                {
+                                  vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(&part.second[0]),
+                                                                       part.second.size()));
+                                }
+
+                              UpstreamPacket pkt{{pktInfo.getSource(),
+                                    dst,
+                                    priority,
+                                    pktInfo.getCreationTime(),
+                                    pktInfo.getUUID()},vectorIO};
+
 
                               pPacketStatusPublisher_->inbound(pktInfo.getSource(),
                                                                dst,
                                                                priority,
-                                                               totalBytes,
-                                                               PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
+                                                               pkt.length(),
+                                                               PacketStatusPublisher::InboundAction::ACCEPT_GOOD);
 
-                              // fragment was not received, abandon reassembly
+
+                              PacketMetaInfo packetMetaInfo{pktInfo.getSource(),
+                                  u64AbsoluteSlotIndex-1,
+                                  frequencySegment.getRxPowerdBm(),
+                                  dSINR,
+                                  baseModelMessage.getDataRate()};
+
+                              if(message.getType() == MessageComponent::Type::DATA)
+                                {
+                                  pDownstreamTransport_->sendUpstreamPacket(pkt);
+
+                                  pScheduler_->processPacketMetaInfo(packetMetaInfo);
+                                }
+                              else
+                                {
+                                  pScheduler_->processSchedulerPacket(pkt,packetMetaInfo);
+                                }
+
+
                               fragmentStore_.erase(iter);
                             }
                         }
                     }
                   else
                     {
-                      // if the first fragment receieved is not index 0, fragments
-                      // were lost, so don't bother trying to reassemble
-                      if(!message.getFragmentIndex())
-                        {
-                          fragmentStore_.insert(std::make_pair(key,
-                                                               std::make_tuple(std::set<size_t>{message.getFragmentIndex()},
-                                                                               FragmentParts{{message.getFragmentOffset(),
-                                                                                     message.getData()}},
-                                                                               now,
-                                                                               dst,
-                                                                               priority)));
-                        }
-                      else
-                        {
-                          pPacketStatusPublisher_->inbound(pktInfo.getSource(),
-                                                           message,
-                                                           PacketStatusPublisher::InboundAction::DROP_MISS_FRAGMENT);
-
-                        }
+                      // this is the first fragment for this
+                      // message. Just need to set the total number of
+                      // fragments if this happens to also be the last
+                      // fragment in the set.
+                      fragmentStore_.insert(std::make_pair(key,
+                                                           std::make_tuple(std::set<size_t>{message.getFragmentIndex()},
+                                                                           FragmentParts{{message.getFragmentOffset(),
+                                                                                 message.getData()}},
+                                                                           now,
+                                                                           dst,
+                                                                           priority,
+                                                                           message.isMoreFragments() ? 0 : message.getFragmentIndex() + 1)));
                     }
                 }
               else
@@ -494,5 +476,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
               ++iter;
             }
         }
+
+      lastFragmentCheckTime_ = now;
     }
 }

@@ -30,6 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+syntax = "proto2";
+
 package EMANEMessage;
 
 option optimize_for = SPEED;
@@ -38,12 +40,12 @@ message TDMABaseModelMessage
 {
   message Message
   {
-    enum MessageType 
+    enum MessageType
     {
       DATA = 1;
       CONTROL = 2;
     }
-    
+
     message Fragment
     {
       required bool more = 1;
