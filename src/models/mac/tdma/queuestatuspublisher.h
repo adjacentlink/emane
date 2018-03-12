@@ -39,6 +39,7 @@
 #include <map>
 #include <tuple>
 #include <array>
+#include <chrono>
 
 namespace EMANE
 {
@@ -74,6 +75,10 @@ namespace EMANE
 
         void enqueue(std::uint8_t u8Queue);
 
+        void updatedelaystat(bool ifenqueue, std::uint8_t u8Queue);
+
+        double getDelay();
+
       private:
         StatisticTable<std::uint8_t> * pQueueStatusTable_;
 
@@ -98,6 +103,10 @@ namespace EMANE
         std::array<StatisticNumeric<std::uint64_t> *,5> pHighWaterMarkQueue_;
         std::array<std::uint64_t,5> depthQueueInfo_;
         std::array<std::uint64_t,5> highWaterMarkQueueInfo_;
+
+        std::array<std::array<std::chrono::system_clock::time_point,64>,5> enqueuedQueues_;
+        std::array<std::array<double,64>,5> us64delays_{{{{0}}}};
+        std::array<double,5> avgQueueDelay_{{0}};
       };
     }
   }

@@ -40,11 +40,13 @@
 #include "emane/models/tdma/basemodel.h"
 #include "emane/models/tdma/scheduler.h"
 #include "emane/models/tdma/queuemanager.h"
+#include "emane/queuemetricmanager.h"
 
 #include "slotstatustablepublisher.h"
 #include "receivemanager.h"
 #include "packetstatuspublisherimpl.h"
 #include "aggregationstatuspublisher.h"
+#include "downstreamqueue.h"
 
 namespace EMANE
 {
@@ -118,6 +120,7 @@ namespace EMANE
         MACLayerImplementor * pRadioModel_;
 
         bool bFlowControlEnable_;
+        bool bRadioMetricEnable_;
         std::uint16_t u16FlowControlTokens_;
         std::string sPCRCurveURI_;
         TimerEventId transmitTimedEventId_;
@@ -133,6 +136,9 @@ namespace EMANE
         Microseconds neighborMetricUpdateInterval_;
         PacketStatusPublisherImpl packetStatusPublisher_;
         NeighborMetricManager neighborMetricManager_;
+        QueueMetricManager queueMetricManager_;
+        TimerEventId radioMetricTimedEventId_;
+        DownstreamQueue downstreamQueue_;
         ReceiveManager receiveManager_;
         FlowControlManager flowControlManager_;
         std::uint64_t u64ScheduleIndex_;
