@@ -16,7 +16,7 @@ BuildRequires: libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-dev
 Vendor: Adjacent Link LLC
 
 
-%if 0%{?fc26} ||  0%{?fc27}
+%if 0%{?fedora} >= 26
 BuildRequires: python2-devel
 %define use_python2_package python2-emane
 %define use_python2_setuptools python2-setuptools
@@ -32,7 +32,7 @@ BuildRequires: python-devel
 %define use_python2_sitelib %{python_sitelib}
 %endif
 
-%if 0%{?fc26} ||  0%{?fc27}
+%if 0%{?fedora} >= 26
 BuildRequires: python3-devel
 %else
 %define with_python3 0
@@ -219,7 +219,7 @@ Requires: %{use_python2_protobuf}
 Requires: %{use_python2_lxml}
 Summary: EMANE Python modules and utilities
 Group: Development/Libraries
-%if 0%{?fc26} ||  0%{?fc27}
+%if 0%{?fedora} >= 26
 Obsoletes: python-emane
 Provides: python-emane
 %else
