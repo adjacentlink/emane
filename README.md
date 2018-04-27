@@ -20,4 +20,4 @@ Visit the EMANE Wiki:
 
 Join the EMANE mailing list and post a question:
 
- http://pf.itd.nrl.navy.mil/mailman/listinfo/emane-users
+ https://publists.nrl.navy.mil/mailman/listinfo/emane-users
