@@ -386,6 +386,11 @@ bool EMANE::INETAddr::isIPv4() const
   return pImpl_->isIPv4();
 }
 
+bool EMANE::INETAddr::isMulticast() const
+{
+  return pImpl_->isMulticast();
+}
+
 bool EMANE::INETAddr::isAny() const
 {
   return pImpl_->isAny();
