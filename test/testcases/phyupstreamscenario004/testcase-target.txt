@@ -118,7 +118,7 @@
 
 [7] BroadcastPacketDropTable0
 [7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[7] |2  |0          |1             |0                |1            |0           |1           |0      |0             |0            |0             |0          |
+[7] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
 [7] UnicastPacketDropTable0
 [7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
@@ -145,7 +145,7 @@
 
 [9] BroadcastPacketDropTable0
 [9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[9] |2  |0          |1             |0                |1            |0           |1           |0      |0             |0            |0             |0          |
+[9] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
 [9] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [9] UnicastPacketDropTable0
 [9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
@@ -213,7 +213,7 @@ Processing upstream packet...
 
 [14] BroadcastPacketDropTable0
 [14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[14] |2  |1          |1             |0                |1            |0           |1           |0      |0             |0            |0             |0          |
+[14] |2  |1          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
 [14] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [14] UnicastPacketDropTable0
 [14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
