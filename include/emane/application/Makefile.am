@@ -9,6 +9,7 @@ emaneinc_HEADERS =                       \
  libemane.h                              \
  logger.h                                \
  nembuilder.h                            \
+ nembuilder.inl                          \
  nem.h                                   \
  nemmanager.h                            \
  statisticcontroller.h                   \
