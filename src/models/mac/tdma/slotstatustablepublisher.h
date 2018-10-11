@@ -82,6 +82,18 @@ namespace EMANE
         StatisticTable<std::uint32_t> * pTxSlotStatusTable_;
         StatisticTable<std::uint32_t> * pRxSlotStatusTable_;
 
+        StatisticNumeric<std::uint64_t> * pTxSlotValid_;
+        StatisticNumeric<std::uint64_t> * pTxSlotErrorMissed_;
+        StatisticNumeric<std::uint64_t> * pTxSlotErrorTooBig_;
+
+        StatisticNumeric<std::uint64_t> * pRxSlotValid_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorMissed_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorRxDuringIdle_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorRxDuringTx_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorRxTooLong_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorRxWrongFrequency_;
+        StatisticNumeric<std::uint64_t> * pRxSlotErrorRxLock_;
+
         using TxSlotCounterMap = std::map<std::uint32_t,
                                           std::tuple<std::uint64_t, // valid
                                                      std::uint64_t, // missed
