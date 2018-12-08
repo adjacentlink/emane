@@ -113,7 +113,7 @@ void EMANE::MulticastSocket::open(const INETAddr & address,
         {
           ifreq ifr;
           memset(&ifr,0,sizeof(ifr));
-          strncpy(ifr.ifr_name,sDevice.c_str(),IFNAMSIZ);
+          strncpy(ifr.ifr_name,sDevice.c_str(),IFNAMSIZ-1);
 
           // get the ip address
           if(ioctl(iSock_,SIOCGIFADDR,&ifr) < 0)

@@ -101,7 +101,7 @@ EMANE::Transports::Virtual::TunTap::open(const char *sDevicePath, const char *sD
   memset(&ifr, 0, sizeof(ifr));
 
   // copy dev name
-  strncpy(ifr.ifr_name, sDeviceName, sizeof(ifr.ifr_name));
+  strncpy(ifr.ifr_name, sDeviceName, sizeof(ifr.ifr_name)-1);
 
   // set flags no proto info and tap mode
   ifr.ifr_flags = IFF_NO_PI | IFF_TAP;
@@ -123,7 +123,7 @@ EMANE::Transports::Virtual::TunTap::open(const char *sDevicePath, const char *sD
   memset(&ifr, 0, sizeof(ifr));
 
   // copy dev name
-  strncpy(ifr.ifr_name, sDeviceName, sizeof(ifr.ifr_name));
+  strncpy(ifr.ifr_name, sDeviceName, sizeof(ifr.ifr_name)-1);
 
   int ctrlsock = socket(AF_INET,SOCK_DGRAM,0);
 
@@ -229,7 +229,7 @@ EMANE::Transports::Virtual::TunTap::set_addr(const INETAddr & addr, const INETAd
       memset(&ifr, 0, sizeof(ifr));
 
       // copy dev name
-      strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name));
+      strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name)-1);
 
       // copy addr and family
       ((struct sockaddr_in_t *) &ifr.ifr_addr)->sin_family = AF_INET;
@@ -260,7 +260,7 @@ EMANE::Transports::Virtual::TunTap::set_addr(const INETAddr & addr, const INETAd
       memset(&ifr, 0, sizeof(ifr));
 
       // copy dev name
-      strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name));
+      strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name)-1);
 
       // copy addr and family
       ((struct sockaddr_in_t *) &ifr.ifr_addr)->sin_family = AF_INET;
@@ -495,7 +495,7 @@ int EMANE::Transports::Virtual::TunTap::set_flags(int newflags, int cmd)
   memset(&ifr, 0, sizeof(ifr));
 
   // copy dev name
-  strncpy(ifr.ifr_name, tunName_.c_str(), IFNAMSIZ);
+  strncpy(ifr.ifr_name, tunName_.c_str(), IFNAMSIZ-1);
 
   // add flags
   if(cmd > 0)
@@ -547,7 +547,7 @@ int EMANE::Transports::Virtual::TunTap::get_flags()
   memset(&ifr, 0, sizeof(ifr));
 
   // copy dev name
-  strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name));
+  strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name)-1);
 
   // open ipv4 control socket
   int ctrlsock = socket(AF_INET,SOCK_DGRAM,0);
