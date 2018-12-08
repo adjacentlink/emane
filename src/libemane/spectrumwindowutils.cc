@@ -108,7 +108,7 @@ std::pair<double,bool> EMANE::Utils::maxBinNoiseFloor(const SpectrumWindow & win
       
   return maxBinNoiseFloor(noiseData,dRxSensitivityMilliWatt,dRxPowerdBm,bSignalInNoise,startIndex,endIndex);
 }
-    
+
 std::pair<double,bool> EMANE::Utils::maxBinNoiseFloor(const std::vector<double> & noiseData,
                                                        double dRxSensitivityMilliWatt,
                                                        double dRxPowerdBm,
@@ -132,9 +132,9 @@ std::pair<double,bool> EMANE::Utils::maxBinNoiseFloor(const std::vector<double> 
                                                     endBin,
                                                     noiseData.size());
     }
-      
-  double dNoiseFloorMilliWatt{*std::max_element(&noiseData[startBin],&noiseData[endBin+1])};
-      
+
+  double dNoiseFloorMilliWatt{*std::max_element(&noiseData[startBin],&noiseData[endBin]+1)};
+
   if(bSignalInNoise)
     {
       dNoiseFloorMilliWatt -= Utils::DB_TO_MILLIWATT(dRxPowerdBm);
