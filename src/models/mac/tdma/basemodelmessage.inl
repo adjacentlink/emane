@@ -149,7 +149,7 @@ EMANE::Serialization EMANE::Models::TDMA::BaseModelMessage::serialize() const
 
       auto const & data = message.getData();
 
-      pMessage->set_data(std::string(reinterpret_cast<const char *>(&data[0]),data.size()));
+      pMessage->set_data(std::string(reinterpret_cast<const char *>(data.data()),data.size()));
 
       if(message.isFragment())
         {

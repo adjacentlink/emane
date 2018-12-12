@@ -337,7 +337,7 @@ EMANE::Models::TDMA::ReceiveManager::process(std::uint64_t u64AbsoluteSlotIndex)
 
                               for(const auto & part : parts)
                                 {
-                                  vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(&part.second[0]),
+                                  vectorIO.push_back(Utils::make_iovec(const_cast<std::uint8_t *>(part.second.data()),
                                                                        part.second.size()));
                                 }
 
