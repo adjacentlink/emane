@@ -164,22 +164,15 @@ Processing upstream packet...
 [8]   src: 2
 [8]   transmitter power: 5.000000
 
-[8]  Packet forwarded to next layer
+[8]  Packet dropped
 
-[8]  MAC FrequencyControlMessage data:
-[8]   bandwidth: 20000000
-[8]   freq: 2000000000
-[8]   duration: 200
-[8]   offset: 0
-[8]   power: -78.000000
+[8] BroadcastPacketDropTable0
+[8] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[8] |2  |0          |0             |1                |0            |1           |0           |1      |0             |0            |0             |0          |
+[8] |4  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[8] UnicastPacketDropTable0
+[8] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
-[8]  MAC ReceivePropertiesControlMessage data:
-[8]   sot: 30.000020
-[8]   span: 200
-[8]   prop delay: 56
-[8]   receiver sensativity: -94.989700
-
-Processing upstream packet...
 [9] location 2 P:[40.025495,-74.412888,3]
 
 [10] packet
@@ -230,7 +223,7 @@ Processing upstream packet...
 
 [11] BroadcastPacketDropTable0
 [11] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[11] |2  |0          |0             |1                |0            |0           |0           |1      |0             |0            |0             |0          |
+[11] |2  |0          |0             |1                |0            |1           |0           |1      |0             |0            |0             |0          |
 [11] |3  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [11] |4  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
 [11] UnicastPacketDropTable0

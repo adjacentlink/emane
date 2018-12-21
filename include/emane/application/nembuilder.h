@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2018 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * Copyright (c) 2008-2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -37,6 +38,8 @@
 #include "emane/application/nemmanager.h"
 #include "emane/application/nem.h"
 #include "emane/nemlayer.h"
+#include "emane/maclayerimpl.h"
+#include "emane/radioserviceprovider.h"
 
 #include "emane/configurationupdate.h"
 
@@ -55,7 +58,7 @@ namespace EMANE
      * @class NEMBuilder
      *
      * @brief Provides methods for constructing an emulator instance from
-     * its constituent parts. 
+     * its constituent parts.
      */
     class NEMBuilder
     {
@@ -63,7 +66,7 @@ namespace EMANE
       NEMBuilder();
 
       ~NEMBuilder();
-    
+
       /**
        * Builds a PHY layer
        *
@@ -86,7 +89,7 @@ namespace EMANE
                     const std::string & sLibraryFile,
                     const ConfigurationUpdateRequest & request,
                     bool bSkipConfigure = false);
-      
+
       /**
        * Builds a MAC layer
        *
@@ -109,7 +112,35 @@ namespace EMANE
                     const std::string & sLibraryFile,
                     const ConfigurationUpdateRequest & request,
                     bool bSkipConfigure = false);
-      
+
+      /**
+       * Builds a MAC layer from template.
+       *
+       * @tparam T MACLayerImplementor derived implementation
+       *
+       * @param id id of the NEM that will contain the mac
+       * @param
+       * @param request Configuration update request
+       * @param bSkipConfigure Flag indicating whether to skip
+       * calling Component::configure
+       *
+       * @return std::pair with first being a borrowed reference to
+       * the newly created mac layer and second being a
+       * unique_ptr<NEMLayer> that should be added (moved)
+       * to an NEM layers list.
+       *
+       * @throw InitializeException when an error occurs during
+       * initialization.
+       * @throw ConfigureException when an error occurs during
+       * configure.
+       */
+      template<typename T>
+      std::pair<T *, std::unique_ptr<EMANE::NEMLayer>>
+      buildMACLayer_T(NEMId id,
+                      const std::string & RegistrationName,
+                      const ConfigurationUpdateRequest & request,
+                      bool bSkipConfigure = false);
+
       /**
        * Builds a Shim layer
        *
@@ -197,7 +228,7 @@ namespace EMANE
        * @throw ConfigureException when an error occurs during
        * configure.
        */
-      std::unique_ptr<NEMManager> 
+      std::unique_ptr<NEMManager>
       buildNEMManager(const uuid_t & uuid,
                       NEMs & nems,
                       const ConfigurationUpdateRequest & request);
@@ -205,8 +236,22 @@ namespace EMANE
     private:
       class NEMBuilderImpl;
       NEMBuilderImpl * pImpl_;
+
+      std::unique_ptr<NEMLayer>
+      buildMACLayer_i(MACLayerImplementor * pImpl,
+                      PlatformServiceProvider * pProvider,
+                      NEMId id,
+                      const std::string & sLibraryFile,
+                      const ConfigurationUpdateRequest & request,
+                      bool bSkipConfigure);
+
+      RadioServiceProvider * createRadioService(NEMId id);
+
+      PlatformServiceProvider * createPlatformService();
     };
   }
 }
+
+#include "emane/application/nembuilder.inl"
 
 #endif // EMANEAPPLICATIONNEMBUILDER_HEADER_

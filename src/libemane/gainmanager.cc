@@ -92,7 +92,6 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
   double dRxAntennaBlockagedBi{};
   double dTxAntennaBlockagedBi{};
 
-  double dDistanceMeters{};
   PositionNEU antennaPlacement{};
 
   LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
@@ -139,8 +138,6 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
                                       antennaPlacement,
                                       locationPairInfo.getLocalPOV(),
                                       localAntennaPlacement_);
-                
-          dDistanceMeters = std::get<2>(direction);
                 
           // adjust the direction azimuth and elvation based on the antenna pointing azimuth and elvation
           auto lookupAngles = 
@@ -271,6 +268,7 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
 
   const auto & localPosition = locationPairInfo.getLocalPOV().getPosition();
   const auto & remotePosition = locationPairInfo.getRemotePOV().getPosition();
+  double dDistanceMeters{locationPairInfo.getDistanceMeters()};
   
   // check if antennas are below the horizon
   if(!locationPairInfo == false && 

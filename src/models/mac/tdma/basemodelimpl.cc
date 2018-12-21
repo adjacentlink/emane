@@ -397,6 +397,12 @@ EMANE::Models::TDMA::BaseModel::Implementation::stop()
                           id_,
                           __func__);
 
+  if(transmitTimedEventId_)
+    {
+      pPlatformService_->timerService().cancelTimedEvent(transmitTimedEventId_);
+      transmitTimedEventId_ = 0;
+    }
+
   // check flow control enabled
   if(bFlowControlEnable_)
     {

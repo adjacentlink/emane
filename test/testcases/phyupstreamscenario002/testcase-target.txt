@@ -95,22 +95,14 @@
 [5]   src: 2
 [5]   transmitter power: 5.000000
 
-[5]  Packet forwarded to next layer
+[5]  Packet dropped
 
-[5]  MAC FrequencyControlMessage data:
-[5]   bandwidth: 1200000
-[5]   freq: 250000000
-[5]   duration: 100
-[5]   offset: 200
-[5]   power: -94.940895
+[5] BroadcastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[5] |2  |0          |0             |1                |0            |1           |0           |0      |0             |0            |0             |0          |
+[5] UnicastPacketDropTable0
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
 
-[5]  MAC ReceivePropertiesControlMessage data:
-[5]   sot: 30.000020
-[5]   span: 100
-[5]   prop delay: 56
-[5]   receiver sensativity: -109.208188
-
-Processing upstream packet...
 [6] location 2 P:[40.025495,-74.372888,3]
 
 [7] packet

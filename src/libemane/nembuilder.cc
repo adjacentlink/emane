@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2018 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2008-2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -177,6 +177,31 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
   // create plugin
   MACLayerImplementor * pImpl =
     macLayerFactory.createLayer(id, pPlatformService,pRadioService);
+
+  return buildMACLayer_i(pImpl,pPlatformService,id,sLibraryFile,request,bSkipConfigure);
+}
+
+EMANE::RadioServiceProvider *
+EMANE::Application::NEMBuilder::createRadioService(NEMId id)
+{
+  return new RadioService{pImpl_->getSpectrumMonitor(id)};
+}
+
+EMANE::PlatformServiceProvider *
+EMANE::Application::NEMBuilder::createPlatformService()
+{
+  return new NEMPlatformService{};
+}
+
+std::unique_ptr<EMANE::NEMLayer>
+EMANE::Application::NEMBuilder::buildMACLayer_i(MACLayerImplementor * pImpl,
+                                                PlatformServiceProvider * pProvider,
+                                                NEMId id,
+                                                const std::string & sLibraryFile,
+                                                const ConfigurationUpdateRequest & request,
+                                                bool bSkipConfigure)
+{
+  EMANE::NEMPlatformService * pPlatformService{dynamic_cast<EMANE::NEMPlatformService*>(pProvider)};
 
   std::unique_ptr<NEMQueuedLayer> pNEMLayer{new MACLayer{id,
         new NEMStatefulLayer{id,

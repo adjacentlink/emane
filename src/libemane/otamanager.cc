@@ -585,7 +585,7 @@ void EMANE::OTAManager::processOTAMessage()
                                       // get the parts sorted by offset and build an iovec
                                       for(const auto & part : parts)
                                         {
-                                          vectorIO.push_back({const_cast<uint8_t *>(&part.second[0]),
+                                          vectorIO.push_back({const_cast<uint8_t *>(part.second.data()),
                                                 part.second.size()});
                                         }
 

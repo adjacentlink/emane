@@ -22,7 +22,7 @@
 
 [11] request 4 -> gain: 10
 
-[12] request 4 txgain=0 -> gain: 5
+[12] request 4 txgain=0 -> error: Below Horizon
 
 [13] profile 1 profileId: 3 azimuth: 0 elevation: 0
 [13] profile 4 profileId: 4 azimuth: 0 elevation: 60

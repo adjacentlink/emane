@@ -76,6 +76,57 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::registerStatistics(Statistic
                                                         ">1.75"},
                                                     StatisticProperties::NONE,
                                                     "Shows the number of Rx slot receptions that were valid or missed based on slot timing deadlines");
+
+
+  pTxSlotValid_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numTxSlotValid",
+                                                      StatisticProperties::NONE,
+                                                      "Number of valid Tx slots");
+
+  pTxSlotErrorMissed_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numTxSlotErrorMissed",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Tx slot missed errors.");
+
+  pTxSlotErrorTooBig_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numTxSlotErrorTooBig",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Tx slot too big errors.");
+
+  pRxSlotValid_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotValid",
+                                                      StatisticProperties::NONE,
+                                                      "Number of valid Rx slots");
+
+  pRxSlotErrorMissed_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorMissed",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot missed errors.");
+
+  pRxSlotErrorRxDuringIdle_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorRxDuringIdle",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot rx during idle errors.");
+
+  pRxSlotErrorRxDuringTx_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorRxDuringTx",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot during tx errors.");
+
+  pRxSlotErrorRxTooLong_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorRxTooLong",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot rx too long errors.");
+
+  pRxSlotErrorRxWrongFrequency_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorRxWrongFrequency",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot rx wrong frequency errors.");
+
+  pRxSlotErrorRxLock_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numRxSlotErrorRxLock",
+                                                      StatisticProperties::NONE,
+                                                      "Number of Rx slot rx lock errors.");
 }
 
 void EMANE::Models::TDMA::SlotStatusTablePublisher::clear()
@@ -160,12 +211,15 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateTx(std::uint32_t u32Re
   switch(status)
     {
     case Status::TX_GOOD:
+      ++*pTxSlotValid_;
       pTxSlotStatusTable_->setCell(u32RelativeIndex,3,Any{++valid});
       break;
     case Status::TX_MISSED:
+      ++*pTxSlotErrorMissed_;
       pTxSlotStatusTable_->setCell(u32RelativeIndex,4,Any{++missed});
       break;
     case Status::TX_TOOBIG:
+      ++*pTxSlotErrorTooBig_;
       pTxSlotStatusTable_->setCell(u32RelativeIndex,5,Any{++toobig});
       break;
     default:
@@ -256,24 +310,31 @@ void EMANE::Models::TDMA::SlotStatusTablePublisher::updateRx(std::uint32_t u32Re
   switch(status)
     {
     case Status::RX_GOOD:
+      ++*pRxSlotValid_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,3,Any{++valid});
       break;
     case Status::RX_MISSED:
+      ++*pRxSlotErrorMissed_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,4,Any{++missed});
       break;
     case Status::RX_IDLE:
+      ++*pRxSlotErrorRxDuringIdle_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,5,Any{++rxidle});
       break;
     case Status::RX_TX:
+      ++*pRxSlotErrorRxDuringTx_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,6,Any{++rxtx});
       break;
     case Status::RX_TOOLONG:
+      ++*pRxSlotErrorRxTooLong_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,7,Any{++rxtoolong});
       break;
     case Status::RX_WRONGFREQ:
+      ++*pRxSlotErrorRxWrongFrequency_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,8,Any{++rxwrongfreq});
       break;
     case Status::RX_LOCK:
+      ++*pRxSlotErrorRxLock_;
       pRxSlotStatusTable_->setCell(u32RelativeIndex,9,Any{++rxlock});
       break;
     default:
