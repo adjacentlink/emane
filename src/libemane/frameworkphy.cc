@@ -55,6 +55,7 @@
 #include "emane/controls/receivepropertiescontrolmessage.h"
 #include "emane/controls/antennaprofilecontrolmessage.h"
 #include "emane/controls/timestampcontrolmessage.h"
+#include "emane/controls/txwhilerxinterferencecontrolmessage.h"
 
 #include "emane/controls/frequencycontrolmessageformatter.h"
 #include "emane/controls/transmittercontrolmessageformatter.h"
@@ -737,6 +738,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
   TimePoint txTimeStamp{now};
 
+  double dTxWhileRxInterferenceRxPowerMilliWatt{};
+
   for(const auto & pMessage : msgs)
     {
       switch(pMessage->getId())
@@ -866,6 +869,25 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
           break;
 
+        case Controls::TxWhileRxInterferenceControlMessage::IDENTIFIER:
+          {
+            const auto pTxWhileRxInterferenceControlMessage =
+              static_cast<const Controls::TxWhileRxInterferenceControlMessage *>(pMessage);
+
+            dTxWhileRxInterferenceRxPowerMilliWatt =
+              Utils::DB_TO_MILLIWATT(pTxWhileRxInterferenceControlMessage->getRxPowerdBm());
+
+            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                   DEBUG_LEVEL,
+                                   "PHYI %03hu FrameworkPHY::%s Tx While Rx Interference Control Message "
+                                   "rx power %.6f dBm",
+                                   id_,
+                                   __func__,
+                                   pTxWhileRxInterferenceControlMessage->getRxPowerdBm());
+          }
+
+          break;
+
         case Controls::FrequencyOfInterestControlMessage::IDENTIFIER:
           {
             const auto pFrequencyOfInterestControlMessage =
@@ -943,6 +965,19 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
 
   sendDownstreamPacket(std::move(phyHeader),pkt,std::move(downstreamControlMessages));
+
+  if(dTxWhileRxInterferenceRxPowerMilliWatt)
+    {
+       pSpectrumMonitor_->update(now,
+                                 txTimeStamp,
+                                 Microseconds{},
+                                 frequencySegments,
+                                 u64BandwidthHz,
+                                 std::vector<double>(frequencySegments.size(),
+                                                     dTxWhileRxInterferenceRxPowerMilliWatt),
+                                 false,
+                                 {id_});
+    }
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2019 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,33 +30,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
-#define EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
+#include "emane/controls/txwhilerxinterferencecontrolmessage.h"
 
-#define EMANE_CONTROL_MEASSGE_SERIALIZED 100
+class EMANE::Controls::TxWhileRxInterferenceControlMessage::Implementation
+{
+public:
+  Implementation(double dRxPowerdBm):
+    dRxPowerdBm_{dRxPowerdBm}{}
 
-#define EMANE_CONTROL_MEASSGE_TRANSMITTER 101
+  double getRxPowerdBm() const
+  {
+    return dRxPowerdBm_;
+  }
 
-#define EMANE_CONTROL_MEASSGE_FREQUENCY   102
+private:
+  const double dRxPowerdBm_;
+};
 
-#define EMANE_CONTROL_MEASSGE_ANTENNA_PROFILE 103
+EMANE::Controls::TxWhileRxInterferenceControlMessage::
+TxWhileRxInterferenceControlMessage(const TxWhileRxInterferenceControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
 
-#define EMANE_CONTROL_MEASSGE_FLOW_CONTROL 104
+EMANE::Controls::TxWhileRxInterferenceControlMessage::TxWhileRxInterferenceControlMessage(double dRxPowerdBm):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{dRxPowerdBm}}{}
 
-#define EMANE_CONTROL_MEASSGE_R2RI_NEIGHBOR_METRIC 105
+EMANE::Controls::TxWhileRxInterferenceControlMessage::~TxWhileRxInterferenceControlMessage(){}
 
-#define EMANE_CONTROL_MEASSGE_R2RI_QUEUE_METRIC 106
 
-#define EMANE_CONTROL_MEASSGE_R2RI_SELF_METRIC 107
+EMANE::Controls::TxWhileRxInterferenceControlMessage *
+EMANE::Controls::TxWhileRxInterferenceControlMessage::create(double dRxPowerdBm)
+{
+  return new TxWhileRxInterferenceControlMessage{dRxPowerdBm};
+}
 
-#define EMANE_CONTROL_MEASSGE_OTA_TRANSMITTER 108
+double EMANE::Controls::TxWhileRxInterferenceControlMessage::getRxPowerdBm() const
+{
+  return pImpl_->getRxPowerdBm();
+}
 
-#define EMANE_CONTROL_MEASSGE_RECEIVE_PROPERTIES 109
-
-#define EMANE_CONTROL_MEASSGE_TIME_STAMP 110
-
-#define EMANE_CONTROL_MEASSGE_FREQUENCY_OF_INTEREST 111
-
-#define EMANE_CONTROL_MEASSGE_TX_WHILE_RX_INTERFERENCE_TIME_STAMP 112
-
-#endif // EMANECONTROLSCONTROLMESSAGEIDS_HEADER_
+EMANE::Controls::TxWhileRxInterferenceControlMessage *
+EMANE::Controls::TxWhileRxInterferenceControlMessage::clone() const
+{
+  return new TxWhileRxInterferenceControlMessage{*this};
+}
