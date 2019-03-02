@@ -188,6 +188,7 @@ libemane_la_SOURCES =                         \
  transportfactorymanager.cc                   \
  transportlayer.cc                            \
  transportmanagerimpl.cc                      \
+ txwhilerxinterferencecontrolmessage.cc       \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \

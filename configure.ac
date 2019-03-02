@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2018 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2019 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.2.3,[emane at adjacent link dot com])
+AC_INIT([emane],1.2.4,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 

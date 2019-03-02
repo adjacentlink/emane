@@ -24,7 +24,8 @@ emaneinc_HEADERS =                           \
  serializedcontrolmessage.h                  \
  timestampcontrolmessage.h                   \
  transmittercontrolmessageformatter.h        \
- transmittercontrolmessage.h
+ transmittercontrolmessage.h                 \
+ txwhilerxinterferencecontrolmessage.h
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(emaneincdir)
