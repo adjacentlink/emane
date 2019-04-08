@@ -143,7 +143,7 @@ EMANE::Models::TDMA::ReceiveManager::enqueue(BaseModelMessage && baseModelMessag
     }
   else
     {
-      if(std::get<3>(pendingInfo_)  < startOfReception)
+      if(startOfReception < std::get<3>(pendingInfo_))
         {
           pendingInfo_ = std::make_tuple(std::move(baseModelMessage),
                                          pktInfo,
