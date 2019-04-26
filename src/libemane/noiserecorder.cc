@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2019 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +49,7 @@ EMANE::NoiseRecorder::NoiseRecorder(const Microseconds & bin,
 {}
 
 std::pair<EMANE::TimePoint,EMANE::TimePoint>
-EMANE::NoiseRecorder::update(const TimePoint & now,
+EMANE::NoiseRecorder::update(const TimePoint &,
                              const TimePoint & txTime,
                              const Microseconds & offset,
                              const Microseconds & propagation,
@@ -67,9 +68,9 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
   Microseconds::rep startOfReceptionBin{reportedStartOfReceptionBin};
 
   Microseconds::rep maxEoRBin{};
-  
-  // Determine the last EoR bin for the transmitter - we only 
-  // allow one bin noise entry per transmitter. For multiple 
+
+  // Determine the last EoR bin for the transmitter - we only
+  // allow one bin noise entry per transmitter. For multiple
   // transmitters use the max EoR
   for(const auto & transmitter : transmitters)
     {
@@ -81,7 +82,7 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
         }
     }
 
-  // adjust the SoR bin to be the next past max EoR bin
+  // adjust the SoR bin to be the next after max EoR bin
   // if necessary
   if(maxEoRBin >= reportedStartOfReceptionBin)
     {
@@ -91,13 +92,12 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
   // sanity check after any possible adjustments
   if(startOfReceptionBin <= endOfReceptionBin)
     {
-      auto nowBin = timepointToBin(now);
-
       auto durationBinCount = endOfReceptionBin - startOfReceptionBin + 1;
-      
+
       auto startIndex = startOfReceptionBin % totalWheelBins_;
-      
-      if(nowBin - maxEndOfReceptionBin_ > totalWheelBins_)
+
+      // is current SOR on the wheel
+      if(maxEndOfReceptionBin_ + totalWheelBins_ <= startOfReceptionBin)
         {
           // reset the max end of reception bin
           //  the last bin we received on
@@ -109,57 +109,194 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
           minStartOfReceptionBin_ = 0;
         }
 
+      // if wheel is empty, place entire duration
       if(!maxEndOfReceptionBin_ && !minStartOfReceptionBin_)
         {
           // we can fill the entire duration
           wheel_.set(startIndex,durationBinCount,dRxPower);
-      
+
           minStartOfReceptionBin_ = startOfReceptionBin;
 
           maxEndOfReceptionBin_ = endOfReceptionBin;
         }
       else
         {
-          Microseconds::rep beforeDurationCount{};
-          Microseconds::rep afterDurationCount{};
-      
-          // set any values before the minStartOfReceptionBin
+          Microseconds::rep beforeMinSORBinDurationCount{};
+          Microseconds::rep afterMaxEORBinDurationCount{};
+
+          // set any values before the minStartOfReceptionBin, we are
+          // not accumulating energy - any value in these bins is
+          // stale
           if(startOfReceptionBin < minStartOfReceptionBin_)
             {
-              beforeDurationCount =
-                std::min(minStartOfReceptionBin_ - startOfReceptionBin,durationBinCount);
+              // all or part of energy within [MinSOR,MaxEOR]
+              //
+              // current wheel state. (x) indicates valid energy
+              //
+              // max EOR ---------------------
+              // min SOR -------              |
+              //                |             |
+              //                v             v
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              //
+              // energy (b) to record before MinSOR w/ overlap into
+              // [MinSOR,MaxEOR].
+              //
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              // | | | | | |b|b|b|b|b| | | | | | | | | | | |
+              //                ^ ^ ^
+              //                | | |
+              //                energy to accumulate
 
-              wheel_.set(startIndex,beforeDurationCount,dRxPower);
+              if(endOfReceptionBin < minStartOfReceptionBin_)
+                {
+                  beforeMinSORBinDurationCount = durationBinCount;
+                }
+              else
+                {
+                  beforeMinSORBinDurationCount =
+                    minStartOfReceptionBin_ - startOfReceptionBin;
+                }
+
+              wheel_.set(startIndex,
+                         beforeMinSORBinDurationCount,
+                         dRxPower);
             }
 
-          // set any values after the maxEndOfReceptionBin
+          // set any values after the maxEndOfReceptionBin, we are
+          // not accumulating energy - any value in these bins is
+          // stale
           if(endOfReceptionBin > maxEndOfReceptionBin_)
             {
-              afterDurationCount =
-                std::min(endOfReceptionBin - maxEndOfReceptionBin_,durationBinCount);
-          
-              wheel_.set((startIndex + durationBinCount - afterDurationCount) % totalWheelBins_, afterDurationCount,dRxPower);
-            }
-      
-          auto remainderBinCount = durationBinCount - (beforeDurationCount + afterDurationCount);
+              // all or part of energy within [MinSOR,MaxEOR]
+              //
+              // current wheel state. (x) indicates valid energy
+              //
+              // max EOR ---------------------
+              // min SOR -------              |
+              //                |             |
+              //                v             v
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              //
+              // energy (a) to record after MaxEOR w/ no overlap into
+              // [MinSOR,MaxEOR]
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              // | | | | | | | | | | | | |a|a|a|a|a| | | | |
+              //                          ^ ^ ^
+              //                          | | |
+              //                          energy to accumulate
 
-          if(remainderBinCount)
+              if(startOfReceptionBin > maxEndOfReceptionBin_)
+                {
+                  afterMaxEORBinDurationCount = durationBinCount;
+                }
+              else
+                {
+                  afterMaxEORBinDurationCount = endOfReceptionBin - maxEndOfReceptionBin_;
+                }
+
+              wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
+                         afterMaxEORBinDurationCount,
+                         dRxPower);
+            }
+
+          auto withinMinSORMaxEORBinCount =
+            durationBinCount - (beforeMinSORBinDurationCount + afterMaxEORBinDurationCount);
+
+          // energy within existing valid wheel bins [MinSOR,MaxEOR]
+          // must be accumulated
+          if(withinMinSORMaxEORBinCount)
             {
+              // all or part of energy within [MinSOR,MaxEOR]
+              //
+              // current wheel state. (x) indicates valid energy
+              //
+              // max EOR ---------------------
+              // min SOR -------              |
+              //                |             |
+              //                v             v
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              //
+              // energy (b) to record before MinSOR w/ overlap into
+              // [MinSOR,MaxEOR].
+              //
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              // | | | | | |b|b|b|b|b| | | | | | | | | | |
+              //                ^ ^ ^
+              //                | | |
+              //                energy to accumulate
+              //
+              // energy (a) to record after MaxEOR w/ no overlap into
+              // [MinSOR,MaxEOR]
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              // | | | | | | | | | | | | |a|a|a|a|a| | | | |
+              //                          ^ ^ ^
+              //                          | | |
+              //                          energy to accumulate
+
               // accumulate bins up to and including maxEndOfReceptionBin
-              wheel_.add((startIndex + beforeDurationCount) % totalWheelBins_,
-                         remainderBinCount,
+              wheel_.add((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
+                         withinMinSORMaxEORBinCount,
                          dRxPower);
             }
           else
             {
+              // no energy within [MinSOR,MaxEOR]
+
+              // current wheel state. (x) indicates valid energy
+              //
+              // max EOR ---------------------
+              // min SOR -------              |
+              //                |             |
+              //                v             v
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | | | | | |
+              //
+              // energy (b) to record before MinSOR w/ no overlap into
+              // [MinSOR,MaxEOR].
+              //
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | |b|b|b| | | |x|x|x|x|x|x|x|x| | | | | | |
+              //          ^ ^ ^
+              //          | | |
+              //          gap to clear
+              //
+              // energy (a) to record after MaxEOR w/ no overlap into
+              // [MinSOR,MaxEOR]
+              //
+              //  0                   1                   2
+              //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+              // | | | | | | | |x|x|x|x|x|x|x|x| | |a|a|a| |
+              //                                ^ ^
+              //                                | |
+              //                                gap to clear
+
               // clear any gaps
-              if(beforeDurationCount)
+              if(beforeMinSORBinDurationCount)
                 {
-                  wheel_.set((startIndex + durationBinCount) % totalWheelBins_,
-                             minStartOfReceptionBin_ - endOfReceptionBin - 1,
+                  wheel_.set((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
+                             minStartOfReceptionBin_ -
+                             (startOfReceptionBin + beforeMinSORBinDurationCount),
                              0);
                 }
-              else
+
+              if(afterMaxEORBinDurationCount)
                 {
                   wheel_.set((maxEndOfReceptionBin_ + 1) % totalWheelBins_,
                              startOfReceptionBin - maxEndOfReceptionBin_ - 1,
@@ -167,12 +304,12 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
                 }
             }
 
-          if(beforeDurationCount)
+          if(beforeMinSORBinDurationCount)
             {
               minStartOfReceptionBin_ = startOfReceptionBin;
             }
 
-          if(afterDurationCount)
+          if(afterMaxEORBinDurationCount)
             {
               maxEndOfReceptionBin_ = endOfReceptionBin;
             }
@@ -184,8 +321,7 @@ EMANE::NoiseRecorder::update(const TimePoint & now,
           nemEoRBinMap_[transmitter] = endOfReceptionBin;
         }
     }
-  //return {TimePoint{Microseconds{reportedStartOfReceptionBin} * binSizeMicroseconds_},
-  //TimePoint{Microseconds{endOfReceptionBin} * binSizeMicroseconds_}};
+
   return {startOfReception,endOfReception};
 }
 
@@ -197,9 +333,9 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
 {
   auto nowBin = timepointToBin(now,true);
 
-  auto minStartOfWindowTime = 
+  auto minStartOfWindowTime =
     TimePoint(Microseconds{nowBin - totalWindowBins_ + 1} * binSizeMicroseconds_);
-  
+
   auto validStartTime = startTime;
 
   auto validDuration = duration;
@@ -211,15 +347,15 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
     }
   else if(validStartTime < minStartOfWindowTime)
     {
-      throw makeException<SpectrumServiceException>("window start time too far in the past"); 
+      throw makeException<SpectrumServiceException>("window start time too far in the past");
     }
   else if(validStartTime > now)
     {
       throw makeException<SpectrumServiceException>("window start time in the future");
     }
-  
+
   auto startTimeBin = timepointToBin(validStartTime);
- 
+
   auto endTime = now;
 
   if(validDuration != Microseconds::zero())
@@ -231,9 +367,9 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
           throw makeException<SpectrumServiceException>("window end time in the future");
         }
     }
-  
+
   auto endTimeBin = timepointToBin(endTime,true);
-  
+
   auto durationBinCount = endTimeBin - startTimeBin + 1;
 
   std::vector<double> window;
@@ -241,9 +377,9 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
   window.reserve(durationBinCount);
 
   // if a startTime was specified that bin time equates window entry 0
-  auto startOfWindowTime = 
-    TimePoint(Microseconds{startTimeBin} * binSizeMicroseconds_);  
-  
+  auto startOfWindowTime =
+    TimePoint(Microseconds{startTimeBin} * binSizeMicroseconds_);
+
   if(startOfWindowTime >= minStartOfWindowTime)
     {
       if(maxEndOfReceptionBin_ && minStartOfReceptionBin_)
@@ -252,7 +388,7 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
             {
               Microseconds::rep beforeDurationCount{};
               Microseconds::rep afterDurationCount{};
-              
+
               if(endTimeBin > maxEndOfReceptionBin_)
                 {
                   afterDurationCount =
@@ -264,13 +400,13 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
                   beforeDurationCount =
                     std::min(minStartOfReceptionBin_ - startTimeBin,durationBinCount);
                 }
-              
+
               auto remainderBinCount =
                 durationBinCount - (beforeDurationCount + afterDurationCount);
 
               if(remainderBinCount)
                 {
-                  window = wheel_.get((endTimeBin - afterDurationCount) % totalWheelBins_,remainderBinCount);                  
+                  window = wheel_.get((endTimeBin - afterDurationCount) % totalWheelBins_,remainderBinCount);
                 }
 
               window.insert(window.begin(),beforeDurationCount,0);
@@ -291,7 +427,7 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
     {
       throw makeException<SpectrumServiceException>("window start time invalid");
     }
-  
+
   return std::make_pair(std::move(window),startOfWindowTime);
 }
 
@@ -299,12 +435,12 @@ std::vector<double> EMANE::NoiseRecorder::dump() const
 {
   return wheel_.dump();
 }
-    
+
 EMANE::Microseconds::rep EMANE::NoiseRecorder::timepointToBin(const TimePoint & tp,bool bAdjust)
 {
-  auto count = 
+  auto count =
     std::chrono::duration_cast<Microseconds>(tp.time_since_epoch()).count();
-    
+
   // times that fall on a bin boundary belong to the previous bin
   // (count % binSizeMicroseconds_ == 0) will evaluate to 0 or 1
   return count == 0 ? 0 : count / binSizeMicroseconds_ - (bAdjust && (count % binSizeMicroseconds_ == 0));
