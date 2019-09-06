@@ -86,7 +86,7 @@ class OTAMessage:
 
         otaHeader = self._otaHeader.SerializeToString()
 
-        return "".join((struct.pack("!H",len(otaHeader)),
+        return b"".join((struct.pack("!H",len(otaHeader)),
                         otaHeader,
                         # PartInfo: no more parts, offset 0, size
                         struct.pack("!BII",
