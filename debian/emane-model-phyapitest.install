@@ -1,2 +1,2 @@
-/usr/lib/libphyapitestshim.so
+/usr/lib/*/libphyapitestshim.so
 /usr/share/emane/xml/models/shim/phyapitest/*

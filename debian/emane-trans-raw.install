@@ -1,2 +1,2 @@
-/usr/lib/libtransraw.so
+/usr/lib/*/libtransraw.so
 /usr/share/emane/xml/transports/raw/*

@@ -50,7 +50,8 @@ if HAVE_DEB
 
 JOBS=`getconf _NPROCESSORS_ONLN`
 
-deb: dist-gzip 
+deb: dist-gzip
+	rm -rf .debbuild
 	mkdir -p .debbuild
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .debbuild
 	cd .debbuild && tar xzf $(PACKAGE)-$(VERSION).tar.gz
