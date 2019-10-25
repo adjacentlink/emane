@@ -23,6 +23,10 @@ Vendor: Adjacent Link LLC
 %define with_pathfix 0
 %endif
 
+%if 0%{?el8}
+%define with_python3 1
+%endif
+
 # Fedora (non-EOL)
 %if 0%{?fedora}
 %if %{fedora} < 31
