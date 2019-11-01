@@ -159,7 +159,7 @@ void EMANE::NakagamiFadingAlgorithm::configure_i(const ConfigurationUpdate & upd
                                   id_,
                                   __func__,
                                   item.first.c_str(),
-                                  dm1_);
+                                  dm2_);
         }
       else if(item.first == sPrefix_ + "nakagami.distance0")
         {

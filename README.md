@@ -18,6 +18,3 @@ Visit the EMANE Wiki:
 
  https://github.com/adjacentlink/emane/wiki
 
-Join the EMANE mailing list and post a question:
-
- https://publists.nrl.navy.mil/mailman/listinfo/emane-users
