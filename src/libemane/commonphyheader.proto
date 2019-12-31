@@ -62,4 +62,5 @@ message CommonPHYHeader
   repeated FrequencySegment frequencySegments = 7;
 
   optional double fixedAntennaGain = 8;
+  optional bytes filterData = 9;
 }

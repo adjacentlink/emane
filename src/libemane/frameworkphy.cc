@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016-2017,2019-2020 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,14 +56,20 @@
 #include "emane/controls/antennaprofilecontrolmessage.h"
 #include "emane/controls/timestampcontrolmessage.h"
 #include "emane/controls/txwhilerxinterferencecontrolmessage.h"
+#include "emane/controls/spectrumfilteraddcontrolmessage.h"
+#include "emane/controls/spectrumfilterremovecontrolmessage.h"
+#include "emane/controls/spectrumfilterdatacontrolmessage.h"
 
 #include "emane/controls/frequencycontrolmessageformatter.h"
 #include "emane/controls/transmittercontrolmessageformatter.h"
 #include "emane/controls/frequencyofinterestcontrolmessageformatter.h"
+#include "emane/controls/spectrumfilteraddcontrolmessageformatter.h"
+#include "emane/controls/spectrumfilterremovecontrolmessageformatter.h"
 
 #include "freespacepropagationmodelalgorithm.h"
 #include "tworaypropagationmodelalgorithm.h"
 #include "precomputedpropagationmodelalgorithm.h"
+#include "emane/controls/spectrumfilteraddcontrolmessage.h"
 
 namespace
 {
@@ -80,16 +86,16 @@ namespace
   const std::uint16_t DROP_CODE_FADINGMANAGER_SELECTION     = 11;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS{"Out-of-Band",
-      "Rx Sensitivity",
-      "Propagation Model",
-      "Gain Location",
-      "Gain Horizon",
-      "Gain Profile",
-      "Not FOI",
-      "Spectrum Clamp",
-      "Fade Location",
-      "Fade Algorithm",
-      "Fade Select"};
+                                                     "Rx Sensitivity",
+                                                     "Propagation Model",
+                                                     "Gain Location",
+                                                     "Gain Horizon",
+                                                     "Gain Profile",
+                                                     "Not FOI",
+                                                     "Spectrum Clamp",
+                                                     "Fade Location",
+                                                     "Fade Algorithm",
+                                                     "Fade Select"};
 
   const std::string FADINGMANAGER_PREFIX{"fading."};
 }
@@ -117,7 +123,8 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   timeSyncThreshold_{},
   bNoiseMaxClamp_{},
   dSystemNoiseFiguredB_{},
-  fadingManager_{id, pPlatformService,FADINGMANAGER_PREFIX}{}
+  fadingManager_{id, pPlatformService,FADINGMANAGER_PREFIX},
+  bExcludeSameSubIdFromFilter_{}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -254,6 +261,14 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                           EMANE::ConfigurationProperties::MODIFIABLE,
                                           {0.0},
                                           "Defines the transmit power in dBm.");
+
+  configRegistrar.registerNumeric<bool>("excludesamesubidfromfilterenable",
+                                        EMANE::ConfigurationProperties::DEFAULT,
+                                        {true},
+                                        "Defines whether over-the-air (downstream) messages with a subid"
+                                        " matching the emulator PHY subid (inband) should be processed"
+                                        " for filter inclusion.");
+
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
 
@@ -527,6 +542,18 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   u16SubId_);
         }
+      else if(item.first == "excludesamesubidfromfilterenable")
+        {
+          bExcludeSameSubIdFromFilter_ = item.second[0].asBool();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bExcludeSameSubIdFromFilter_ ? "on" : "off");
+        }
       else
         {
           if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
@@ -553,7 +580,8 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                               " noisebinsize");
     }
 
-  pSpectrumMonitor_->initialize(foi,
+  pSpectrumMonitor_->initialize(u16SubId_,
+                                foi,
                                 u64BandwidthHz_,
                                 Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
                                 noiseMode_,
@@ -562,7 +590,8 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                 maxMessagePropagation_,
                                 maxSegmentDuration_,
                                 timeSyncThreshold_,
-                                bNoiseMaxClamp_);
+                                bNoiseMaxClamp_,
+                                bExcludeSameSubIdFromFilter_);
 }
 
 void EMANE::FrameworkPHY::start()
@@ -655,9 +684,9 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 
             /** [eventservice-sendevent-snippet] */
             Events::AntennaProfiles profiles{{id_,
-                  pAntennaProfileControlMessage->getAntennaProfileId(),
-                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                                              pAntennaProfileControlMessage->getAntennaProfileId(),
+                                              pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                                              pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
             gainManager_.update(profiles);
 
@@ -683,7 +712,8 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
             dReceiverSensitivitydBm_ =
               THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
 
-            pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
+            pSpectrumMonitor_->initialize(u16SubId_,
+                                          pFrequencyOfInterestControlMessage->getFrequencySet(),
                                           u64BandwidthHz_,
                                           Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
                                           noiseMode_,
@@ -692,10 +722,47 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                           maxMessagePropagation_,
                                           maxSegmentDuration_,
                                           timeSyncThreshold_,
-                                          bNoiseMaxClamp_);
+                                          bNoiseMaxClamp_,
+                                          bExcludeSameSubIdFromFilter_);
 
           }
 
+          break;
+
+        case Controls::SpectrumFilterAddControlMessage::IDENTIFIER:
+          {
+            const auto pSpectrumFilterAddControlMessage =
+              reinterpret_cast<const Controls::SpectrumFilterAddControlMessage *>(pMessage);
+
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL,
+                                            Controls::SpectrumFilterAddControlMessageFormatter(pSpectrumFilterAddControlMessage),
+                                            "PHYI %03hu FrameworkPHY::%s Spectrum Filter Add Control Message",
+                                            id_,
+                                            __func__);
+
+            pSpectrumMonitor_->initializeFilter(pSpectrumFilterAddControlMessage->getFilterIndex(),
+                                                pSpectrumFilterAddControlMessage->getFrequencyHz(),
+                                                pSpectrumFilterAddControlMessage->getBandwidthHz(),
+                                                pSpectrumFilterAddControlMessage->getSubBandBinSizeHz(),
+                                                pSpectrumFilterAddControlMessage->getFilterMatchCriterion()->clone());
+          }
+          break;
+
+        case Controls::SpectrumFilterRemoveControlMessage::IDENTIFIER:
+          {
+            const auto pSpectrumFilterRemoveControlMessage =
+              reinterpret_cast<const Controls::SpectrumFilterRemoveControlMessage *>(pMessage);
+
+            LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                            DEBUG_LEVEL,
+                                            Controls::SpectrumFilterRemoveControlMessageFormatter(pSpectrumFilterRemoveControlMessage),
+                                            "PHYI %03hu FrameworkPHY::%s Spectrum Filter Remove Control Message",
+                                            id_,
+                                            __func__);
+
+            pSpectrumMonitor_->removeFilter(pSpectrumFilterRemoveControlMessage->getFilterIndex());
+          }
           break;
 
         default:
@@ -740,6 +807,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
   double dTxWhileRxInterferenceRxPowerMilliWatt{};
 
+  std::pair<FilterData,bool> optionalSpectrumFilterData{};
+  
   for(const auto & pMessage : msgs)
     {
       switch(pMessage->getId())
@@ -787,15 +856,15 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                     if(segment.getPowerdBm().second)
                       {
                         frequencySegments.push_back({u64TxFrequencyHz_,       // use our frequency
-                              segment.getPowerdBm().first,
-                              segment.getDuration(), // duration
-                              segment.getOffset()}); // offset
+                                                     segment.getPowerdBm().first,
+                                                     segment.getDuration(), // duration
+                                                     segment.getOffset()}); // offset
                       }
                     else
                       {
                         frequencySegments.push_back({u64TxFrequencyHz_,       // use our frequency
-                              segment.getDuration(), // duration
-                              segment.getOffset()}); // offset
+                                                     segment.getDuration(), // duration
+                                                     segment.getOffset()}); // offset
                       }
                   }
                 else
@@ -838,9 +907,9 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
             /** [physicallayer-attachevent-snippet] */
             Events::AntennaProfiles profiles{{id_,
-                  pAntennaProfileControlMessage->getAntennaProfileId(),
-                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                                              pAntennaProfileControlMessage->getAntennaProfileId(),
+                                              pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                                              pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
             gainManager_.update(profiles);
 
@@ -905,7 +974,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
             dReceiverSensitivitydBm_ =
               THERMAL_NOISE_DB + dSystemNoiseFiguredB_ + 10.0 * log10(u64BandwidthHz_);
 
-            pSpectrumMonitor_->initialize(pFrequencyOfInterestControlMessage->getFrequencySet(),
+            pSpectrumMonitor_->initialize(u16SubId_,
+                                          pFrequencyOfInterestControlMessage->getFrequencySet(),
                                           u64BandwidthHz_,
                                           Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm_),
                                           noiseMode_,
@@ -914,9 +984,28 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
                                           maxMessagePropagation_,
                                           maxSegmentDuration_,
                                           timeSyncThreshold_,
-                                          bNoiseMaxClamp_);
+                                          bNoiseMaxClamp_,
+                                          bExcludeSameSubIdFromFilter_);
 
 
+          }
+
+          break;
+          
+        case Controls::SpectrumFilterDataControlMessage::IDENTIFIER:
+          {
+            const auto pSpectrumFilterDataControlMessage =
+              static_cast<const Controls::SpectrumFilterDataControlMessage *>(pMessage);
+
+            optionalSpectrumFilterData = {pSpectrumFilterDataControlMessage->getFilterData(),true};
+
+            LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                   DEBUG_LEVEL,
+                                   "PHYI %03hu FrameworkPHY::%s Spectrum Filter Data Control Message"
+                                   " filter data length: %zu",
+                                   id_,
+                                   __func__,
+                                   optionalSpectrumFilterData.first.size());
           }
 
           break;
@@ -943,7 +1032,8 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
       txTimeStamp,
       frequencySegments,
       transmitters,
-      optionalFixedAntennaGaindBi_};
+      optionalFixedAntennaGaindBi_,
+      optionalSpectrumFilterData};
 
   LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
@@ -968,15 +1058,17 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
 
   if(dTxWhileRxInterferenceRxPowerMilliWatt)
     {
-       pSpectrumMonitor_->update(now,
-                                 txTimeStamp,
-                                 Microseconds{},
-                                 frequencySegments,
-                                 u64BandwidthHz,
-                                 std::vector<double>(frequencySegments.size(),
-                                                     dTxWhileRxInterferenceRxPowerMilliWatt),
-                                 false,
-                                 {id_});
+      pSpectrumMonitor_->update(now,
+                                txTimeStamp,
+                                Microseconds{},
+                                frequencySegments,
+                                u64BandwidthHz,
+                                std::vector<double>(frequencySegments.size(),
+                                                    dTxWhileRxInterferenceRxPowerMilliWatt),
+                                false,
+                                {id_},
+                                u16SubId_,
+                                optionalSpectrumFilterData);
     }
 }
 
@@ -1005,7 +1097,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
   const  auto & pktInfo = pkt.getPacketInfo();
 
   bool bInBand{commonPHYHeader.getRegistrationId() == REGISTERED_EMANE_PHY_FRAMEWORK &&
-      u16SubId_ == commonPHYHeader.getSubId()};
+               u16SubId_ == commonPHYHeader.getSubId()};
 
   // unless this is an in-band packet, it will only be processed if
   // noise processing is on
@@ -1069,8 +1161,8 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                       double powerdBm{(optionalSegmentPowerdBm.second ?
                                        optionalSegmentPowerdBm.first :
                                        transmitter.getPowerdBm()) +
-                          gainInfodBi.first -
-                          dPathlossdB};
+                                      gainInfodBi.first -
+                                      dPathlossdB};
 
                       auto powerdBmInfo = fadingManager_.calculate(transmitter.getNEMId(),
                                                                    powerdBm,
@@ -1079,8 +1171,8 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                       if(powerdBmInfo.second == FadingManager::FadingStatus::SUCCESS)
                         {
                           receivePowerTableUpdate.insert(ReceivePowerPubisherUpdate{transmitter.getNEMId(),
-                                freqIter->getFrequencyHz(),
-                                powerdBmInfo.first});
+                                                                                    freqIter->getFrequencyHz(),
+                                                                                    powerdBmInfo.first});
 
                           ++freqIter;
 
@@ -1243,7 +1335,9 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                             commonPHYHeader.getBandwidthHz(),
                                                             rxPowerSegments,
                                                             bInBand,
-                                                            transmitters);
+                                                            transmitters,
+                                                            commonPHYHeader.getSubId(),
+                                                            commonPHYHeader.getOptionalFilterData());
 
               TimePoint sot{};
               Microseconds propagationDelay{};
@@ -1284,10 +1378,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                       sendUpstreamPacket(pkt,
                                          {Controls::FrequencyControlMessage::create(commonPHYHeader.getBandwidthHz(),
                                                                                     resultingFrequencySegments),
-                                             Controls::ReceivePropertiesControlMessage::create(sot,
-                                                                                               propagationDelay,
-                                                                                               span,
-                                                                                               dReceiverSensitivitydBm_)});
+                                          Controls::ReceivePropertiesControlMessage::create(sot,
+                                                                                            propagationDelay,
+                                                                                            span,
+                                                                                            dReceiverSensitivitydBm_)});
                       /** [physicallayer-sendupstreampacket-snippet] */
                     }
                   else

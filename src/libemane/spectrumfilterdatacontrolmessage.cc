@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,61 +30,54 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEWHEEL_HEADER_
-#define EMANEWHEEL_HEADER_
+#include "emane/controls/spectrumfilterdatacontrolmessage.h"
 
-#include "emane/exception.h"
-#include <vector>
-
-namespace EMANE
+class EMANE::Controls::SpectrumFilterDataControlMessage::Implementation
 {
-  template<typename T>
-  class Wheel
+public:
+  Implementation(const FilterData & filterData):
+    filterData_{filterData}{}
+
+  Implementation(const Implementation & impl):
+    filterData_{impl.filterData_}{}
+
+  const FilterData & getFilterData() const
   {
-  public:
-    class IndexError : public Exception
-    {
-    public:
-      IndexError(const std::string & sDescription = {}):
-        Exception("Wheel::IndexError",sDescription){}
+    return filterData_;
+  }
 
-      ~IndexError() throw() {}
-    };
+private:
+  FilterData filterData_;
+};
 
-    Wheel(std::size_t size,
-          std::size_t bins);
+EMANE::Controls::SpectrumFilterDataControlMessage::
+SpectrumFilterDataControlMessage(const SpectrumFilterDataControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
 
-    size_t slots() const;
+EMANE::Controls::SpectrumFilterDataControlMessage::
+SpectrumFilterDataControlMessage(const FilterData & filterData):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{filterData}}{}
 
-    size_t bins() const;
+EMANE::Controls::SpectrumFilterDataControlMessage::~SpectrumFilterDataControlMessage(){}
 
-    const std::vector<T> & dump() const;
 
-    void set(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    void add(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    std::vector<T> get(std::size_t begin,
-                       std::size_t slots);
-
-    std::vector<std::pair<std::size_t,T>>
-    compress() const;
-
-  private:
-    const std::size_t slots_;
-    const std::size_t bins_;
-    std::vector<T> store_;
-  };
+EMANE::Controls::SpectrumFilterDataControlMessage *
+EMANE::Controls::SpectrumFilterDataControlMessage::create(const FilterData & filterData)
+{
+  return new SpectrumFilterDataControlMessage{filterData};
 }
 
-#include "wheel.inl"
+const EMANE::FilterData &
+EMANE::Controls::SpectrumFilterDataControlMessage::getFilterData() const
+{
+  return pImpl_->getFilterData();
+}
 
-#endif // EMANEWHEEL_HEADER_
+EMANE::Controls::SpectrumFilterDataControlMessage *
+EMANE::Controls::SpectrumFilterDataControlMessage::clone() const
+{
+  return new SpectrumFilterDataControlMessage{*this};
+}

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +46,7 @@ namespace EMANE
 
   /**
    * Spectrum window snapshot
-   * 
+   *
    * @param std::vector<double> A vector of binned signal energy in mW
    * @param TimePoint Time corresponding to the first bin
    * @param Microseconds The bin duration
@@ -59,7 +60,29 @@ namespace EMANE
    *
    * @see Utils::maxBinNoiseFloor
    */
-  using SpectrumWindow = std::tuple<std::vector<double>,TimePoint,Microseconds,double,bool>;
+  using SpectrumWindow = std::tuple<std::vector<double>,
+                                    TimePoint,
+                                    Microseconds,
+                                    double,
+                                    bool>;
+
+  /**
+   * Spectrum filter window snapshot
+   *
+   * @param std::vector<double> A vector of binned signal energy in mW
+   * @param TimePoint Time corresponding to the first bin
+   * @param Microseconds The bin duration
+   * @param double The receiver sensitivity in mW
+   * @param bool Flag indicating whether the in-band signal
+   * is contained in the binned power values
+   * @param size_t Number of subband binned signal energy per time bin
+   */
+  using SpectrumFilterWindow = std::tuple<std::vector<double>,
+                                          TimePoint,
+                                          Microseconds,
+                                          double,
+                                          bool,
+                                          size_t>;
 
   /**
    * @class SpectrumServiceProvider
@@ -111,11 +134,11 @@ namespace EMANE
      * @pre The start time cannot be less than @c now minus the maximum duration
      * configured for the FrameworkPHY
      *
-     * @return A spectrum window 
+     * @return A spectrum window
      *
      * @throw SpectrumServiceException when the request parameters violate preconditions.
      *
-     * @note Request duration should almost always be the span contained in the 
+     * @note Request duration should almost always be the span contained in the
      * Controls::ReceivePropertiesControlMessage.
      *
      * @note Request startTime should be the start of reception (SoR) which is the start of
@@ -130,6 +153,42 @@ namespace EMANE
                                    const Microseconds & duration = Microseconds::zero(),
                                    const TimePoint & startTime = TimePoint::min()) const = 0;
 
+
+    /**
+     * Gets a filter spectrum window
+     *
+     * @param filterIndex Filter index to query for its spectrum window
+     * @param duration The amount of time in microseconds to request. If not specified
+     * the default will indicate maximum duration configured for the FrameworkPHY (default
+     * only recommended for DSA type functionality).
+     * @param startTime The start time of the spectrum window request. If not
+     * specified the default value will indicate now -  maximum duration configured for the
+     * FrameworkPHY.
+     *
+     * @pre The requested filter id must exist.
+     * @pre The duration cannot be more than the maximum duration configured for
+     * the FrameworkPHY
+     * @pre The start time plus the duration cannot be greater than @c now
+     * @pre The start time cannot be less than @c now minus the maximum duration
+     * configured for the FrameworkPHY
+     *
+     * @return A spectrum fitler window
+     *
+     * @throw SpectrumServiceException when the request parameters violate preconditions.
+     *
+     * @note Request duration should almost always be the span contained in the
+     * Controls::ReceivePropertiesControlMessage.
+     *
+     * @note Request startTime should be the start of reception (SoR) which is the start of
+     * transmission (SoT) + propagation delay + offset of the first frequency segment. SoT
+     * and propagation delay are contained in the Controls::ReceivePropertiesControlMessage.
+     * Frequency segment offset is contained in the Controls::FrequencyControlMessage.
+     */
+
+    virtual SpectrumFilterWindow requestFilter(FilterIndex filterIndex,
+                                               const Microseconds & duration = Microseconds::zero(),
+                                               const TimePoint & startTime = TimePoint::min()) const = 0;
+
   protected:
     SpectrumServiceProvider() = default;
   };
@@ -141,7 +200,7 @@ namespace EMANE
  * @page SpectrumService Spectrum Service
  *
  * The @ref EMANE::SpectrumServiceProvider "Spectrum Service" provides NEM component layers with
- * access to the spectrum monitoring capabilities of the @ref EMANE::FrameworkPHY "emulator's physical layer". 
+ * access to the spectrum monitoring capabilities of the @ref EMANE::FrameworkPHY "emulator's physical layer".
  *
  * Each emulator physical layer instance can be configured to monitor a frequency of interest set. A
  * @ref EMANE::NoiseRecorder "noise recorder" is instantiated for each frequency of interest. The noise
@@ -150,9 +209,9 @@ namespace EMANE
  * the information necessary to interpret the data.
  *
  * Each over-the-air  message is checked for frequency overlap using the transmitter and receiver
- * bandwidth. If there is an overlap, a proportional amount of signal energy is applied. 
+ * bandwidth. If there is an overlap, a proportional amount of signal energy is applied.
  *
- * There are three types of noise recording modes: 
+ * There are three types of noise recording modes:
  * - none
  * - out-of-band
  * - all
@@ -205,7 +264,7 @@ namespace EMANE
  * message propagation delay, the message span and the receiver sensitivity. The message span is the total
  * time between the start of the signal's earliest frequency segment and the end of the signal's latest
  * frequency segment. The span is supplied to make spectrum window querying easier.
- 
+ *
  * It is best practice to always use the span when requesting a spectrum window even if you are only interested
  * in one or more smaller subsets of the window.  This will allow you to analyze a single window for one or more
  * subsets without making additional requests to the spectrum service.

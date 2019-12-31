@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +37,7 @@
 #include "emane/types.h"
 #include "emane/frequencysegment.h"
 #include "emane/spectrumserviceprovider.h"
+#include "emane/filtermatchcriterion.h"
 #include "noiserecorder.h"
 
 #include <set>
@@ -54,8 +56,9 @@ namespace EMANE
 
 
     enum class NoiseMode {NONE, ALL, OUTOFBAND};
-    
-    void initialize(const FrequencySet & foi,
+
+    void initialize(uint16_t u16SubId,
+                    const FrequencySet & foi,
                     std::uint64_t u64BandwidthHz,
                     double dReceiverSensitivityMilliWatt,
                     NoiseMode mode,
@@ -64,7 +67,8 @@ namespace EMANE
                     const Microseconds & maxPropagation,
                     const Microseconds & maxDuration,
                     const Microseconds & timeSyncThreshold,
-                    bool bMaxClamp);
+                    bool bMaxClamp,
+                    bool bExcludeSameSubIdFromFilter);
 
     std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool>
     update(const TimePoint & now,
@@ -74,7 +78,9 @@ namespace EMANE
            std::uint64_t u64SegmentBandwidthHz,
            const std::vector<double> & rxPowersMilliWatt,
            bool bInBand,
-           const std::vector<NEMId> & transmitters);
+           const std::vector<NEMId> & transmitters,
+           std::uint16_t u16SubId,
+           const std::pair<FilterData,bool> & optionalFilterData);
 
 
     FrequencySet getFrequencies() const override;
@@ -92,25 +98,91 @@ namespace EMANE
                            const Microseconds & duration = Microseconds::zero(),
                            const TimePoint & timepoint = TimePoint::min()) const override;
 
+    void initializeFilter(FilterIndex filterIndex,
+                          std::uint64_t u64FrequencyHz,
+                          std::uint64_t u64BandwidthHz,
+                          std::uint64_t u64BandwidthBinSizeHz,
+                          const FilterMatchCriterion * pFilterMatchCriterion);
+
+    void removeFilter(FilterIndex filterIndex);
+
+    SpectrumFilterWindow requestFilter(FilterIndex filterIndex,
+                                       const Microseconds & duration = Microseconds::zero(),
+                                       const TimePoint & timepoint = TimePoint::min()) const override;
 
     std::vector<double> dump(std::uint64_t u64FrequencyHz) const;
 
   private:
     using NoiseRecorderMap = std::map<std::uint64_t,std::unique_ptr<NoiseRecorder>>;
-    using Cache = std::map<std::uint64_t,std::vector<std::tuple<NoiseRecorder *,double,std::uint64_t>>>;
-    using TransmitterBandwidthCache = std::map<std::uint64_t,std::unique_ptr<Cache>>;
+
+
+    using NoiseRecord = std::tuple<NoiseRecorder *,
+                                   double,
+                                   std::uint64_t,
+                                   std::uint64_t, // start rx freq
+                                   std::uint64_t>; // end rx freq>;
+
+    using NoiseRecords = std::vector<NoiseRecord>;
+
+    using Cache = std::map<std::uint64_t, // frequency Hz
+                           NoiseRecords>;
+
+    using TransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz
+                                               std::pair<std::unique_ptr<Cache>,
+                                                         FrequencySet>>; // no overlap set
     Microseconds binSize_;
     Microseconds maxOffset_;
     Microseconds maxPropagation_;
     Microseconds maxDuration_;
     bool bMaxClamp_;
+    bool bExcludeSameSubIdFromFilter_;
     Microseconds timeSyncThreshold_;
     TransmitterBandwidthCache transmitterBandwidthCache_;
     NoiseRecorderMap noiseRecorderMap_;
     std::uint64_t u64ReceiverBandwidthHz_;
     NoiseMode mode_;
     double dReceiverSensitivityMilliWatt_;
+    uint16_t u16SubId_;
     mutable std::mutex mutex_;
+
+
+    using FilterRecord = std::tuple<NoiseRecorder *, // noise recorder
+                                    double, // overlap
+                                    std::uint64_t, // tx freq
+                                    const FilterMatchCriterion *, // match
+                                    std::uint64_t, // start rx freq
+                                    std::uint64_t>; // end rx freq
+
+    using FilterRecords = std::vector<FilterRecord>;
+
+    using FilterCache = std::map<std::uint64_t, // frequency Hz
+                                 FilterRecords>;
+
+    using FitlerTransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz
+                                                     std::pair<std::unique_ptr<FilterCache>,
+                                                               FrequencySet>>; // no overlap set
+
+
+    using FilterNoiseRecorderMap = std::map<std::uint16_t, // filter index
+                                            std::tuple<std::uint64_t, // frequency Hz
+                                                       std::uint64_t, // bandwidth Hz
+                                                       std::unique_ptr<NoiseRecorder>,
+                                                       std::unique_ptr<const FilterMatchCriterion>>>;
+
+    FilterNoiseRecorderMap filterNoiseRecorderMap_;
+    FitlerTransmitterBandwidthCache filterTransmitterBandwidthCache_;
+
+    void applyEnergyToFilters_i(std::uint64_t u64TxBandwidthHz,
+                                std::uint64_t u64TxFrequencyHz,
+                                std::uint16_t u16SubId,
+                                const TimePoint & now,
+                                const TimePoint & txTime,
+                                const Microseconds & offset,
+                                const Microseconds & propagation,
+                                const Microseconds & duration,
+                                double dRxPowerMilliWatt,
+                                const std::vector<NEMId> & transmitters,
+                                const std::pair<FilterData,bool> & optionalFilterData);
   };
 }
 

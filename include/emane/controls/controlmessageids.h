@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2019 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,5 +59,11 @@
 #define EMANE_CONTROL_MEASSGE_FREQUENCY_OF_INTEREST 111
 
 #define EMANE_CONTROL_MEASSGE_TX_WHILE_RX_INTERFERENCE_TIME_STAMP 112
+
+#define EMANE_CONTROL_MEASSGE_SPECTRUM_FILTER_ADD 113
+
+#define EMANE_CONTROL_MEASSGE_SPECTRUM_FILTER_REMOVE 114
+
+#define EMANE_CONTROL_MEASSGE_SPECTRUM_FILTER_DATA 120
 
 #endif // EMANECONTROLSCONTROLMESSAGEIDS_HEADER_

@@ -93,6 +93,7 @@ libemane_la_SOURCES =                         \
  fadingmanager.cc                             \
  fadingselectionevent.cc                      \
  fadingselectioneventformatter.cc             \
+ filtermatchcriterion.cc                      \
  flowcontrolclient.cc                         \
  flowcontrolcontrolmessage.cc                 \
  flowcontrolmanager.cc                        \
@@ -166,6 +167,11 @@ libemane_la_SOURCES =                         \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
  socket.cc                                    \
+ spectrumfilteraddcontrolmessage.cc           \
+ spectrumfilteraddcontrolmessageformatter.cc  \
+ spectrumfilterdatacontrolmessage.cc          \
+ spectrumfilterremovecontrolmessage.cc        \
+ spectrumfilterremovecontrolmessageformatter.cc \
  spectrummonitor.cc                           \
  spectrumwindowutils.cc                       \
  statisticclearupdatehandler.cc               \
