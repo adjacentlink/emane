@@ -41,7 +41,7 @@ void EMANE::LocationManager::update(const Events::Locations & locations)
   for(const auto & location : locations)
     {
       EMANE::NEMId targetNEMId{location.getNEMId()};
-
+          
       if(nemId_ == targetNEMId)
         {
           // if self nem location changes clear
@@ -56,7 +56,7 @@ void EMANE::LocationManager::update(const Events::Locations & locations)
       else
         {
           auto iter = locationStore_.find(targetNEMId);
-
+              
           if(iter != locationStore_.end())
             {
               // if nem location changes clear the
@@ -78,13 +78,13 @@ void EMANE::LocationManager::update(const Events::Locations & locations)
     }
 }
 
-
+      
 std::pair<EMANE::LocationInfo,bool> EMANE::LocationManager::getLocationInfo(NEMId remoteNEMId)
 {
-  if(localPOV_)
+  if(!localPOV_ == false)
     {
       auto cacheIter = locationInfoCache_.find(remoteNEMId);
-
+            
       if(cacheIter != locationInfoCache_.end())
         {
           return {cacheIter->second,true};
@@ -92,17 +92,17 @@ std::pair<EMANE::LocationInfo,bool> EMANE::LocationManager::getLocationInfo(NEMI
       else
         {
           auto iter = locationStore_.find(remoteNEMId);
-
+                    
           if(iter != locationStore_.end())
             {
               LocationInfo locationInfo{localPOV_,iter->second};
-
+                    
               locationInfoCache_[remoteNEMId] = locationInfo;
-
+                    
               return {locationInfo,true};
             }
         }
     }
-
+        
   return {LocationInfo{},false};
 }
