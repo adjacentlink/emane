@@ -36,7 +36,7 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 
-#include "antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
 #include "emane/utils/parameterconvert.h"
 
 #include <getopt.h>

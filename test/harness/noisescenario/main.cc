@@ -42,7 +42,7 @@
 #include "emane/utils/parameterconvert.h"
 #include "emane/utils/spectrumwindowutils.h"
 
-#include "spectrummonitor.h"
+#include "emane/models/frameworkphy/spectrummonitor.h"
 
 #include <getopt.h>
 

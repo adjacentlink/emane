@@ -41,7 +41,7 @@
 #include "emane/platformexception.h"
 #include "emane/startexception.h"
 #include "otaexception.h"
-#include "antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
 
 EMANE::Application::NEMManagerImpl::NEMManagerImpl(const uuid_t & uuid):
   NEMManager{uuid}{}

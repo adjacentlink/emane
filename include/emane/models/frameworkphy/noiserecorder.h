@@ -36,7 +36,7 @@
 #include <chrono>
 #include <cstring>
 
-#include "wheel.h"
+#include "emane/models/frameworkphy/wheel.h"
 #include "emane/types.h"
 
 #include <map>

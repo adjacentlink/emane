@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,24 +30,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFOFORMATTER_HEADER_
-#define EMANELOCATIONINFOFORMATTER_HEADER_
+#ifndef EMANELOCATIONINFO_HEADER_
+#define EMANELOCATIONINFO_HEADER_
 
-#include "locationinfo.h"
-#include "emane/types.h"
+#include "emane/models/frameworkphy/positionorientationvelocity.h"
 
 namespace EMANE
 {
-  class LocationInfoFormatter
+  class LocationInfo
   {
   public:
-    LocationInfoFormatter(const LocationInfo & info);
+    LocationInfo();
+    
+    LocationInfo(const PositionOrientationVelocity & localPOV,
+                 const PositionOrientationVelocity & remotePOV);
       
-    Strings operator()() const;
+    const PositionOrientationVelocity & getLocalPOV() const;
+    
+    const PositionOrientationVelocity & getRemotePOV() const;
+    
+    double getDistanceMeters() const;
+    
+    bool operator!() const;
     
   private:
-    const LocationInfo & info_;
+    PositionOrientationVelocity localPOV_;
+    PositionOrientationVelocity remotePOV_;
+    double dDistanceMeters_;
   };
-}
+};
 
-#endif // EMANELOCATIONINFOFORMATTER_HEADER_
+#include "emane/models/frameworkphy/locationinfo.inl"
+
+#endif // EMANELOCATIONINFO_HEADER_

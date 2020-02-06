@@ -61,9 +61,9 @@
 #include "emane/controls/transmittercontrolmessageformatter.h"
 #include "emane/controls/frequencyofinterestcontrolmessageformatter.h"
 
-#include "freespacepropagationmodelalgorithm.h"
-#include "tworaypropagationmodelalgorithm.h"
-#include "precomputedpropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/freespacepropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/tworaypropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/precomputedpropagationmodelalgorithm.h"
 
 namespace
 {
@@ -96,9 +96,9 @@ namespace
 
 EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
                                   PlatformServiceProvider * pPlatformService,
-                                  SpectrumMonitor * pSpectrumMonitor):
-  PHYLayerImplementor{id, pPlatformService},
-  pSpectrumMonitor_{pSpectrumMonitor},
+                                  RadioServiceProvider * pRadioService):
+  PHYLayerImplementor{id, pPlatformService, pRadioService},
+  pSpectrumMonitor_{dynamic_cast<SpectrumMonitor*>(&pRadioService_->spectrumService())},
   gainManager_{id},
   locationManager_{id},
   u64BandwidthHz_{},
@@ -118,7 +118,6 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   bNoiseMaxClamp_{},
   dSystemNoiseFiguredB_{},
   fadingManager_{id, pPlatformService,FADINGMANAGER_PREFIX}{}
-
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
 void EMANE::FrameworkPHY::initialize(Registrar & registrar)

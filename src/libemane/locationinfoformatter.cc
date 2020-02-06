@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "locationinfoformatter.h"
-#include "positionorientationvelocityformatter.h"
+#include "emane/models/frameworkphy/locationinfoformatter.h"
+#include "emane/models/frameworkphy/positionorientationvelocityformatter.h"
 
 EMANE::LocationInfoFormatter::LocationInfoFormatter(const LocationInfo & info):
   info_(info)

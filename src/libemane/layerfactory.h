@@ -63,7 +63,7 @@ namespace EMANE
     LayerFactory(const std::string & sLibraryName);
 
     ~LayerFactory();
-    
+
     /**
      * Create a @a T layer
      *
@@ -84,13 +84,13 @@ namespace EMANE
      *
      */
     void destoryLayer(T * layer) const;
-    
+
   private:
     using CreateLayerFunc = T * (*)(NEMId,
                                     PlatformServiceProvider *,
                                     RadioServiceProvider *);
-    
-    using DestroyLayerFunc = void (*)(T*); 
+
+    using DestroyLayerFunc = void (*)(T*);
 
     void * pLibHandle_;
     CreateLayerFunc  createLayerFunc_;

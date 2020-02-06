@@ -30,43 +30,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEANTENNAPROFILEMANIFEST_HEADER_
-#define EMANEANTENNAPROFILEMANIFEST_HEADER_
+#ifndef EMANEPHYPOSITIONNEU_HEADER_
+#define EMANEPHYPOSITIONNEU_HEADER_
 
-#include "antennapattern.h"
-#include "positionneu.h"
-#include "emane/types.h"
-#include "emane/utils/singleton.h"
-
-#include <string>
-#include <map>
-#include <memory>
-#include <tuple>
+#include "emane/orientation.h"
 
 namespace EMANE
 {
-  class AntennaProfileManifest : public Utils::Singleton<AntennaProfileManifest>
-  {
-  public:
-    void load(const std::string & sAntennaProfileURI);
+    class PositionNEU
+    {
+    public:
+      PositionNEU();
 
-    // PositionNEU - Antenna placement in platforms reference frame
-    std::pair<std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>,bool>
-    getProfileInfo(AntennaProfileId antennaProfileId) const;
+      PositionNEU(double dNorthMeters,double dEastMeters, double dUpMeters);
+      
+      double getNorthMeters() const;
 
-  private:
-    using AntennaPatternStore =
-      std::map<std::string,std::unique_ptr<AntennaPattern>>;
+      double getEastMeters() const;
+      
+      double getUpMeters() const;
 
-    using Profiles = 
-      std::map<AntennaProfileId,std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>>;
+      void rotate(const Orientation & orientation);
 
-    AntennaPatternStore antennaPatternStore_;
-    Profiles profiles_;
+      void rotate(double dYawRadians, double dPitchRadians, double dRollRadians);
 
-  protected:
-    AntennaProfileManifest() = default;
-  };
+      void adjust(double dNorthMeters,double dEastMeters, double dUpMeters);
+
+    private:
+      double dNorthMeters_;
+      double dEastMeters_;
+      double dUpMeters_;
+    };
 }
 
-#endif // EMANEANTENNAPROFILEMANIFEST_HEADER_
+#include "emane/models/frameworkphy/positionneu.inl"
+
+#endif // EMANEPHYPOSITIONNEU_HEADER_

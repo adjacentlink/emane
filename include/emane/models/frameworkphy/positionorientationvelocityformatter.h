@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,44 +30,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
+#define EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
 
-#include "propagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/positionorientationvelocity.h"
+#include "emane/types.h"
 
 namespace EMANE
 {
-  class TwoRayPropagationModelAlgorithm : public PropagationModelAlgorithm
+  class PositionOrientationVelocityFormatter
   {
   public:
-    TwoRayPropagationModelAlgorithm(NEMId){}
+    PositionOrientationVelocityFormatter(const PositionOrientationVelocity & pov);
       
-    std::pair<std::vector<double>, bool> operator()(NEMId,
-                                                    const LocationInfo & locationPairInfo,
-                                                    const FrequencySegments & segments) override
-    {
-      // at least one location is unknown
-      if(!locationPairInfo)
-        {
-          return {{},false};
-        }
-
-      double dDistance{locationPairInfo.getDistanceMeters()};
-
-      double dPathloss{};
-
-      if(dDistance)
-        {
-          dPathloss =
-            (40.0 * log10(dDistance)) -
-            (20.0 *
-             (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
-              log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
-        }
-        
-      return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
-    }
+    Strings operator()() const;
+    
+  private:
+    const PositionOrientationVelocity & pov_;
   };
 }
 
-#endif  // EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#endif // EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_

@@ -33,8 +33,8 @@
 #ifndef EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
 #define EMANEPOSITIONORIENTATIONVELOCITY_HEADER_
 
-#include "positionecef.h"
-#include "positionneu.h"
+#include "emane/models/frameworkphy/positionecef.h"
+#include "emane/models/frameworkphy/positionneu.h"
 #include "emane/position.h"
 #include "emane/orientation.h"
 #include "emane/velocity.h"
@@ -82,6 +82,6 @@ namespace EMANE
   };
 }
 
-#include "positionorientationvelocity.inl"
+#include "emane/models/frameworkphy/positionorientationvelocity.inl"
 
 #endif // EMANEPOSITIONORIENTATIONVELOCITY_HEADER_

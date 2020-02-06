@@ -30,24 +30,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
-#define EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
+#ifndef EMANEPOSITIONNEUFORMATTER_HEADER_
+#define EMANEPOSITIONNEUFORMATTER_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "emane/models/frameworkphy/positionneu.h"
 #include "emane/types.h"
 
 namespace EMANE
 {
-  class PositionOrientationVelocityFormatter
+  /**
+   * @class PositionNEUFormatter
+   *
+   * @brief Callable formatter object for PositioNEU instances.
+   */
+  class PositionNEUFormatter
   {
   public:
-    PositionOrientationVelocityFormatter(const PositionOrientationVelocity & pov);
-      
-    Strings operator()() const;
+    /**
+     * Creates a PositionNEUFormatter instance
+     *
+     * @param positionNEU PositionNEU reference
+     */
+    PositionNEUFormatter(const PositionNEU & positionNEU);
     
+    /**
+     * Gets the formatted output
+     *
+     * @return list of output strings
+     */
+    Strings operator()() const;
+      
   private:
-    const PositionOrientationVelocity & pov_;
+    const PositionNEU & positionNEU_;
   };
 }
 
-#endif // EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
+#endif // EMANEPOSITIONNEUFORMATTER_HEADER_

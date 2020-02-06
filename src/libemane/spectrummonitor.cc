@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "spectrummonitor.h"
-#include "noiserecorder.h"
+#include "emane/models/frameworkphy/spectrummonitor.h"
+#include "emane/models/frameworkphy/noiserecorder.h"
 
 #include "emane/spectrumserviceexception.h"
 #include "emane/utils/conversionutils.h"

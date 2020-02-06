@@ -145,7 +145,6 @@ libemane_la_SOURCES =                         \
  pathlossevent.cc                             \
  pathlosseventformatter.cc                    \
  phylayer.cc                                  \
- phylayerfactory.cc                           \
  platformservice.cc                           \
  positionformatter.cc                         \
  positionneuformatter.cc                      \
@@ -192,9 +191,6 @@ libemane_la_SOURCES =                         \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \
- antennapattern.h                             \
- antennaprofileexception.h                    \
- antennaprofilemanifest.h                     \
  anyutils.h                                   \
  boundarymessagemanagerexception.h            \
  boundarymessagemanager.h                     \
@@ -222,19 +218,10 @@ libemane_la_SOURCES =                         \
  eventservice.h                               \
  eventserviceproxy.h                          \
  eventstatisticpublisher.h                    \
- eventtablepublisher.h                        \
- fadingalgorithm.h                            \
- fadingmanager.h                              \
  frameworkphy.h                               \
- freespacepropagationmodelalgorithm.h         \
- gainmanager.h                                \
  layerfactory.h                               \
  layerfactory.inl                             \
  layerfactorymanager.h                        \
- locationinfo.h                               \
- locationinfo.inl                             \
- locationinfoformatter.h                      \
- locationmanager.h                            \
  loggerlevelconvert.h                         \
  loggerlevelconvert.inl                       \
  loglevelupdatehandler.h                      \
@@ -244,7 +231,6 @@ libemane_la_SOURCES =                         \
  main.h                                       \
  manifestqueryhandler.h                       \
  multicastsocket.h                            \
- nakagamifadingalgorithm.h                    \
  nemimpl.h                                    \
  nemlayerstack.h                              \
  nemlayerstateconfigured.h                    \
@@ -264,7 +250,6 @@ libemane_la_SOURCES =                         \
  nemtimerserviceproxy.h                       \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
- noiserecorder.h                              \
  nopfiledescriptorservice.h                   \
  otaexception.h                               \
  otamanager.h                                 \
@@ -272,27 +257,12 @@ libemane_la_SOURCES =                         \
  otastatisticpublisher.h                      \
  otauser.h                                    \
  phylayer.h                                   \
- phylayerfactory.h                            \
  platformservice.h                            \
- positionecef.h                               \
- positionecef.inl                             \
- positionneu.h                                \
- positionneu.inl                              \
- positionneuformatter.h                       \
- positionorientationvelocity.h                \
- positionorientationvelocity.inl              \
- positionorientationvelocityformatter.h       \
- positionutils.h                              \
- precomputedpropagationmodelalgorithm.h       \
- propagationmodelalgorithm.h                  \
- radioservice.h                               \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
- receivepowertablepublisher.h                 \
  socket.h                                     \
  socketexception.h                            \
  shimlayer.h                                  \
- spectrummonitor.h                            \
  statisticclearupdatehandler.h                \
  statisticqueryhandler.h                      \
  statisticregistrarproxy.h                    \
@@ -307,10 +277,7 @@ libemane_la_SOURCES =                         \
  transportfactory.h                           \
  transportfactorymanager.h                    \
  transportmanagerimpl.h                       \
- transportlayer.h                             \
- tworaypropagationmodelalgorithm.h            \
- wheel.h                                      \
- wheel.inl
+ transportlayer.h
 
 BUILT_SOURCES =                               \
  $(nodist_libemane_la_SOURCES)

@@ -45,7 +45,7 @@ EMANE::LayerFactory<T>::LayerFactory(const std::string & sLibraryName):
     {
       throw Utils::FactoryException(dlerror());
     }
-  
+
   if((createLayerFunc_ = reinterpret_cast<CreateLayerFunc>((void (*)())(dlsym(pLibHandle_,"create")))) == 0)
     {
       dlclose(pLibHandle_);

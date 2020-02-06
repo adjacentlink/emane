@@ -1,2 +1,3 @@
 SUBDIRS=\
+ frameworkphy \
  tdma

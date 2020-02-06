@@ -33,7 +33,7 @@
 #ifndef EMANENAKAGAMIFADINGALGORITHM_HEADER_
 #define EMANENAKAGAMIFADINGALGORITHM_HEADER_
 
-#include "fadingalgorithm.h"
+#include "emane/models/frameworkphy/fadingalgorithm.h"
 #include "emane/platformserviceprovider.h"
 #include "emane/utils/conversionutils.h"
 #include <random>

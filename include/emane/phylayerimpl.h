@@ -36,6 +36,7 @@
 
 #include "emane/nemlayer.h"
 #include "emane/commonphyheader.h"
+#include "emane/radioserviceuser.h"
 
 namespace EMANE
 {
@@ -50,7 +51,8 @@ namespace EMANE
    * @attention Need additional features added to the emulator's physical layer?
    * Send an email to emane-info at adjacentlink dot com.
    */
-  class PHYLayerImplementor : public NEMLayer
+  class PHYLayerImplementor : public NEMLayer,
+                              public RadioServiceUser
   {
   public:
     virtual ~PHYLayerImplementor(){}
@@ -67,7 +69,7 @@ namespace EMANE
      */
 
     virtual void processUpstreamPacket(const CommonPHYHeader & hdr,
-                                       UpstreamPacket & pkt, 
+                                       UpstreamPacket & pkt,
                                        const ControlMessages & msgs = UpstreamTransport::empty) = 0;
 
     /**
@@ -81,12 +83,15 @@ namespace EMANE
      * Control messages should not be accessed after this point.
      */
     void sendDownstreamPacket(const CommonPHYHeader & hdr,
-                              DownstreamPacket & pkt, 
+                              DownstreamPacket & pkt,
                               const ControlMessages & msgs  = DownstreamTransport::empty);
-    
+
   protected:
-    PHYLayerImplementor(NEMId id, PlatformServiceProvider *p):
-      NEMLayer(id, p)
+    PHYLayerImplementor(NEMId id,
+                        PlatformServiceProvider *p,
+                        RadioServiceProvider * pRadioServiceProvider):
+      NEMLayer(id, p),
+      RadioServiceUser{pRadioServiceProvider}
    {}
 
   private:
@@ -95,18 +100,20 @@ namespace EMANE
 
     void processUpstreamPacket(UpstreamPacket & pkt, const ControlMessages & msgs);
 
-    void sendDownstreamPacket(DownstreamPacket & pkt, 
+    void sendDownstreamPacket(DownstreamPacket & pkt,
                               const ControlMessages & msgs = DownstreamTransport::empty);
 
   };
-  
-  typedef  PHYLayerImplementor * (*createPHYFunc)(NEMId id, PlatformServiceProvider *p); 
-  typedef void (*destroyPHYFunc)( PHYLayerImplementor*); 
+
+  typedef  PHYLayerImplementor * (*createPHYFunc)(NEMId id, PlatformServiceProvider *p);
+  typedef void (*destroyPHYFunc)( PHYLayerImplementor*);
 }
 
 #define DECLARE_PHY_LAYER(X)                                                                           \
-  extern "C"  EMANE::PHYLayerImplementor * create(EMANE::NEMId id, EMANE::PlatformServiceProvider *p)  \
-  {return new X(id,p);}                                                                                \
+  extern "C"  EMANE::PHYLayerImplementor * create(EMANE::NEMId id,                                     \
+                                                  EMANE::PlatformServiceProvider *p,                   \
+                                                  EMANE::RadioServiceProvider * r)                     \
+  {return new X(id,p,r);}                                                                                \
   extern "C"  void destroy(EMANE::PHYLayerImplementor * p)                                             \
   {delete p;}
 

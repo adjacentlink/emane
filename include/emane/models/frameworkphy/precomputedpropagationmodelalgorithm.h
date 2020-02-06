@@ -30,36 +30,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYPOSITIONECEF_HEADER_
-#define EMANEPHYPOSITIONECEF_HEADER_
+#ifndef EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "emane/position.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
+
+#include <map>
 
 namespace EMANE
 {
-  class PositionECEF
+  class PrecomputedPropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    PositionECEF();
+    PrecomputedPropagationModelAlgorithm(NEMId){}
 
-    PositionECEF(const Position & position);
 
-    double getX() const;
-      
-    double getY() const;
-      
-    double getZ() const;
+    void update(const Events::Pathlosses & pathlosses) override
+    {
+      for(const auto & pathloss : pathlosses)
+        {
+          pathlossStore_[pathloss.getNEMId()] = pathloss.getForwardPathlossdB();
+        }
+    }
 
-    bool operator!() const;
+    std::pair<std::vector<double>, bool> operator()(NEMId src,
+                                                    const LocationInfo &,
+                                                    const FrequencySegments & segments) override
+    {
+      auto iter = pathlossStore_.find(src);
+
+      if(iter != pathlossStore_.end())
+        {
+          return {std::vector<double>(segments.size(),iter->second),true};
+        }
+
+      return {{},false};
+    }
 
   private:
-    double dX_;
-    double dY_;
-    double dZ_;
-    bool bValid_;
+    using PathlossStore = std::map<NEMId,double>;
+    PathlossStore pathlossStore_;
   };
 }
 
-#include "positionecef.inl"
-
-#endif // EMANEPHYPOSITIONECEF_HEADER_
+#endif  // EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_

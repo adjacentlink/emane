@@ -30,9 +30,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "antennapattern.h"
+#include "emane/models/frameworkphy/antennapattern.h"
 #include "emane/utils/parameterconvert.h"
-#include "antennaprofileexception.h"
+#include "emane/models/frameworkphy/antennaprofileexception.h"
 
 #include <libxml/parser.h>
 

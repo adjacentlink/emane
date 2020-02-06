@@ -36,8 +36,9 @@
 #include "emane/configureexception.h"
 
 EMANE::Models::Bypass::PHYLayer::PHYLayer(NEMId id,
-                                          PlatformServiceProvider* pPlatformService):
-  PHYLayerImplementor(id, pPlatformService),
+                                          PlatformServiceProvider* pPlatformService,
+                                          RadioServiceProvider * pRadioService):
+  PHYLayerImplementor(id, pPlatformService, pRadioService),
   commonLayerStatistics_{{}}
 {}
 
@@ -49,7 +50,7 @@ void EMANE::Models::Bypass::PHYLayer::processDownstreamControl(const ControlMess
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "PHYI %03hu Models::Bypass::PHYLayer::%s",
-                          id_, 
+                          id_,
                           __func__);
 }
 
@@ -75,7 +76,7 @@ void EMANE::Models::Bypass::PHYLayer::processDownstreamPacket(DownstreamPacket &
       Transmitters{{id_,0}},
         {0,false}};                     // antenna gain dBi
 
-  commonLayerStatistics_.processOutbound(pkt, 
+  commonLayerStatistics_.processOutbound(pkt,
                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
   sendDownstreamPacket(hdr,pkt);
@@ -89,13 +90,13 @@ void EMANE::Models::Bypass::PHYLayer::processUpstreamPacket(const CommonPHYHeade
 
   commonLayerStatistics_.processInbound(pkt);
 
-  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(), 
+  LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
                          "PHYI %03hu Models::Bypass::PHYLayer::%s",
                          id_,
                          __func__);
 
-  commonLayerStatistics_.processOutbound(pkt, 
+  commonLayerStatistics_.processOutbound(pkt,
                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
   sendUpstreamPacket(pkt);
@@ -119,7 +120,7 @@ void EMANE::Models::Bypass::PHYLayer::configure(const ConfigurationUpdate & upda
                           "PHYI %03hu Models::Bypass::PHYLayer::%s",
                           id_,
                           __func__);
-  
+
   if(!update.empty())
     {
       throw ConfigureException("Models::Bypass::PHYLayer: Unexpected configuration items.");
@@ -170,7 +171,7 @@ void EMANE::Models::Bypass::PHYLayer::processTimedEvent(TimerEventId,
                                                         const TimePoint &,
                                                         const void *)
 {
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(), 
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "PHYI %03hu Models::Bypass::PHYLayer::%s",
                           id_,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,50 +30,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANELOCATIONMANAGER_HEADER_
+#define EMANELOCATIONMANAGER_HEADER_
 
-#include "propagationmodelalgorithm.h"
+#include "emane/types.h"
+#include "emane/events/location.h"
+
+#include "emane/models/frameworkphy/locationinfo.h"
+
+#include <map>
 
 namespace EMANE
 {
-  class FreeSpacePropagationModelAlgorithm : public PropagationModelAlgorithm
+  class LocationManager
   {
   public:
-    FreeSpacePropagationModelAlgorithm(NEMId){}
-    
-    std::pair<std::vector<double>, bool> operator()(NEMId,
-                                                    const LocationInfo & locationInfo,
-                                                    const FrequencySegments & segments) override
-    {
-      const double FSPL_CONST{41.916900439033640};
-      
-      // at least one location is unknown
-      if(!locationInfo)
-        {
-          return {{},false};
-        }
-      
-      std::vector<double> pathloss(segments.size(),0);
-      
-      double dDistance{locationInfo.getDistanceMeters()};
-      
-      if(dDistance)
-        {
-          size_t i {};
-          
-          for(const auto & segment : segments)
-            {
-              auto val = 
-                20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
+    LocationManager(NEMId nemId);
 
-              pathloss[i++] = val < 0 ? 0 : val;
-            }
-        }
-      
-      return {pathloss,true};
-    }
+    void update(const Events::Locations & locations);
+
+    std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
+
+  private:
+    using LocationStore = std::map<NEMId,PositionOrientationVelocity>;
+    using LocationInfoCache = std::map<NEMId,LocationInfo>;
+    NEMId nemId_;
+    PositionOrientationVelocity localPOV_;
+    LocationStore locationStore_;
+    LocationInfoCache locationInfoCache_;
   };
 }
 
-#endif  // EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#endif // EMANELOCATIONMANAGER_HEADER_
+

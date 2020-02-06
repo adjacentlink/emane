@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,47 +30,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "propagationmodelalgorithm.h"
-
-#include <map>
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
 
 namespace EMANE
 {
-  class PrecomputedPropagationModelAlgorithm : public PropagationModelAlgorithm
+  class FreeSpacePropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    PrecomputedPropagationModelAlgorithm(NEMId){}
-      
+    FreeSpacePropagationModelAlgorithm(NEMId){}
 
-    void update(const Events::Pathlosses & pathlosses) override
-    {
-      for(const auto & pathloss : pathlosses)
-        {  
-          pathlossStore_[pathloss.getNEMId()] = pathloss.getForwardPathlossdB();
-        }
-    }
-
-    std::pair<std::vector<double>, bool> operator()(NEMId src,
-                                                    const LocationInfo &,
+    std::pair<std::vector<double>, bool> operator()(NEMId,
+                                                    const LocationInfo & locationInfo,
                                                     const FrequencySegments & segments) override
     {
-      auto iter = pathlossStore_.find(src);
+      const double FSPL_CONST{41.916900439033640};
 
-      if(iter != pathlossStore_.end())
+      // at least one location is unknown
+      if(!locationInfo)
         {
-          return {std::vector<double>(segments.size(),iter->second),true};
+          return {{},false};
         }
-        
-      return {{},false};
-    }
 
-  private:
-    using PathlossStore = std::map<NEMId,double>;
-    PathlossStore pathlossStore_;
+      std::vector<double> pathloss(segments.size(),0);
+
+      double dDistance{locationInfo.getDistanceMeters()};
+
+      if(dDistance)
+        {
+          size_t i {};
+
+          for(const auto & segment : segments)
+            {
+              auto val =
+                20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
+
+              pathloss[i++] = val < 0 ? 0 : val;
+            }
+        }
+
+      return {pathloss,true};
+    }
   };
 }
 
-#endif  // EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#endif  // EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_

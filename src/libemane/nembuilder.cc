@@ -49,8 +49,8 @@
 #include "nemplatformservice.h"
 #include "registrarproxy.h"
 #include "frameworkphy.h"
-#include "radioservice.h"
-#include "spectrummonitor.h"
+#include "emane/models/frameworkphy/radioservice.h"
+#include "emane/models/frameworkphy/spectrummonitor.h"
 
 class EMANE::Application::NEMBuilder::NEMBuilderImpl
 {
@@ -100,11 +100,13 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
 
   std::string sRegistrationName{};
 
+  //TODO: verify this isn't a memory leak
+  RadioService * pRadioService{new RadioService{pImpl_->getSpectrumMonitor(id)}};
   // no library specification implies the framework phy implementation
   // should be used
   if(sLibraryFile.empty())
     {
-      pImpl = new FrameworkPHY{id, pPlatformService, pImpl_->getSpectrumMonitor(id)};
+      pImpl = new FrameworkPHY{id, pPlatformService, pRadioService};
 
       sRegistrationName = "emanephy";
     }
@@ -114,7 +116,7 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
         LayerFactoryManagerSingleton::instance()->getPHYLayerFactory(sNativeLibraryFile);
 
       // create plugin
-      pImpl =  phyLayerFactory.createLayer(id, pPlatformService);
+      pImpl =  phyLayerFactory.createLayer(id, pPlatformService, pRadioService);
 
       sRegistrationName = sLibraryFile;
     }

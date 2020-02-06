@@ -33,8 +33,8 @@
 #ifndef EMANEPHYPOSITIONUTILS_HEADER_
 #define EMANEPHYPOSITIONUTILS_HEADER_
 
-#include "locationinfo.h"
-#include "positionneu.h"
+#include "emane/models/frameworkphy/locationinfo.h"
+#include "emane/models/frameworkphy/positionneu.h"
 
 #include "emane/utils/conversionutils.h"
 

@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "locationmanager.h"
-#include "positionutils.h"
+#include "emane/models/frameworkphy/locationmanager.h"
+#include "emane/models/frameworkphy/positionutils.h"
 
 EMANE::LocationManager::LocationManager(NEMId nemId):
   nemId_{nemId}{}

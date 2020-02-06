@@ -40,20 +40,21 @@ namespace EMANE
   /**
    * @class RadioServiceUser
    *
-   * @brief Radio service user interface allows access to the radio 
+   * @brief Radio service user interface allows access to the radio
    * services
    */
   class RadioServiceUser
   {
   public:
+     //TODO: shouldn't this delete the pRadioService_?!
     virtual ~RadioServiceUser()
     {}
-    
+
   protected:
     RadioServiceUser(RadioServiceProvider *p) :
       pRadioService_(p)
     {}
-    
+
     RadioServiceProvider * pRadioService_;
   };
 }

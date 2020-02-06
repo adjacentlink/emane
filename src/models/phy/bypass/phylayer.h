@@ -59,7 +59,8 @@ namespace EMANE
          *
          */
         PHYLayer(NEMId id,
-                 PlatformServiceProvider* pPlatformService);
+                 PlatformServiceProvider* pPlatformService,
+                 RadioServiceProvider * pRadioService);
 
         /**
          *
@@ -71,25 +72,25 @@ namespace EMANE
         void initialize(Registrar & registrar) override;
 
         void configure(const ConfigurationUpdate & update) override;
- 
+
         void start() override;
-        
+
         void stop() override;
-        
+
         void destroy() throw() override;
 
         void processUpstreamPacket(const CommonPHYHeader & hdr,
                                    UpstreamPacket & pkt,
-                                   const ControlMessages & msgs) override;  
+                                   const ControlMessages & msgs) override;
 
         void processDownstreamControl(const ControlMessages & msgs) override;
-  
+
         void processDownstreamPacket(DownstreamPacket & pkt,
                                      const ControlMessages & msgs) override;
 
         void processEvent(const EventId & id,
                           const Serialization & serialization) override;
-  
+
         void processTimedEvent(TimerEventId eventId,
                                const TimePoint & expireTime,
                                const TimePoint & scheduleTime,

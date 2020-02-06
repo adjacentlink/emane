@@ -5,7 +5,7 @@ AC_COPYRIGHT([
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
- 
+
  * Redistributions of source code must retain the above copyright
    notice, this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@ AC_COPYRIGHT([
  * Neither the name of Adjacent Link LLC nor the names of its
    contributors may be used to endorse or promote products derived
    from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -189,7 +189,7 @@ AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
 AC_OUTPUT(
- Makefile 
+ Makefile
  include/emane/Makefile
  include/emane/utils/Makefile
  include/emane/controls/Makefile
@@ -199,9 +199,10 @@ AC_OUTPUT(
  include/emane/events/Makefile
  include/emane/models/Makefile
  include/emane/models/tdma/Makefile
+ include/emane/models/frameworkphy/Makefile
  include/emane/version.h
  src/Makefile
- src/libemanexmlparser/Makefile 
+ src/libemanexmlparser/Makefile
  src/libemane/Makefile
  src/libemane/libemane.pc
  src/applications/Makefile

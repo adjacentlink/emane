@@ -35,7 +35,6 @@
 #define EMANELAYERFACTORYMANAGER_HEADER_
 
 #include "layerfactory.h"
-#include "phylayerfactory.h"
 #include "emane/maclayerimpl.h"
 #include "emane/phylayerimpl.h"
 #include "emane/shimlayerimpl.h"
@@ -48,14 +47,15 @@
 
 namespace EMANE
 {
+  using PHYLayerFactory = LayerFactory<PHYLayerImplementor>;
   using MACLayerFactory = LayerFactory<MACLayerImplementor>;
   using ShimLayerFactory = LayerFactory<ShimLayerImplementor>;
-  
+
   /**
    * @class LayerFactoryManager
    *
    * @brief Factory Manager Singleton cache for LayerFactory objects. The
-   * manager creates and caches the factories and keeps them in scope for the 
+   * manager creates and caches the factories and keeps them in scope for the
    * duration of its lifecycle.
    */
   class LayerFactoryManager : public Utils::Singleton<LayerFactoryManager>
@@ -70,19 +70,19 @@ namespace EMANE
      *
      * @throw Utils::FactoryException
      */
-    const MACLayerFactory  & 
+    const MACLayerFactory  &
     getMACLayerFactory(const std::string & sLibraryFile);
 
     /**
      * Retreive specific a PHYLayerFactory reference
      *
      * @param sLibraryFile DLL file name
-     * 
+     *
      * @throw Utils::FactoryException
      */
     const PHYLayerFactory  &
     getPHYLayerFactory(const std::string & sLibraryFile);
-    
+
     /**
      * Retreive specific a ShimLayerFactory reference
      *
@@ -95,17 +95,17 @@ namespace EMANE
 
   protected:
     LayerFactoryManager();
-    
+
   private:
     using MACLayerFactoryMap = std::map<std::string, MACLayerFactory *>;
     using PHYLayerFactoryMap = std::map<std::string, PHYLayerFactory *>;
     using ShimLayerFactoryMap = std::map<std::string, ShimLayerFactory *>;
-    
+
     MACLayerFactoryMap  macLayerFactoryMap_;
     PHYLayerFactoryMap  phyLayerFactoryMap_;
     ShimLayerFactoryMap shimLayerFactoryMap_;
   };
-  
+
   using LayerFactoryManagerSingleton = LayerFactoryManager;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFO_HEADER_
-#define EMANELOCATIONINFO_HEADER_
+#ifndef EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
 
 namespace EMANE
 {
-  class LocationInfo
+  class TwoRayPropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    LocationInfo();
-    
-    LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV);
-      
-    const PositionOrientationVelocity & getLocalPOV() const;
-    
-    const PositionOrientationVelocity & getRemotePOV() const;
-    
-    double getDistanceMeters() const;
-    
-    bool operator!() const;
-    
-  private:
-    PositionOrientationVelocity localPOV_;
-    PositionOrientationVelocity remotePOV_;
-    double dDistanceMeters_;
+    TwoRayPropagationModelAlgorithm(NEMId){}
+
+    std::pair<std::vector<double>, bool> operator()(NEMId,
+                                                    const LocationInfo & locationPairInfo,
+                                                    const FrequencySegments & segments) override
+    {
+      // at least one location is unknown
+      if(!locationPairInfo)
+        {
+          return {{},false};
+        }
+
+      double dDistance{locationPairInfo.getDistanceMeters()};
+
+      double dPathloss{};
+
+      if(dDistance)
+        {
+          dPathloss =
+            (40.0 * log10(dDistance)) -
+            (20.0 *
+             (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
+              log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
+        }
+
+      return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
+    }
   };
-};
+}
 
-#include "locationinfo.inl"
-
-#endif // EMANELOCATIONINFO_HEADER_
+#endif  // EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_

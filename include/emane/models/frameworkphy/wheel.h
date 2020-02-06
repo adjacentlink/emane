@@ -61,6 +61,6 @@ namespace EMANE
   };
 }
 
-#include "wheel.inl"
+#include "emane/models/frameworkphy/wheel.inl"
 
 #endif // EMANEWHEEL_HEADER_

@@ -30,39 +30,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPOSITIONNEUFORMATTER_HEADER_
-#define EMANEPOSITIONNEUFORMATTER_HEADER_
+#ifndef EMANELOCATIONINFOFORMATTER_HEADER_
+#define EMANELOCATIONINFOFORMATTER_HEADER_
 
-#include "positionneu.h"
+#include "emane/models/frameworkphy/locationinfo.h"
 #include "emane/types.h"
 
 namespace EMANE
 {
-  /**
-   * @class PositionNEUFormatter
-   *
-   * @brief Callable formatter object for PositioNEU instances.
-   */
-  class PositionNEUFormatter
+  class LocationInfoFormatter
   {
   public:
-    /**
-     * Creates a PositionNEUFormatter instance
-     *
-     * @param positionNEU PositionNEU reference
-     */
-    PositionNEUFormatter(const PositionNEU & positionNEU);
-    
-    /**
-     * Gets the formatted output
-     *
-     * @return list of output strings
-     */
-    Strings operator()() const;
+    LocationInfoFormatter(const LocationInfo & info);
       
+    Strings operator()() const;
+    
   private:
-    const PositionNEU & positionNEU_;
+    const LocationInfo & info_;
   };
 }
 
-#endif // EMANEPOSITIONNEUFORMATTER_HEADER_
+#endif // EMANELOCATIONINFOFORMATTER_HEADER_

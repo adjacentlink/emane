@@ -40,7 +40,8 @@
 #include "registrarproxy.h"
 #include "eventservice.h"
 #include "frameworkphy.h"
-#include "antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/radioservice.h"
 #include "statisticservice.h"
 
 #include "emane/configurationupdate.h"
@@ -1171,8 +1172,8 @@ void usage()
 EMANE::FrameworkPHY * createPHY(EMANE::NEMId id, EMANE::SpectrumMonitor * pSpectrumMonitor)
 {
   EMANE::PlatformService * pPlatformService{new EMANE::PlatformService{}};
-
-  EMANE::FrameworkPHY * pPHYLayer{new EMANE::FrameworkPHY{id, pPlatformService,pSpectrumMonitor}};
+  EMANE::RadioService * pRadioService{new EMANE::RadioService{pSpectrumMonitor}};
+  EMANE::FrameworkPHY * pPHYLayer{new EMANE::FrameworkPHY{id,pPlatformService,pRadioService}};
 
   EMANE::BuildId buildId{EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pPHYLayer,
                                                                                        EMANE::COMPONENT_PHYILAYER,

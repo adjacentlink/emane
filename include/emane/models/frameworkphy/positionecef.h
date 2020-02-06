@@ -30,36 +30,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONMANAGER_HEADER_
-#define EMANELOCATIONMANAGER_HEADER_
+#ifndef EMANEPHYPOSITIONECEF_HEADER_
+#define EMANEPHYPOSITIONECEF_HEADER_
 
-#include "emane/types.h"
-#include "emane/events/location.h"
-
-#include "locationinfo.h"
-
-#include <map>
+#include "emane/position.h"
 
 namespace EMANE
 {
-  class LocationManager
+  class PositionECEF
   {
   public:
-    LocationManager(NEMId nemId);
+    PositionECEF();
 
-    void update(const Events::Locations & locations);
+    PositionECEF(const Position & position);
+
+    double getX() const;
       
-    std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
+    double getY() const;
+      
+    double getZ() const;
+
+    bool operator!() const;
 
   private:
-    using LocationStore = std::map<NEMId,PositionOrientationVelocity>;
-    using LocationInfoCache = std::map<NEMId,LocationInfo>;
-    NEMId nemId_;
-    PositionOrientationVelocity localPOV_;
-    LocationStore locationStore_;
-    LocationInfoCache locationInfoCache_;
+    double dX_;
+    double dY_;
+    double dZ_;
+    bool bValid_;
   };
 }
 
-#endif // EMANELOCATIONMANAGER_HEADER_
+#include "emane/models/frameworkphy/positionecef.inl"
 
+#endif // EMANEPHYPOSITIONECEF_HEADER_

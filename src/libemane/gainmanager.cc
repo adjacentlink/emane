@@ -30,13 +30,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "gainmanager.h"
-#include "antennaprofilemanifest.h"
-#include "positionutils.h"
-#include "antennaprofileexception.h"
+#include "emane/models/frameworkphy/gainmanager.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/positionutils.h"
+#include "emane/models/frameworkphy/antennaprofileexception.h"
 #include "logservice.h"
-#include "locationinfoformatter.h"
-#include "positionneuformatter.h"
+#include "emane/models/frameworkphy/locationinfoformatter.h"
+#include "emane/models/frameworkphy/positionneuformatter.h"
 
 EMANE::GainManager::GainManager(NEMId nemId):
   nemId_{nemId},

@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "radioservice.h"
+#include "emane/models/frameworkphy/radioservice.h"
 
 EMANE::RadioService::RadioService(SpectrumServiceProvider * pSpectrumServiceProvider):
   pSpectrumServiceProvider_{pSpectrumServiceProvider}{}

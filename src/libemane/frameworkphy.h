@@ -38,13 +38,13 @@
 #include "emane/phytypes.h"
 #include "emane/utils/commonlayerstatistics.h"
 
-#include "locationmanager.h"
-#include "spectrummonitor.h"
-#include "gainmanager.h"
-#include "propagationmodelalgorithm.h"
-#include "eventtablepublisher.h"
-#include "receivepowertablepublisher.h"
-#include "fadingmanager.h"
+#include "emane/models/frameworkphy/locationmanager.h"
+#include "emane/models/frameworkphy/spectrummonitor.h"
+#include "emane/models/frameworkphy/gainmanager.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/eventtablepublisher.h"
+#include "emane/models/frameworkphy/receivepowertablepublisher.h"
+#include "emane/models/frameworkphy/fadingmanager.h"
 
 #include <set>
 #include <cstdint>
@@ -57,7 +57,7 @@ namespace EMANE
   public:
     FrameworkPHY(NEMId id,
                  PlatformServiceProvider* pPlatformService,
-                 SpectrumMonitor * pSpectrumMonitor);
+                 RadioServiceProvider * pRadioService);
 
     ~FrameworkPHY();
 

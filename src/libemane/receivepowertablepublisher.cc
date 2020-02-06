@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "receivepowertablepublisher.h"
+#include "emane/models/frameworkphy/receivepowertablepublisher.h"
 
 // specialized hash for ReceivePowerTable
 namespace std
