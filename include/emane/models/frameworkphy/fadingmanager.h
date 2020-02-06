@@ -36,8 +36,8 @@
 #include "emane/platformserviceprovider.h"
 #include "emane/registrar.h"
 #include "emane/events/fadingselection.h"
-#include "locationinfo.h"
-#include "fadingalgorithm.h"
+#include "emane/models/frameworkphy/locationinfo.h"
+#include "emane/models/frameworkphy/fadingalgorithm.h"
 
 #include <map>
 #include <memory>

@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "eventtablepublisher.h"
+#include "emane/models/frameworkphy/eventtablepublisher.h"
 
 EMANE::EventTablePublisher::EventTablePublisher(NEMId nemId):
   nemId_{nemId}{};

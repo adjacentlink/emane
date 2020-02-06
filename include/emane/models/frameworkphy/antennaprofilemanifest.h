@@ -30,47 +30,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANEANTENNAPROFILEMANIFEST_HEADER_
+#define EMANEANTENNAPROFILEMANIFEST_HEADER_
 
-#include "propagationmodelalgorithm.h"
+#include "antennapattern.h"
+#include "positionneu.h"
+#include "emane/types.h"
+#include "emane/utils/singleton.h"
 
+#include <string>
 #include <map>
+#include <memory>
+#include <tuple>
 
 namespace EMANE
 {
-  class PrecomputedPropagationModelAlgorithm : public PropagationModelAlgorithm
+  class AntennaProfileManifest : public Utils::Singleton<AntennaProfileManifest>
   {
   public:
-    PrecomputedPropagationModelAlgorithm(NEMId){}
-      
+    void load(const std::string & sAntennaProfileURI);
 
-    void update(const Events::Pathlosses & pathlosses) override
-    {
-      for(const auto & pathloss : pathlosses)
-        {  
-          pathlossStore_[pathloss.getNEMId()] = pathloss.getForwardPathlossdB();
-        }
-    }
-
-    std::pair<std::vector<double>, bool> operator()(NEMId src,
-                                                    const LocationInfo &,
-                                                    const FrequencySegments & segments) override
-    {
-      auto iter = pathlossStore_.find(src);
-
-      if(iter != pathlossStore_.end())
-        {
-          return {std::vector<double>(segments.size(),iter->second),true};
-        }
-        
-      return {{},false};
-    }
+    // PositionNEU - Antenna placement in platforms reference frame
+    std::pair<std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>,bool>
+    getProfileInfo(AntennaProfileId antennaProfileId) const;
 
   private:
-    using PathlossStore = std::map<NEMId,double>;
-    PathlossStore pathlossStore_;
+    using AntennaPatternStore =
+      std::map<std::string,std::unique_ptr<AntennaPattern>>;
+
+    using Profiles =
+      std::map<AntennaProfileId,std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>>;
+
+    AntennaPatternStore antennaPatternStore_;
+    Profiles profiles_;
+
+  protected:
+    AntennaProfileManifest() = default;
   };
 }
 
-#endif  // EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#endif // EMANEANTENNAPROFILEMANIFEST_HEADER_

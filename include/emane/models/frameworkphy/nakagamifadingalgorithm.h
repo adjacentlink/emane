@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,50 +30,63 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANENAKAGAMIFADINGALGORITHM_HEADER_
+#define EMANENAKAGAMIFADINGALGORITHM_HEADER_
 
-#include "propagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/fadingalgorithm.h"
+#include "emane/platformserviceprovider.h"
+#include "emane/utils/conversionutils.h"
+#include <random>
 
 namespace EMANE
 {
-  class FreeSpacePropagationModelAlgorithm : public PropagationModelAlgorithm
+  class NakagamiFadingAlgorithm: public FadingAlgorithm
   {
   public:
-    FreeSpacePropagationModelAlgorithm(NEMId){}
-    
-    std::pair<std::vector<double>, bool> operator()(NEMId,
-                                                    const LocationInfo & locationInfo,
-                                                    const FrequencySegments & segments) override
-    {
-      const double FSPL_CONST{41.916900439033640};
-      
-      // at least one location is unknown
-      if(!locationInfo)
-        {
-          return {{},false};
-        }
-      
-      std::vector<double> pathloss(segments.size(),0);
-      
-      double dDistance{locationInfo.getDistanceMeters()};
-      
-      if(dDistance)
-        {
-          size_t i {};
-          
-          for(const auto & segment : segments)
-            {
-              auto val = 
-                20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
+    NakagamiFadingAlgorithm(NEMId id,
+                            PlatformServiceProvider * pPlatformService,
+                            const std::string & sPrefix);
 
-              pathloss[i++] = val < 0 ? 0 : val;
-            }
+    void initialize(Registrar & registrar) override;
+
+    void configure(const ConfigurationUpdate & update);
+
+    void modify(const ConfigurationUpdate & update) override;
+
+    double operator()(double dPowerdBm, double dDistanceMeters) override
+    {
+      double m{};
+
+      if(dDistanceMeters < dDistance0Meters_)
+        {
+          m = dm0_;
         }
-      
-      return {pathloss,true};
+      else if (dDistanceMeters < dDistance1Meters_)
+        {
+          m = dm1_;
+        }
+      else
+        {
+          m = dm2_;
+        }
+
+      return Utils::MILLIWATT_TO_DB(distribution_(generator_,
+                                                  Distribution::param_type{m,
+                                                      Utils::DB_TO_MILLIWATT(dPowerdBm) / m}));
     }
+
+  private:
+    double dm0_;
+    double dm1_;
+    double dm2_;
+    double dDistance0Meters_;
+    double dDistance1Meters_;
+    std::mt19937 generator_;
+    using  Distribution = std::gamma_distribution<>;
+    Distribution distribution_;
+
+    void configure_i(const ConfigurationUpdate & update);
   };
 }
 
-#endif  // EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#endif // EMANENAKAGAMIFADINGALGORITHM_HEADER_

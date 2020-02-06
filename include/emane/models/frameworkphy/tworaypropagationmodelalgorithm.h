@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,63 +30,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANENAKAGAMIFADINGALGORITHM_HEADER_
-#define EMANENAKAGAMIFADINGALGORITHM_HEADER_
+#ifndef EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "fadingalgorithm.h"
-#include "emane/platformserviceprovider.h"
-#include "emane/utils/conversionutils.h"
-#include <random>
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
 
 namespace EMANE
 {
-  class NakagamiFadingAlgorithm: public FadingAlgorithm
+  class TwoRayPropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    NakagamiFadingAlgorithm(NEMId id,
-                            PlatformServiceProvider * pPlatformService,
-                            const std::string & sPrefix);
+    TwoRayPropagationModelAlgorithm(NEMId){}
 
-    void initialize(Registrar & registrar) override;
-
-    void configure(const ConfigurationUpdate & update);
-
-    void modify(const ConfigurationUpdate & update) override;
-
-    double operator()(double dPowerdBm, double dDistanceMeters) override
+    std::pair<std::vector<double>, bool> operator()(NEMId,
+                                                    const LocationInfo & locationPairInfo,
+                                                    const FrequencySegments & segments) override
     {
-      double m{};
-
-      if(dDistanceMeters < dDistance0Meters_)
+      // at least one location is unknown
+      if(!locationPairInfo)
         {
-          m = dm0_;
-        }
-      else if (dDistanceMeters < dDistance1Meters_)
-        {
-          m = dm1_;
-        }
-      else
-        {
-          m = dm2_;
+          return {{},false};
         }
 
-      return Utils::MILLIWATT_TO_DB(distribution_(generator_,
-                                                  Distribution::param_type{m,
-                                                      Utils::DB_TO_MILLIWATT(dPowerdBm) / m}));
+      double dDistance{locationPairInfo.getDistanceMeters()};
+
+      double dPathloss{};
+
+      if(dDistance)
+        {
+          dPathloss =
+            (40.0 * log10(dDistance)) -
+            (20.0 *
+             (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
+              log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
+        }
+
+      return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
     }
-
-  private:
-    double dm0_;
-    double dm1_;
-    double dm2_;
-    double dDistance0Meters_;
-    double dDistance1Meters_;
-    std::mt19937 generator_;
-    using  Distribution = std::gamma_distribution<>;
-    Distribution distribution_;
-
-    void configure_i(const ConfigurationUpdate & update);
   };
 }
 
-#endif // EMANENAKAGAMIFADINGALGORITHM_HEADER_
+#endif  // EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_

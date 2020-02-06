@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fadingmanager.h"
+#include "emane/models/frameworkphy/fadingmanager.h"
 #include "nakagamifadingalgorithm.h"
 
 EMANE::FadingManager::FadingManager(NEMId id,

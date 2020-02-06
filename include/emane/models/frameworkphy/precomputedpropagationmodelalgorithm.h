@@ -30,43 +30,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEANTENNAPROFILEMANIFEST_HEADER_
-#define EMANEANTENNAPROFILEMANIFEST_HEADER_
+#ifndef EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "antennapattern.h"
-#include "positionneu.h"
-#include "emane/types.h"
-#include "emane/utils/singleton.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
 
-#include <string>
 #include <map>
-#include <memory>
-#include <tuple>
 
 namespace EMANE
 {
-  class AntennaProfileManifest : public Utils::Singleton<AntennaProfileManifest>
+  class PrecomputedPropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    void load(const std::string & sAntennaProfileURI);
+    PrecomputedPropagationModelAlgorithm(NEMId){}
 
-    // PositionNEU - Antenna placement in platforms reference frame
-    std::pair<std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>,bool>
-    getProfileInfo(AntennaProfileId antennaProfileId) const;
+
+    void update(const Events::Pathlosses & pathlosses) override
+    {
+      for(const auto & pathloss : pathlosses)
+        {
+          pathlossStore_[pathloss.getNEMId()] = pathloss.getForwardPathlossdB();
+        }
+    }
+
+    std::pair<std::vector<double>, bool> operator()(NEMId src,
+                                                    const LocationInfo &,
+                                                    const FrequencySegments & segments) override
+    {
+      auto iter = pathlossStore_.find(src);
+
+      if(iter != pathlossStore_.end())
+        {
+          return {std::vector<double>(segments.size(),iter->second),true};
+        }
+
+      return {{},false};
+    }
 
   private:
-    using AntennaPatternStore =
-      std::map<std::string,std::unique_ptr<AntennaPattern>>;
-
-    using Profiles = 
-      std::map<AntennaProfileId,std::tuple<AntennaPattern *,AntennaPattern *,PositionNEU>>;
-
-    AntennaPatternStore antennaPatternStore_;
-    Profiles profiles_;
-
-  protected:
-    AntennaProfileManifest() = default;
+    using PathlossStore = std::map<NEMId,double>;
+    PathlossStore pathlossStore_;
   };
 }
 
-#endif // EMANEANTENNAPROFILEMANIFEST_HEADER_
+#endif  // EMANEPHYPRECOMPUTEDPROPAGATIONMODELALGORITHM_HEADER_

@@ -36,7 +36,7 @@
 #include "emane/types.h"
 #include "emane/frequencysegment.h"
 #include "emane/spectrumserviceprovider.h"
-#include "noiserecorder.h"
+#include "emane/models/frameworkphy/noiserecorder.h"
 
 #include <set>
 #include <map>
@@ -54,7 +54,7 @@ namespace EMANE
 
 
     enum class NoiseMode {NONE, ALL, OUTOFBAND};
-    
+
     void initialize(const FrequencySet & foi,
                     std::uint64_t u64BandwidthHz,
                     double dReceiverSensitivityMilliWatt,

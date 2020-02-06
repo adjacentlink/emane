@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,44 +30,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
+#define EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_
 
-#include "propagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
 
 namespace EMANE
 {
-  class TwoRayPropagationModelAlgorithm : public PropagationModelAlgorithm
+  class FreeSpacePropagationModelAlgorithm : public PropagationModelAlgorithm
   {
   public:
-    TwoRayPropagationModelAlgorithm(NEMId){}
-      
+    FreeSpacePropagationModelAlgorithm(NEMId){}
+
     std::pair<std::vector<double>, bool> operator()(NEMId,
-                                                    const LocationInfo & locationPairInfo,
+                                                    const LocationInfo & locationInfo,
                                                     const FrequencySegments & segments) override
     {
+      const double FSPL_CONST{41.916900439033640};
+
       // at least one location is unknown
-      if(!locationPairInfo)
+      if(!locationInfo)
         {
           return {{},false};
         }
 
-      double dDistance{locationPairInfo.getDistanceMeters()};
+      std::vector<double> pathloss(segments.size(),0);
 
-      double dPathloss{};
+      double dDistance{locationInfo.getDistanceMeters()};
 
       if(dDistance)
         {
-          dPathloss =
-            (40.0 * log10(dDistance)) -
-            (20.0 *
-             (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
-              log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
+          size_t i {};
+
+          for(const auto & segment : segments)
+            {
+              auto val =
+                20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
+
+              pathloss[i++] = val < 0 ? 0 : val;
+            }
         }
-        
-      return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
+
+      return {pathloss,true};
     }
   };
 }
 
-#endif  // EMANETWORAYPROPAGATIONMODELALGORITHM_HEADER_
+#endif  // EMANEFREESPACEPROPAGATIONMODELALGORITHM_HEADER_

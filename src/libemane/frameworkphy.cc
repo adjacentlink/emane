@@ -61,9 +61,9 @@
 #include "emane/controls/transmittercontrolmessageformatter.h"
 #include "emane/controls/frequencyofinterestcontrolmessageformatter.h"
 
-#include "freespacepropagationmodelalgorithm.h"
-#include "tworaypropagationmodelalgorithm.h"
-#include "precomputedpropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/freespacepropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/tworaypropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/precomputedpropagationmodelalgorithm.h"
 
 namespace
 {

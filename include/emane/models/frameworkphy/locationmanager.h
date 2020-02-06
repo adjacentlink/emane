@@ -36,7 +36,7 @@
 #include "emane/types.h"
 #include "emane/events/location.h"
 
-#include "locationinfo.h"
+#include "emane/models/frameworkphy/locationinfo.h"
 
 #include <map>
 
@@ -48,7 +48,7 @@ namespace EMANE
     LocationManager(NEMId nemId);
 
     void update(const Events::Locations & locations);
-      
+
     std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
 
   private:
