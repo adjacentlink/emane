@@ -33,7 +33,7 @@
 #ifndef EMANELOCATIONINFOFORMATTER_HEADER_
 #define EMANELOCATIONINFOFORMATTER_HEADER_
 
-#include "locationinfo.h"
+#include "emane/models/frameworkphy/locationinfo.h"
 #include "emane/types.h"
 
 namespace EMANE

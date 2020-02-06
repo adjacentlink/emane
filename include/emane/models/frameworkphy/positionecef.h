@@ -60,6 +60,6 @@ namespace EMANE
   };
 }
 
-#include "positionecef.inl"
+#include "emane/models/frameworkphy/positionecef.inl"
 
 #endif // EMANEPHYPOSITIONECEF_HEADER_

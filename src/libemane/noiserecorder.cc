@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "noiserecorder.h"
+#include "emane/models/frameworkphy/noiserecorder.h"
 #include "emane/spectrumserviceexception.h"
 
 EMANE::NoiseRecorder::NoiseRecorder(const Microseconds & bin,

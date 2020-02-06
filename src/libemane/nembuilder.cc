@@ -50,7 +50,7 @@
 #include "registrarproxy.h"
 #include "frameworkphy.h"
 #include "radioservice.h"
-#include "spectrummonitor.h"
+#include "emane/models/frameworkphy/spectrummonitor.h"
 
 class EMANE::Application::NEMBuilder::NEMBuilderImpl
 {

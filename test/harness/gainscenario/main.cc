@@ -36,9 +36,9 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 
-#include "locationmanager.h"
-#include "gainmanager.h"
-#include "antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/locationmanager.h"
+#include "emane/models/frameworkphy/gainmanager.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
 #include "emane/utils/parameterconvert.h"
 
 #include <getopt.h>

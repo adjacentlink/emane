@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "positionorientationvelocityformatter.h"
+#include "emane/models/frameworkphy/positionorientationvelocityformatter.h"
 #include "emane/positionformatter.h"
 #include "emane/orientationformatter.h"
 #include "emane/velocityformatter.h"

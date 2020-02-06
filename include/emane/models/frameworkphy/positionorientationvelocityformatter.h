@@ -33,7 +33,7 @@
 #ifndef EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
 #define EMANEPOSITIONORIENTATIONVELOCITYFORMATTER_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "emane/models/frameworkphy/positionorientationvelocity.h"
 #include "emane/types.h"
 
 namespace EMANE

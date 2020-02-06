@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "nakagamifadingalgorithm.h"
+#include "emane/models/frameworkphy/nakagamifadingalgorithm.h"
 #include "emane/configurationexception.h"
 #include "emane/utils/conversionutils.h"
 #include <random>

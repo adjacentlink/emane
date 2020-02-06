@@ -33,8 +33,8 @@
 #ifndef EMANEANTENNAPROFILEMANIFEST_HEADER_
 #define EMANEANTENNAPROFILEMANIFEST_HEADER_
 
-#include "antennapattern.h"
-#include "positionneu.h"
+#include "emane/models/frameworkphy/antennapattern.h"
+#include "emane/models/frameworkphy/positionneu.h"
 #include "emane/types.h"
 #include "emane/utils/singleton.h"
 

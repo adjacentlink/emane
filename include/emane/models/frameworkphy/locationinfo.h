@@ -33,7 +33,7 @@
 #ifndef EMANELOCATIONINFO_HEADER_
 #define EMANELOCATIONINFO_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "emane/models/frameworkphy/positionorientationvelocity.h"
 
 namespace EMANE
 {
@@ -60,6 +60,6 @@ namespace EMANE
   };
 };
 
-#include "locationinfo.inl"
+#include "emane/models/frameworkphy/locationinfo.inl"
 
 #endif // EMANELOCATIONINFO_HEADER_

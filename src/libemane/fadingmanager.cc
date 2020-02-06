@@ -31,7 +31,7 @@
  */
 
 #include "emane/models/frameworkphy/fadingmanager.h"
-#include "nakagamifadingalgorithm.h"
+#include "emane/models/frameworkphy/nakagamifadingalgorithm.h"
 
 EMANE::FadingManager::FadingManager(NEMId id,
                                     PlatformServiceProvider * pPlatformService,

@@ -33,9 +33,9 @@
 #ifndef EMANEPHYGAINMANAGER_HEADER
 #define EMANEPHYGAINMANAGER_HEADER_
 
-#include "antennapattern.h"
-#include "positionneu.h"
-#include "locationinfo.h"
+#include "emane/models/frameworkphy/antennapattern.h"
+#include "emane/models/frameworkphy/positionneu.h"
+#include "emane/models/frameworkphy/locationinfo.h"
 #include "emane/types.h"
 #include "emane/events/antennaprofile.h"
 

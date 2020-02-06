@@ -33,7 +33,7 @@
 #ifndef EMANEPOSITIONNEUFORMATTER_HEADER_
 #define EMANEPOSITIONNEUFORMATTER_HEADER_
 
-#include "positionneu.h"
+#include "emane/models/frameworkphy/positionneu.h"
 #include "emane/types.h"
 
 namespace EMANE

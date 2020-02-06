@@ -38,11 +38,11 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 
-#include "locationmanager.h"
-#include "propagationmodelalgorithm.h"
-#include "freespacepropagationmodelalgorithm.h"
-#include "tworaypropagationmodelalgorithm.h"
-#include "precomputedpropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/locationmanager.h"
+#include "emane/models/frameworkphy/propagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/freespacepropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/tworaypropagationmodelalgorithm.h"
+#include "emane/models/frameworkphy/precomputedpropagationmodelalgorithm.h"
 
 #include "emane/utils/parameterconvert.h"
 #include "emane/frequencysegment.h"

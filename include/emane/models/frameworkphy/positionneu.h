@@ -63,6 +63,6 @@ namespace EMANE
     };
 }
 
-#include "positionneu.inl"
+#include "emane/models/frameworkphy/positionneu.inl"
 
 #endif // EMANEPHYPOSITIONNEU_HEADER_

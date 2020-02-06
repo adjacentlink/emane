@@ -40,7 +40,7 @@
 #include "registrarproxy.h"
 #include "eventservice.h"
 #include "frameworkphy.h"
-#include "antennaprofilemanifest.h"
+#include "emane/models/frameworkphy/antennaprofilemanifest.h"
 #include "statisticservice.h"
 
 #include "emane/configurationupdate.h"

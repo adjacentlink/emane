@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "positionneuformatter.h"
+#include "emane/models/frameworkphy/positionneuformatter.h"
 
 EMANE::PositionNEUFormatter::PositionNEUFormatter(const PositionNEU & positionNEU):
   positionNEU_(positionNEU)
