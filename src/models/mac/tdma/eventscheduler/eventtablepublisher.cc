@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "emane/models/frameworkphy/eventtablepublisher.h"
+#include "eventtablepublisher.h"
 
 EMANE::Models::TDMA::EventTablePublisher::EventTablePublisher():
   bHasStructure_{}{}

@@ -37,7 +37,7 @@
 #include "emane/events/slotinfo.h"
 #include "emane/events/slotstructure.h"
 #include "emane/statisticnumeric.h"
-#include "emane/models/frameworkphy/eventtablepublisher.h"
+#include "eventtablepublisher.h"
 #include "slotter.h"
 
 namespace EMANE
