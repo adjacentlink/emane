@@ -43,7 +43,7 @@ namespace EMANE
   /**
    * @class PlatformServiceUser
    *
-   * @brief Platform service user interface that provides access to the platform 
+   * @brief Platform service user interface that provides access to the platform
    * services
    */
   class PlatformServiceUser : public EventServiceUser,
@@ -54,13 +54,15 @@ namespace EMANE
      * Detroys an instance
      */
     virtual ~PlatformServiceUser()
-     { }
-    
+     {
+       delete pPlatformService_;
+     }
+
   protected:
     PlatformServiceUser(PlatformServiceProvider *p) :
       pPlatformService_(p)
      { }
-    
+
     PlatformServiceProvider * pPlatformService_;
   };
 }
