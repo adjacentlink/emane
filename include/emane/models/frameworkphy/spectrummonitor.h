@@ -85,7 +85,7 @@ namespace EMANE
     SpectrumWindow request_i(const TimePoint & now,
                              std::uint64_t u64FrequencyHz,
                              const Microseconds & duration = Microseconds::zero(),
-                             const TimePoint & timepoint = TimePoint::min()) const;
+                             const TimePoint & timepoint = TimePoint::min()) const override;
 
 
     SpectrumWindow request(std::uint64_t u64FrequencyHz,

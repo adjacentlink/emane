@@ -45,7 +45,7 @@ namespace EMANE
 
   /**
    * Spectrum window snapshot
-   * 
+   *
    * @param std::vector<double> A vector of binned signal energy in mW
    * @param TimePoint Time corresponding to the first bin
    * @param Microseconds The bin duration
@@ -111,11 +111,11 @@ namespace EMANE
      * @pre The start time cannot be less than @c now minus the maximum duration
      * configured for the FrameworkPHY
      *
-     * @return A spectrum window 
+     * @return A spectrum window
      *
      * @throw SpectrumServiceException when the request parameters violate preconditions.
      *
-     * @note Request duration should almost always be the span contained in the 
+     * @note Request duration should almost always be the span contained in the
      * Controls::ReceivePropertiesControlMessage.
      *
      * @note Request startTime should be the start of reception (SoR) which is the start of
@@ -130,6 +130,14 @@ namespace EMANE
                                    const Microseconds & duration = Microseconds::zero(),
                                    const TimePoint & startTime = TimePoint::min()) const = 0;
 
+    /**
+     * Gets a spectrum window with explicit @c now
+     * Otherwise same as @ref EMANE::SpectrumServiceProvider::request
+     */
+    virtual SpectrumWindow request_i(const TimePoint& now, std::uint64_t u64FrequencyHz,
+                                   const Microseconds & duration = Microseconds::zero(),
+                                   const TimePoint & startTime = TimePoint::min()) const = 0;
+
   protected:
     SpectrumServiceProvider() = default;
   };
@@ -141,7 +149,7 @@ namespace EMANE
  * @page SpectrumService Spectrum Service
  *
  * The @ref EMANE::SpectrumServiceProvider "Spectrum Service" provides NEM component layers with
- * access to the spectrum monitoring capabilities of the @ref EMANE::FrameworkPHY "emulator's physical layer". 
+ * access to the spectrum monitoring capabilities of the @ref EMANE::FrameworkPHY "emulator's physical layer".
  *
  * Each emulator physical layer instance can be configured to monitor a frequency of interest set. A
  * @ref EMANE::NoiseRecorder "noise recorder" is instantiated for each frequency of interest. The noise
@@ -150,9 +158,9 @@ namespace EMANE
  * the information necessary to interpret the data.
  *
  * Each over-the-air  message is checked for frequency overlap using the transmitter and receiver
- * bandwidth. If there is an overlap, a proportional amount of signal energy is applied. 
+ * bandwidth. If there is an overlap, a proportional amount of signal energy is applied.
  *
- * There are three types of noise recording modes: 
+ * There are three types of noise recording modes:
  * - none
  * - out-of-band
  * - all
@@ -205,7 +213,7 @@ namespace EMANE
  * message propagation delay, the message span and the receiver sensitivity. The message span is the total
  * time between the start of the signal's earliest frequency segment and the end of the signal's latest
  * frequency segment. The span is supplied to make spectrum window querying easier.
- 
+
  * It is best practice to always use the span when requesting a spectrum window even if you are only interested
  * in one or more smaller subsets of the window.  This will allow you to analyze a single window for one or more
  * subsets without making additional requests to the spectrum service.
