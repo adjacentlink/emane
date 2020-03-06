@@ -46,10 +46,9 @@ namespace EMANE
   class RadioServiceUser
   {
   public:
+     //TODO: shouldn't this delete the pRadioService_?!
     virtual ~RadioServiceUser()
-    {
-      delete pRadioService_;
-    }
+    {}
 
   protected:
     RadioServiceUser(RadioServiceProvider *p) :
