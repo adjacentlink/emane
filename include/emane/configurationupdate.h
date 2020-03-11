@@ -47,7 +47,7 @@ namespace EMANE
    * @param std::string Configuration item name
    * @param std::vector<std::string> Vector of configuration values
    */
-  using ConfigurationNameStringValues = 
+  using ConfigurationNameStringValues =
     std::pair<std::string,std::vector<std::string>>;
 
   /**
@@ -57,7 +57,7 @@ namespace EMANE
    * @param std::vector<ConfigurationNameStringValues> A Vector of
    * configuration items and their values
    */
-  using ConfigurationUpdateRequest = 
+  using ConfigurationUpdateRequest =
     std::vector<ConfigurationNameStringValues>;
 
   /** [configurationregistrar-configurationnameanyvalues-snippet] */
@@ -70,7 +70,7 @@ namespace EMANE
    */
   using ConfigurationNameAnyValues =
     std::pair<std::string,std::vector<EMANE::Any>>;
-  
+
   /**
    * Configuration update consisting of item names and
    * their values as EMANE::Any instances
@@ -100,8 +100,8 @@ namespace EMANE
    * @return A pair where @a first is an error description @a second is a boolean
    * which indicates an error when set @a false.
    */
-  using ConfigurationValidator = 
-    std::function<std::pair<std::string,bool>(const ConfigurationUpdate & update) noexcept>;
+  using ConfigurationValidator =
+    std::function<std::pair<std::string,bool>(const ConfigurationUpdate & update)>;
 };
 
 #endif //EMANECONFIGURATIONUPDATE_HEADER_
