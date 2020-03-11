@@ -73,15 +73,12 @@ namespace EMANE
    * @param TimePoint Time corresponding to the first bin
    * @param Microseconds The bin duration
    * @param double The receiver sensitivity in mW
-   * @param bool Flag indicating whether the in-band signal
-   * is contained in the binned power values
    * @param size_t Number of subband binned signal energy per time bin
    */
   using SpectrumFilterWindow = std::tuple<std::vector<double>,
                                           TimePoint,
                                           Microseconds,
                                           double,
-                                          bool,
                                           size_t>;
 
   /**

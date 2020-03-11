@@ -178,7 +178,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
 
   // if noise processing is disabled just check in-band updates for
   // frequencies of interest
-  if(mode_ == NoiseMode::NONE || (mode_ == NoiseMode::OUTOFBAND && bInBand))
+  if(mode_ == NoiseMode::NONE ||
+     mode_ == NoiseMode::PASSTHROUGH ||
+     (mode_ == NoiseMode::OUTOFBAND && bInBand))
     {
       size_t i{};
 
@@ -186,7 +188,10 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
 
       for(const auto & segment : segments)
         {
-          if(noiseRecorderMap_.find(segment.getFrequencyHz()) != noiseRecorderMap_.end())
+          // in passthrough mode, you do not need an exact frequency
+          // match for processing like you would for inband messages
+          if(mode_ == NoiseMode::PASSTHROUGH ||
+             noiseRecorderMap_.find(segment.getFrequencyHz()) != noiseRecorderMap_.end())
             {
               if(rxPowersMilliWatt[i] >= dReceiverSensitivityMilliWatt_)
                 {
@@ -564,7 +569,6 @@ EMANE::SpectrumMonitor::requestFilter(FilterIndex filterIndex,
 
       return std::tuple_cat(std::move(ret),std::make_tuple(binSize_,
                                                            dReceiverSensitivityMilliWatt_,
-                                                           false,
                                                            std::get<2>(iter->second)->getSubBandBinCount()));
     }
   else

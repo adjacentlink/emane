@@ -55,7 +55,7 @@ namespace EMANE
     SpectrumMonitor();
 
 
-    enum class NoiseMode {NONE, ALL, OUTOFBAND};
+    enum class NoiseMode {NONE, ALL, OUTOFBAND, PASSTHROUGH};
 
     void initialize(uint16_t u16SubId,
                     const FrequencySet & foi,

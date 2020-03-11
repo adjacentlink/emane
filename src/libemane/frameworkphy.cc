@@ -175,10 +175,10 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                   EMANE::ConfigurationProperties::DEFAULT,
                                                   {"all"},
                                                   "Defines the noise processing mode of operation:"
-                                                  " none, all or outofband.",
+                                                  " none, all, outofband or passthrough.",
                                                   1,
                                                   1,
-                                                  "^(none|all|outofband)$");
+                                                  "^(none|all|outofband|passthrough)$");
 
 
   configRegistrar.registerNumeric<std::uint64_t>("noisebinsize",
@@ -379,6 +379,10 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
           else if(sNoiseMode == "none")
             {
               noiseMode_ = SpectrumMonitor::NoiseMode::NONE;
+            }
+          else if(sNoiseMode == "passthrough")
+            {
+              noiseMode_ = SpectrumMonitor::NoiseMode::PASSTHROUGH;
             }
           else
             {
