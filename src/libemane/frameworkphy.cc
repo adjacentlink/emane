@@ -812,7 +812,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
   double dTxWhileRxInterferenceRxPowerMilliWatt{};
 
   std::pair<FilterData,bool> optionalSpectrumFilterData{};
-  
+
   for(const auto & pMessage : msgs)
     {
       switch(pMessage->getId())
@@ -995,7 +995,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket(DownstreamPacket & pkt,
           }
 
           break;
-          
+
         case Controls::SpectrumFilterDataControlMessage::IDENTIFIER:
           {
             const auto pSpectrumFilterDataControlMessage =

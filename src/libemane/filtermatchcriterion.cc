@@ -50,7 +50,7 @@ EMANE::FilterMatchCriterionAnd::clone() const
   std::for_each(criteria_.begin(),
                 criteria_.end(),
                 [&](const FilterMatchCriterion * p){criteria.push_back(p->clone());});
-  
+
   return new FilterMatchCriterionAnd{criteria};
 }
 
@@ -78,7 +78,7 @@ EMANE::FilterMatchCriterionOr::clone() const
   std::for_each(criteria_.begin(),
                 criteria_.end(),
                 [&](const FilterMatchCriterion * p){criteria.push_back(p->clone());});
-  
+
   return new FilterMatchCriterionOr{criteria};
 }
 
