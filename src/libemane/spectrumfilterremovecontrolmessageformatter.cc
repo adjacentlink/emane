@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2019-2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,61 +30,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEWHEEL_HEADER_
-#define EMANEWHEEL_HEADER_
+#include "emane/controls/spectrumfilterremovecontrolmessageformatter.h"
 
-#include "emane/exception.h"
-#include <vector>
+EMANE::Controls::SpectrumFilterRemoveControlMessageFormatter::
+SpectrumFilterRemoveControlMessageFormatter(const SpectrumFilterRemoveControlMessage * pMsg):
+  pMsg_{pMsg}{}
 
-namespace EMANE
+EMANE::Strings EMANE::Controls::SpectrumFilterRemoveControlMessageFormatter::operator()() const
 {
-  template<typename T>
-  class Wheel
-  {
-  public:
-    class IndexError : public Exception
-    {
-    public:
-      IndexError(const std::string & sDescription = {}):
-        Exception("Wheel::IndexError",sDescription){}
+  Strings strings{"filter index: " + std::to_string(pMsg_->getFilterIndex())};
 
-      ~IndexError() throw() {}
-    };
-
-    Wheel(std::size_t size,
-          std::size_t bins);
-
-    size_t slots() const;
-
-    size_t bins() const;
-
-    const std::vector<T> & dump() const;
-
-    void set(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    void add(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    std::vector<T> get(std::size_t begin,
-                       std::size_t slots);
-
-    std::vector<std::pair<std::size_t,T>>
-    compress() const;
-
-  private:
-    const std::size_t slots_;
-    const std::size_t bins_;
-    std::vector<T> store_;
-  };
+  return strings;
 }
-
-#include "wheel.inl"
-
-#endif // EMANEWHEEL_HEADER_

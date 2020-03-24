@@ -64,6 +64,7 @@ namespace EMANE
      * @param frequencySegments List of frequency segments
      * @param transmitters List of transmitters
      * @param optionalFixedAntennaGaindBi Optional fixed antenna gain
+     * @param optionalFilterData Optional filter data
      *
      * @note The transmit time stamp is used as the start of transmission (SoT)
      * time at the receiver. If servers used during the emulation are not tightly
@@ -78,7 +79,8 @@ namespace EMANE
                     const TimePoint & txTime,
                     const FrequencySegments & frequencySegments,
                     const Transmitters & transmitters,
-                    const std::pair<double,bool> & optionalFixedAntennaGaindBi);
+                    const std::pair<double,bool> & optionalFixedAntennaGaindBi,
+                    const std::pair<FilterData,bool> & optionalFilterCookie);
 
     /**
      * Creates a CommonPHYHeader instance by stripping an UpstreamPacket
@@ -101,14 +103,14 @@ namespace EMANE
      * Destroys an instance
      */
     ~CommonPHYHeader();
-    
+
     /**
      * Gets the physical layer registration id
      *
      * @return registration id
      */
     RegistrationId getRegistrationId() const;
-    
+
     /**
      * Gets the sub id
      *
@@ -119,12 +121,22 @@ namespace EMANE
     /**
      * Gets the optional fixed antenna gain in dBi
      *
-     * @return optional antenna gain as a pair, where @c first is the 
+     * @return optional antenna gain as a pair, where @c first is the
      * antenna gain in dBi and @c second is a boolean flag indicating whether
      * the gain is valid (present)
      *
      */
     const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const;
+
+    /**
+     * Gets the optional filter data
+     *
+     * @return optional filter data as a pair, where @c first is the
+     * data and @c second is a boolean flag indicating whether
+     * the data is valid (present)
+     *
+     */
+    const std::pair<FilterData,bool> & getOptionalFilterData() const;
 
     /**
      * Gets the transmission time stamp
@@ -180,7 +192,7 @@ namespace EMANE
      * @throw SerializationException
      */
     void prependTo(DownstreamPacket & pkt) const;
-    
+
     /**
      * Returns format suitable for logger callable
      *
@@ -193,8 +205,8 @@ namespace EMANE
     std::unique_ptr<Implementation>  pImpl_;
 
     CommonPHYHeader(const CommonPHYHeader & r) = delete;
-    
-    CommonPHYHeader & 
+
+    CommonPHYHeader &
     operator=(const CommonPHYHeader &) = delete;
   };
 }

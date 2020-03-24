@@ -1,6 +1,8 @@
 [1] configure 
 [1]  bandwidth:
 [1]    20000000
+[1]  excludesamesubidfromfilterenable:
+[1]    1
 [1]  fading.model:
 [1]    none
 [1]  fading.nakagami.distance0:

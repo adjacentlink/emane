@@ -470,7 +470,7 @@ void EMANE::Models::TDMA::BaseModel::Implementation::processUpstreamPacket(const
 
 
       packetStatusPublisher_.inbound(pktInfo.getSource(),
-                                     pktInfo.getSource(),
+                                     pktInfo.getDestination(),
                                      pktInfo.getPriority(),
                                      pkt.length(),
                                      PacketStatusPublisher::InboundAction::DROP_REGISTRATION_ID);

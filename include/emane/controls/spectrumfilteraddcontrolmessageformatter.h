@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2019 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,61 +30,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEWHEEL_HEADER_
-#define EMANEWHEEL_HEADER_
+#ifndef EMANECONTROLSSPECTRUMFILTERADDCONTROLMESSAGEFORMATTER_HEADER_
+#define EMANECONTROLSSPECTRUMFILTERADDCONTROLMESSAGEFORMATTER_HEADER_
 
-#include "emane/exception.h"
-#include <vector>
+#include "emane/controls/spectrumfilteraddcontrolmessage.h"
 
 namespace EMANE
 {
-  template<typename T>
-  class Wheel
+  namespace Controls
   {
-  public:
-    class IndexError : public Exception
+    /**
+     * @class SpectrumFilterAddControlMessageFormatter
+     *
+     * @brief Callable formatter object for SpectrumFilterAddControlMessage
+     * instances.
+     */
+    class SpectrumFilterAddControlMessageFormatter
     {
     public:
-      IndexError(const std::string & sDescription = {}):
-        Exception("Wheel::IndexError",sDescription){}
+      /**
+       * Creates a SpectrumFilterAddControlMessageFormatter instance
+       *
+       * @param pMsg Borrowed message reference
+       */
+      SpectrumFilterAddControlMessageFormatter(const SpectrumFilterAddControlMessage * pMsg);
 
-      ~IndexError() throw() {}
+      /**
+       * Gets the formatted output
+       *
+       * @return list of output strings
+       */
+      Strings operator()() const;
+
+    private:
+      const SpectrumFilterAddControlMessage * pMsg_;
     };
-
-    Wheel(std::size_t size,
-          std::size_t bins);
-
-    size_t slots() const;
-
-    size_t bins() const;
-
-    const std::vector<T> & dump() const;
-
-    void set(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    void add(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    std::vector<T> get(std::size_t begin,
-                       std::size_t slots);
-
-    std::vector<std::pair<std::size_t,T>>
-    compress() const;
-
-  private:
-    const std::size_t slots_;
-    const std::size_t bins_;
-    std::vector<T> store_;
-  };
+  }
 }
 
-#include "wheel.inl"
-
-#endif // EMANEWHEEL_HEADER_
+#endif // EMANECONTROLSSPECTRUMFILTERADDCONTROLMESSAGEFORMATTER_HEADER_

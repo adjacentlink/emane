@@ -48,7 +48,7 @@ namespace EMANE
   using Clock = std::chrono::system_clock;
   using Duration = Clock::duration;
   using TimePoint = Clock::time_point;
-  
+
   using NEMId = std::uint16_t;
   using EventId = std::uint16_t;
   using TimerEventId = std::size_t;
@@ -64,6 +64,9 @@ namespace EMANE
   using Priority = std::uint8_t;
 
   using Strings = std::list<std::string>;
+
+  using FilterIndex = std::uint16_t;
+  using FilterData = std::string;
 
   // All 1's NEMId represents a broad cast packet
   constexpr NEMId NEM_BROADCAST_MAC_ADDRESS{std::numeric_limits<NEMId>::max()};
