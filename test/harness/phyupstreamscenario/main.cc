@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,23 +104,23 @@ namespace
               break;
 
             case EMANE::Controls::ReceivePropertiesControlMessage::IDENTIFIER:
-           {
-             const auto pReceivePropertiesControlMessage =
-               static_cast<const EMANE::Controls::ReceivePropertiesControlMessage *>(pControlMessage);
+              {
+                const auto pReceivePropertiesControlMessage =
+                  static_cast<const EMANE::Controls::ReceivePropertiesControlMessage *>(pControlMessage);
 
-             std::cout<<"["<<iAction_<<"]  MAC ReceivePropertiesControlMessage data:"<<std::endl;
-             for(const auto & sLine : EMANE::Controls::ReceivePropertiesControlMessageFormatter{pReceivePropertiesControlMessage}())
-               {
-                 std::cout<<"["<<iAction_<<"]   "<<sLine<<std::endl;
-               }
-             std::cout<<std::endl;
-           }
+                std::cout<<"["<<iAction_<<"]  MAC ReceivePropertiesControlMessage data:"<<std::endl;
+                for(const auto & sLine : EMANE::Controls::ReceivePropertiesControlMessageFormatter{pReceivePropertiesControlMessage}())
+                  {
+                    std::cout<<"["<<iAction_<<"]   "<<sLine<<std::endl;
+                  }
+                std::cout<<std::endl;
+              }
 
-           break;
+              break;
 
-         default:
-           std::cout<<"Unknown control message id: "<<pControlMessage->getId()<<std::endl;
-           break;
+            default:
+              std::cout<<"Unknown control message id: "<<pControlMessage->getId()<<std::endl;
+              break;
             }
         }
 
@@ -148,10 +148,10 @@ int main(int argc, char * argv[])
 
   option options[] =
     {
-      {"help",0,nullptr,'h'},
-      {"schema",1,nullptr,'s'},
-      {"profiles",1,nullptr,'p'},
-      {0, 0,nullptr,0},
+     {"help",0,nullptr,'h'},
+     {"schema",1,nullptr,'s'},
+     {"profiles",1,nullptr,'p'},
+     {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -802,13 +802,14 @@ int main(int argc, char * argv[])
 
 
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
-                                  subId,
-                                  ++u16SequenceNumber,
-                                  bandwidth,
-                                  EMANE::TimePoint{txTime},
-                                  segments,
-                                    transmitters,
-                                      {dTxFixedGain,bTxHasFixedGain}};
+                                                         subId,
+                                                         ++u16SequenceNumber,
+                                                         bandwidth,
+                                                         EMANE::TimePoint{txTime},
+                                                         segments,
+                                                         transmitters,
+                                                         {dTxFixedGain,bTxHasFixedGain},
+                                                         {}};
 
                               std::cout<<"["<<iActionIndex<<"]  Common PHY Header data:"<<std::endl;
 
@@ -832,7 +833,7 @@ int main(int argc, char * argv[])
                                   auto results =
                                     EMANE::StatisticService::instance()->queryTable(pPHYLayer->getBuildId(),
                                                                                     {"UnicastPacketDropTable0",
-                                                                                        "BroadcastPacketDropTable0"});
+                                                                                     "BroadcastPacketDropTable0"});
 
 
                                   for(const auto entry : results)
@@ -1023,20 +1024,20 @@ int main(int argc, char * argv[])
 
                                                       auto ret = EMANE::Utils::maxBinNoiseFloorRange(window,powerdBm,EMANE::TimePoint{startTime},EMANE::TimePoint{endTime});
 
-                                                       std::cout<<"["
-                                                                <<iActionIndex
-                                                                <<"]  noise floor (dBm): "
-                                                                << ret.first
-                                                                << " (mW):  "
-                                                                << EMANE::Utils::DB_TO_MILLIWATT(ret.first)
-                                                                <<std::endl;
+                                                      std::cout<<"["
+                                                               <<iActionIndex
+                                                               <<"]  noise floor (dBm): "
+                                                               << ret.first
+                                                               << " (mW):  "
+                                                               << EMANE::Utils::DB_TO_MILLIWATT(ret.first)
+                                                               <<std::endl;
 
 
-                                                       std::cout<<"["
-                                                                <<iActionIndex
-                                                                <<"]  signal in noise: "
-                                                                << (ret.second ? "yes" : "no")
-                                                                <<std::endl;
+                                                      std::cout<<"["
+                                                               <<iActionIndex
+                                                               <<"]  signal in noise: "
+                                                               << (ret.second ? "yes" : "no")
+                                                               <<std::endl;
 
                                                     }
                                                   else

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,8 +51,11 @@ namespace EMANE
                   const Microseconds & maxOffset,
                   const Microseconds & maxPropagation,
                   const Microseconds & maxDuration,
-                  double dRxSensitivityMilliWatt_);
-     
+                  double dRxSensitivityMilliWatt,
+                  std::uint64_t u64FrequencyHz,
+                  std::uint64_t u64BandwidthHz,
+                  std::uint64_t u64BandwidthBinSizeHz);
+
     /**
      * Update the noise recorder with new signal information
      *
@@ -66,13 +70,17 @@ namespace EMANE
            const Microseconds & propagation,
            const Microseconds & duration,
            double dRxPower,
-           const std::vector<NEMId> & transmitters);
-    
-    std::pair<std::vector<double>, TimePoint> 
+           const std::vector<NEMId> & transmitters,
+           std::uint64_t u64StartFrequencyHz,
+           std::uint64_t u64EndFrequencyHz);
+
+    std::pair<std::vector<double>, TimePoint>
     get(const TimePoint & now,
         const Microseconds & duration = Microseconds::zero(),
         const TimePoint & startTime = TimePoint::min());
-    
+
+    std::size_t getSubBandBinCount() const;
+
     // dump the entire wheel for test-only-purposes
     std::vector<double> dump() const;
 
@@ -80,6 +88,9 @@ namespace EMANE
     const Microseconds::rep totalWindowBins_;
     const Microseconds::rep totalWheelBins_;
     const Microseconds::rep binSizeMicroseconds_;
+    std::uint64_t u64BandwidthBinSizeHz_;
+    std::uint64_t u64BandStartFrequencyHz_;
+    size_t totalSubBandBins_;
 
     Wheel<double> wheel_;
     double dRxSensitivityMilliWatt_;
@@ -92,6 +103,5 @@ namespace EMANE
     Microseconds::rep timepointToBin(const TimePoint & tp, bool bAdjust = false);
   };
 }
-
 
 #endif //EMANENOISERECORDER_HEADER_

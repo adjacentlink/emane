@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016-2017,2019 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,7 @@ namespace EMANE
     double dSystemNoiseFiguredB_;
     StatisticNumeric<std::uint64_t> * pTimeSyncThresholdRewrite_;
     FadingManager fadingManager_;
+    bool bExcludeSameSubIdFromFilter_;
   };
 }
 

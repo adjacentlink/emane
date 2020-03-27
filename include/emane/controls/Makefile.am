@@ -22,6 +22,11 @@ emaneinc_HEADERS =                           \
  receivepropertiescontrolmessage.h           \
  receivepropertiescontrolmessageformatter.h  \
  serializedcontrolmessage.h                  \
+ spectrumfilteraddcontrolmessage.h           \
+ spectrumfilteraddcontrolmessageformatter.h  \
+ spectrumfilterremovecontrolmessage.h        \
+ spectrumfilterremovecontrolmessageformatter.h \
+ spectrumfilterdatacontrolmessage.h          \
  timestampcontrolmessage.h                   \
  transmittercontrolmessageformatter.h        \
  transmittercontrolmessage.h                 \

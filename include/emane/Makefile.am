@@ -44,6 +44,8 @@ emaneinc_HEADERS =                       \
  exception.h                             \
  filedescriptorserviceprovider.h         \
  filedescriptorserviceprovider.inl       \
+ filtermatchcriterion.h                  \
+ filtermatchcriterion.inl                \
  flowcontrolclient.h                     \
  flowcontrolmanager.h                    \
  frequencysegment.h                      \

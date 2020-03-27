@@ -43,7 +43,8 @@ public:
                  const TimePoint  & txTime,
                  const FrequencySegments & frequencySegments,
                  const Transmitters & transmitters,
-                 const std::pair<double,bool> & optionalFixedAntennaGaindBi):
+                 const std::pair<double,bool> & optionalFixedAntennaGaindBi,
+                 const std::pair<FilterData,bool> & optionalFilterData):
     registrationId_{registrationId},
     u16SubId_{u16SubId},
     u16SequenceNumber_{u16SequenceNumber},
@@ -51,7 +52,8 @@ public:
     txTime_{txTime},
     frequencySegments_{frequencySegments},
     transmitters_{transmitters},
-    optionalFixedAntennaGaindBi_{optionalFixedAntennaGaindBi}{}
+    optionalFixedAntennaGaindBi_{optionalFixedAntennaGaindBi},
+    optionalFilterData_{optionalFilterData}{}
 
   RegistrationId getRegistrationId() const
   {
@@ -66,6 +68,11 @@ public:
   const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const
   {
     return optionalFixedAntennaGaindBi_;
+  }
+
+  const std::pair<FilterData,bool> & getOptionalFilterData() const
+  {
+    return optionalFilterData_;
   }
 
   const TimePoint & getTxTime() const
@@ -102,6 +109,7 @@ private:
   FrequencySegments frequencySegments_;
   Transmitters transmitters_;
   std::pair<double,bool> optionalFixedAntennaGaindBi_;
+  std::pair<FilterData,bool> optionalFilterData_;
 };
 
 EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
@@ -124,7 +132,7 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
           for(const auto & transmitter : msg.transmitters())
             {
               transmitters.push_back({static_cast<NEMId>(transmitter.nemid()),
-                    transmitter.powerdbm()});
+                                      transmitter.powerdbm()});
             }
 
           FrequencySegments frequencySegments{};
@@ -134,15 +142,15 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
               if(segment.has_powerdbm())
                 {
                   frequencySegments.push_back({segment.frequencyhz(),
-                        segment.powerdbm(),
-                        Microseconds(segment.durationmicroseconds()),
-                        Microseconds(segment.offsetmicroseconds())});
+                                               segment.powerdbm(),
+                                               Microseconds(segment.durationmicroseconds()),
+                                               Microseconds(segment.offsetmicroseconds())});
                 }
               else
                 {
                   frequencySegments.push_back({segment.frequencyhz(),
-                        Microseconds(segment.durationmicroseconds()),
-                        Microseconds(segment.offsetmicroseconds())});
+                                               Microseconds(segment.durationmicroseconds()),
+                                               Microseconds(segment.offsetmicroseconds())});
                 }
             }
 
@@ -152,20 +160,27 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
           std::uint64_t u64BandwidthHz{msg.bandwidthhz()};
           TimePoint txTime{static_cast<Microseconds>(msg.txtimemicroseconds())};
           std::pair<double,bool> optionalFixedAntennaGaindBi{0,msg.has_fixedantennagain()};
+          std::pair<FilterData,bool> optionalFilterData{{},msg.has_filterdata()};
 
           if(optionalFixedAntennaGaindBi.second)
             {
               optionalFixedAntennaGaindBi.first = msg.fixedantennagain();
             }
 
+          if(optionalFilterData.second)
+            {
+              optionalFilterData.first = msg.filterdata();
+            }
+
           pImpl_.reset(new Implementation{registrationId,
-                u16SubId,
-                u16SequenceNumber,
-                u64BandwidthHz,
-                txTime,
-                frequencySegments,
-                transmitters,
-                optionalFixedAntennaGaindBi});
+                                            u16SubId,
+                                            u16SequenceNumber,
+                                            u64BandwidthHz,
+                                            txTime,
+                                            frequencySegments,
+                                            transmitters,
+                                            optionalFixedAntennaGaindBi,
+                                            optionalFilterData});
 
         }
       else
@@ -190,15 +205,17 @@ EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId,
                                         const TimePoint & txTime,
                                         const FrequencySegments & frequencySegments,
                                         const Transmitters & transmitters,
-                                        const std::pair<double,bool> & optionalFixedAntennaGaindBi):
+                                        const std::pair<double,bool> & optionalFixedAntennaGaindBi,
+                                        const std::pair<FilterData,bool> & optionalFilterData):
   pImpl_{new Implementation{registrationId,
-      u16SubId,
-      u16SequenceNumber,
-      u64BandwidthHz,
-      txTime,
-      frequencySegments,
-      transmitters,
-      optionalFixedAntennaGaindBi}}
+                            u16SubId,
+                            u16SequenceNumber,
+                            u64BandwidthHz,
+                            txTime,
+                            frequencySegments,
+                            transmitters,
+                            optionalFixedAntennaGaindBi,
+                            optionalFilterData}}
 {}
 
 
@@ -223,6 +240,11 @@ const std::pair<double,bool> & EMANE::CommonPHYHeader::getOptionalFixedAntennaGa
   return pImpl_->getOptionalFixedAntennaGaindBi();
 }
 
+const std::pair<EMANE::FilterData,bool> &
+EMANE::CommonPHYHeader::getOptionalFilterData() const
+{
+  return pImpl_->getOptionalFilterData();
+}
 
 const EMANE::TimePoint & EMANE::CommonPHYHeader::getTxTime() const
 {
@@ -321,6 +343,14 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
         }
     }
 
+  const auto & optionalFilterData = pImpl_->getOptionalFilterData();
+
+  if(optionalFilterData.second)
+    {
+      msg.set_filterdata(optionalFilterData.first.data(),
+                         optionalFilterData.first.size());
+    }
+
   std::string sSerialization;
 
   if(!msg.SerializeToString(&sSerialization))
@@ -340,11 +370,11 @@ EMANE::Strings EMANE::CommonPHYHeader::format() const
     pImpl_->getOptionalFixedAntennaGaindBi();
 
   Strings sFormat{{"regid: " + std::to_string( pImpl_->getRegistrationId())},
-      {"seq: " + std::to_string(pImpl_->getSequenceNumber())},
-        {"bandwidth: " + std::to_string(pImpl_->getBandwidthHz())},
-          {"fixed antenna gain: " + std::string(optionalFixedAntennaGaindBi.second ? "on" : "off")},
-            {"fixed antenna gain: " + std::to_string(optionalFixedAntennaGaindBi.first)},
-              {"tx time: " +  std::to_string(std::chrono::duration_cast<DoubleSeconds>(pImpl_->getTxTime().time_since_epoch()).count())}};
+                  {"seq: " + std::to_string(pImpl_->getSequenceNumber())},
+                  {"bandwidth: " + std::to_string(pImpl_->getBandwidthHz())},
+                  {"fixed antenna gain: " + std::string(optionalFixedAntennaGaindBi.second ? "on" : "off")},
+                  {"fixed antenna gain: " + std::to_string(optionalFixedAntennaGaindBi.first)},
+                  {"tx time: " +  std::to_string(std::chrono::duration_cast<DoubleSeconds>(pImpl_->getTxTime().time_since_epoch()).count())}};
 
   for(const auto & segment : pImpl_->getFrequencySegments())
     {
@@ -361,6 +391,13 @@ EMANE::Strings EMANE::CommonPHYHeader::format() const
     {
       sFormat.push_back("src: " + std::to_string(transmitter.getNEMId()));
       sFormat.push_back("transmitter power: " + std::to_string(transmitter.getPowerdBm()));
+    }
+
+  const auto & optionalFilterData = pImpl_->getOptionalFilterData();
+
+  if(optionalFilterData.second)
+    {
+      sFormat.push_back("fitler data bytes: " + std::to_string(optionalFilterData.first.size()));
     }
 
   return sFormat;

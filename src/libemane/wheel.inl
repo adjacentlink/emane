@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <cstring>
+
 template<typename T>
-EMANE::Wheel<T>::Wheel(std::size_t size):
-  size_{size},
-  store_(size,0){}
+EMANE::Wheel<T>::Wheel(std::size_t slots,
+                       std::size_t bins):
+  slots_{slots},
+  bins_{bins},
+  store_(slots * bins,0)
+{}
+
+template<typename T>
+std::size_t EMANE::Wheel<T>:: slots() const
+{
+  return slots_;
+}
+
+template<typename T>
+std::size_t EMANE::Wheel<T>::bins() const
+{
+  return bins_;
+}
 
 template<typename T>
 const std::vector<T> & EMANE::Wheel<T>::dump() const
@@ -42,116 +59,169 @@ const std::vector<T> & EMANE::Wheel<T>::dump() const
 }
 
 template<typename T>
-void EMANE::Wheel<T>::add(std::size_t begin,std::size_t slots,T value)
+void EMANE::Wheel<T>::add(std::size_t begin,
+                          std::size_t slots,
+                          T value,
+                          std::size_t binBegin,
+                          std::size_t bins)
 {
-  if(slots > size_ || begin >= size_)
+  if(slots > slots_ || begin >= slots_)
     {
-      throw IndexError{};
+      throw makeException<IndexError>("wheel total slots available: %zu"
+                                      " attempting to set bins: %zu"
+                                      " starting at: %zu",
+                                      slots_,
+                                      slots,
+                                      begin);
     }
-  
+
   if(!slots)
     return;
-  
-  std::size_t remainder{};
-  
-  if(begin + slots > size_)
+
+  if(bins > bins_ || binBegin >= bins_)
     {
-      remainder = (begin + slots) % size_;
+      throw makeException<IndexError>("wheel total bins available: %zu"
+                                      " attempting to set bins: %zu"
+                                      " starting at: %zu",
+                                      bins_,
+                                      bins,
+                                      binBegin);
+    }
+
+  if(!bins)
+    return;
+
+  std::size_t remainder{};
+
+  if(begin + slots > slots_)
+    {
+      remainder = (begin + slots) % slots_;
     }
 
   for(std::size_t i = begin; i < begin + slots - remainder; ++i)
     {
-      store_[i] += value;
+      for(std::size_t j = binBegin; j < binBegin + bins; ++j)
+        {
+          store_[i*bins_ + j] += value;
+        }
     }
 
   if(remainder)
     {
       for(std::size_t i = 0; i < remainder; ++i)
         {
-          store_[i] += value;
+          for(std::size_t j = binBegin; j < binBegin + bins; ++j)
+            {
+              store_[i*bins_ + j] += value;
+            }
         }
     }
 }
 
 template<typename T>
-void EMANE::Wheel<T>::set(std::size_t begin,std::size_t slots,T value)
+void EMANE::Wheel<T>::set(std::size_t begin,
+                          std::size_t slots,
+                          T value,
+                          std::size_t binBegin,
+                          std::size_t bins)
 {
-  if(slots > size_ || begin >= size_)
+  if(slots > slots_ || begin >= slots_)
     {
-      throw IndexError{};
+      throw makeException<IndexError>("wheel total slots available: %zu"
+                                      " attempting to set bins: %zu"
+                                      " starting at: %zu",
+                                      slots_,
+                                      slots,
+                                      begin);
     }
-  
+
   if(!slots)
     return;
-  
+
+  if(bins > bins_ || binBegin >= bins_)
+    {
+      throw makeException<IndexError>("wheel total bins available: %zu"
+                                      " attempting to set bins: %zu"
+                                      " starting at: %zu",
+                                      bins_,
+                                      bins,
+                                      binBegin);
+    }
+
+  if(!bins)
+    return;
+
   std::size_t remainder{};
-  
-  if(begin + slots > size_)
+
+  if(begin + slots > slots_)
     {
-      remainder = (begin + slots) % size_;
+      remainder = (begin + slots) % slots_;
     }
 
-
-  for(std::size_t i = begin; i < begin + slots - remainder; ++i)
+  // special case clear
+  if(value == 0 && binBegin == 0 && bins == bins_)
     {
-      store_[i] = value;
-    }
+      std::memset(&store_[begin * bins_],
+                  0,
+                  (slots - remainder) * sizeof(T) * bins_);
 
-  if(remainder)
-    {
-      for(std::size_t i = 0; i < remainder; ++i)
+      if(remainder)
         {
-          store_[i] = value;
+          std::memset(&store_[0],
+                      0,
+                      remainder * sizeof(T) * bins_);
+        }
+    }
+  else
+    {
+      for(std::size_t i = begin; i < begin + slots - remainder; ++i)
+        {
+          for(std::size_t j = binBegin; j < binBegin + bins; ++j)
+            {
+              store_[i*bins_ + j] = value;
+            }
+        }
+
+      if(remainder)
+        {
+          for(std::size_t i = 0; i < remainder; ++i)
+            {
+              for(std::size_t j = binBegin; j < binBegin + bins; ++j)
+                {
+                  store_[i*bins_ + j] = value;
+                }
+            }
         }
     }
 }
-
 
 template<typename T>
 std::vector<T> EMANE::Wheel<T>::get(std::size_t begin,std::size_t slots)
 {
-  if(slots > size_ || begin >= size_)
+  if(slots > slots_ || begin >= slots_)
     {
-      throw IndexError{};
+      throw makeException<IndexError>("wheel total slots available: %zu"
+                                      " attempting to set bins: %zu"
+                                      " starting at: %zu",
+                                      slots_,
+                                      slots,
+                                      begin);
     }
 
-  std::vector<T> values(slots);
+  std::vector<T> values(slots * bins_);
 
   if(begin >= slots - 1)
     {
-      std::memcpy(&values[0],&store_[begin - slots + 1],slots * sizeof(T));
+      std::memcpy(&values[0],&store_[(begin - slots + 1) * bins_],slots * sizeof(T) * bins_);
     }
   else
     {
       std::size_t remainder = slots - begin -1;
 
-      std::memcpy(&values[0],&store_[size_ - remainder],remainder * sizeof(T));
+      std::memcpy(&values[0],&store_[(slots_ - remainder) * bins_],remainder * sizeof(T) * bins_);
 
-      std::memcpy(&values[remainder],&store_[0],(begin + 1) * sizeof(T));
+      std::memcpy(&values[remainder * bins_],&store_[0],(begin + 1) * sizeof(T) * bins_);
     }
 
   return values;
-}
-
-
-template<typename T>
-void EMANE::Wheel<T>::clear(std::size_t begin,std::size_t slots)
-{
-  if(slots > size_ || begin >= size_)
-    {
-      throw IndexError{};
-    }
-
-  if(begin >= slots - 1)
-    {
-      std::memset(&store_[begin - slots + 1],0,slots * sizeof(T));
-    }
-  else
-    {
-      std::size_t remainder = slots - begin -1;
-
-      std::memset(&store_[size_ - remainder],0,remainder * sizeof(T));
-
-      std::memset(&store_[0],0,(begin + 1) * sizeof(T));
-    }
 }

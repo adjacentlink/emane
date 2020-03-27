@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016,2019-2020 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,9 +57,9 @@ int main(int argc, char * argv[])
 
   option options[] =
     {
-      {"help",0,nullptr,'h'},
-      {"schema",1,nullptr,'s'},
-      {0, 0,nullptr,0},
+     {"help",0,nullptr,'h'},
+     {"schema",1,nullptr,'s'},
+     {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -274,67 +274,69 @@ int main(int argc, char * argv[])
                                 }
                             }
 
-                             std::cout<<"["<<++iActionIndex
-                                       <<"] initialize "
-                                       <<std::endl;
+                          std::cout<<"["<<++iActionIndex
+                                   <<"] initialize "
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    rx sensitivity mW: "
-                                      <<dRxSensitivityMilliWatt
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    rx sensitivity mW: "
+                                   <<dRxSensitivityMilliWatt
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    bandwidth: "
-                                      <<bandwidth
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    bandwidth: "
+                                   <<bandwidth
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    bin usec: "
-                                      <<binDuration.count()
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    bin usec: "
+                                   <<binDuration.count()
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    max offset usec: "
-                                      <<maxSegmentOffset.count()
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    max offset usec: "
+                                   <<maxSegmentOffset.count()
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    max propagation usec: "
-                                      <<maxMessagePropagation.count()
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    max propagation usec: "
+                                   <<maxMessagePropagation.count()
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    max duration usec: "
-                                      <<maxSegmentDuration.count()
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    max duration usec: "
+                                   <<maxSegmentDuration.count()
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    time sync threshold: "
-                                      <<timeSyncThreshold.count()
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    time sync threshold: "
+                                   <<timeSyncThreshold.count()
+                                   <<std::endl;
 
-                             std::cout<<"["<<iActionIndex
-                                      <<"]    max clamp: "
-                                      <<(bClamp ? "yes" : "no")
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    max clamp: "
+                                   <<(bClamp ? "yes" : "no")
+                                   <<std::endl;
 
-                              std::cout<<"["<<iActionIndex
-                                      <<"]    mode: "
-                                       <<(mode == EMANE::SpectrumMonitor::NoiseMode::ALL ? "all" :
-                                          (mode == EMANE::SpectrumMonitor::NoiseMode::NONE ? "none" : "outofband"))
-                                      <<std::endl;
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    mode: "
+                                   <<(mode == EMANE::SpectrumMonitor::NoiseMode::ALL ? "all" :
+                                      (mode == EMANE::SpectrumMonitor::NoiseMode::NONE ? "none" : "outofband"))
+                                   <<std::endl;
 
 
-                              spectrumMonitor.initialize(foi,
-                                                         bandwidth,
-                                                         dRxSensitivityMilliWatt,
-                                                         mode,
-                                                         binDuration,
-                                                         maxSegmentOffset,
-                                                         maxMessagePropagation,
-                                                         maxSegmentDuration,
-                                                         timeSyncThreshold,
-                                                         bClamp);
+                          spectrumMonitor.initialize(0,
+                                                     foi,
+                                                     bandwidth,
+                                                     dRxSensitivityMilliWatt,
+                                                     mode,
+                                                     binDuration,
+                                                     maxSegmentOffset,
+                                                     maxMessagePropagation,
+                                                     maxSegmentDuration,
+                                                     timeSyncThreshold,
+                                                     bClamp,
+                                                     true);
                           std::cout<<std::endl;
 
                         }
@@ -527,7 +529,9 @@ int main(int argc, char * argv[])
                                                                                  transmitterBandwidth,
                                                                                  powers,
                                                                                  bInBand,
-                                                                                 transmitters);
+                                                                                 transmitters,
+                                                                                 0,
+                                                                                 {});
 
 
                               //std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool>

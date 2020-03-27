@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2019-2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,61 +30,54 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEWHEEL_HEADER_
-#define EMANEWHEEL_HEADER_
+#include "emane/controls/spectrumfilterremovecontrolmessage.h"
 
-#include "emane/exception.h"
-#include <vector>
-
-namespace EMANE
+class EMANE::Controls::SpectrumFilterRemoveControlMessage::Implementation
 {
-  template<typename T>
-  class Wheel
+public:
+  Implementation(FilterIndex filterIndex):
+    filterIndex_{filterIndex}{}
+
+  Implementation(const Implementation & impl):
+    filterIndex_{impl.filterIndex_}{}
+
+  FilterIndex getFilterIndex() const
   {
-  public:
-    class IndexError : public Exception
-    {
-    public:
-      IndexError(const std::string & sDescription = {}):
-        Exception("Wheel::IndexError",sDescription){}
+    return filterIndex_;
+  }
 
-      ~IndexError() throw() {}
-    };
+private:
+  const FilterIndex filterIndex_;
+};
 
-    Wheel(std::size_t size,
-          std::size_t bins);
+EMANE::Controls::SpectrumFilterRemoveControlMessage::
+SpectrumFilterRemoveControlMessage(const SpectrumFilterRemoveControlMessage & msg):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{*msg.pImpl_}}
+{}
 
-    size_t slots() const;
+EMANE::Controls::SpectrumFilterRemoveControlMessage::
+SpectrumFilterRemoveControlMessage(FilterIndex filterIndex):
+  ControlMessage{IDENTIFIER},
+  pImpl_{new Implementation{filterIndex}}{}
 
-    size_t bins() const;
+EMANE::Controls::SpectrumFilterRemoveControlMessage::~SpectrumFilterRemoveControlMessage(){}
 
-    const std::vector<T> & dump() const;
 
-    void set(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    void add(std::size_t begin,
-             std::size_t slots,
-             T value,
-             std::size_t binBegin,
-             std::size_t bins);
-
-    std::vector<T> get(std::size_t begin,
-                       std::size_t slots);
-
-    std::vector<std::pair<std::size_t,T>>
-    compress() const;
-
-  private:
-    const std::size_t slots_;
-    const std::size_t bins_;
-    std::vector<T> store_;
-  };
+EMANE::Controls::SpectrumFilterRemoveControlMessage *
+EMANE::Controls::SpectrumFilterRemoveControlMessage::create(FilterIndex filterIndex)
+{
+  return new SpectrumFilterRemoveControlMessage{filterIndex};
 }
 
-#include "wheel.inl"
+EMANE::FilterIndex
+EMANE::Controls::SpectrumFilterRemoveControlMessage::getFilterIndex() const
+{
+  return pImpl_->getFilterIndex();
+}
 
-#endif // EMANEWHEEL_HEADER_
+EMANE::Controls::SpectrumFilterRemoveControlMessage *
+EMANE::Controls::SpectrumFilterRemoveControlMessage::clone() const
+{
+  return new SpectrumFilterRemoveControlMessage{*this};
+}

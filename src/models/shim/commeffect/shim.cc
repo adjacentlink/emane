@@ -83,7 +83,7 @@ namespace
                                                       "Timer"};
 }
 
-EMANE::Models::CommEffect::Shim::Shim(NEMId id, 
+EMANE::Models::CommEffect::Shim::Shim(NEMId id,
                                       PlatformServiceProvider * pPlatformService,
                                       RadioServiceProvider * pRadioService) :
   ShimLayerImplementor{id,pPlatformService,pRadioService},
@@ -100,21 +100,21 @@ EMANE::Models::CommEffect::Shim::Shim(NEMId id,
   commonLayerStatistics_{STATISTIC_TABLE_LABELS,{},"0"}
 { }
 
-EMANE::Models::CommEffect::Shim::~Shim() 
+EMANE::Models::CommEffect::Shim::~Shim()
 { }
 
 
-void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar) 
+void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "SHIMI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "SHIMI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
 
   auto & configRegistrar = registrar.configurationRegistrar();
-  
+
   configRegistrar.registerNumeric<bool>("defaultconnectivitymode",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
@@ -168,77 +168,77 @@ void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar)
 void EMANE::Models::CommEffect::Shim::configure(const ConfigurationUpdate & update)
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "SHIMI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "SHIMI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
-  
+
   for(const auto & item : update)
     {
       if(item.first == "defaultconnectivitymode")
         {
           bDefaultConnectivity_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "SHIMI %03hu %s::%s: %s = %d", 
+                                  "SHIMI %03hu %s::%s: %s = %d",
                                   id_,
                                   pzLayerName,
-                                  __func__, 
+                                  __func__,
                                   item.first.c_str(),
                                   bDefaultConnectivity_);
         }
       else if(item.first == "enablepromiscuousmode")
         {
           bEnablePromiscousMode_ = item.second[0].asBool();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "SHIMI %03hu %s::%s: %s = %d", 
+                                  "SHIMI %03hu %s::%s: %s = %d",
                                   id_,
                                   pzLayerName,
-                                  __func__, 
+                                  __func__,
                                   item.first.c_str(),
                                   bEnablePromiscousMode_);
         }
       else if(item.first == "groupid")
         {
           u32GroupId_ = item.second[0].asUINT32();
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "SHIMI %03hu %s::%s: %s = %u", 
+                                  "SHIMI %03hu %s::%s: %s = %u",
                                   id_,
                                   pzLayerName,
-                                  __func__, 
+                                  __func__,
                                   item.first.c_str(),
                                   u32GroupId_);
         }
       else if(item.first == "filterfile")
         {
           sFilterFile_ = item.second[0].asString();
-          
-          
+
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "SHIMI %03hu %s::%s: %s = %s", 
+                                  "SHIMI %03hu %s::%s: %s = %s",
                                   id_,
                                   pzLayerName,
-                                  __func__, 
+                                  __func__,
                                   item.first.c_str(),
                                   sFilterFile_.c_str());
         }
       else if(item.first == "receivebufferperiod")
         {
           DoubleSeconds receiveBufferPeriodSeconds{item.second[0].asDouble()};
-          
+
           receiveBufferPeriod_ =
             std::chrono::duration_cast<Microseconds>(receiveBufferPeriodSeconds);
-          
+
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   INFO_LEVEL,
-                                  "SHIMI %03hu %s::%s: %s = %lf", 
+                                  "SHIMI %03hu %s::%s: %s = %lf",
                                   id_,
                                   pzLayerName,
                                   __func__,
@@ -252,12 +252,12 @@ void EMANE::Models::CommEffect::Shim::configure(const ConfigurationUpdate & upda
 void EMANE::Models::CommEffect::Shim::start()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "SHIMI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "SHIMI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
-  
+
   if(!sFilterFile_.empty() && profileManager_.load(sFilterFile_.c_str()) < 0)
     {
       throw makeException<StartException>("%s : Could not open filter file %s",
@@ -270,8 +270,8 @@ void EMANE::Models::CommEffect::Shim::start()
 void EMANE::Models::CommEffect::Shim::stop()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "SHIMI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "SHIMI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
@@ -285,8 +285,8 @@ void EMANE::Models::CommEffect::Shim::destroy()
   throw()
 {
   LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL, 
-                          "SHIMI %03hu %s::%s", 
+                          DEBUG_LEVEL,
+                          "SHIMI %03hu %s::%s",
                           id_,
                           pzLayerName,
                           __func__);
@@ -296,8 +296,8 @@ void EMANE::Models::CommEffect::Shim::destroy()
 void EMANE::Models::CommEffect::Shim::processUpstreamControl(const ControlMessages &)
 {
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                         DEBUG_LEVEL, 
-                         "SHIMI %03hu %s::%s, unexpected control message, drop", 
+                         DEBUG_LEVEL,
+                         "SHIMI %03hu %s::%s, unexpected control message, drop",
                          id_,
                          pzLayerName,
                          __func__);
@@ -307,8 +307,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamControl(const ControlMessag
 void EMANE::Models::CommEffect::Shim::processDownstreamControl(const ControlMessages &)
 {
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                         DEBUG_LEVEL, 
-                         "SHIMI %03hu %s::%s, unexpected control message, drop", 
+                         DEBUG_LEVEL,
+                         "SHIMI %03hu %s::%s, unexpected control message, drop",
                          id_,
                          pzLayerName,
                          __func__);
@@ -329,44 +329,44 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
   if(commonPHYHeader.getRegistrationId() != REGISTERED_EMANE_PHY_COMM_EFFECT)
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                              DEBUG_LEVEL, 
-                              "SHIMI %03hu %s::%s, ignore phy type %hu != %hu, from %hu to %hu", 
+                              DEBUG_LEVEL,
+                              "SHIMI %03hu %s::%s, ignore phy type %hu != %hu, from %hu to %hu",
                               id_,
                               pzLayerName,
-                              __func__, 
-                              commonPHYHeader.getRegistrationId(), 
-                              REGISTERED_EMANE_PHY_COMM_EFFECT, 
-                              pktInfo.getSource(), 
+                              __func__,
+                              commonPHYHeader.getRegistrationId(),
+                              REGISTERED_EMANE_PHY_COMM_EFFECT,
+                              pktInfo.getSource(),
                               pktInfo.getDestination());
 
-      commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+      commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                              DROP_CODE_REGISTRATION_ID);
 
       // drop
       return;
     }
- 
+
   std::uint32_t u32GroupId{};
 
   TimePoint txTime{};
 
   auto len = pkt.stripLengthPrefixFraming();
-  
+
   if(len && pkt.length() >= len)
     {
       ShimHeader header(pkt.get(),len);
 
       u32GroupId = header.getGroupId();
-      
+
       txTime = header.getTxTimePoint();
-      
+
       pkt.strip(len);
     }
   else
     {
-      commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+      commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                              DROP_CODE_BAD_MSG);
       //drop
       return;
@@ -380,17 +380,17 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
-                                  "SHIMI %03hu %s::%s, ignore transmission from %hu to %hu", 
+                                  "SHIMI %03hu %s::%s, ignore transmission from %hu to %hu",
                                   id_,
                                   pzLayerName,
                                   __func__,
                                   pktInfo.getSource(),
                                   pktInfo.getDestination());
 
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                                  DROP_CODE_DST_MAC);
-         
+
           // drop
           return;
         }
@@ -401,7 +401,7 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
     {
       LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                               DEBUG_LEVEL,
-                              "SHIMI %03hu %s::%s, group id mismatch src %hu, src grp %u != our grp %u", 
+                              "SHIMI %03hu %s::%s, group id mismatch src %hu, src grp %u != our grp %u",
                               id_,
                               pzLayerName,
                               __func__,
@@ -409,8 +409,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
                               u32GroupId,
                               u32GroupId_);
 
-      commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+      commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                              DROP_CODE_GROUP_ID);
 
       // drop
@@ -434,7 +434,7 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
                                   __func__,
                                   pktInfo.getSource());
 
-          commonLayerStatistics_.processOutbound(pkt, 
+          commonLayerStatistics_.processOutbound(pkt,
                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
           // send pkt upstream, no effects
@@ -454,8 +454,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
                                  __func__,
                                  pktInfo.getSource());
 
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                                  DROP_CODE_NO_PROFILE_DATA);
 
           // drop
@@ -465,19 +465,19 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
   else
     {
       // get bitrate based on pkt destination unicast or broadcast
-      std::uint64_t u64BitRate{pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS ? 
-          ret.first.getBroadcastBitRate() : 
+      std::uint64_t u64BitRate{pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS ?
+          ret.first.getBroadcastBitRate() :
           ret.first.getUnicastBitRate()};
 
 
       // reception interval
       Microseconds rxIntervalMicroseconds{
-        std::chrono::duration_cast<Microseconds>(DoubleSeconds{u64BitRate == 0 ? 
+        std::chrono::duration_cast<Microseconds>(DoubleSeconds{u64BitRate == 0 ?
               0.0 : (pkt.length() * 8) / static_cast<double>(u64BitRate)})};
-  
+
       // get previous EOR time for this src NEM
       auto optionalEORTime = getEORTime(pktInfo.getSource());
-      
+
       // check backlog if receiver buffer period is set and we have history for this src NEM
       if(receiveBufferPeriod_ != Microseconds::zero() && optionalEORTime.second)
         {
@@ -494,8 +494,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
                                       std::chrono::duration_cast<DoubleSeconds>(receiveBufferPeriod_).count());
 
 
-              commonLayerStatistics_.processOutbound(pkt, 
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+              commonLayerStatistics_.processOutbound(pkt,
+                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                              DROP_CODE_RX_BUFF);
 
               // drop
@@ -518,17 +518,17 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
       setEORTime(pktInfo.getSource(),optionalEORTime.first);
 
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                             DEBUG_LEVEL, 
+                             DEBUG_LEVEL,
                              "SHIMI %03hu %s::%s, src %hu, dst %hu, len %zd, latency %lf,"
                              " jitter %lf, loss %f, dups %f, bitrate %ju, rxtime %lf",
-                             id_, pzLayerName, __func__, 
+                             id_, pzLayerName, __func__,
                              pktInfo.getSource(),
                              pktInfo.getDestination(),
                              pkt.length(),
                              std::chrono::duration_cast<DoubleSeconds>(ret.first.getLatency()).count(),
                              std::chrono::duration_cast<DoubleSeconds>(ret.first.getJitter()).count(),
                              ret.first.getProbabilityLoss(),
-                             ret.first.getProbabilityDuplicate(), 
+                             ret.first.getProbabilityDuplicate(),
                              u64BitRate,
                              std::chrono::duration_cast<DoubleSeconds>(rxIntervalMicroseconds).count());
 
@@ -539,8 +539,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
 
       if(!taskCount)
         {
-          commonLayerStatistics_.processOutbound(pkt, 
-                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime), 
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
                                                  DROP_CODE_DISCARD);
         }
 
@@ -557,9 +557,9 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
             }
 
           UpstreamPacket * pPacket{new UpstreamPacket(pkt)};
-    
-          TimedEventArg * pTimedEventArg{new TimedEventArg{TIMED_EVENT_UPSTREAM_PACKET, 
-                                                           pPacket, 
+
+          TimedEventArg * pTimedEventArg{new TimedEventArg{TIMED_EVENT_UPSTREAM_PACKET,
+                                                           pPacket,
                                                            beginTime,
                                                            std::chrono::duration_cast<Microseconds>(tpTimeout - Clock::now())}};
 
@@ -591,7 +591,7 @@ void EMANE::Models::CommEffect::Shim::processDownstreamPacket(DownstreamPacket &
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                          DEBUG_LEVEL,
-                         "SHIMI %03hu %s::%s, src %hu, dst %hu, seq %u", 
+                         "SHIMI %03hu %s::%s, src %hu, dst %hu, seq %u",
                          id_,
                          pzLayerName,
                          __func__,
@@ -603,12 +603,12 @@ void EMANE::Models::CommEffect::Shim::processDownstreamPacket(DownstreamPacket &
   ShimHeader shimHeader{Clock::now(), u32GroupId_, u32DownstreamSequenceNumber_};
 
   Serialization serialization{shimHeader.serialize()};
-   
+
   // prepend shim header
   pkt.prepend(serialization.c_str(),serialization.size());
-   
+
   pkt.prependLengthPrefixFraming(serialization.size());
-   
+
   CommonPHYHeader commonPHYHeader{EMANE::REGISTERED_EMANE_PHY_COMM_EFFECT,
       static_cast<std::uint16_t>(u32DownstreamSequenceNumber_),
       0,
@@ -616,12 +616,13 @@ void EMANE::Models::CommEffect::Shim::processDownstreamPacket(DownstreamPacket &
       Clock::now(),
       FrequencySegments{},
       Transmitters{{id_,0}},
-        {0,false}};
+      {0,false},
+      {}};
 
   // prepend phy header to outgoing packet
   commonPHYHeader.prependTo(pkt);
- 
-  commonLayerStatistics_.processOutbound(pkt, 
+
+  commonLayerStatistics_.processOutbound(pkt,
                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));
 
   // send packet
@@ -639,7 +640,7 @@ void EMANE::Models::CommEffect::Shim::processEvent(const EventId & eventId,
   if(eventId == Events::CommEffectEvent::IDENTIFIER)
     {
       Events::CommEffectEvent event(serialization);
-      
+
       LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
                              DEBUG_LEVEL,
                              "SHIMI %03hu %s::%s,event id %03hu",
@@ -647,10 +648,10 @@ void EMANE::Models::CommEffect::Shim::processEvent(const EventId & eventId,
                              pzLayerName,
                              __func__,
                              eventId);
-      
+
       // load profile data entries
       profileManager_.load(event.getCommEffects());
-      
+
       // connectivity information receieved - no longer in default mode
       bDefaultConnectivity_ = false;
     }
@@ -712,7 +713,7 @@ void EMANE::Models::CommEffect::Shim::processTimedEvent(TimerEventId eventId __a
 size_t EMANE::Models::CommEffect::Shim::getTaskCount(float fLoss, float fDups)
 {
   size_t count = 0;
-  
+
   if(fLoss < 100)
     {
       if(fLoss > 0)
@@ -730,9 +731,9 @@ size_t EMANE::Models::CommEffect::Shim::getTaskCount(float fLoss, float fDups)
           ++count;
         }
     }
-  
-  
-  // you can only duplicate a packet you receive 
+
+
+  // you can only duplicate a packet you receive
   if(count)
     {
       // calculate probability of duplicate
@@ -741,11 +742,11 @@ size_t EMANE::Models::CommEffect::Shim::getTaskCount(float fLoss, float fDups)
         {
           // add to count
           count += fDups / 100.0f;
-          
+
           // reduce
           fDups = fmodf(fDups,100.0f);
         }
-      
+
       if((fDups > 0.0f) && (fDups < 100.0f))
         {
           // if dups is greater/equal then random value
@@ -765,16 +766,16 @@ EMANE::Microseconds
 EMANE::Models::CommEffect::Shim::randomize(const Microseconds & duration)
 {
   Microseconds randomized{};
-  
+
   if(duration != Microseconds::zero())
     {
       // scale up and roll the dice
       randomized = Microseconds{RNG_() % (2 * duration.count())};
-      
+
       // scale back
       randomized -= duration;
     }
-  
+
   return randomized;
 }
 

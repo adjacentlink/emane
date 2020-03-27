@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2019 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -33,16 +33,23 @@
 
 #include "noiserecorder.h"
 #include "emane/spectrumserviceexception.h"
+#include <cmath>
 
 EMANE::NoiseRecorder::NoiseRecorder(const Microseconds & bin,
                                     const Microseconds & maxOffset,
                                     const Microseconds & maxPropagation,
                                     const Microseconds & maxDuration,
-                                    double dRxSensitivityMilliWatt):
+                                    double dRxSensitivityMilliWatt,
+                                    std::uint64_t u64FrequencyHz,
+                                    std::uint64_t u64BandwidthHz,
+                                    std::uint64_t u64BandwidthBinSizeHz):
   totalWindowBins_{maxDuration/bin},
   totalWheelBins_{(maxOffset + maxPropagation + 2 * maxDuration)/bin},
   binSizeMicroseconds_{bin.count()},
-  wheel_{static_cast<std::size_t>(totalWheelBins_)},
+  u64BandwidthBinSizeHz_{u64BandwidthBinSizeHz},
+  u64BandStartFrequencyHz_{static_cast<std::uint64_t>(u64FrequencyHz - u64BandwidthHz / 2.0)},
+  totalSubBandBins_{u64BandwidthBinSizeHz ? static_cast<size_t>(std::ceil(u64BandwidthHz/static_cast<double>(u64BandwidthBinSizeHz)))+1 : 1},
+  wheel_{static_cast<std::size_t>(totalWheelBins_), totalSubBandBins_},
   dRxSensitivityMilliWatt_{dRxSensitivityMilliWatt},
   maxEndOfReceptionBin_{},
   minStartOfReceptionBin_{}
@@ -55,7 +62,9 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                              const Microseconds & propagation,
                              const Microseconds & duration,
                              double dRxPower,
-                             const std::vector<NEMId> & transmitters)
+                             const std::vector<NEMId> & transmitters,
+                             std::uint64_t u64StartFrequencyHz,
+                             std::uint64_t u64EndFrequencyHz)
 {
   auto startOfReception = txTime + offset + propagation;
 
@@ -68,6 +77,15 @@ EMANE::NoiseRecorder::update(const TimePoint &,
   Microseconds::rep startOfReceptionBin{reportedStartOfReceptionBin};
 
   Microseconds::rep maxEoRBin{};
+
+  size_t subBandBinStart{0};
+  size_t subBandBins{1};
+
+  if(u64BandwidthBinSizeHz_)
+    {
+      subBandBinStart = (u64StartFrequencyHz - u64BandStartFrequencyHz_) / u64BandwidthBinSizeHz_;
+      subBandBins =  (u64EndFrequencyHz - u64BandStartFrequencyHz_) / u64BandwidthBinSizeHz_ - subBandBinStart + 1;
+    }
 
   // Determine the last EoR bin for the transmitter - we only
   // allow one bin noise entry per transmitter. For multiple
@@ -113,7 +131,11 @@ EMANE::NoiseRecorder::update(const TimePoint &,
       if(!maxEndOfReceptionBin_ && !minStartOfReceptionBin_)
         {
           // we can fill the entire duration
-          wheel_.set(startIndex,durationBinCount,dRxPower);
+          wheel_.set(startIndex,
+                     durationBinCount,
+                     dRxPower,
+                     subBandBinStart,
+                     subBandBins);
 
           minStartOfReceptionBin_ = startOfReceptionBin;
 
@@ -164,7 +186,9 @@ EMANE::NoiseRecorder::update(const TimePoint &,
 
               wheel_.set(startIndex,
                          beforeMinSORBinDurationCount,
-                         dRxPower);
+                         dRxPower,
+                         subBandBinStart,
+                         subBandBins);
             }
 
           // set any values after the maxEndOfReceptionBin, we are
@@ -205,7 +229,9 @@ EMANE::NoiseRecorder::update(const TimePoint &,
 
               wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
                          afterMaxEORBinDurationCount,
-                         dRxPower);
+                         dRxPower,
+                         subBandBinStart,
+                         subBandBins);
             }
 
           auto withinMinSORMaxEORBinCount =
@@ -251,7 +277,9 @@ EMANE::NoiseRecorder::update(const TimePoint &,
               // accumulate bins up to and including maxEndOfReceptionBin
               wheel_.add((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
                          withinMinSORMaxEORBinCount,
-                         dRxPower);
+                         dRxPower,
+                         subBandBinStart,
+                         subBandBins);
             }
           else
             {
@@ -293,14 +321,19 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                   wheel_.set((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
                              minStartOfReceptionBin_ -
                              (startOfReceptionBin + beforeMinSORBinDurationCount),
-                             0);
+                             0,
+                             0,
+                             totalSubBandBins_);
                 }
 
               if(afterMaxEORBinDurationCount)
                 {
                   wheel_.set((maxEndOfReceptionBin_ + 1) % totalWheelBins_,
                              startOfReceptionBin - maxEndOfReceptionBin_ - 1,
-                             0);
+                             0,
+                             0,
+                             totalSubBandBins_);
+
                 }
             }
 
@@ -374,7 +407,7 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
 
   std::vector<double> window;
 
-  window.reserve(durationBinCount);
+  window.reserve(durationBinCount * totalSubBandBins_);
 
   // if a startTime was specified that bin time equates window entry 0
   auto startOfWindowTime =
@@ -408,9 +441,8 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
                 {
                   window = wheel_.get((endTimeBin - afterDurationCount) % totalWheelBins_,remainderBinCount);
                 }
-
-              window.insert(window.begin(),beforeDurationCount,0);
-              window.insert(window.end(),afterDurationCount,0);
+              window.insert(window.begin(),beforeDurationCount * totalSubBandBins_,0);
+              window.insert(window.end(),afterDurationCount * totalSubBandBins_,0);
             }
           catch(Wheel<double>::IndexError &)
             {
@@ -420,7 +452,7 @@ EMANE::NoiseRecorder::get(const TimePoint & now,
       else
         {
           // fill in window with 0
-          window.insert(window.begin(),durationBinCount,0);
+          window.insert(window.begin(),durationBinCount * totalSubBandBins_,0);
         }
     }
   else
@@ -444,4 +476,9 @@ EMANE::Microseconds::rep EMANE::NoiseRecorder::timepointToBin(const TimePoint & 
   // times that fall on a bin boundary belong to the previous bin
   // (count % binSizeMicroseconds_ == 0) will evaluate to 0 or 1
   return count == 0 ? 0 : count / binSizeMicroseconds_ - (bAdjust && (count % binSizeMicroseconds_ == 0));
+}
+
+std::size_t EMANE::NoiseRecorder::getSubBandBinCount() const
+{
+  return totalSubBandBins_;
 }
