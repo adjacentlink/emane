@@ -134,12 +134,13 @@ namespace EMANE
        * @throw ConfigureException when an error occurs during
        * configure.
        */
-      template<typename T>
+      template<typename T, typename... Args>
       std::pair<T *, std::unique_ptr<EMANE::NEMLayer>>
       buildMACLayer_T(NEMId id,
                       const std::string & RegistrationName,
                       const ConfigurationUpdateRequest & request,
-                      bool bSkipConfigure = false);
+                      bool bSkipConfigure = false,
+                      Args... args);
 
       /**
        * Builds a Shim layer
