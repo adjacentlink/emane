@@ -119,7 +119,7 @@ namespace EMANE
        * @tparam T MACLayerImplementor derived implementation
        *
        * @param id id of the NEM that will contain the mac
-       * @param
+       * @param RegistrationName Registration name
        * @param request Configuration update request
        * @param bSkipConfigure Flag indicating whether to skip
        * calling Component::configure
@@ -139,7 +139,7 @@ namespace EMANE
       buildMACLayer_T(NEMId id,
                       const std::string & RegistrationName,
                       const ConfigurationUpdateRequest & request,
-                      bool bSkipConfigure = false,
+                      bool bSkipConfigure,
                       Args... args);
 
       /**
