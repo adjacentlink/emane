@@ -53,6 +53,7 @@ namespace EMANE
   const double SEMI_MAJOR_2{SEMI_MAJOR * SEMI_MAJOR};
   const double SEMI_MINOR_2{SEMI_MINOR * SEMI_MINOR};
   const double ECC2{(SEMI_MAJOR_2 - SEMI_MINOR_2) / SEMI_MAJOR_2}; 
+  const double MEAN_EARTH_RADIUS{((2.0 * SEMI_MAJOR) + SEMI_MINOR) / 3.0};
 
   // speed of light in meters per second
   const double SOL_MPS{299792458.0};

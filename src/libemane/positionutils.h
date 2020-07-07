@@ -155,9 +155,9 @@ namespace EMANE
                const double dHeightMeters2,
                const double dDistanceMeters)
   {
-    const double dDH1{3570.0 * sqrt(dHeightMeters1 < 0.0 ? 0.0 : dHeightMeters1)};
+    const double dDH1{sqrt(dHeightMeters1 < 0.0 ? 0.0 : (dHeightMeters1 * (2.0 * MEAN_EARTH_RADIUS + dHeightMeters1)))};
     
-    const double dDH2{3570.0 * sqrt(dHeightMeters2 < 0.0 ? 0.0 : dHeightMeters2)};
+    const double dDH2{sqrt(dHeightMeters2 < 0.0 ? 0.0 : (dHeightMeters2 * (2.0 * MEAN_EARTH_RADIUS + dHeightMeters2)))};
 
     return (dDH1 + dDH2) > dDistanceMeters;
   }
