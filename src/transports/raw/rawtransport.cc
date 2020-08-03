@@ -48,6 +48,7 @@ namespace
 {
   const int PCAP_SNAPLEN = 0xFFFF;
   const int PCAP_PROMISC = 1;
+  const int PCAP_IMMEDIATE = 1;
 
   const int AddressType = AF_PACKET;
 
@@ -278,27 +279,59 @@ void EMANE::Transports::Raw::RawTransport::start()
       throw StartException(ssDescription.str());
     }
 
-  // open pcap handle
-  if((pPcapHandle_ = pcap_open_live(sDeviceName.c_str(), PCAP_SNAPLEN, PCAP_PROMISC, PCAP_TIMEOUT, errbuf)) == NULL)
+  // create pcap handle
+  if((pPcapHandle_ = pcap_create(sDeviceName.c_str(), errbuf)) == NULL)
     {
       std::stringstream ssDescription;
-      ssDescription<<"could not open device "<< sDeviceName << " " << errbuf<<std::ends;
+      ssDescription<<"could not create pcap handle for device "<< sDeviceName << " " << errbuf<<std::ends;
       throw StartException(ssDescription.str());
     }
 
-  // set datalink type, this covers 10/100/1000
+  // pre-activate immediate mode, packets are always delivered as soon as they arrive, with no buffering.
+  if(pcap_set_immediate_mode(pPcapHandle_, PCAP_IMMEDIATE) < 0)
+    {
+      std::stringstream ssDescription;
+      ssDescription<<"could not set pcap immediate mode type on device "<< sDeviceName << " " << errbuf<<std::ends;
+      throw StartException(ssDescription.str());
+    }
+
+  // pre-activate set snap len
+  if(pcap_set_snaplen(pPcapHandle_, PCAP_SNAPLEN) < 0)
+    {
+      std::stringstream ssDescription;
+      ssDescription<<"could not set pcap snaplen on device "<< sDeviceName << " " << errbuf<<std::ends;
+      throw StartException(ssDescription.str());
+    }
+
+  // pre-activate set promisc
+  if(pcap_set_promisc(pPcapHandle_, PCAP_PROMISC) < 0)
+    {
+      std::stringstream ssDescription;
+      ssDescription<<"could not set pcap promisc device "<< sDeviceName << " " << errbuf<<std::ends;
+      throw StartException(ssDescription.str());
+    }
+
+  // activate
+  if(pcap_activate(pPcapHandle_) < 0)
+    {
+      std::stringstream ssDescription;
+      ssDescription<<"could not activate pcap handle on device "<< sDeviceName << " " << errbuf<<std::ends;
+      throw StartException(ssDescription.str());
+    }
+
+  // post-activate set datalink type, this covers 10/100/1000
   if(pcap_set_datalink(pPcapHandle_, DLT_EN10MB) < 0)
     {
       std::stringstream ssDescription;
-      ssDescription<<"could not set datalink type on device "<< sDeviceName << " " << errbuf<<std::ends;
+      ssDescription<<"could not set pcap datalink type on device "<< sDeviceName << " " << errbuf<<std::ends;
       throw StartException(ssDescription.str());
     }
 
-  // currently unsupported by winpcap
+  // post-activate currently unsupported by winpcap
   if(pcap_setdirection(pPcapHandle_, PCAP_D_IN) < 0)
     {
       std::stringstream ssDescription;
-      ssDescription<<"could not set direction on device "<< sDeviceName << " " << errbuf<<std::ends;
+      ssDescription<<"could not set pcap direction on device "<< sDeviceName << " " << errbuf<<std::ends;
       throw StartException(ssDescription.str());
     }
 

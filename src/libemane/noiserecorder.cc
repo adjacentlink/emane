@@ -184,6 +184,15 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                     minStartOfReceptionBin_ - startOfReceptionBin;
                 }
 
+              if(totalSubBandBins_ > 1)
+                {
+                  wheel_.set(startIndex,
+                             beforeMinSORBinDurationCount,
+                             0,
+                             0,
+                             totalSubBandBins_);
+                }
+
               wheel_.set(startIndex,
                          beforeMinSORBinDurationCount,
                          dRxPower,
@@ -225,6 +234,15 @@ EMANE::NoiseRecorder::update(const TimePoint &,
               else
                 {
                   afterMaxEORBinDurationCount = endOfReceptionBin - maxEndOfReceptionBin_;
+                }
+
+              if(totalSubBandBins_ > 1)
+                {
+                  wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
+                             afterMaxEORBinDurationCount,
+                             0,
+                             0,
+                             totalSubBandBins_);
                 }
 
               wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
