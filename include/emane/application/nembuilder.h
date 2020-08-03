@@ -140,7 +140,7 @@ namespace EMANE
                       const std::string & RegistrationName,
                       const ConfigurationUpdateRequest & request,
                       bool bSkipConfigure,
-                      Args... args);
+                      Args&&... args);
 
       /**
        * Builds a Shim layer
