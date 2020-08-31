@@ -36,7 +36,7 @@ EMANE::Application::NEMBuilder::buildMACLayer_T(NEMId id,
                                                 const std::string & sRegistrationName,
                                                 const ConfigurationUpdateRequest & request,
                                                 bool bSkipConfigure,
-                                                Args... args)
+                                                Args&&... args)
 {
   // new platform service
   PlatformServiceProvider * pPlatformService{createPlatformService()};

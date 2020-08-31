@@ -37,7 +37,7 @@ EMANE::Application::TransportBuilder::buildTransportWithAdapter(const NEMId id,
                                                                 const ConfigurationUpdateRequest& request,
                                                                 const std::string & sPlatformEndpoint,
                                                                 const std::string & sTransportEndpoint,
-                                                                Args... args) const
+                                                                Args&&... args) const
 {
   // new platform service
   EMANE::PlatformServiceProvider * pPlatformService{newPlatformService()};

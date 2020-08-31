@@ -169,7 +169,7 @@ namespace EMANE
                                   const ConfigurationUpdateRequest& request,
                                   const std::string & sPlatformEndpoint,
                                   const std::string & sTransportEndpoint,
-                                  Args... args) const;
+                                  Args&&... args) const;
 
     private:
       PlatformServiceProvider * newPlatformService() const;
