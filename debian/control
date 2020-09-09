@@ -23,12 +23,6 @@ Architecture: all
 Depends: ${misc:Depends}
 Description:  EMANE DTDs required for EMANE XML.
 
-Package: emane-utils
-Section: text
-Architecture: all
-Depends: ${python-lxml:Depends}, ${misc:Depends}, emane-dtds (= ${binary:Version})
-Description:  EMANE utilities
-
 Package: emane-libs
 Section: libs
 Architecture: any

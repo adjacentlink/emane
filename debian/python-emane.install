@@ -9,6 +9,7 @@ usr/bin/emaneevent-tdmaschedule
 usr/bin/emaneevent-fadingselection
 usr/bin/emaneota-publisher
 usr/bin/emanesh
+usr/bin/emanegentransportxml
 usr/bin/emanecommand-eel-2*
 usr/bin/emaneevent-antennaprofile-2*
 usr/bin/emaneevent-commeffect-2*
@@ -19,3 +20,5 @@ usr/bin/emaneevent-tdmaschedule-2*
 usr/bin/emaneevent-fadingselection-2*
 usr/bin/emaneota-publisher-2*
 usr/bin/emanesh-2*
+usr/bin/emanegentransportxml-2*
+/usr/share/man/man1/emanegentransportxml.1

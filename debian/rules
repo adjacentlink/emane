@@ -27,6 +27,7 @@ override_dh_auto_install:
 	mv debian/tmp/usr/bin/emaneevent-fadingselection  debian/tmp/usr/bin/emaneevent-fadingselection-$(PYTHON3_VERSION)
 	mv debian/tmp/usr/bin/emaneota-publisher debian/tmp/usr/bin/emaneota-publisher-$(PYTHON3_VERSION)
 	mv debian/tmp/usr/bin/emanesh debian/tmp/usr/bin/emanesh-$(PYTHON3_VERSION)
+	mv debian/tmp/usr/bin/emanegentransportxml debian/tmp/usr/bin/emanegentransportxml-$(PYTHON3_VERSION)
 	cd debian/tmp/usr/bin; ln -s emanecommand-eel-$(PYTHON3_VERSION) emanecommand-eel-3
 	cd debian/tmp/usr/bin; ln -s emaneevent-antennaprofile-$(PYTHON3_VERSION) emaneevent-antennaprofile-3
 	cd debian/tmp/usr/bin; ln -s emaneevent-commeffect-$(PYTHON3_VERSION) emaneevent-commeffect-3
@@ -37,6 +38,7 @@ override_dh_auto_install:
 	cd debian/tmp/usr/bin; ln -s emaneevent-fadingselection-$(PYTHON3_VERSION) emaneevent-fadingselection-3
 	cd debian/tmp/usr/bin; ln -s emaneota-publisher-$(PYTHON3_VERSION) emaneota-publisher-3
 	cd debian/tmp/usr/bin; ln -s emanesh-$(PYTHON3_VERSION) emanesh-3
+	cd debian/tmp/usr/bin; ln -s emanegentransportxml-$(PYTHON3_VERSION) emanegentransportxml-3
 	dh_auto_install -- PYTHON=python2
 	mv debian/tmp/usr/bin/emanecommand-eel debian/tmp/usr/bin/emanecommand-eel-$(PYTHON2_VERSION)
 	mv debian/tmp/usr/bin/emaneevent-antennaprofile debian/tmp/usr/bin/emaneevent-antennaprofile-$(PYTHON2_VERSION)
@@ -48,6 +50,7 @@ override_dh_auto_install:
 	mv debian/tmp/usr/bin/emaneevent-fadingselection  debian/tmp/usr/bin/emaneevent-fadingselection-$(PYTHON2_VERSION)
 	mv debian/tmp/usr/bin/emaneota-publisher debian/tmp/usr/bin/emaneota-publisher-$(PYTHON2_VERSION)
 	mv debian/tmp/usr/bin/emanesh debian/tmp/usr/bin/emanesh-$(PYTHON2_VERSION)
+	mv debian/tmp/usr/bin/emanegentransportxml debian/tmp/usr/bin/emanegentransportxml-$(PYTHON2_VERSION)
 	cd debian/tmp/usr/bin; ln -s emanecommand-eel-$(PYTHON2_VERSION) emanecommand-eel-2
 	cd debian/tmp/usr/bin; ln -s emaneevent-antennaprofile-$(PYTHON2_VERSION) emaneevent-antennaprofile-2
 	cd debian/tmp/usr/bin; ln -s emaneevent-commeffect-$(PYTHON2_VERSION) emaneevent-commeffect-2
@@ -58,6 +61,7 @@ override_dh_auto_install:
 	cd debian/tmp/usr/bin; ln -s emaneevent-fadingselection-$(PYTHON2_VERSION) emaneevent-fadingselection-2
 	cd debian/tmp/usr/bin; ln -s emaneota-publisher-$(PYTHON2_VERSION) emaneota-publisher-2
 	cd debian/tmp/usr/bin; ln -s emanesh-$(PYTHON2_VERSION) emanesh-2
+	cd debian/tmp/usr/bin; ln -s emanegentransportxml-$(PYTHON2_VERSION) emanegentransportxml-2
 	cd debian/tmp/usr/bin; ln -s emanecommand-eel-2 emanecommand-eel
 	cd debian/tmp/usr/bin; ln -s emaneevent-antennaprofile-2 emaneevent-antennaprofile
 	cd debian/tmp/usr/bin; ln -s emaneevent-commeffect-2 emaneevent-commeffect
@@ -68,6 +72,7 @@ override_dh_auto_install:
 	cd debian/tmp/usr/bin; ln -s emaneevent-fadingselection-2 emaneevent-fadingselection
 	cd debian/tmp/usr/bin; ln -s emaneota-publisher-2 emaneota-publisher
 	cd debian/tmp/usr/bin; ln -s emanesh-2 emanesh
+	cd debian/tmp/usr/bin; ln -s emanegentransportxml-2 emanegentransportxml
 
 %:
 	dh $@ --parallel --with python2,python3

@@ -82,20 +82,6 @@ BuildArch: noarch
 %description  dtds
 EMANE DTDs required for EMANE XML.
 
-%package utils
-Requires: %{name}-dtds = %{version}-%{release}
-%if 0%{?with_python2}
-Requires: %{use_python2_lxml}
-%else
-Requires: python3-lxml
-%endif
-Summary: EMANE utilities
-Group:  Applications/System
-BuildArch: noarch
-
-%description  utils
-EMANE utilities
-
 %package libs
 Summary: EMANE Libraries
 Group: Libraries
@@ -293,6 +279,7 @@ mv %{buildroot}/%{_bindir}/emaneevent-tdmaschedule %{buildroot}/%{_bindir}/emane
 mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/emaneevent-fadingselection-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python3_version}
 mv %{buildroot}/%{_bindir}/emanesh %{buildroot}/%{_bindir}/emanesh-%{python3_version}
+mv %{buildroot}/%{_bindir}/emanegentransportxml %{buildroot}/%{_bindir}/emanegentransportxml-%{python3_version}
 
 ln -s emanecommand-eel-%{python3_version} %{buildroot}%{_bindir}/emanecommand-eel-3
 ln -s emaneevent-antennaprofile-%{python3_version} %{buildroot}%{_bindir}/emaneevent-antennaprofile-3
@@ -304,6 +291,7 @@ ln -s emaneevent-tdmaschedule-%{python3_version} %{buildroot}%{_bindir}/emaneeve
 ln -s emaneevent-fadingselection-%{python3_version} %{buildroot}%{_bindir}/emaneevent-fadingselection-3
 ln -s emaneota-publisher-%{python3_version} %{buildroot}%{_bindir}/emaneota-publisher-3
 ln -s emanesh-%{python3_version} %{buildroot}%{_bindir}/emanesh-3
+ln -s emanegentransportxml-%{python3_version} %{buildroot}%{_bindir}/emanegentransportxml-3
 
 %if 0%{?with_python2} == 0
 ln -s emanecommand-eel-3 %{buildroot}%{_bindir}/emanecommand-eel
@@ -316,9 +304,9 @@ ln -s emaneevent-tdmaschedule-3 %{buildroot}%{_bindir}/emaneevent-tdmaschedule
 ln -s emaneevent-fadingselection-3 %{buildroot}%{_bindir}/emaneevent-fadingselection
 ln -s emaneota-publisher-3 %{buildroot}%{_bindir}/emaneota-publisher
 ln -s emanesh-3 %{buildroot}%{_bindir}/emanesh
+ln -s emanegentransportxml-3 %{buildroot}%{_bindir}/emanegentransportxml
 %endif
 pathfix.py -pni "%{__python3} %{py3_shbang_opts}" %{buildroot}%{_bindir}/*-%{python3_version}
-pathfix.py -pni "%{__python3} %{py3_shbang_opts}" %{buildroot}%{_bindir}/emanegentransportxml
 %endif
 
 %if 0%{?with_python2}
@@ -334,6 +322,7 @@ mv %{buildroot}/%{_bindir}/emaneevent-tdmaschedule %{buildroot}/%{_bindir}/emane
 mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/emaneevent-fadingselection-%{python2_version}
 mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python2_version}
 mv %{buildroot}/%{_bindir}/emanesh %{buildroot}/%{_bindir}/emanesh-%{python2_version}
+mv %{buildroot}/%{_bindir}/emanegentransportxml %{buildroot}/%{_bindir}/emanegentransportxml-%{python2_version}
 
 ln -s emanecommand-eel-%{python2_version} %{buildroot}%{_bindir}/emanecommand-eel-2
 ln -s emaneevent-antennaprofile-%{python2_version} %{buildroot}%{_bindir}/emaneevent-antennaprofile-2
@@ -345,6 +334,7 @@ ln -s emaneevent-tdmaschedule-%{python2_version} %{buildroot}%{_bindir}/emaneeve
 ln -s emaneevent-fadingselection-%{python2_version} %{buildroot}%{_bindir}/emaneevent-fadingselection-2
 ln -s emaneota-publisher-%{python2_version} %{buildroot}%{_bindir}/emaneota-publisher-2
 ln -s emanesh-%{python2_version} %{buildroot}%{_bindir}/emanesh-2
+ln -s emanegentransportxml-%{python2_version} %{buildroot}%{_bindir}/emanegentransportxml-2
 
 ln -s emanecommand-eel-2 %{buildroot}%{_bindir}/emanecommand-eel
 ln -s emaneevent-antennaprofile-2 %{buildroot}%{_bindir}/emaneevent-antennaprofile
@@ -356,9 +346,9 @@ ln -s emaneevent-tdmaschedule-2 %{buildroot}%{_bindir}/emaneevent-tdmaschedule
 ln -s emaneevent-fadingselection-2 %{buildroot}%{_bindir}/emaneevent-fadingselection
 ln -s emaneota-publisher-2 %{buildroot}%{_bindir}/emaneota-publisher
 ln -s emanesh-2 %{buildroot}%{_bindir}/emanesh
+ln -s emanegentransportxml-2 %{buildroot}%{_bindir}/emanegentransportxml
 %if %{with_pathfix}
 pathfix.py -pni "%{__python2} %{py2_shbang_opts}" %{buildroot}%{_bindir}/*-%{python2_version}
-pathfix.py -pni "%{__python2} %{py2_shbang_opts}" %{buildroot}%{_bindir}/emanegentransportxml
 %endif
 %endif
 
@@ -385,17 +375,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emane
 %{_bindir}/emaneinfo
 %{_mandir}/man1/emane.1.gz
-
-%doc %{_pkgdocdir}
-%if 0%{?_licensedir:1}
-%dir %{_licensedir}/%{name}
-%license %{_licensedir}/%{name}/COPYING
-%endif
-
-%files utils
-%defattr(-, root, root)
-%{_bindir}/emanegentransportxml
-%{_mandir}/man1/emanegentransportxml.1.gz
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}
@@ -678,6 +657,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
+%{_bindir}/emanegentransportxml
 %{_bindir}/emanecommand-eel-2
 %{_bindir}/emaneevent-antennaprofile-2
 %{_bindir}/emaneevent-commeffect-2
@@ -688,6 +668,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection-2
 %{_bindir}/emaneota-publisher-2
 %{_bindir}/emanesh-2
+%{_bindir}/emanegentransportxml-2
 %{_bindir}/emanecommand-eel-%{python2_version}
 %{_bindir}/emaneevent-antennaprofile-%{python2_version}
 %{_bindir}/emaneevent-commeffect-%{python2_version}
@@ -698,9 +679,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection-%{python2_version}
 %{_bindir}/emaneota-publisher-%{python2_version}
 %{_bindir}/emanesh-%{python2_version}
+%{_bindir}/emanegentransportxml-%{python2_version}
 %{use_python2_sitelib}/emane
 %{use_python2_sitelib}/emane-%{version}-*.egg-info
-
+%{_mandir}/man1/emanegentransportxml.1.gz
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}
 %dir %{_licensedir}/%{name}
@@ -722,6 +704,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
+%{_bindir}/emanegentransportxml
+%{_mandir}/man1/emanegentransportxml.1.gz
 %endif
 %{_bindir}/emanecommand-eel-3
 %{_bindir}/emaneevent-antennaprofile-3
@@ -733,6 +717,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection-3
 %{_bindir}/emaneota-publisher-3
 %{_bindir}/emanesh-3
+%{_bindir}/emanegentransportxml-3
 %{_bindir}/emanecommand-eel-%{python3_version}
 %{_bindir}/emaneevent-antennaprofile-%{python3_version}
 %{_bindir}/emaneevent-commeffect-%{python3_version}
@@ -743,6 +728,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-fadingselection-%{python3_version}
 %{_bindir}/emaneota-publisher-%{python3_version}
 %{_bindir}/emanesh-%{python3_version}
+%{_bindir}/emanegentransportxml-%{python3_version}
 %{python3_sitelib}/emane
 %{python3_sitelib}/emane-%{version}-*.egg-info
 
