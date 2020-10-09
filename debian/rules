@@ -13,5 +13,8 @@ override_dh_gencontrol:
 override_dh_auto_install:
 	dh_auto_install -- PYTHON=python3
 
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3
+
 %:
 	dh $@ --parallel --with python3
