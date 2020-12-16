@@ -290,7 +290,7 @@ for members in sorted(groups.values()):
 
         output=open(os.path.join(options.outpath,target),'w')
 
-        print(xml, file=output)
+        print(xml.decode('UTF-8'), file=output)
 
         output.close()
 

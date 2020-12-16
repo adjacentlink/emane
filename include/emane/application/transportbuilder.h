@@ -163,12 +163,13 @@ namespace EMANE
        * @throw ConfigureException when an error occurs during
        * configure.
        */
-      template<typename T>
+      template<typename T, typename... Args>
       std::pair<T *,std::unique_ptr<TransportAdapter>>
         buildTransportWithAdapter(const NEMId id,
                                   const ConfigurationUpdateRequest& request,
                                   const std::string & sPlatformEndpoint,
-                                  const std::string & sTransportEndpoint) const;
+                                  const std::string & sTransportEndpoint,
+                                  Args&&... args) const;
 
     private:
       PlatformServiceProvider * newPlatformService() const;

@@ -31,18 +31,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-template<typename T>
+template<typename T, typename... Args>
 std::pair<T *,std::unique_ptr<EMANE::Application::TransportAdapter>>
 EMANE::Application::TransportBuilder::buildTransportWithAdapter(const NEMId id,
                                                                 const ConfigurationUpdateRequest& request,
                                                                 const std::string & sPlatformEndpoint,
-                                                                const std::string & sTransportEndpoint) const
+                                                                const std::string & sTransportEndpoint,
+                                                                Args&&... args) const
 {
   // new platform service
   EMANE::PlatformServiceProvider * pPlatformService{newPlatformService()};
 
   // create transport
-  T * pInstance{new T{id, pPlatformService}};
+  T * pInstance{new T{id, pPlatformService, std::forward<Args>(args)...}};
 
   auto pTransportAdapater = buildTransportWithAdapter_i(pInstance,
                                                         pPlatformService,

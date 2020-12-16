@@ -30,12 +30,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-template<typename T>
+template<typename T, typename... Args>
 std::pair<T *, std::unique_ptr<EMANE::NEMLayer>>
 EMANE::Application::NEMBuilder::buildMACLayer_T(NEMId id,
                                                 const std::string & sRegistrationName,
                                                 const ConfigurationUpdateRequest & request,
-                                                bool bSkipConfigure)
+                                                bool bSkipConfigure,
+                                                Args&&... args)
 {
   // new platform service
   PlatformServiceProvider * pPlatformService{createPlatformService()};
@@ -44,7 +45,7 @@ EMANE::Application::NEMBuilder::buildMACLayer_T(NEMId id,
   RadioServiceProvider * pRadioService{createRadioService(id)};
 
   // create the radio model
-  T * pMACLayer{new T(id,pPlatformService,pRadioService)};
+  T * pMACLayer{new T(id,pPlatformService,pRadioService, std::forward<Args>(args)...)};
 
   return {pMACLayer,buildMACLayer_i(pMACLayer,
                                     pPlatformService,

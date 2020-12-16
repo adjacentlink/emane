@@ -393,7 +393,7 @@ int EMANE::Transports::Virtual::TunTap::set_ethaddr(const Utils::EtherAddr & eth
   memset(&ifr, 0, sizeof(ifr));
 
   // copy dev name
-  strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name));
+  strncpy(ifr.ifr_name, tunName_.c_str(), sizeof(ifr.ifr_name)-1);
 
   // copy hwaddr
   memcpy(ifr.ifr_hwaddr.sa_data, &ethAddr, Utils::ETH_ALEN);
