@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,18 @@
 namespace std
 {
   template<>
-  struct hash<std::pair<EMANE::NEMId,std::uint64_t>>
+  struct hash<std::tuple<EMANE::NEMId,EMANE::AntennaIndex,EMANE::AntennaIndex,std::uint64_t>>
   {
-    typedef  std::pair<EMANE::NEMId,std::uint64_t> argument_type;
+    typedef std::tuple<EMANE::NEMId,EMANE::AntennaIndex,EMANE::AntennaIndex,std::uint64_t> argument_type;
     typedef std::size_t result_type;
-    
+
     result_type operator()(argument_type const& s) const
     {
-      result_type const h1{std::hash<EMANE::NEMId>()(s.first)};
-      result_type const h2{std::hash<std::uint64_t>()(s.second)};
-      return h1 ^ (h2 << 1);
+      result_type const h1{std::hash<std::uint64_t>()(std::get<0>(s))};
+      result_type const h2{std::hash<std::uint64_t>()(std::get<1>(s))};
+      result_type const h3{std::hash<std::uint64_t>()(std::get<2>(s))};
+      result_type const h4{std::hash<std::uint64_t>()(std::get<3>(s))};
+      return (h1 << 6) ^ (h2 << 4) ^ (h3 << 2) ^ h4;
     }
   };
 }
@@ -54,37 +56,48 @@ void EMANE::ReceivePowerTablePublisher::registerStatistics(StatisticRegistrar & 
 {
 
   pReceivePowerTable_ =
-    statisticRegistrar.registerTable<ReceivePowerTableKey>("ReceivePowerTable", 
-      {"NEM","Frequency","Rx Power","Last Packet Time"},
-      StatisticProperties::NONE,
-      "Shows the calculated receive power for the last received packet.");
+    statisticRegistrar.registerTable<ReceivePowerTableKey>("ReceivePowerTable",
+                                                           {"NEM",
+                                                            "Rx Antenna",
+                                                            "Tx Antenna",
+                                                            "Frequency",
+                                                            "Rx Power",
+                                                            "Last Packet Time"},
+                                                           StatisticProperties::NONE,
+                                                           "Shows the calculated receive power for the last received segment.");
 }
 
 void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
+                                               AntennaIndex rxAntennaIndex,
+                                               AntennaIndex txAntennaIndex,
                                                std::uint64_t u64Frequency,
                                                double dReceivePower,
                                                const TimePoint & rxTime)
 {
-  auto key = ReceivePowerTableKey{nemId,u64Frequency};
+  auto key = ReceivePowerTableKey{nemId,rxAntennaIndex,txAntennaIndex,u64Frequency};
 
   if(receivePowerTableSet_.count(key))
     {
       pReceivePowerTable_->setRow(key,
                                   {
-                                    Any{nemId},
-                                      Any{u64Frequency},
-                                        Any{dReceivePower},
-                                          Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
+                                   Any{nemId},
+                                   Any{rxAntennaIndex},
+                                   Any{txAntennaIndex},
+                                   Any{u64Frequency},
+                                   Any{dReceivePower},
+                                   Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
     }
   else
     {
       pReceivePowerTable_->addRow(key,
                                   {
-                                    Any{nemId},
-                                      Any{u64Frequency},
-                                        Any{dReceivePower},
-                                          Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
+                                   Any{nemId},
+                                   Any{rxAntennaIndex},
+                                   Any{txAntennaIndex},
+                                   Any{u64Frequency},
+                                   Any{dReceivePower},
+                                   Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
 
-       receivePowerTableSet_.insert(key);
+      receivePowerTableSet_.insert(key);
     }
 }

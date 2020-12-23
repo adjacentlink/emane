@@ -43,7 +43,7 @@ EMANE::Strings EMANE::Controls::ReceivePropertiesControlMessageFormatter::operat
   strings.push_back("sot: " + std::to_string(std::chrono::duration_cast<DoubleSeconds>(pMsg_->getTxTime().time_since_epoch()).count()));
   strings.push_back("span: " + std::to_string(pMsg_->getSpan().count()));
   strings.push_back("prop delay: " + std::to_string(pMsg_->getPropagationDelay().count()));
-  strings.push_back("receiver sensativity: " + std::to_string(pMsg_->getReceiverSensitivitydBm()));
+  strings.push_back("receiver sensitivity: " + std::to_string(pMsg_->getReceiverSensitivitydBm()));
   
   return strings;
 }

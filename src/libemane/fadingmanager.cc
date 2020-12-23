@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
  */
 
 #include "fadingmanager.h"
-#include "nakagamifadingalgorithm.h"
+#include "nakagamifadingalgorithmmanager.h"
 
 EMANE::FadingManager::FadingManager(NEMId id,
                                     PlatformServiceProvider * pPlatformService,
@@ -40,12 +40,12 @@ EMANE::FadingManager::FadingManager(NEMId id,
   pPlatformService_{pPlatformService},
   sPrefix_{sPrefix},
   bFading_{},
-  pFadingAlgorithmForAll_{}
+  pFadingAlgorithmManagerForAll_{}
 {
-  fadingModels_.insert(std::make_pair("nakagami",
-                                      std::unique_ptr<FadingAlgorithm>(new NakagamiFadingAlgorithm{id,
-                                            pPlatformService,
-                                            sPrefix})));
+  fadingAlgorithmManagers_.insert(std::make_pair("nakagami",
+                                                 std::unique_ptr<FadingAlgorithmManager>(new NakagamiFadingAlgorithmManager{id,
+                                                                                                                              pPlatformService,
+                                                                                                                              sPrefix})));
 }
 
 void EMANE::FadingManager::initialize(Registrar & registrar)
@@ -53,11 +53,11 @@ void EMANE::FadingManager::initialize(Registrar & registrar)
   auto & configRegistrar = registrar.configurationRegistrar();
 
   std::string sModelDescription{"Defines the fading model:"
-      " none, event"};
+                                " none, event"};
 
   std::string sModelsRegex{"^(none|event"};
 
-  for(const auto & entry : fadingModels_)
+  for(const auto & entry : fadingAlgorithmManagers_)
     {
       sModelsRegex +=  "|" + entry.second->name();
       sModelDescription += ", " +  entry.second->name();
@@ -74,32 +74,32 @@ void EMANE::FadingManager::initialize(Registrar & registrar)
                                                   1,
                                                   1,
                                                   sModelsRegex);
-
-  for(const auto & entry : fadingModels_)
+  for(const auto & entry : fadingAlgorithmManagers_)
     {
       entry.second->initialize(registrar);
     }
-
 }
 
 void EMANE::FadingManager::configure(const ConfigurationUpdate & update)
 {
   configure_i(update,
-              &FadingAlgorithm::configure);
+              &FadingAlgorithmManager::configure);
 }
 
 void EMANE::FadingManager::modify(const ConfigurationUpdate & update)
 {
   configure_i(update,
-              &FadingAlgorithm::modify);
+              &FadingAlgorithmManager::modify);
 }
 
 void EMANE::FadingManager::configure_i(const ConfigurationUpdate & update,
-                                       void (FadingAlgorithm::*process)(const ConfigurationUpdate&))
+                                       void (FadingAlgorithmManager::*process)(const ConfigurationUpdate&))
 {
-  std::map<std::string,std::tuple<ConfigurationUpdate,FadingAlgorithm*>> configurations{};
+  std::map<std::string,std::tuple<ConfigurationUpdate,FadingAlgorithmManager*>> configurations{};
 
-  for(const auto & entry : fadingModels_)
+  ConfigurationUpdate nakagamiUpdate;
+
+  for(const auto & entry : fadingAlgorithmManagers_)
     {
       std::string sConfigName{sPrefix_ + entry.second->name() + "."};
       configurations.insert(std::make_pair(sConfigName,
@@ -128,16 +128,17 @@ void EMANE::FadingManager::configure_i(const ConfigurationUpdate & update,
           else if(sType == "event")
             {
               bFading_ = true;
-              pFadingAlgorithmForAll_ = nullptr;
+              pFadingAlgorithmManagerForAll_ = nullptr;
             }
           else
             {
               bFading_ = true;
-              auto iter = fadingModels_.find(sType);
 
-              if(iter != fadingModels_.end())
+              auto iter = fadingAlgorithmManagers_.find(sType);
+
+              if(iter != fadingAlgorithmManagers_.end())
                 {
-                  pFadingAlgorithmForAll_ = iter->second.get();
+                  pFadingAlgorithmManagerForAll_ = iter->second.get();
                 }
             }
         }
@@ -176,70 +177,11 @@ void EMANE::FadingManager::configure_i(const ConfigurationUpdate & update,
 
   for(const auto & entry : configurations)
     {
-      //std::get<1>(entry.second)->configure(std::get<0>(entry.second));
       (std::get<1>(entry.second)->*process)(std::get<0>(entry.second));
 
     }
 }
 
-std::pair<double,EMANE::FadingManager::FadingStatus>
-EMANE::FadingManager::calculate(NEMId txNEMId,
-                                double dPowerdBm,
-                                const std::pair<LocationInfo,bool> & location)
-{
-
-  double dOutPowerdBm{};
-  FadingStatus status{FadingStatus::ERROR_LOCATIONINFO};
-
-  if(!bFading_)
-    {
-      dOutPowerdBm = dPowerdBm;
-      status = FadingStatus::SUCCESS;
-    }
-  else if(pFadingAlgorithmForAll_)
-    {
-      // only calculate if lcoation is known
-      if(location.second)
-        {
-          dOutPowerdBm = (*pFadingAlgorithmForAll_)(dPowerdBm,
-                                                    location.first.getDistanceMeters());
-          status = FadingStatus::SUCCESS;
-        }
-    }
-  else
-    {
-      auto iter =  TxNEMFadingSelections_.find(txNEMId);
-
-      if(iter != TxNEMFadingSelections_.end())
-        {
-          if(iter->second)
-            {
-              // only calculate if location is known
-              if(location.second)
-                {
-                  dOutPowerdBm = (*iter->second)(dPowerdBm,
-                                                 location.first.getDistanceMeters());
-
-                  status = FadingStatus::SUCCESS;
-                }
-            }
-          else
-            {
-              // null algorithm indicates no fading in use from src
-              dOutPowerdBm = dPowerdBm;
-
-              status = FadingStatus::SUCCESS;
-            }
-        }
-      else
-        {
-          // unknown fading algorithm selection for source
-          status = FadingStatus::ERROR_SELECTION;
-        }
-    }
-
-  return {dOutPowerdBm,status};
-}
 
 void EMANE::FadingManager::update(const Events::FadingSelections & fadingSelections)
 {
@@ -248,10 +190,13 @@ void EMANE::FadingManager::update(const Events::FadingSelections & fadingSelecti
       switch(selection.getFadingModel())
         {
         case Events::FadingModel::NONE:
-          TxNEMFadingSelections_[selection.getNEMId()] = nullptr;
+          TxNEMFadingSelections_[selection.getNEMId()] = {Events::FadingModel::NONE,
+                                                          nullptr};
           break;
+
         case Events::FadingModel::NAKAGAMI:
-          TxNEMFadingSelections_[selection.getNEMId()] = fadingModels_["nakagami"].get();
+          TxNEMFadingSelections_[selection.getNEMId()] = {Events::FadingModel::NAKAGAMI,
+                                                          fadingAlgorithmManagers_["nakagami"].get()};
           break;
         default:
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
@@ -264,4 +209,59 @@ void EMANE::FadingManager::update(const Events::FadingSelections & fadingSelecti
           break;
         }
     }
+}
+
+EMANE::FadingAlgorithmStore
+EMANE::FadingManager::createFadingAlgorithmStore() const
+{
+  FadingAlgorithmStore store{};
+
+  for(const auto & entry : fadingAlgorithmManagers_)
+    {
+      store.emplace(entry.second->type(),
+                    entry.second->createFadingAlgorithm());
+    }
+
+  return store;
+}
+
+std::pair<EMANE::FadingInfo,bool>
+EMANE::FadingManager::getFadingSelection(NEMId nemId) const
+{
+  if(bFading_)
+    {
+      if(pFadingAlgorithmManagerForAll_)
+        {
+          return {FadingInfo{pFadingAlgorithmManagerForAll_->type(),
+                             pFadingAlgorithmManagerForAll_->getParameters()},
+                  true};
+        }
+      else
+        {
+          const auto iter = TxNEMFadingSelections_.find(nemId);
+
+          if(iter != TxNEMFadingSelections_.end())
+            {
+              if(iter->second.second)
+                {
+                  return {FadingInfo{iter->second.first,
+                                     iter->second.second->getParameters()},
+                          true};
+                }
+              else
+                {
+                  // no fading manager, so no parameters
+                  return {FadingInfo{iter->second.first,
+                                     nullptr},
+                          true};
+                }
+            }
+          else
+            {
+              return {{Events::FadingModel::NONE,nullptr},false};
+            }
+        }
+    }
+
+  return {{Events::FadingModel::NONE,nullptr},true};
 }

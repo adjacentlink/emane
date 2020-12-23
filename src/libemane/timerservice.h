@@ -81,7 +81,7 @@ namespace EMANE
      * Schedules an generic interval timer callable
      *
      * @param fn A callable object
-     * @param absoluteTimePoint Absolute time of the timeout
+     * @param timePoint Absolute time of the timeout
      * @param interval Repeat interval
      */
     template <typename Function>

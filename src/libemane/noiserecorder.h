@@ -63,7 +63,7 @@ namespace EMANE
      *      propagation must be <= MAX_PROPAGATION
      *      duration must be <= MAX_DURATION
      */
-    std::pair<TimePoint,TimePoint>
+    std::tuple<TimePoint,TimePoint>
     update(const TimePoint & now,
            const TimePoint & txTime,
            const Microseconds & offset,
@@ -72,7 +72,8 @@ namespace EMANE
            double dRxPower,
            const std::vector<NEMId> & transmitters,
            std::uint64_t u64StartFrequencyHz,
-           std::uint64_t u64EndFrequencyHz);
+           std::uint64_t u64EndFrequencyHz,
+           AntennaIndex txAntennaIndex);
 
     std::pair<std::vector<double>, TimePoint>
     get(const TimePoint & now,
@@ -97,8 +98,9 @@ namespace EMANE
     Microseconds::rep maxEndOfReceptionBin_;
     Microseconds::rep minStartOfReceptionBin_;
 
-    using NEMEoRBinMap = std::map<NEMId,Microseconds::rep>;
-    NEMEoRBinMap nemEoRBinMap_;
+    using AntennaIndexEORMap = std::map<AntennaIndex,Microseconds::rep>;
+    using NEMAntennaIndexEORBinMap = std::map<NEMId,AntennaIndexEORMap>;
+    NEMAntennaIndexEORBinMap nemAntennaIndexEORBinMap_;
 
     Microseconds::rep timepointToBin(const TimePoint & tp, bool bAdjust = false);
   };

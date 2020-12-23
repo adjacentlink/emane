@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYGAINMANAGER_HEADER
+#ifndef EMANEPHYGAINMANAGER_HEADER_
 #define EMANEPHYGAINMANAGER_HEADER_
 
 #include "antennapattern.h"
 #include "positionneu.h"
 #include "locationinfo.h"
+#include "antennamanager.h"
 #include "emane/types.h"
+#include "emane/antenna.h"
 #include "emane/events/antennaprofile.h"
 
 namespace EMANE
@@ -44,32 +46,69 @@ namespace EMANE
   class GainManager
   {
   public:
-    GainManager(NEMId nemId);
-    
-    void update(const Events::AntennaProfiles & antennaProfiles);
+    GainManager(NEMId nemId,
+                AntennaIndex rxAntennaIndex,
+                AntennaManager & antennaManager);
 
-    enum class GainStatus {
-      SUCCESS = 0,
-        ERROR_LOCATIONINFO,
-        ERROR_PROFILEINFO,
-        ERROR_HORIZON,
-        };
+    enum class GainStatus {SUCCESS = 0,
+                           ERROR_LOCATIONINFO,
+                           ERROR_PROFILEINFO,
+                           ERROR_HORIZON,
+                           ERROR_ANTENNA_INDEX};
 
-    std::pair<double,GainStatus> determineGain(NEMId transmitterId,
-                                               const LocationInfo & locationPairInfo,
-                                               const std::pair<double, bool> & optionalRxFixedGaindBi,
-                                               const std::pair<double, bool> & optionalTxFixedGaindBi) const;
+    using GainInfo = std::tuple<double,GainStatus,bool>;
+
+    GainInfo determineGain(NEMId transmitterId,
+                           AntennaIndex txAntennaIndex,
+                           const LocationInfo & locationPairInfo);
 
   private:
-    using AntennaProfileStore = std::map<NEMId,Events::AntennaProfile>;
-    NEMId nemId_;
-    AntennaProfileStore antennaProfileStore_;
-    AntennaPattern * pLocalPattern_;
-    AntennaPattern * pLocalBlockage_;
-    PositionNEU localAntennaPlacement_;
-    double dLocalAntennaAzimuthDegrees_;
-    double dLocalAntennaElevationDegrees_;
-    bool bHasLocalAntennaProfile_;
+    using AntennaIndexMap = std::map<std::uint16_t,
+                                     Antenna>;
+
+    using AntennaStore = std::map<NEMId,
+                                  AntennaIndexMap>;
+    NEMId id_;
+    AntennaIndex rxAntennaIndex_;
+    AntennaManager & antennaManager_;
+    AntennaStore antennaStore_;
+    std::uint64_t u64AntennaUpdateSequence_;
+
+    struct AntennaPatternInfo
+    {
+      AntennaPattern * pPattern_;
+      AntennaPattern * pBlockage_;
+      PositionNEU placement_;
+
+      AntennaPatternInfo();
+
+      AntennaPatternInfo(AntennaPattern * pPattern,
+                         AntennaPattern * pBlockage,
+                         const PositionNEU & placement);
+    };
+
+    AntennaPatternInfo localAntennaPatternInfo_;
+
+    using GainCacheEntry = std::tuple<std::uint64_t,
+                                      std::uint64_t,
+                                      double>;
+
+    using Cache = std::map<NEMId, // Tx NEM Id
+                           std::map<AntennaIndex, // Tx Antenna Index
+                                    GainCacheEntry>>;
+
+    Cache gainCache_;
+
+    std::pair<double,bool>
+    getGainCache(NEMId transmitterId,
+                 const AntennaManager::AntennaInfo & txAntennaInfo,
+                 const AntennaManager::AntennaInfo & rxAntennaInfo,
+                 const LocationInfo & locationPairInfo);
+
+    void setGainCache(NEMId transmitterId,
+                      const AntennaManager::AntennaInfo & txAntennaInfo,
+                      const LocationInfo & locationPairInfo,
+                      double dGaindBi);
   };
 }
 

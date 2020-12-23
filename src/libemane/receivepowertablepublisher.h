@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include "emane/statisticregistrar.h"
 
 #include <set>
+#include <tuple>
 
 namespace EMANE
 {
@@ -47,12 +48,14 @@ namespace EMANE
     void registerStatistics(StatisticRegistrar & registrar);
 
     void update(NEMId nemId,
+                AntennaIndex rxAntennaIndex,
+                AntennaIndex txAntennaIndex,
                 std::uint64_t u64Frequency,
                 double dReceivePower,
                 const TimePoint & rxTime);
 
-    using ReceivePowerTableKey = std::pair<NEMId,std::uint64_t>;
-    
+    using ReceivePowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;
+
   private:
     StatisticTable<ReceivePowerTableKey> * pReceivePowerTable_;
     using ReceivePowerTableSet = std::set<ReceivePowerTableKey>;

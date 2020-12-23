@@ -5,9 +5,13 @@ emaneinc_HEADERS =                       \
  bitpool.inl                             \
  conversionutils.h                       \
  factoryexception.h                      \
+ functionwrapper.h                       \
+ functionwrapper.inl                     \
  netutils.h                              \
  parameterconvert.h                      \
  parameterconvert.inl                    \
+ processingpool.h                        \
+ processingpool.inl                      \
  randomnumberdistribution.h              \
  singleton.h                             \
  spectrumwindowutils.h                   \

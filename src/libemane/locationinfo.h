@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,22 +41,26 @@ namespace EMANE
   {
   public:
     LocationInfo();
-    
+
     LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV);
-      
+                 const PositionOrientationVelocity & remotePOV,
+                 std::uint64_t u64SequenceNumber);
+
     const PositionOrientationVelocity & getLocalPOV() const;
-    
+
     const PositionOrientationVelocity & getRemotePOV() const;
-    
+
+    std::uint64_t getSequenceNumber() const;
+
     double getDistanceMeters() const;
-    
-    bool operator!() const;
-    
+
+    bool isValid() const;
+
   private:
     PositionOrientationVelocity localPOV_;
     PositionOrientationVelocity remotePOV_;
     double dDistanceMeters_;
+    std::uint64_t u64SequenceNumber_;
   };
 };
 

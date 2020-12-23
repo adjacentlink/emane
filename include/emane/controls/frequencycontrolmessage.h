@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,8 +49,8 @@ namespace EMANE
      * @class FrequencyControlMessage
      *
      * @brief The Frequency Control Message is sent to the emulator physical
-     * layer to specify the frequency segment information to use on the downstream and 
-     * on the upstream is sent to the MAC layer to specify received frequency segment 
+     * layer to specify the frequency segment information to use on the downstream and
+     * on the upstream is sent to the MAC layer to specify received frequency segment
      * information including per segment receive power.
      *
      * @see FrequencySegment
@@ -65,14 +66,14 @@ namespace EMANE
        * @param u64BandwidthHz Bandwidth in Hz
        * @param frequencySegments Frequency segments
        *
-       * @note Once a control message is passed to another NEM layer using 
+       * @note Once a control message is passed to another NEM layer using
        * EMANE::UpstreamTransport::processUpstreamPacket(),
        * EMANE::UpstreamTransport::processUpstreamControl(),
-       * EMANE::DownstreamTransport::processDownstreamPacket() or 
+       * EMANE::DownstreamTransport::processDownstreamPacket() or
        * EMANE::DownstreamTransport::processDownstreamControl() object ownership is
        * transferred to the emulator infrastructure along with deallocation responsibility.
        * It is not valid to use a control message instance after it has been passed to another
-       * layer. 
+       * layer.
        */
       static
       FrequencyControlMessage * create(std::uint64_t u64BandwidthHz,
@@ -100,23 +101,23 @@ namespace EMANE
        * @see FrequencySegment
        */
       const FrequencySegments & getFrequencySegments() const;
-      
+
       /**
        * Gets the bandwidth in Hz
        *
        * @return bandwidth
        */
       std::uint64_t getBandwidthHz() const;
-      
+
       enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_FREQUENCY};
-      
+
     private:
       class Implementation;
-      std::unique_ptr<Implementation> pImpl_;
-      
+      std::shared_ptr<Implementation> pImpl_;
+
       FrequencyControlMessage(std::uint64_t u64BandwidthHz,
                               const FrequencySegments & frequencySegments);
-      
+
       FrequencyControlMessage(const FrequencyControlMessage &);
 
       FrequencyControlMessage &

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +50,7 @@ public:
   {
     return frequencySegments_;
   }
-  
+
 private:
   const std::uint64_t u64BandwidthHz_;
   const FrequencySegments frequencySegments_;
@@ -58,20 +59,20 @@ private:
 EMANE::Controls::FrequencyControlMessage::
 FrequencyControlMessage(const FrequencyControlMessage & msg):
   ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{*msg.pImpl_}}
+  pImpl_{msg.pImpl_}
 {}
 
 EMANE::Controls::FrequencyControlMessage::FrequencyControlMessage(std::uint64_t u64BandwidthHz,
-                                                        const FrequencySegments & frequencySegments):
+                                                                  const FrequencySegments & frequencySegments):
   ControlMessage{IDENTIFIER},
   pImpl_{new Implementation{u64BandwidthHz,frequencySegments}}{}
 
 EMANE::Controls::FrequencyControlMessage::~FrequencyControlMessage(){}
 
 
-EMANE::Controls::FrequencyControlMessage * 
+EMANE::Controls::FrequencyControlMessage *
 EMANE::Controls::FrequencyControlMessage::create(std::uint64_t u64BandwidthHz,
-                                                const FrequencySegments & frequencySegments)
+                                                 const FrequencySegments & frequencySegments)
 {
   return new FrequencyControlMessage{u64BandwidthHz,frequencySegments};
 }

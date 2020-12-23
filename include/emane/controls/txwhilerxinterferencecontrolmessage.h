@@ -94,7 +94,7 @@ namespace EMANE
        */
       double getRxPowerdBm() const;
 
-      enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_TX_WHILE_RX_INTERFERENCE_TIME_STAMP};
+      enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_TX_WHILE_RX_INTERFERENCE};
 
     private:
       class Implementation;

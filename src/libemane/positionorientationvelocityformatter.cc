@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,19 +39,19 @@ EMANE::PositionOrientationVelocityFormatter::
 PositionOrientationVelocityFormatter(const PositionOrientationVelocity & pov):
   pov_(pov)
 {}
-      
+
 EMANE::Strings EMANE::PositionOrientationVelocityFormatter::operator()() const
 {
   Strings strings{{"pov:"}};
 
-  if(!pov_)
+  if(!pov_.isValid())
     {
       strings.push_back("invalid");
     }
   else
     {
       strings.splice(strings.end(),PositionFormatter(pov_.getPosition())());
-  
+
       auto optionalOrientation =  pov_.getOrientation();
 
       if(optionalOrientation.second)

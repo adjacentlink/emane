@@ -134,6 +134,7 @@ namespace EMANE
   };
   
   using FrequencySegments = std::list<FrequencySegment>;
+  using FrequencyGroups = std::vector<FrequencySegments>;
 }
 
 #include "emane/frequencysegment.inl"

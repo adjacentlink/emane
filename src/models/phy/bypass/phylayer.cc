@@ -67,14 +67,13 @@ void EMANE::Models::Bypass::PHYLayer::processDownstreamPacket(DownstreamPacket &
                          __func__);
 
   CommonPHYHeader hdr{type_, // phy registration id
-      0,                     // subid
-      0,                     // tx power dBm
-      0,                     // bandwidth Hz
-      Clock::now(),          // time stamp
-      FrequencySegments{{0,Microseconds::zero()}},
-      Transmitters{{id_,0}},
-      {0,false},
-      {}};                     // antenna gain dBi
+                      0,                     // subid
+                      0,                     // tx power dBm
+                      Clock::now(),          // time stamp
+                      {FrequencySegments{{0,Microseconds::zero()}}},
+                      {},
+                      Transmitters{{id_,0}},
+                      {}};
 
   commonLayerStatistics_.processOutbound(pkt,
                                          std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime));

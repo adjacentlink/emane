@@ -3,4 +3,6 @@ SUBDIRS=              \
  noisescenario        \
  phyupstreamscenario  \
  profilescenario      \
- propagationscenario
+ propagationscenario  \
+ phydownstreamspeed   \
+ phyupstreamspeed

@@ -262,7 +262,7 @@ namespace EMANE
  *
  * Statistics can be given the @ref EMANE::StatisticProperties::CLEARABLE "StatisticProperties::CLEARABLE"
  * property during registration. This property lets client applications clear the statistic using the
- * @ref ControlPortInterface "Remote Control Port API".
+ * <a href="https://github.com/adjacentlink/emane-control-port-tutorial">Control Port API</a>.
  *
  * The following snippet shows an example of registering @a clearable statistics.
  *

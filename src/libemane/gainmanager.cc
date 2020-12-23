@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,259 +39,303 @@
 #include "locationinfoformatter.h"
 #include "positionneuformatter.h"
 
-EMANE::GainManager::GainManager(NEMId nemId):
-  nemId_{nemId},
-   pLocalPattern_{},
-   pLocalBlockage_{},
-   localAntennaPlacement_{},
-   dLocalAntennaAzimuthDegrees_{},
-   dLocalAntennaElevationDegrees_{},
-   bHasLocalAntennaProfile_{false}{}
+EMANE::GainManager::AntennaPatternInfo::AntennaPatternInfo():
+  pPattern_{},
+  pBlockage_{},
+  placement_{}{}
 
-void EMANE::GainManager::update(const Events::AntennaProfiles & antennaProfiles)
+EMANE::GainManager::AntennaPatternInfo::AntennaPatternInfo(AntennaPattern * pPattern,
+                                                           AntennaPattern * pBlockage,
+                                                           const PositionNEU & placement):
+  pPattern_{pPattern},
+  pBlockage_{pBlockage},
+  placement_{placement}{}
+
+EMANE::GainManager::GainManager(NEMId id,
+                                AntennaIndex rxAntennaIndex,
+                                AntennaManager & antennaManager):
+  id_{id},
+  rxAntennaIndex_{rxAntennaIndex},
+  antennaManager_(antennaManager),
+  u64AntennaUpdateSequence_{}{}
+
+void EMANE::GainManager::setGainCache(NEMId transmitterId,
+                                      const AntennaManager::AntennaInfo & txAntennaInfo,
+                                      const LocationInfo & locationPairInfo,
+                                      double dGaindBi)
 {
-  for(const auto & antennaProfile : antennaProfiles)
-    {
-      const auto ret = 
-        AntennaProfileManifest::instance()->getProfileInfo(antennaProfile.getAntennaProfileId());
-
-      // do we have the profile
-      if(ret.second)
-        {
-          if(nemId_ == antennaProfile.getNEMId())
-            {
-              pLocalPattern_ = std::get<0>(ret.first);
-              pLocalBlockage_ = std::get<1>(ret.first);
-              localAntennaPlacement_ =  std::get<2>(ret.first);
-              dLocalAntennaAzimuthDegrees_ = antennaProfile.getAntennaAzimuthDegrees();
-              dLocalAntennaElevationDegrees_ = antennaProfile.getAntennaElevationDegrees();
-              bHasLocalAntennaProfile_ = true;
-            }
-          else
-            {
-              antennaProfileStore_[antennaProfile.getNEMId()] = antennaProfile;
-            }
-        }
-      else
-        {
-          throw makeException<AntennaProfileException>("NEM %hu: unknown antenna profile %hu",
-                                                       nemId_,
-                                                       antennaProfile);
-        }
-    }
+  gainCache_[transmitterId][txAntennaInfo.antenna_.getIndex()] =
+    std::make_tuple(txAntennaInfo.u64UpdateSequence_,locationPairInfo.getSequenceNumber(),dGaindBi);
 }
 
-
-std::pair<double,EMANE::GainManager::GainStatus> 
-EMANE::GainManager::determineGain(NEMId transmitterId,
-                                  const LocationInfo & locationPairInfo,
-                                  const std::pair<double, bool> & optionalRxFixedGaindBi,
-                                  const std::pair<double, bool> & optionalTxFixedGaindBi) const
+std::pair<double,bool>
+EMANE::GainManager::getGainCache(NEMId transmitterId,
+                                 const AntennaManager::AntennaInfo & txAntennaInfo,
+                                 const AntennaManager::AntennaInfo & rxAntennaInfo,
+                                 const LocationInfo & locationPairInfo)
 {
-  double dRxAntennaGaindBi{optionalRxFixedGaindBi.first};
-  double dTxAntennaGaindBi{optionalTxFixedGaindBi.first};
-  double dRxAntennaBlockagedBi{};
-  double dTxAntennaBlockagedBi{};
-
-  PositionNEU antennaPlacement{};
-
-  LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
-                                  DEBUG_LEVEL,
-                                  LocationInfoFormatter(locationPairInfo),
-                                  "PHYI %03hu GainManager::%s src: %hu rx fixed gain %lf (%s) tx fixed gain %lf (%s)",
-                                  nemId_,
-                                  __func__,
-                                  transmitterId,
-                                  dRxAntennaGaindBi,
-                                  optionalRxFixedGaindBi.second ? "yes" : "no",
-                                  dTxAntennaGaindBi,
-                                  optionalTxFixedGaindBi.second ? "yes" : "no");
-  
-  if(!optionalTxFixedGaindBi.second)
+  if(rxAntennaInfo.u64UpdateSequence_ != u64AntennaUpdateSequence_)
     {
-      AntennaProfileStore::const_iterator remoteAntennaProfileIter;
-      
-      if(!locationPairInfo)
-        {
-          return {0,GainStatus::ERROR_LOCATIONINFO};
-        }
+      gainCache_.clear();
 
-      if((remoteAntennaProfileIter = antennaProfileStore_.find(transmitterId)) == antennaProfileStore_.end())
-        {
-          return {0,GainStatus::ERROR_PROFILEINFO};
-        }
-      
-      // retrieve remote transmitter antenna profile id and pointing info
-      auto ret = 
-        AntennaProfileManifest::instance()->getProfileInfo(remoteAntennaProfileIter->second.getAntennaProfileId());
+      u64AntennaUpdateSequence_ = rxAntennaInfo.u64UpdateSequence_;
+    }
+  else
+    {
+      auto txNEMIdIter = gainCache_.find(transmitterId);
 
-      // we have the profile info
-      if(ret.second)
+      if(txNEMIdIter != gainCache_.end())
         {
-          // get the antenna pattern and optional blockage and antenna placement
-          AntennaPattern * pRemotePattern{std::get<0>(ret.first)};
-          AntennaPattern * pRemoteBlockage{std::get<1>(ret.first)};
-          antennaPlacement = std::get<2>(ret.first);
-      
-          // calculate the direction: azimuth, elvation and distance
-          auto direction = 
-            Utils::calculateDirection(locationPairInfo.getRemotePOV(),
-                                      antennaPlacement,
-                                      locationPairInfo.getLocalPOV(),
-                                      localAntennaPlacement_);
-                
-          // adjust the direction azimuth and elvation based on the antenna pointing azimuth and elvation
-          auto lookupAngles = 
-            Utils::calculateLookupAngles(std::get<0>(direction),
-                                         remoteAntennaProfileIter->second.getAntennaAzimuthDegrees(),
-                                         std::get<1>(direction),
-                                         remoteAntennaProfileIter->second.getAntennaElevationDegrees());
-          
-          // get the remote transmitter antenna gain
-          dTxAntennaGaindBi = pRemotePattern->getGain(std::round(lookupAngles.first),
-                                                      std::round(lookupAngles.second));
-          
-          // get the blocakage, if specified 
-          //  Note: no adjustment is necessary to the direction azimuth and elvation
-          if(pRemoteBlockage)
+          auto antennaIndexIter = txNEMIdIter->second.find(txAntennaInfo.antenna_.getIndex());
+
+          if(antennaIndexIter != txNEMIdIter->second.end())
             {
-              dTxAntennaBlockagedBi = pRemoteBlockage->getGain(std::round(std::get<0>(direction)),
-                                                               std::round(std::get<1>(direction)));
+              std::uint64_t u64TxAntennaUpdateSequence{};
+              std::uint64_t u64LocationUpdateSequence{};
+              double dGaindBi{};
+
+              std::tie(u64TxAntennaUpdateSequence,
+                       u64LocationUpdateSequence,
+                       dGaindBi) = antennaIndexIter->second;
+
+              if(u64TxAntennaUpdateSequence == txAntennaInfo.u64UpdateSequence_ &&
+                 u64LocationUpdateSequence == locationPairInfo.getSequenceNumber())
+                {
+                  return {dGaindBi,true};
+                }
             }
+        }
+    }
+
+  return {};
+}
+
+EMANE::GainManager::GainInfo
+EMANE::GainManager::determineGain(NEMId transmitterId,
+                                  AntennaIndex txAntennaIndex,
+                                  const LocationInfo & locationPairInfo)
+{
+  const auto & remoteAntennaInfo = antennaManager_.getAntennaInfo(transmitterId,
+                                                                  txAntennaIndex);
+
+  const auto & localAntennaInfo = antennaManager_.getAntennaInfo(id_,
+                                                                 rxAntennaIndex_);
+
+  if(!remoteAntennaInfo.second || !localAntennaInfo.second)
+    {
+      return std::make_tuple(0,GainStatus::ERROR_PROFILEINFO,false);
+    }
+
+  auto cacheEntry = getGainCache(transmitterId,
+                                 remoteAntennaInfo.first,
+                                 localAntennaInfo.first,
+                                 locationPairInfo);
+
+  if(cacheEntry.second)
+    {
+      return std::make_tuple(cacheEntry.first,GainStatus::SUCCESS,true);
+    }
+
+  GainInfo gainInfo{};
+
+  const auto & remoteAntenna = remoteAntennaInfo.first.antenna_;
+
+  const auto & localAntenna = localAntennaInfo.first.antenna_;
+
+  double dAntennaGaindBi{};
+
+  if(!remoteAntenna.isIdealOmni())
+    {
+      AntennaStore::const_iterator remoteAntennaStoreIter;
+
+      if(!locationPairInfo.isValid())
+        {
+          return std::make_tuple(0,GainStatus::ERROR_LOCATIONINFO,false);
+        }
+
+      auto remotePointing = remoteAntenna.getPointing();
+
+      // we have the profile info w/ pattern info
+      if(remotePointing.second && remoteAntennaInfo.first.pPattern_)
+        {
+          // calculate the direction: azimuth, elvation and distance
+          auto direction =
+            Utils::calculateDirection(locationPairInfo.getRemotePOV(),
+                                      remoteAntennaInfo.first.placement_,
+                                      locationPairInfo.getLocalPOV(),
+                                      localAntennaInfo.first.placement_);
+
+          // adjust the direction azimuth and elevation based on the antenna pointing azimuth and elvation
+          auto lookupAngles =
+            Utils::calculateLookupAngles(std::get<0>(direction),
+                                         remotePointing.first.getAzimuthDegrees(),
+                                         std::get<1>(direction),
+                                         remotePointing.first.getElevationDegrees());
+
+          double dTxAntennaGaindBi{remoteAntennaInfo.first.pPattern_->getGain(std::round(lookupAngles.first),
+                                                                              std::round(lookupAngles.second))};
+
+          // get the blockage, if specified
+          //  Note: no adjustment is necessary to the direction azimuth and elvation
+
+          double dTxAntennaBlockagedBi{remoteAntennaInfo.first.pBlockage_ ?
+                                       remoteAntennaInfo.first.pBlockage_->getGain(std::round(std::get<0>(direction)),
+                                                                                   std::round(std::get<1>(direction))) :
+                                       0};
+
 
           LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
                                           DEBUG_LEVEL,
-                                          [this,&antennaPlacement]()
+                                          [this,&remoteAntennaInfo,&localAntennaInfo]()
                                           {
                                             Strings strings;
-                                            
+
                                             strings.push_back("remote antenna");
-                                            strings.splice(strings.end(),PositionNEUFormatter(antennaPlacement)());
+                                            strings.splice(strings.end(),PositionNEUFormatter(remoteAntennaInfo.first.placement_)());
 
                                             strings.push_back("local antenna");
-                                            strings.splice(strings.end(),PositionNEUFormatter(localAntennaPlacement_)());
+                                            strings.splice(strings.end(),PositionNEUFormatter(localAntennaInfo.first.placement_)());
 
                                             return strings;
                                           },
                                           "PHYI %03hu GainManager::%s remote calc tx antenna gain: %lf tx antenna"
                                           " blockage: %lf direction az: %lf el: %lf dist: %lf remote antenna az: %lf el: %lf"
                                           " lookup bearing: %lf lookup el: %lf",
-                                          nemId_,
+                                          id_,
                                           __func__,
                                           dTxAntennaGaindBi,
                                           dTxAntennaBlockagedBi,
                                           std::get<0>(direction),
                                           std::get<1>(direction),
                                           std::get<2>(direction),
-                                          remoteAntennaProfileIter->second.getAntennaAzimuthDegrees(),
-                                          remoteAntennaProfileIter->second.getAntennaElevationDegrees(),
+                                          remotePointing.first.getAzimuthDegrees(),
+                                          remotePointing.first.getElevationDegrees(),
                                           lookupAngles.first,
                                           lookupAngles.second);
+
+
+          dAntennaGaindBi = dTxAntennaGaindBi + dTxAntennaBlockagedBi;
+
         }
       else
         {
           // profile info is missing
-          return {0,GainStatus::ERROR_PROFILEINFO};
+          return std::make_tuple(0,GainStatus::ERROR_PROFILEINFO,false);
         }
     }
-            
-  if(!optionalRxFixedGaindBi.second)
+  else
     {
-      if(!locationPairInfo)
+      dAntennaGaindBi = remoteAntenna.getFixedGaindBi().first;
+    }
+
+  const auto & localPointing = localAntenna.getPointing();
+
+  if(!localAntenna.isIdealOmni())
+    {
+      if(!locationPairInfo.isValid())
         {
-          return {0,GainStatus::ERROR_LOCATIONINFO};
+          return std::make_tuple(0,GainStatus::ERROR_LOCATIONINFO,false);
         }
 
-      if(!bHasLocalAntennaProfile_)
+      if(!localPointing.second)
         {
-          return {0,GainStatus::ERROR_PROFILEINFO};
+          return std::make_tuple(0,GainStatus::ERROR_PROFILEINFO,false);
         }
 
       // calculate the direction: azimuth, elvation and distance
-      auto direction = 
+      auto direction =
         Utils::calculateDirection(locationPairInfo.getLocalPOV(),
-                                  localAntennaPlacement_,
+                                  localAntennaInfo.first.placement_,
                                   locationPairInfo.getRemotePOV(),
-                                  antennaPlacement);
+                                  remoteAntennaInfo.first.placement_);
 
-      // adjust the direction azimuth and elvation based on the antenna pointing azimuth and elvation
-      auto lookupAngles = 
+      // adjust the direction azimuth and elevation based on the antenna pointing azimuth and elvation
+      auto lookupAngles =
         Utils::calculateLookupAngles(std::get<0>(direction),
-                                     dLocalAntennaAzimuthDegrees_,
+                                     localPointing.first.getAzimuthDegrees(),
                                      std::get<1>(direction),
-                                     dLocalAntennaElevationDegrees_);
+                                     localPointing.first.getElevationDegrees());
 
-      // get the local receiver antenna gain   
-      dRxAntennaGaindBi =
-        pLocalPattern_->getGain(std::round(lookupAngles.first),
-                                std::round(lookupAngles.second));
+      // get the local receiver antenna gain
+      double dRxAntennaGaindBi{localAntennaInfo.first.pPattern_->getGain(std::round(lookupAngles.first),
+                                                                         std::round(lookupAngles.second))};
 
-      // get the blocakage, if specified 
+      // get the blockage, if specified
       //  Note: no adjustment is necessary to the direction azimuth and elvation
-      if(pLocalBlockage_)
-        {
-          dRxAntennaBlockagedBi =
-            pLocalBlockage_->getGain(std::round(std::get<0>(direction)),
-                                     std::round(std::get<1>(direction)));
-        }
+      double dRxAntennaBlockagedBi{localAntennaInfo.first.pBlockage_ ?
+                                   localAntennaInfo.first.pBlockage_->getGain(std::round(std::get<0>(direction)),
+                                                                              std::round(std::get<1>(direction))) :
+                                   0};
 
       LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
                                       DEBUG_LEVEL,
-                                      [this,&antennaPlacement]()
+                                      [this,&remoteAntennaInfo,&localAntennaInfo]()
                                       {
                                         Strings strings;
 
                                         strings.push_back("local antenna");
-                                        strings.splice(strings.end(),PositionNEUFormatter(localAntennaPlacement_)());
-                                        
+                                        strings.splice(strings.end(),PositionNEUFormatter(localAntennaInfo.first.placement_)());
+
                                         strings.push_back("remote antenna");
-                                        strings.splice(strings.end(),PositionNEUFormatter(antennaPlacement)());
+                                        strings.splice(strings.end(),PositionNEUFormatter(remoteAntennaInfo.first.placement_)());
 
                                         return strings;
                                       },
                                       "PHYI %03hu GainManager::%s local calc rx antenna gain: %lf rx antenna"
                                       " blockage: %lf direction az: %lf el: %lf dist: %lf local antenna az: %lf el: %lf"
                                       " lookup bearing: %lf lookup el: %lf",
-                                      nemId_,
+                                      id_,
                                       __func__,
                                       dRxAntennaGaindBi,
                                       dRxAntennaBlockagedBi,
                                       std::get<0>(direction),
                                       std::get<1>(direction),
                                       std::get<2>(direction),
-                                      dLocalAntennaAzimuthDegrees_,
-                                      dLocalAntennaElevationDegrees_,
+                                      localPointing.first.getAzimuthDegrees(),
+                                      localPointing.first.getElevationDegrees(),
                                       lookupAngles.first,
-                                      lookupAngles.second);                            
-          
+                                      lookupAngles.second);
 
+      dAntennaGaindBi += dRxAntennaGaindBi + dRxAntennaBlockagedBi;
+    }
+  else
+    {
+      dAntennaGaindBi += localAntenna.getFixedGaindBi().first;
     }
 
   const auto & localPosition = locationPairInfo.getLocalPOV().getPosition();
   const auto & remotePosition = locationPairInfo.getRemotePOV().getPosition();
   double dDistanceMeters{locationPairInfo.getDistanceMeters()};
-  
+
   // check if antennas are below the horizon
-  if(!locationPairInfo == false && 
+  if(locationPairInfo.isValid() &&
      dDistanceMeters > 10 &&
      Utils::checkHorizon(localPosition.getAltitudeMeters() +
-                         localAntennaPlacement_.getUpMeters(),
+                         localAntennaInfo.first.placement_.getUpMeters(),
                          remotePosition.getAltitudeMeters() +
-                         antennaPlacement.getUpMeters(),
-                         dDistanceMeters) == false) 
+                         remoteAntennaInfo.first.placement_.getUpMeters(),
+                         dDistanceMeters) == false)
     {
-      // below horizon use minimal gain
-      return {0,GainStatus::ERROR_HORIZON};
+      // below horizon
+      return std::make_tuple(0,GainStatus::ERROR_HORIZON,false);
+    }
+  else
+    {
+      setGainCache(transmitterId,
+                   remoteAntennaInfo.first,
+                   locationPairInfo,
+                   dAntennaGaindBi);
+
+      LOGGER_VERBOSE_LOGGING(*LogServiceSingleton::instance(),
+                             DEBUG_LEVEL,
+                             "PHYI %03hu GainManager::%s tx antenna index: %hu"
+                             " rx antenna index: %hu combined gain: %lf",
+                             id_,
+                             __func__,
+                             remoteAntenna.getIndex(),
+                             rxAntennaIndex_,
+                             dAntennaGaindBi);
     }
 
-  double dCombinedGaindBi{dRxAntennaGaindBi + dRxAntennaBlockagedBi + dTxAntennaGaindBi + dTxAntennaBlockagedBi};
-
-  LOGGER_VERBOSE_LOGGING(*LogServiceSingleton::instance(),
-                         DEBUG_LEVEL,
-                         "PHYI %03hu GainManager::%s combined gain: %lf",
-                         nemId_,
-                         __func__,
-                         dCombinedGaindBi);
-  
-  return {dCombinedGaindBi, GainStatus::SUCCESS};
+  return std::make_tuple(dAntennaGaindBi,GainStatus::SUCCESS,false);
 }

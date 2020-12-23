@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +54,7 @@ public:
   {
     return propagation_;
   }
-  
+
   Microseconds getSpan() const
   {
     return span_;
@@ -63,7 +64,7 @@ public:
   {
     return dReceiverSensitivitydBm_;
   }
-  
+
 private:
   const TimePoint sot_;
   const Microseconds propagation_;
@@ -74,7 +75,7 @@ private:
 EMANE::Controls::ReceivePropertiesControlMessage::
 ReceivePropertiesControlMessage(const ReceivePropertiesControlMessage & msg):
   ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{*msg.pImpl_}}
+  pImpl_{msg.pImpl_}
 {}
 
 
@@ -88,7 +89,7 @@ EMANE::Controls::ReceivePropertiesControlMessage::ReceivePropertiesControlMessag
 EMANE::Controls::ReceivePropertiesControlMessage::~ReceivePropertiesControlMessage(){}
 
 
-EMANE::Controls::ReceivePropertiesControlMessage * 
+EMANE::Controls::ReceivePropertiesControlMessage *
 EMANE::Controls::ReceivePropertiesControlMessage::create(const TimePoint & sot,
                                                          const Microseconds & propagation,
                                                          const Microseconds & span,

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,13 +42,13 @@ namespace EMANE
   {
   public:
     TwoRayPropagationModelAlgorithm(NEMId){}
-      
+
     std::pair<std::vector<double>, bool> operator()(NEMId,
                                                     const LocationInfo & locationPairInfo,
                                                     const FrequencySegments & segments) override
     {
       // at least one location is unknown
-      if(!locationPairInfo)
+      if(!locationPairInfo.isValid())
         {
           return {{},false};
         }
@@ -64,7 +65,7 @@ namespace EMANE
              (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
               log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
         }
-        
+
       return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
     }
   };

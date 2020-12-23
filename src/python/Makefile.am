@@ -43,6 +43,7 @@ BUILT_SOURCES =                  \
  emane/events/onehopneighborsevent_pb2.py \
  emane/ota/otaheader_pb2.py \
  emane/ota/commonphyheader_pb2.py \
+ emane/ota/commonmacheader_pb2.py \
  emane/shell/schema/manifest.xsd \
  setup.py
 
@@ -75,6 +76,9 @@ emane/ota/otaheader_pb2.py: ../libemane/otaheader.proto
 	protoc -I../libemane --python_out=emane/ota  $<
 
 emane/ota/commonphyheader_pb2.py: ../libemane/commonphyheader.proto
+	protoc -I../libemane --python_out=emane/ota  $<
+
+emane/ota/commonmacheader_pb2.py: ../libemane/commonmacheader.proto
 	protoc -I../libemane --python_out=emane/ota  $<
 
 emane/events/pathlossevent_pb2.py: ../libemane/pathlossevent.proto

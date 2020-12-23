@@ -2,12 +2,20 @@ emaneincdir = $(includedir)/emane/controls
 
 emaneinc_HEADERS =                           \
  antennaprofilecontrolmessage.h              \
+ antennareceiveinfo.h                        \
+ antennareceiveinfo.inl                      \
+ antennaselfinterference.h                   \
+ antennaselfinterference.inl                 \
  controlmessageids.h                         \
  flowcontrolcontrolmessage.h                 \
  frequencycontrolmessageformatter.h          \
  frequencycontrolmessage.h                   \
  frequencyofinterestcontrolmessage.h         \
  frequencyofinterestcontrolmessageformatter.h\
+ mimoreceivepropertiescontrolmessage.h       \
+ mimoreceivepropertiescontrolmessageformatter.h \
+ mimotransmitpropertiescontrolmessage.h      \
+ mimotxwhilerxinterferencecontrolmessage.h   \
  otatransmittercontrolmessage.h              \
  r2rineighbormetriccontrolmessage.h          \
  r2rineighbormetriccontrolmessageformatter.h \
@@ -21,6 +29,12 @@ emaneinc_HEADERS =                           \
  r2riselfmetriccontrolmessageformatter.h     \
  receivepropertiescontrolmessage.h           \
  receivepropertiescontrolmessageformatter.h  \
+ rxantennaaddcontrolmessage.h                \
+ rxantennaaddcontrolmessageformatter.h       \
+ rxantennaremovecontrolmessage.h             \
+ rxantennaremovecontrolmessageformatter.h    \
+ rxantennaupdatecontrolmessage.h             \
+ rxantennaupdatecontrolmessageformatter.h    \
  serializedcontrolmessage.h                  \
  spectrumfilteraddcontrolmessage.h           \
  spectrumfilteraddcontrolmessageformatter.h  \

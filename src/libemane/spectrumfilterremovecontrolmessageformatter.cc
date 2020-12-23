@@ -40,5 +40,7 @@ EMANE::Strings EMANE::Controls::SpectrumFilterRemoveControlMessageFormatter::ope
 {
   Strings strings{"filter index: " + std::to_string(pMsg_->getFilterIndex())};
 
+  strings.push_back("antenna index: " + std::to_string(pMsg_->getAntennaIndex()));
+
   return strings;
 }

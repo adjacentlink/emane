@@ -1,6 +1,8 @@
 [1] configure 
 [1]  bandwidth:
 [1]    1200000
+[1]  compatibilitymode:
+[1]    1
 [1]  excludesamesubidfromfilterenable:
 [1]    1
 [1]  fading.model:
@@ -37,8 +39,14 @@
 [1]    300000
 [1]  noisemode:
 [1]    all
+[1]  processingpoolsize:
+[1]    0
 [1]  propagationmodel:
 [1]    precomputed
+[1]  rxsensitivitypromiscuousmodeenable:
+[1]    0
+[1]  stats.receivepowertableenable:
+[1]    1
 [1]  subid:
 [1]    1
 [1]  systemnoisefigure:
@@ -56,23 +64,25 @@
 [3]  Common PHY Header data:
 [3]   regid: 7
 [3]   seq: 1
-[3]   bandwidth: 1200000
-[3]   fixed antenna gain: on
-[3]   fixed antenna gain: 0.000000
 [3]   tx time: 30.000000
+[3]   freq group: 0
 [3]   freq: 2500000000
 [3]   duration: 200
 [3]   offset: 0
+[3]   antenna: 0
+[3]   freq index: 0
+[3]   bandwidth: 1200000
+[3]   fixed gain: 1
 [3]   src: 2
 [3]   transmitter power: 0.000000
 
 [3]  Packet dropped
 
 [3] BroadcastPacketDropTable0
-[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[3] |2  |0          |0             |0                |1            |0           |0           |0      |0             |0            |0             |0          |
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[3] |2  |0          |0             |0                |1            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [3] UnicastPacketDropTable0
-[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[3] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [4] location 1 P:[40.025495,-74.515441,3]
 [4] location 2 P:[40.025495,-74.312888,3]
@@ -81,23 +91,25 @@
 [5]  Common PHY Header data:
 [5]   regid: 7
 [5]   seq: 2
-[5]   bandwidth: 1200000
-[5]   fixed antenna gain: on
-[5]   fixed antenna gain: 0.000000
 [5]   tx time: 30.000010
+[5]   freq group: 0
 [5]   freq: 250000000
 [5]   duration: 200
 [5]   offset: 0
+[5]   antenna: 0
+[5]   freq index: 0
+[5]   bandwidth: 1200000
+[5]   fixed gain: 1
 [5]   src: 2
 [5]   transmitter power: 0.000000
 
 [5]  Packet dropped
 
 [5] BroadcastPacketDropTable0
-[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[5] |2  |0          |0             |0                |1            |0           |1           |0      |0             |0            |0             |0          |
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[5] |2  |0          |0             |0                |1            |0           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
 [5] UnicastPacketDropTable0
-[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[5] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [6] profile 1 profileId: 3 azimuth: 45 elevation: 0
 [6] profile 4 profileId: 4 azimuth: 330 elevation: 60
@@ -106,23 +118,25 @@
 [7]  Common PHY Header data:
 [7]   regid: 7
 [7]   seq: 3
-[7]   bandwidth: 1200000
-[7]   fixed antenna gain: on
-[7]   fixed antenna gain: 0.000000
 [7]   tx time: 30.000020
+[7]   freq group: 0
 [7]   freq: 250000000
 [7]   duration: 200
 [7]   offset: 0
+[7]   antenna: 0
+[7]   freq index: 0
+[7]   bandwidth: 1200000
+[7]   fixed gain: 1
 [7]   src: 2
 [7]   transmitter power: 0.000000
 
 [7]  Packet dropped
 
 [7] BroadcastPacketDropTable0
-[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[7] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
+[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[7] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
 [7] UnicastPacketDropTable0
-[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[7] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [8] location 1 P:[40.025495,-74.315441,3] O:[0,0,30] V:[60,0,10]
 [8] location 2 P:[40.023235,-74.312889,3]
@@ -133,24 +147,25 @@
 [9]  Common PHY Header data:
 [9]   regid: 7
 [9]   seq: 4
-[9]   bandwidth: 1200000
-[9]   fixed antenna gain: off
-[9]   fixed antenna gain: 0.000000
 [9]   tx time: 30.000040
+[9]   freq group: 0
 [9]   freq: 250000000
 [9]   duration: 200
 [9]   offset: 0
+[9]   antenna: 0
+[9]   freq index: 0
+[9]   bandwidth: 1200000
 [9]   src: 4
 [9]   transmitter power: 0.000000
 
 [9]  Packet dropped
 
 [9] BroadcastPacketDropTable0
-[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[9] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
-[9] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[9] |2  |0          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
+[9] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [9] UnicastPacketDropTable0
-[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[9] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [10] profile 1 profileId: 3 azimuth: 45 elevation: -8
 [10] profile 4 profileId: 4 azimuth: 330 elevation: 0
@@ -161,13 +176,14 @@
 [12]  Common PHY Header data:
 [12]   regid: 7
 [12]   seq: 5
-[12]   bandwidth: 1200000
-[12]   fixed antenna gain: off
-[12]   fixed antenna gain: 0.000000
 [12]   tx time: 30.000060
+[12]   freq group: 0
 [12]   freq: 250000000
 [12]   duration: 200
 [12]   offset: 100
+[12]   antenna: 0
+[12]   freq index: 0
+[12]   bandwidth: 1200000
 [12]   src: 4
 [12]   transmitter power: 2.000000
 
@@ -184,7 +200,7 @@
 [12]   sot: 30.000060
 [12]   span: 200
 [12]   prop delay: 1
-[12]   receiver sensativity: -109.208188
+[12]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
 [13] window
@@ -200,13 +216,15 @@ Processing upstream packet...
 [14]  Common PHY Header data:
 [14]   regid: 7
 [14]   seq: 6
-[14]   bandwidth: 1200000
-[14]   fixed antenna gain: on
-[14]   fixed antenna gain: 0.000000
 [14]   tx time: 30.002000
+[14]   freq group: 0
 [14]   freq: 250000000
 [14]   duration: 100
 [14]   offset: 200
+[14]   antenna: 0
+[14]   freq index: 0
+[14]   bandwidth: 1200000
+[14]   fixed gain: 1
 [14]   src: 2
 [14]   transmitter power: 0.000000
 [14]   src: 3
@@ -215,23 +233,24 @@ Processing upstream packet...
 [14]  Packet dropped
 
 [14] BroadcastPacketDropTable0
-[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[14] |2  |1          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
-[14] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[14] |2  |1          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
+[14] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [14] UnicastPacketDropTable0
-[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[14] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [15] packet
 [15]  Common PHY Header data:
 [15]   regid: 7
 [15]   seq: 7
-[15]   bandwidth: 1200000
-[15]   fixed antenna gain: off
-[15]   fixed antenna gain: 0.000000
 [15]   tx time: 30.002000
+[15]   freq group: 0
 [15]   freq: 250000000
 [15]   duration: 500
 [15]   offset: 0
+[15]   antenna: 0
+[15]   freq index: 0
+[15]   bandwidth: 1200000
 [15]   src: 4
 [15]   transmitter power: 12.000000
 
@@ -248,7 +267,7 @@ Processing upstream packet...
 [15]   sot: 30.002000
 [15]   span: 500
 [15]   prop delay: 1
-[15]   receiver sensativity: -109.208188
+[15]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
 [16] window
@@ -266,13 +285,14 @@ Processing upstream packet...
 [17]  Common PHY Header data:
 [17]   regid: 7
 [17]   seq: 8
-[17]   bandwidth: 1200000
-[17]   fixed antenna gain: off
-[17]   fixed antenna gain: 0.000000
 [17]   tx time: 40.002010
+[17]   freq group: 0
 [17]   freq: 250000000
 [17]   duration: 500
 [17]   offset: 0
+[17]   antenna: 0
+[17]   freq index: 0
+[17]   bandwidth: 1200000
 [17]   src: 4
 [17]   transmitter power: 12.000000
 
@@ -289,55 +309,59 @@ Processing upstream packet...
 [17]   sot: 40.002010
 [17]   span: 500
 [17]   prop delay: 1
-[17]   receiver sensativity: -109.208188
+[17]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
 [18] packet
 [18]  Common PHY Header data:
 [18]   regid: 7
 [18]   seq: 9
-[18]   bandwidth: 1200000
-[18]   fixed antenna gain: on
-[18]   fixed antenna gain: 0.000000
 [18]   tx time: 40.002105
+[18]   freq group: 0
 [18]   freq: 250000000
 [18]   duration: 400
 [18]   offset: 0
+[18]   antenna: 0
+[18]   freq index: 0
+[18]   bandwidth: 1200000
+[18]   fixed gain: 1
 [18]   src: 2
 [18]   transmitter power: 0.000000
 
 [18]  Packet dropped
 
 [18] BroadcastPacketDropTable0
-[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[18] |2  |2          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
-[18] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[18] |2  |2          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
+[18] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [18] UnicastPacketDropTable0
-[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[18] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [19] packet
 [19]  Common PHY Header data:
 [19]   regid: 7
 [19]   seq: 10
-[19]   bandwidth: 1200000
-[19]   fixed antenna gain: on
-[19]   fixed antenna gain: 0.000000
 [19]   tx time: 40.002115
+[19]   freq group: 0
 [19]   freq: 250000000
 [19]   duration: 410
 [19]   offset: 100
+[19]   antenna: 0
+[19]   freq index: 0
+[19]   bandwidth: 1200000
+[19]   fixed gain: 1
 [19]   src: 3
 [19]   transmitter power: 5.000000
 
 [19]  Packet dropped
 
 [19] BroadcastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[19] |2  |2          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |
-[19] |3  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
-[19] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[19] |2  |2          |0             |0                |1            |1           |1           |0      |0             |0            |0             |0          |0           |0           |0              |
+[19] |3  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
+[19] |4  |0          |1             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [19] UnicastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [20] window
 [20]  request window time: 40002011

@@ -104,6 +104,13 @@ namespace EMANE
      *
      * @return frequency set
      */
+    virtual FrequencySet getAntennaFrequencies(AntennaIndex antennaIndex) const = 0;
+
+    /**
+     * Gets the set of monitored frequencies
+     *
+     * @return frequency set
+     */
     virtual FrequencySet getFrequencies() const = 0;
 
     /**
@@ -112,6 +119,13 @@ namespace EMANE
      * @return receiver sensitivity
      */
     virtual double getReceiverSensitivitydBm() const = 0;
+
+    /**
+     * Gets the receiver sensitivity in dBm
+     *
+     * @return receiver sensitivity
+     */
+    virtual double getAntennaReceiverSensitivitydBm(AntennaIndex antennaIndex) const = 0;
 
     /**
      * Gets a spectrum window
@@ -151,6 +165,11 @@ namespace EMANE
                                    const TimePoint & startTime = TimePoint::min()) const = 0;
 
 
+    virtual SpectrumWindow requestAntenna(AntennaIndex antennaIndex,
+                                          std::uint64_t u64FrequencyHz,
+                                          const Microseconds & duration = Microseconds::zero(),
+                                          const TimePoint & startTime = TimePoint::min()) const = 0;
+
     /**
      * Gets a filter spectrum window
      *
@@ -185,6 +204,11 @@ namespace EMANE
     virtual SpectrumFilterWindow requestFilter(FilterIndex filterIndex,
                                                const Microseconds & duration = Microseconds::zero(),
                                                const TimePoint & startTime = TimePoint::min()) const = 0;
+
+    virtual SpectrumFilterWindow requestAntennaFilter(AntennaIndex antennaIndex,
+                                                      std::uint16_t u16FilterId,
+                                                      const Microseconds & duration = Microseconds::zero(),
+                                                      const TimePoint & startTime = TimePoint::min()) const = 0;
 
   protected:
     SpectrumServiceProvider() = default;

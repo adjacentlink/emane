@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,18 +37,18 @@ namespace
                                        const EMANE::Velocity & velocity)
   {
     double dYaw{velocity.getAzimuthDegrees() + orientation.getYawDegrees()};
-    
+
     // set yaw to [0 to 360)
     EMANE::Utils::AI_TO_BE_DEGREES(dYaw, 0.0, 360.0);
-          
+
     double dPitch{velocity.getElevationDegrees() + orientation.getPitchDegrees()};
-    
+
     // set dpitch to [0 to 360)
     EMANE::Utils::AI_TO_BE_DEGREES(dPitch, 0.0, 360.0);
-    
+
     // set pitch to [-90 to 90]
     EMANE::Utils::NEG_90_TO_POS_90_DEGREES(dPitch);
-    
+
     return {orientation.getRollDegrees(),dPitch,dYaw};
   }
 }
@@ -97,26 +97,26 @@ bool EMANE::PositionOrientationVelocity::update(const Position & position,
         }
 
       bool bCalculateAdjustedOrientation{false};
-      
+
       if(orientation.second)
         {
           orientation_ = orientation.first;
           bHasOrientation_ = true;
           bCalculateAdjustedOrientation = true;
         }
-      
+
       if(velocity.second)
         {
           velocity_ = velocity.first;
           bHasVelocity_ = true;
           bCalculateAdjustedOrientation = true;
         }
-            
+
       if(bCalculateAdjustedOrientation)
         {
           adjustedOrientation_ = adjustOrientation(orientation_,velocity_);
         }
-      
+
       return true;
     }
 }
@@ -160,32 +160,32 @@ EMANE::PositionNEU  EMANE::PositionOrientationVelocity::getPositionNEU(const Pos
   double dX{otherECEF.getX() - selfECEF.getX()};
   double dY{otherECEF.getY() - selfECEF.getY()};
   double dZ{ otherECEF.getZ() - selfECEF.getZ()};
-        
+
   double dLatitudeRadians{position_.getLatitudeRadians()};
   double dLongitudeRadians{position_.getLongitudeRadians()};
 
-  double dNorthMeters{-dX * sin(dLatitudeRadians) * cos(dLongitudeRadians) - 
-      dY * sin(dLatitudeRadians) * sin(dLongitudeRadians) + 
-      dZ * cos(dLatitudeRadians)};
+  double dNorthMeters{-dX * sin(dLatitudeRadians) * cos(dLongitudeRadians) -
+                      dY * sin(dLatitudeRadians) * sin(dLongitudeRadians) +
+                      dZ * cos(dLatitudeRadians)};
 
   double dEastMeters{-dX * sin(dLongitudeRadians) + dY * cos(dLongitudeRadians)};
-         
-  double dUpMeters{dX * cos(dLatitudeRadians) * cos(dLongitudeRadians) + 
-      dY * cos(dLatitudeRadians) * sin(dLongitudeRadians) + 
-      dZ * sin(dLatitudeRadians)};
+
+  double dUpMeters{dX * cos(dLatitudeRadians) * cos(dLongitudeRadians) +
+                   dY * cos(dLatitudeRadians) * sin(dLongitudeRadians) +
+                   dZ * sin(dLatitudeRadians)};
 
   PositionNEU otherNEU{dNorthMeters,dEastMeters,dUpMeters};
-        
+
   if(bHasOrientation_ || bHasVelocity_)
     {
       otherNEU.rotate(adjustedOrientation_);
     }
-        
+
   return otherNEU;
 };
 
 inline
-bool EMANE::PositionOrientationVelocity::operator!() const
+bool EMANE::PositionOrientationVelocity::isValid() const
 {
-  return bValid_==false;
+  return bValid_;
 }

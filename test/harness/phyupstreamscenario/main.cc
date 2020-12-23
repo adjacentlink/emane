@@ -139,7 +139,7 @@ namespace
 
 void usage();
 
-EMANE::FrameworkPHY * createPHY(EMANE::NEMId id,EMANE::SpectrumMonitor * pSpectrumMonitor);
+EMANE::FrameworkPHY * createPHY(EMANE::NEMId id,EMANE::SpectrumService * pSpectrumService);
 
 
 int main(int argc, char * argv[])
@@ -267,9 +267,9 @@ int main(int argc, char * argv[])
 
       xmlFree(pNEMId);
 
-      EMANE::SpectrumMonitor spectrumMonitor{};
+      EMANE::SpectrumService spectrumService{};
 
-      auto pPHYLayer = createPHY(id,&spectrumMonitor);
+      auto pPHYLayer = createPHY(id,&spectrumService);
 
       HarnessUpstreamTransport harnessUpstreamTransport;
 
@@ -800,15 +800,21 @@ int main(int argc, char * argv[])
 
                               std::size_t currentTotalProccessed = harnessUpstreamTransport.getTotalProcessed();
 
+                              auto antenna = bTxHasFixedGain ?
+                                EMANE::Antenna::createIdealOmni(EMANE::DEFAULT_ANTENNA_INDEX,dTxFixedGain) :
+                                EMANE::Antenna::createProfileDefined(EMANE::DEFAULT_ANTENNA_INDEX);
+
+                              antenna.setFrequencyGroupIndex(0);
+
+                              antenna.setBandwidthHz(bandwidth);
 
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
                                                          subId,
                                                          ++u16SequenceNumber,
-                                                         bandwidth,
                                                          EMANE::TimePoint{txTime},
-                                                         segments,
+                                                         {segments},
+                                                         {antenna},
                                                          transmitters,
-                                                         {dTxFixedGain,bTxHasFixedGain},
                                                          {}};
 
                               std::cout<<"["<<iActionIndex<<"]  Common PHY Header data:"<<std::endl;
@@ -918,7 +924,7 @@ int main(int argc, char * argv[])
                                   double dReceiverSensitivityMilliWatt{};
                                   bool bSignalInNoise{};
 
-                                  auto window = spectrumMonitor.request_i(EMANE::TimePoint{now},frequency,duration,timepoint);
+                                  auto window = spectrumService.request_i(EMANE::TimePoint{now},frequency,duration,timepoint);
 
                                   std::tie(bins,startOfBinTime,binSize,dReceiverSensitivityMilliWatt,bSignalInNoise) = window;
 
@@ -1169,11 +1175,11 @@ void usage()
   std::cout<<std::endl;
 }
 
-EMANE::FrameworkPHY * createPHY(EMANE::NEMId id, EMANE::SpectrumMonitor * pSpectrumMonitor)
+EMANE::FrameworkPHY * createPHY(EMANE::NEMId id, EMANE::SpectrumService * pSpectrumService)
 {
   EMANE::PlatformService * pPlatformService{new EMANE::PlatformService{}};
 
-  EMANE::FrameworkPHY * pPHYLayer{new EMANE::FrameworkPHY{id, pPlatformService,pSpectrumMonitor}};
+  EMANE::FrameworkPHY * pPHYLayer{new EMANE::FrameworkPHY{id, pPlatformService,pSpectrumService}};
 
   EMANE::BuildId buildId{EMANE::BuildIdServiceSingleton::instance()->registerBuildable(pPHYLayer,
                                                                                        EMANE::COMPONENT_PHYILAYER,

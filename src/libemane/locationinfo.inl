@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,22 +36,25 @@ inline
 EMANE::LocationInfo::LocationInfo():
   localPOV_{},
   remotePOV_{},
-  dDistanceMeters_{}{}
+  dDistanceMeters_{},
+  u64SequenceNumber_{}{}
 
 inline
 EMANE::LocationInfo::LocationInfo(const PositionOrientationVelocity & localPOV,
-                                  const PositionOrientationVelocity & remotePOV):
+                                  const PositionOrientationVelocity & remotePOV,
+                                  std::uint64_t u64SequenceNumber):
   localPOV_{localPOV},
   remotePOV_{remotePOV},
-  dDistanceMeters_{}
+  dDistanceMeters_{},
+  u64SequenceNumber_{u64SequenceNumber}
 {
   if(localPOV.getPosition() != remotePOV.getPosition())
     {
       const auto & pos1 = localPOV.getPositionECEF();
       const auto & pos2 = remotePOV.getPositionECEF();
-      
+
       // return distance
-      dDistanceMeters_ =  Utils::NORMALIZE_VECTOR(pos2.getX() - pos1.getX(), 
+      dDistanceMeters_ =  Utils::NORMALIZE_VECTOR(pos2.getX() - pos1.getX(),
                                                   pos2.getY() - pos1.getY(),
                                                   pos2.getZ() - pos1.getZ());
     }
@@ -63,7 +66,7 @@ const EMANE::PositionOrientationVelocity & EMANE::LocationInfo::getLocalPOV() co
   return localPOV_;
 }
 
-inline   
+inline
 const EMANE::PositionOrientationVelocity & EMANE::LocationInfo::getRemotePOV() const
 {
   return remotePOV_;
@@ -75,8 +78,14 @@ double EMANE::LocationInfo::getDistanceMeters() const
   return dDistanceMeters_;
 }
 
-inline   
-bool EMANE::LocationInfo::operator!() const
+inline
+std::uint64_t EMANE::LocationInfo::getSequenceNumber() const
 {
-  return !localPOV_ || !remotePOV_;
+  return u64SequenceNumber_;
+}
+
+inline
+bool EMANE::LocationInfo::isValid() const
+{
+  return localPOV_.isValid() && remotePOV_.isValid();
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +48,7 @@ namespace EMANE
   {
   public:
     PositionOrientationVelocity();
-      
+
     PositionOrientationVelocity(const Position & position,
                                 const std::pair<const Orientation &, bool> & orientation,
                                 const std::pair<const Velocity &, bool> & velocity);
@@ -55,21 +56,21 @@ namespace EMANE
     bool update(const Position & position,
                 const std::pair<const Orientation &, bool> & orientation,
                 const std::pair<const Velocity &, bool> & velocity);
-    
+
     const Position & getPosition() const;
-    
+
     std::pair<const Orientation &, bool> getOrientation() const;
-    
+
     std::pair<const Orientation &, bool> getAdjustedOrientation() const;
-    
+
     std::pair<const Velocity &, bool> getVelocity() const;
-    
+
     const PositionECEF & getPositionECEF() const;
-    
+
     PositionNEU getPositionNEU(const PositionOrientationVelocity & other) const;
-    
-    bool operator!() const;
-    
+
+    bool isValid() const;
+
   private:
     Position position_;
     Orientation orientation_;

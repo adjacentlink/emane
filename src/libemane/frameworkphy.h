@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016-2017,2019 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016-2017,2019-2020 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -37,14 +37,17 @@
 #include "emane/phylayerimpl.h"
 #include "emane/phytypes.h"
 #include "emane/utils/commonlayerstatistics.h"
+#include "emane/utils/processingpool.h"
 
 #include "locationmanager.h"
-#include "spectrummonitor.h"
+#include "spectrumservice.h"
 #include "gainmanager.h"
+#include "antennamanager.h"
 #include "propagationmodelalgorithm.h"
 #include "eventtablepublisher.h"
 #include "receivepowertablepublisher.h"
 #include "fadingmanager.h"
+#include "receiveprocessor.h"
 
 #include <set>
 #include <cstdint>
@@ -57,7 +60,7 @@ namespace EMANE
   public:
     FrameworkPHY(NEMId id,
                  PlatformServiceProvider* pPlatformService,
-                 SpectrumMonitor * pSpectrumMonitor);
+                 SpectrumService * pSpectrumService);
 
     ~FrameworkPHY();
 
@@ -88,6 +91,11 @@ namespace EMANE
     void processDownstreamPacket(DownstreamPacket & pkt,
                                  const ControlMessages & msgs) override;
 
+    // provides test harness access
+    void processDownstreamPacket_i(const TimePoint & now,
+                                   DownstreamPacket & pkt,
+                                   const ControlMessages & msgs);
+
     void processEvent(const EventId & eventId,
                       const Serialization & serialization) override;
 
@@ -95,14 +103,14 @@ namespace EMANE
     SpectrumMonitor & getSpectrumMonitor();
 
   private:
-    SpectrumMonitor * pSpectrumMonitor_;
-    GainManager gainManager_;
+    SpectrumService * pSpectrumService_;
+    AntennaManager antennaManager_;
     LocationManager locationManager_;
     std::uint64_t u64BandwidthHz_;
     double dTxPowerdBm_;
     std::uint64_t u64TxFrequencyHz_;
     double dReceiverSensitivitydBm_;
-    SpectrumMonitor::NoiseMode noiseMode_;
+    NoiseMode noiseMode_;
     std::uint16_t u16SubId_;
     std::uint16_t u16TxSequenceNumber_;
     std::pair<double,bool> optionalFixedAntennaGaindBi_;
@@ -118,8 +126,26 @@ namespace EMANE
     bool bNoiseMaxClamp_;
     double dSystemNoiseFiguredB_;
     StatisticNumeric<std::uint64_t> * pTimeSyncThresholdRewrite_;
+    StatisticNumeric<std::uint64_t> * pGainCacheHit_;
+    StatisticNumeric<std::uint64_t> * pGainCacheMiss_;
     FadingManager fadingManager_;
     bool bExcludeSameSubIdFromFilter_;
+    FrequencySet foi_;
+
+    enum class CompatibilityMode
+      {
+       MODE_1,
+       MODE_2,
+      };
+
+    CompatibilityMode compatibilityMode_;
+    std::map<AntennaIndex,std::unique_ptr<ReceiveProcessor>> receiveProcessors_;
+    Utils::ProcessingPool processingPool_;
+    std::uint16_t u16ProccssingPoolSize_;
+    bool bStatsReceivePowerTableEnable_;
+    bool bRxSensitivityPromiscuousModeEnable_;
+
+    void createDefaultAntennaIfNeeded();
   };
 }
 
