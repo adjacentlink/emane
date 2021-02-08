@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,10 @@ void EMANE::ReceivePowerTablePublisher::registerStatistics(StatisticRegistrar & 
                                                             "Tx Antenna",
                                                             "Frequency",
                                                             "Rx Power",
+                                                            "Tx Gain",
+                                                            "Rx Gain",
+                                                            "Tx Power",
+                                                            "Pathloss",
                                                             "Last Packet Time"},
                                                            StatisticProperties::NONE,
                                                            "Shows the calculated receive power for the last received segment.");
@@ -71,7 +75,11 @@ void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
                                                AntennaIndex rxAntennaIndex,
                                                AntennaIndex txAntennaIndex,
                                                std::uint64_t u64Frequency,
-                                               double dReceivePower,
+                                               double dReceivePowerdBm,
+                                               double dTxGaindBi,
+                                               double dRxGaindBi,
+                                               double dTransmitPowerdBm,
+                                               double dPathlossdB,
                                                const TimePoint & rxTime)
 {
   auto key = ReceivePowerTableKey{nemId,rxAntennaIndex,txAntennaIndex,u64Frequency};
@@ -80,23 +88,31 @@ void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
     {
       pReceivePowerTable_->setRow(key,
                                   {
-                                   Any{nemId},
-                                   Any{rxAntennaIndex},
-                                   Any{txAntennaIndex},
-                                   Any{u64Frequency},
-                                   Any{dReceivePower},
-                                   Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
+                                    Any{nemId},
+                                    Any{rxAntennaIndex},
+                                    Any{txAntennaIndex},
+                                    Any{u64Frequency},
+                                    Any{dReceivePowerdBm},
+                                    Any{dTxGaindBi},
+                                    Any{dRxGaindBi},
+                                    Any{dTransmitPowerdBm},
+                                    Any{dPathlossdB},
+                                    Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
     }
   else
     {
       pReceivePowerTable_->addRow(key,
                                   {
-                                   Any{nemId},
-                                   Any{rxAntennaIndex},
-                                   Any{txAntennaIndex},
-                                   Any{u64Frequency},
-                                   Any{dReceivePower},
-                                   Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
+                                    Any{nemId},
+                                    Any{rxAntennaIndex},
+                                    Any{txAntennaIndex},
+                                    Any{u64Frequency},
+                                    Any{dReceivePowerdBm},
+                                    Any{dTxGaindBi},
+                                    Any{dRxGaindBi},
+                                    Any{dTransmitPowerdBm},
+                                    Any{dPathlossdB},
+                                    Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
 
       receivePowerTableSet_.insert(key);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016-2017,2019-2020 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016-2017,2019-2021 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -98,8 +98,6 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
           const auto & fadingInfo = fadingInfos[iTransmitterIndex];
           ++iTransmitterIndex;
 
-          //locationManager_.getLocationInfo(transmitter.getNEMId());
-
           // get the propagation model pathloss between a pair of nodes for *each* segment
           auto pathlossInfo = (*pPropagationModelAlgorithm_)(transmitter.getNEMId(),
                                                              locationInfo.first,
@@ -116,9 +114,9 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                                                             locationInfo.first);
 
               // if gain is available
-              if(std::get<1>(gainInfodBi) == EMANE::GainManager::GainStatus::SUCCESS)
+              if(std::get<2>(gainInfodBi) == EMANE::GainManager::GainStatus::SUCCESS)
                 {
-                  result.bGainCacheHit_ = std::get<2>(gainInfodBi);
+                  result.bGainCacheHit_ = std::get<3>(gainInfodBi);
 
                   //using ReceivePowerPubisherUpdate = std::tuple<NEMId,std::uint64_t,double>;
 
@@ -139,11 +137,14 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
 
                       auto optionalSegmentPowerdBm = freqIter->getPowerdBm();
 
-                      double dPowerdBm{(optionalSegmentPowerdBm.second ?
-                                        optionalSegmentPowerdBm.first :
-                                        transmitter.getPowerdBm()) +
-                                       std::get<0>(gainInfodBi) -
-                                       dPathlossdB};
+                      double dTxPowerdBm{optionalSegmentPowerdBm.second ?
+                        optionalSegmentPowerdBm.first :
+                        transmitter.getPowerdBm()};
+
+                      double dPowerdBm{dTxPowerdBm +
+                        std::get<0>(gainInfodBi)  +
+                        std::get<1>(gainInfodBi) -
+                        dPathlossdB};
 
                       if(fadingInfo.second)
                         {
@@ -199,7 +200,11 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                           result.receivePowerMap_[std::make_tuple(transmitter.getNEMId(),
                                                                   rxAntennaIndex_,
                                                                   transmitAntenna.getIndex(),
-                                                                  freqIter->getFrequencyHz())] = Utils::MILLIWATT_TO_DB(dRxPowerSegmentsMilliWatt);
+                                                                  freqIter->getFrequencyHz())] =std::make_tuple(Utils::MILLIWATT_TO_DB(dRxPowerSegmentsMilliWatt),
+                                                                                                                std::get<0>(gainInfodBi),
+                                                                                                                std::get<1>(gainInfodBi),
+                                                                                                                dTxPowerdBm,
+                                                                                                                dPathlossdB);
                         }
 
                       ++freqIter;
@@ -223,7 +228,7 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
               else
                 {
                   // drop due to GainManager not enough info
-                  switch(std::get<1>(gainInfodBi))
+                  switch(std::get<2>(gainInfodBi))
                     {
                     case GainManager::GainStatus::ERROR_LOCATIONINFO:
                       result.status_ = ProcessResult::Status::DROP_CODE_GAINMANAGER_LOCATION;
@@ -356,7 +361,7 @@ EMANE::ReceiveProcessor::processSelfInterference(const TimePoint & now,
   auto numberfrequencyGroups = frequencyGroups.size();
 
   AntennaIndex antennaIndex{};
-  
+
   for(const auto & antennaSelfInterference : antennaInterferences)
     {
       if(antennaSelfInterference.getFrequencyGroupIndex() < numberfrequencyGroups)

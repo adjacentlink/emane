@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,20 +62,20 @@ namespace EMANE
     {
       enum class Status
         {
-         DROP_UNKNOWN,
-         DROP_CODE_ANTENNA_FREQ_INDEX,
-         DROP_CODE_FADINGMANAGER_LOCATION,
-         DROP_CODE_FADINGMANAGER_ALGORITHM,
-         DROP_CODE_FADINGMANAGER_SELECTION,
-         DROP_CODE_GAINMANAGER_LOCATION,
-         DROP_CODE_GAINMANAGER_ANTENNAPROFILE,
-         DROP_CODE_GAINMANAGER_HORIZON,
-         DROP_CODE_GAINMANAGER_ANTENNA_INDEX,
-         DROP_CODE_PROPAGATIONMODEL,
-         DROP_CODE_SPECTRUM_CLAMP,
-         DROP_CODE_NOT_FOI,
-         DROP_CODE_OUT_OF_BAND,
-         SUCCESS
+          DROP_UNKNOWN,
+          DROP_CODE_ANTENNA_FREQ_INDEX,
+          DROP_CODE_FADINGMANAGER_LOCATION,
+          DROP_CODE_FADINGMANAGER_ALGORITHM,
+          DROP_CODE_FADINGMANAGER_SELECTION,
+          DROP_CODE_GAINMANAGER_LOCATION,
+          DROP_CODE_GAINMANAGER_ANTENNAPROFILE,
+          DROP_CODE_GAINMANAGER_HORIZON,
+          DROP_CODE_GAINMANAGER_ANTENNA_INDEX,
+          DROP_CODE_PROPAGATIONMODEL,
+          DROP_CODE_SPECTRUM_CLAMP,
+          DROP_CODE_NOT_FOI,
+          DROP_CODE_OUT_OF_BAND,
+          SUCCESS
         };
 
       Status status_{Status::DROP_UNKNOWN};
@@ -87,7 +87,12 @@ namespace EMANE
                           AntennaIndex, // rx antena
                           AntennaIndex, // tx antenna
                           std::uint64_t>, // freq
-               double> receivePowerMap_{};
+               std::tuple<double, // rx power dBm
+                          double, // tx gain dBi
+                          double, // rx gain dBi
+                          double, // tx power
+                          double>> // pathloss
+      receivePowerMap_{};
 
       ProcessResult() = default;
 
@@ -112,10 +117,10 @@ namespace EMANE
     {
       enum class Status
         {
-         ERROR_UNKNOWN,
-         ERROR_ANTENNA_FREQ_INDEX,
-         ERROR_MISSING_POWER_VALUES,
-         SUCCESS
+          ERROR_UNKNOWN,
+          ERROR_ANTENNA_FREQ_INDEX,
+          ERROR_MISSING_POWER_VALUES,
+          SUCCESS
         };
 
       Status status_{Status::ERROR_UNKNOWN};

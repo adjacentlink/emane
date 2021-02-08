@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013,2016,2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013,2016,2020-2021 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,9 +55,9 @@ int main(int argc, char* argv[])
 
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"schema",1,nullptr,'s'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -459,10 +459,10 @@ int main(int argc, char* argv[])
                                   std::cout<<" txgain="<<dTxFixedGain;
                                 }
 
-                              switch(std::get<1>(gainInfodBi))
+                              switch(std::get<2>(gainInfodBi))
                                 {
                                 case EMANE::GainManager::GainStatus::SUCCESS:
-                                  std::cout<<" -> gain: "<<std::get<0>(gainInfodBi)<<std::endl;
+                                  std::cout<<" -> gain: "<<std::get<0>(gainInfodBi) + std::get<1>(gainInfodBi)<<std::endl;
                                   break;
                                 case EMANE::GainManager::GainStatus::ERROR_LOCATIONINFO:
                                   std::cout<<" -> error: Missing required location info"<<std::endl;

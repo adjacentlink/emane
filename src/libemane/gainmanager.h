@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,12 +51,12 @@ namespace EMANE
                 AntennaManager & antennaManager);
 
     enum class GainStatus {SUCCESS = 0,
-                           ERROR_LOCATIONINFO,
-                           ERROR_PROFILEINFO,
-                           ERROR_HORIZON,
-                           ERROR_ANTENNA_INDEX};
+      ERROR_LOCATIONINFO,
+      ERROR_PROFILEINFO,
+      ERROR_HORIZON,
+      ERROR_ANTENNA_INDEX};
 
-    using GainInfo = std::tuple<double,GainStatus,bool>;
+    using GainInfo = std::tuple<double,double,GainStatus,bool>;
 
     GainInfo determineGain(NEMId transmitterId,
                            AntennaIndex txAntennaIndex,
@@ -91,7 +91,8 @@ namespace EMANE
 
     using GainCacheEntry = std::tuple<std::uint64_t,
                                       std::uint64_t,
-                                      double>;
+                                      double, // remote gain
+                                      double>; // local gain
 
     using Cache = std::map<NEMId, // Tx NEM Id
                            std::map<AntennaIndex, // Tx Antenna Index
@@ -99,7 +100,7 @@ namespace EMANE
 
     Cache gainCache_;
 
-    std::pair<double,bool>
+    std::tuple<double,double,bool>
     getGainCache(NEMId transmitterId,
                  const AntennaManager::AntennaInfo & txAntennaInfo,
                  const AntennaManager::AntennaInfo & rxAntennaInfo,
@@ -108,7 +109,8 @@ namespace EMANE
     void setGainCache(NEMId transmitterId,
                       const AntennaManager::AntennaInfo & txAntennaInfo,
                       const LocationInfo & locationPairInfo,
-                      double dGaindBi);
+                      double dRemoteGaindBi,
+                      double dLocalGaindBi );
   };
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,11 @@ namespace EMANE
                 AntennaIndex rxAntennaIndex,
                 AntennaIndex txAntennaIndex,
                 std::uint64_t u64Frequency,
-                double dReceivePower,
+                double dReceivePowerdBm,
+                double dTxGaindBi,
+                double dRxGaindBi,
+                double dTransmitPowerdBm,
+                double dPathloss,
                 const TimePoint & rxTime);
 
     using ReceivePowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016-2017,2019-2020 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016-2017,2019-2021 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -99,19 +99,19 @@ namespace
   const std::uint16_t DROP_CODE_MISSING_CONTROL             = 14;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS{"Out-of-Band",
-                                                     "Rx Sensitivity",
-                                                     "Propagation Model",
-                                                     "Gain Location",
-                                                     "Gain Horizon",
-                                                     "Gain Profile",
-                                                     "Not FOI",
-                                                     "Spectrum Clamp",
-                                                     "Fade Location",
-                                                     "Fade Algorithm",
-                                                     "Fade Select",
-                                                     "Antenna Freq",
-                                                     "Gain Antenna",
-                                                     "Missing Control"};
+    "Rx Sensitivity",
+    "Propagation Model",
+    "Gain Location",
+    "Gain Horizon",
+    "Gain Profile",
+    "Not FOI",
+    "Spectrum Clamp",
+    "Fade Location",
+    "Fade Algorithm",
+    "Fade Select",
+    "Antenna Freq",
+    "Gain Antenna",
+    "Missing Control"};
 
   const std::string FADINGMANAGER_PREFIX{"fading."};
 }
@@ -829,9 +829,9 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 
               /** [eventservice-sendevent-snippet] */
               Events::AntennaProfiles profiles{{id_,
-                                                pAntennaProfileControlMessage->getAntennaProfileId(),
-                                                pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                                                pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                  pAntennaProfileControlMessage->getAntennaProfileId(),
+                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
               antennaManager_.update(profiles);
 
@@ -1033,13 +1033,13 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                                                             Utils::DB_TO_MILLIWATT(dReceiverSensitivitydBm));
               receiveProcessors_.emplace(rxAntenna.getIndex(),
                                          std::unique_ptr<ReceiveProcessor>(new ReceiveProcessor{id_,
-                                                                                                  u16SubId_,
-                                                                                                  rxAntenna.getIndex(),
-                                                                                                  antennaManager_,
-                                                                                                  pSpectrumMonitor,
-                                                                                                  pPropagationModelAlgorithm_.get(),
-                                                                                                  fadingManager_.createFadingAlgorithmStore(),
-                                                                                                  bStatsReceivePowerTableEnable_}));
+                                                                                                u16SubId_,
+                                                                                                rxAntenna.getIndex(),
+                                                                                                antennaManager_,
+                                                                                                pSpectrumMonitor,
+                                                                                                pPropagationModelAlgorithm_.get(),
+                                                                                                fadingManager_.createFadingAlgorithmStore(),
+                                                                                                bStatsReceivePowerTableEnable_}));
             }
           else
             {
@@ -1254,9 +1254,9 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
 
               /** [physicallayer-attachevent-snippet] */
               Events::AntennaProfiles profiles{{id_,
-                                                pAntennaProfileControlMessage->getAntennaProfileId(),
-                                                pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                                                pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                  pAntennaProfileControlMessage->getAntennaProfileId(),
+                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
               antennaManager_.update(profiles);
 
@@ -1514,13 +1514,13 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
     }
 
   CommonPHYHeader phyHeader{REGISTERED_EMANE_PHY_FRAMEWORK, // phy registration id
-      u16SubId_,
-      u16TxSequenceNumber_++,
-      txTimeStamp,
-      frequencyGroups,
-      transmitAntennas,
-      transmitters,
-      optionalSpectrumFilterData};
+    u16SubId_,
+    u16TxSequenceNumber_++,
+    txTimeStamp,
+    frequencyGroups,
+    transmitAntennas,
+    transmitters,
+    optionalSpectrumFilterData};
 
   LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
@@ -1666,7 +1666,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
   const  auto & pktInfo = pkt.getPacketInfo();
 
   bool bInBand{commonPHYHeader.getRegistrationId() == REGISTERED_EMANE_PHY_FRAMEWORK &&
-               u16SubId_ == commonPHYHeader.getSubId()};
+    u16SubId_ == commonPHYHeader.getSubId()};
 
   if(compatibilityMode_ == CompatibilityMode::MODE_1)
     {
@@ -1803,7 +1803,11 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                      std::get<1>(entry.first),
                                                      std::get<2>(entry.first),
                                                      std::get<3>(entry.first),
-                                                     entry.second,
+                                                     std::get<0>(entry.second),
+                                                     std::get<1>(entry.second),
+                                                     std::get<2>(entry.second),
+                                                     std::get<3>(entry.second),
+                                                     std::get<4>(entry.second),
                                                      commonPHYHeader.getTxTime());
                 }
             }
@@ -2124,12 +2128,12 @@ void EMANE::FrameworkPHY::createDefaultAntennaIfNeeded()
 
       receiveProcessors_.emplace(DEFAULT_ANTENNA_INDEX,
                                  std::unique_ptr<ReceiveProcessor>(new ReceiveProcessor{id_,
-                                                                                          u16SubId_,
-                                                                                          DEFAULT_ANTENNA_INDEX,
-                                                                                          antennaManager_,
-                                                                                          pSpectrumMonitor,
-                                                                                          pPropagationModelAlgorithm_.get(),
-                                                                                          fadingManager_.createFadingAlgorithmStore(),
-                                                                                          bStatsReceivePowerTableEnable_}));
+                                                                                        u16SubId_,
+                                                                                        DEFAULT_ANTENNA_INDEX,
+                                                                                        antennaManager_,
+                                                                                        pSpectrumMonitor,
+                                                                                        pPropagationModelAlgorithm_.get(),
+                                                                                        fadingManager_.createFadingAlgorithmStore(),
+                                                                                        bStatsReceivePowerTableEnable_}));
     }
 }
