@@ -1,0 +1,24 @@
+FROM ubuntu:18.04
+
+# prevent failures due to interactive apt transactions
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+
+RUN \
+apt-get -y install git gcc g++ autoconf automake libtool dh-python  debhelper python3-setuptools \
+                   libxml2-dev libprotobuf-dev libpcap-dev libpcre3-dev uuid-dev pkg-config \
+                   python3-protobuf protobuf-compiler
+
+WORKDIR /opt
+RUN git clone https://github.com/adjacentlink/emane -b develop
+
+WORKDIR emane
+RUN ./autogen.sh
+RUN ./configure
+RUN make deb
+RUN dpkg -i $(find .debbuild -name "python3*\.deb") $(find .debbuild -name "emane*\.deb"); apt-get -y install -f
+
+RUN echo 'complete'
+
