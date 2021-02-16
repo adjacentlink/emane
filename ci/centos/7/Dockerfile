@@ -1,6 +1,9 @@
 FROM centos:centos7
 
+RUN mkdir -p /opt/built
+
 RUN yum -y update
+RUN yum clean all
 
 RUN yum -y install epel-release
 RUN yum -y install git gcc-c++ make autoconf automake libtool rpm-build python-setuptools \
@@ -14,7 +17,8 @@ WORKDIR emane
 RUN ./autogen.sh
 RUN ./configure
 RUN make rpm
-RUN yum -y install $(find .rpmbuild/RPMS -name "*\.rpm")
+RUN cp $(find .rpmbuild/RPMS -name "*\.rpm") /opt/built
+RUN yum -y install /opt/built/*
 
 RUN echo 'complete'
 

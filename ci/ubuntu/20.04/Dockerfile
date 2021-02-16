@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+RUN mkdir -p /opt/built
+
 # prevent failures due to interactive apt transactions
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,7 +20,8 @@ WORKDIR emane
 RUN ./autogen.sh
 RUN ./configure
 RUN make deb
-RUN dpkg -i $(find .debbuild -name "python3*\.deb") $(find .debbuild -name "emane*\.deb"); apt-get -y install -f
+RUN cp $(find .debbuild -name "*\.deb") /opt/built
+RUN dpkg -i /opt/built/python3*\.deb /opt/built/emane*\.deb; apt-get -y install -f
 
 RUN echo 'complete'
 
