@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -259,6 +259,7 @@ AC_OUTPUT(
  test/testcases/phyupstreamscenario003/Makefile
  test/testcases/phyupstreamscenario004/Makefile
  test/testcases/phyupstreamscenario005/Makefile
+ test/testcases/phyupstreamscenario006/Makefile
  scripts/Makefile
  scripts/doc/Makefile
  dtd/Makefile
