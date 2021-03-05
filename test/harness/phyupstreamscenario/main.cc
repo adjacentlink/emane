@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016,2020 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2021 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -52,7 +52,9 @@
 
 #include "emane/controls/frequencycontrolmessageformatter.h"
 #include "emane/controls/receivepropertiescontrolmessageformatter.h"
+#include "emane/controls/mimoreceivepropertiescontrolmessageformatter.h"
 
+#include "emane/controls/rxantennaaddcontrolmessage.h"
 #include "emane/controls/frequencyofinterestcontrolmessage.h"
 
 #include "emane/utils/spectrumwindowutils.h"
@@ -60,6 +62,7 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 #include <iomanip>
+#include <algorithm>
 #include <getopt.h>
 
 namespace
@@ -118,6 +121,21 @@ namespace
 
               break;
 
+            case EMANE::Controls::MIMOReceivePropertiesControlMessage::IDENTIFIER:
+              {
+                const auto pMIMOReceivePropertiesControlMessage =
+                  static_cast<const EMANE::Controls::MIMOReceivePropertiesControlMessage *>(pControlMessage);
+
+                std::cout<<"["<<iAction_<<"]  MAC MIMOReceivePropertiesControlMessage data:"<<std::endl;
+                for(const auto & sLine : EMANE::Controls::MIMOReceivePropertiesControlMessageFormatter{pMIMOReceivePropertiesControlMessage}())
+                  {
+                    std::cout<<"["<<iAction_<<"]   "<<sLine<<std::endl;
+                  }
+                std::cout<<std::endl;
+              }
+
+              break;
+
             default:
               std::cout<<"Unknown control message id: "<<pControlMessage->getId()<<std::endl;
               break;
@@ -148,10 +166,10 @@ int main(int argc, char * argv[])
 
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"schema",1,nullptr,'s'},
-     {"profiles",1,nullptr,'p'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {"profiles",1,nullptr,'p'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -809,13 +827,13 @@ int main(int argc, char * argv[])
                               antenna.setBandwidthHz(bandwidth);
 
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
-                                                         subId,
-                                                         ++u16SequenceNumber,
-                                                         EMANE::TimePoint{txTime},
-                                                         {segments},
-                                                         {antenna},
-                                                         transmitters,
-                                                         {}};
+                                subId,
+                                ++u16SequenceNumber,
+                                EMANE::TimePoint{txTime},
+                                {segments},
+                                {antenna},
+                                transmitters,
+                                {}};
 
                               std::cout<<"["<<iActionIndex<<"]  Common PHY Header data:"<<std::endl;
 
@@ -851,6 +869,41 @@ int main(int argc, char * argv[])
                                         {
                                           labelLengths.push_back(label.size());
                                           std::cout<<std::setiosflags(std::ios::left) <<std::setw(label.size())<<label<<"|";
+                                        }
+
+                                      std::cout<<std::endl;
+
+                                      for(const auto & row : entry.second.second)
+                                        {
+                                          int i{};
+                                          std::cout<<"["<<iActionIndex<<"] "<<'|';
+                                          for(const auto & any : row)
+                                            {
+                                              std::cout<<std::setiosflags(std::ios::left) <<std::setw(labelLengths[i++])<<any.toString()<<"|";
+                                            }
+
+                                          std::cout<<std::endl;
+                                        }
+                                    }
+                                  std::cout<<std::endl;
+                                }
+                              else
+                                {
+                                  auto results =
+                                    EMANE::StatisticService::instance()->queryTable(pPHYLayer->getBuildId(),
+                                                                                    {"ReceivePowerTable"});
+
+
+                                  for(const auto entry : results)
+                                    {
+                                      std::cout<<"["<<iActionIndex<<"] "<<entry.first<<std::endl;
+                                      std::vector<int> labelLengths;
+                                      std::cout<<"["<<iActionIndex<<"] "<<'|';
+                                      for(const auto & label : entry.second.first)
+                                        {
+                                          int iLength{std::max(static_cast<int>(label.size()),12)};
+                                          labelLengths.push_back(iLength);
+                                          std::cout<<std::setiosflags(std::ios::left) <<std::setw(iLength)<<label<<"|";
                                         }
 
                                       std::cout<<std::endl;
@@ -1146,6 +1199,19 @@ int main(int argc, char * argv[])
 
                               std::cout<<std::endl;
 
+                            }
+                          else if(!xmlStrcmp(pActionNode->name,BAD_CAST "adddefaultrxantenna"))
+                            {
+                              std::cout<<"["<<++iActionIndex
+                                       <<"] adddefaultrxantenna "
+                                       <<std::endl;
+
+                              auto pRxAntennaAddControlMessage =
+                                EMANE::Controls::RxAntennaAddControlMessage::create(EMANE::Antenna::createDefault(),{});
+
+                              pPHYLayer->processDownstreamControl({pRxAntennaAddControlMessage});
+
+                              std::cout<<std::endl;
                             }
                         }
                     }

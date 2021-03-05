@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,15 @@ EMANE::PositionOrientationVelocity::PositionOrientationVelocity(const Position &
   bHasOrientation_{orientation.second},
   bHasVelocity_{velocity.second},
   positionECEF_{position},
-  adjustedOrientation_{adjustOrientation(orientation_,velocity_)}{}
+  adjustedOrientation_{adjustOrientation(orientation_,velocity_)}
+{
+  if(bHasVelocity_)
+    {
+      VelocityNEU velocityNEU{velocity_};
+
+      velocityECEF_ = VelocityECEF{velocityNEU,position_};
+    }
+}
 
 inline
 bool EMANE::PositionOrientationVelocity::update(const Position & position,
@@ -90,13 +98,18 @@ bool EMANE::PositionOrientationVelocity::update(const Position & position,
     {
       bValid_ = true;
 
+      bool bCalculateAdjustedVelocity{false};
+
       if(position != position_)
         {
           position_ = position;
           positionECEF_ = PositionECEF(position_);
+
+          bCalculateAdjustedVelocity = true; // still need to see if we have velocity
         }
 
       bool bCalculateAdjustedOrientation{false};
+
 
       if(orientation.second)
         {
@@ -110,11 +123,17 @@ bool EMANE::PositionOrientationVelocity::update(const Position & position,
           velocity_ = velocity.first;
           bHasVelocity_ = true;
           bCalculateAdjustedOrientation = true;
+          bCalculateAdjustedVelocity = true;
         }
 
       if(bCalculateAdjustedOrientation)
         {
           adjustedOrientation_ = adjustOrientation(orientation_,velocity_);
+        }
+
+      if(bCalculateAdjustedVelocity && bHasVelocity_)
+        {
+          velocityECEF_ = VelocityECEF{VelocityNEU(velocity_),position_};
         }
 
       return true;
@@ -165,14 +184,14 @@ EMANE::PositionNEU  EMANE::PositionOrientationVelocity::getPositionNEU(const Pos
   double dLongitudeRadians{position_.getLongitudeRadians()};
 
   double dNorthMeters{-dX * sin(dLatitudeRadians) * cos(dLongitudeRadians) -
-                      dY * sin(dLatitudeRadians) * sin(dLongitudeRadians) +
-                      dZ * cos(dLatitudeRadians)};
+    dY * sin(dLatitudeRadians) * sin(dLongitudeRadians) +
+    dZ * cos(dLatitudeRadians)};
 
   double dEastMeters{-dX * sin(dLongitudeRadians) + dY * cos(dLongitudeRadians)};
 
   double dUpMeters{dX * cos(dLatitudeRadians) * cos(dLongitudeRadians) +
-                   dY * cos(dLatitudeRadians) * sin(dLongitudeRadians) +
-                   dZ * sin(dLatitudeRadians)};
+    dY * cos(dLatitudeRadians) * sin(dLongitudeRadians) +
+    dZ * sin(dLatitudeRadians)};
 
   PositionNEU otherNEU{dNorthMeters,dEastMeters,dUpMeters};
 
@@ -183,6 +202,12 @@ EMANE::PositionNEU  EMANE::PositionOrientationVelocity::getPositionNEU(const Pos
 
   return otherNEU;
 };
+
+inline
+const EMANE::VelocityECEF & EMANE::PositionOrientationVelocity::getVelocityECEF() const
+{
+  return velocityECEF_;
+}
 
 inline
 bool EMANE::PositionOrientationVelocity::isValid() const

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,12 @@ EMANE::Strings EMANE::Controls::MIMOReceivePropertiesControlMessageFormatter::op
           strings.push_back("offset: " + std::to_string(segment.getOffset().count()));
           strings.push_back("power: " + std::to_string(segment.getRxPowerdBm()));
         }
+    }
+
+  for(const auto & shift : pMsg_->getDopplerShifts())
+    {
+      strings.push_back("shift freq: " + std::to_string(shift.first));
+      strings.push_back("shift hz: " + std::to_string(shift.second));
     }
 
   return strings;

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater
- * New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +30,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFO_HEADER_
-#define EMANELOCATIONINFO_HEADER_
+#ifndef EMANEPHYVELOCITYECEF_HEADER_
+#define EMANEPHYVELOCITYECEF_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "velocityneu.h"
+
+#include "emane/velocity.h"
+#include "emane/position.h"
 
 namespace EMANE
 {
-  class LocationInfo
+  class VelocityECEF
   {
   public:
-    LocationInfo();
+    VelocityECEF();
 
-    LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV,
-                 std::uint64_t u64SequenceNumber);
+    inline
+    VelocityECEF(const VelocityNEU & velocityNEU,
+                 const Position & position);
 
-    const PositionOrientationVelocity & getLocalPOV() const;
+    double getX() const;
 
-    const PositionOrientationVelocity & getRemotePOV() const;
+    double getY() const;
 
-    std::uint64_t getSequenceNumber() const;
-
-    double getDistanceMeters() const;
-
-    double getDopplerFactor() const;
+    double getZ() const;
 
     bool isValid() const;
 
   private:
-    PositionOrientationVelocity localPOV_;
-    PositionOrientationVelocity remotePOV_;
-    double dDistanceMeters_;
-    std::uint64_t u64SequenceNumber_;
-    double dDopplerFactor_;
+    double dX_;
+    double dY_;
+    double dZ_;
+    bool bValid_;
   };
-};
+}
 
-#include "locationinfo.inl"
+#include "velocityecef.inl"
 
-#endif // EMANELOCATIONINFO_HEADER_
+#endif // EMANEPHYVELOCITYECEF_HEADER_

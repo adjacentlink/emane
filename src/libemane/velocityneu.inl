@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater
- * New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +30,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFO_HEADER_
-#define EMANELOCATIONINFO_HEADER_
+#include "emane/utils/conversionutils.h"
 
-#include "positionorientationvelocity.h"
+inline
+EMANE::VelocityNEU::VelocityNEU():
+  dMagnitudeMetersPerSecond_{},
+  dNorthMetersPerSecond_{},
+  dEastMetersPerSecond_{},
+  dUpMetersPerSecond_{}{}
 
-namespace EMANE
+inline
+EMANE::VelocityNEU::VelocityNEU(const Velocity & velocity):
+  dMagnitudeMetersPerSecond_{velocity.getMagnitudeMetersPerSecond()},
+  dNorthMetersPerSecond_{},
+  dEastMetersPerSecond_{},
+  dUpMetersPerSecond_{}
 {
-  class LocationInfo
-  {
-  public:
-    LocationInfo();
+  double dHorizontalMetersPerSecond =
+    velocity.getMagnitudeMetersPerSecond() * cos(velocity.getElevationRadians());
 
-    LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV,
-                 std::uint64_t u64SequenceNumber);
+  dEastMetersPerSecond_ = dHorizontalMetersPerSecond * sin(velocity.getAzimuthRadians());
 
-    const PositionOrientationVelocity & getLocalPOV() const;
+  dNorthMetersPerSecond_ = dHorizontalMetersPerSecond * cos(velocity.getAzimuthRadians());
 
-    const PositionOrientationVelocity & getRemotePOV() const;
+  dUpMetersPerSecond_ = velocity.getMagnitudeMetersPerSecond() * sin(velocity.getElevationRadians());
+}
 
-    std::uint64_t getSequenceNumber() const;
+inline
+double EMANE::VelocityNEU::getNorthMetersPerSecond() const
+{
+  return dNorthMetersPerSecond_;
+}
 
-    double getDistanceMeters() const;
+inline
+double EMANE::VelocityNEU::getEastMetersPerSecond() const
+{
+  return dEastMetersPerSecond_;
+}
 
-    double getDopplerFactor() const;
-
-    bool isValid() const;
-
-  private:
-    PositionOrientationVelocity localPOV_;
-    PositionOrientationVelocity remotePOV_;
-    double dDistanceMeters_;
-    std::uint64_t u64SequenceNumber_;
-    double dDopplerFactor_;
-  };
-};
-
-#include "locationinfo.inl"
-
-#endif // EMANELOCATIONINFO_HEADER_
+inline
+double EMANE::VelocityNEU::getUpMetersPerSecond() const
+{
+  return dUpMetersPerSecond_;
+}

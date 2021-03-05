@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,17 +37,21 @@ class EMANE::Controls::MIMOReceivePropertiesControlMessage::Implementation
 public:
   Implementation(const TimePoint & sot,
                  const Microseconds & propagation,
-                 const AntennaReceiveInfos & antennaReceiveInfos):
+                 const AntennaReceiveInfos & antennaReceiveInfos,
+                 const DopplerShifts & dopplerShifts):
     sot_{sot},
     propagation_{propagation},
-    antennaReceiveInfos_{antennaReceiveInfos}{}
+    antennaReceiveInfos_{antennaReceiveInfos},
+    dopplerShifts_{dopplerShifts}{}
 
   Implementation(const TimePoint & sot,
                  const Microseconds & propagation,
-                 AntennaReceiveInfos && antennaReceiveInfos):
+                 AntennaReceiveInfos && antennaReceiveInfos,
+                 DopplerShifts && dopplerShifts):
     sot_{sot},
     propagation_{propagation},
-    antennaReceiveInfos_{std:move(antennaReceiveInfos)}{}
+    antennaReceiveInfos_{std:move(antennaReceiveInfos)},
+    dopplerShifts_{std::move(dopplerShifts)}{}
 
   const TimePoint & getTxTime() const
   {
@@ -64,10 +68,16 @@ public:
     return antennaReceiveInfos_;
   }
 
+  const DopplerShifts & getDopplerShifts() const
+  {
+    return dopplerShifts_;
+  }
+
 private:
   const TimePoint sot_;
   const Microseconds propagation_;
   const AntennaReceiveInfos antennaReceiveInfos_;
+  const DopplerShifts dopplerShifts_;
 };
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage::
@@ -77,16 +87,18 @@ MIMOReceivePropertiesControlMessage(const MIMOReceivePropertiesControlMessage & 
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage::MIMOReceivePropertiesControlMessage(const TimePoint & sot,
                                                                                           const Microseconds & propagation,
-                                                                                          const AntennaReceiveInfos & antennaReceiveInfos):
+                                                                                          const AntennaReceiveInfos & antennaReceiveInfos,
+                                                                                          const DopplerShifts & dopplerShifts):
   ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{sot,propagation,antennaReceiveInfos}}{}
+  pImpl_{new Implementation{sot,propagation,antennaReceiveInfos,dopplerShifts}}{}
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage::MIMOReceivePropertiesControlMessage(const TimePoint & sot,
                                                                                           const Microseconds & propagation,
-                                                                                          AntennaReceiveInfos && antennaReceiveInfos):
+                                                                                          AntennaReceiveInfos && antennaReceiveInfos,
+                                                                                          DopplerShifts && dopplerShifts):
 
   ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{sot,propagation,std::move(antennaReceiveInfos)}}{}
+  pImpl_{new Implementation{sot,propagation,std::move(antennaReceiveInfos),std::move(dopplerShifts)}}{}
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage::~MIMOReceivePropertiesControlMessage(){}
 
@@ -94,17 +106,19 @@ EMANE::Controls::MIMOReceivePropertiesControlMessage::~MIMOReceivePropertiesCont
 EMANE::Controls::MIMOReceivePropertiesControlMessage *
 EMANE::Controls::MIMOReceivePropertiesControlMessage::create(const TimePoint & sot,
                                                              const Microseconds & propagation,
-                                                             const AntennaReceiveInfos & antennaReceiveInfos)
+                                                             const AntennaReceiveInfos & antennaReceiveInfos,
+                                                             const DopplerShifts & dopplerShifts)
 {
-  return new MIMOReceivePropertiesControlMessage{sot,propagation,antennaReceiveInfos};
+  return new MIMOReceivePropertiesControlMessage{sot,propagation,antennaReceiveInfos,dopplerShifts};
 }
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage *
 EMANE::Controls::MIMOReceivePropertiesControlMessage::create(const TimePoint & sot,
                                                              const Microseconds & propagation,
-                                                             AntennaReceiveInfos && antennaReceiveInfos)
+                                                             AntennaReceiveInfos && antennaReceiveInfos,
+                                                             DopplerShifts && dopplerShifts)
 {
-  return new MIMOReceivePropertiesControlMessage{sot,propagation,std::move(antennaReceiveInfos)};
+  return new MIMOReceivePropertiesControlMessage{sot,propagation,std::move(antennaReceiveInfos),std::move(dopplerShifts)};
 }
 
 const EMANE::Controls::AntennaReceiveInfos &
@@ -122,6 +136,12 @@ EMANE::Controls::MIMOReceivePropertiesControlMessage::getPropagationDelay() cons
 const EMANE::TimePoint & EMANE::Controls::MIMOReceivePropertiesControlMessage::getTxTime() const
 {
   return pImpl_->getTxTime();
+}
+
+const EMANE::Controls::DopplerShifts &
+EMANE::Controls::MIMOReceivePropertiesControlMessage::getDopplerShifts() const
+{
+  return pImpl_->getDopplerShifts();
 }
 
 EMANE::Controls::MIMOReceivePropertiesControlMessage *

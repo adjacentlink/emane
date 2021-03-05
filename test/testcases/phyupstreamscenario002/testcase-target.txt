@@ -3,6 +3,8 @@
 [1]    1200000
 [1]  compatibilitymode:
 [1]    1
+[1]  dopplershiftenable:
+[1]    1
 [1]  excludesamesubidfromfilterenable:
 [1]    1
 [1]  fading.model:
@@ -165,3 +167,9 @@
 [7]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[7] ReceivePowerTable
+[7] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[7] |2           |0           |0           |3000000000  |-105.800860 |0.000000    |5.000000    |5.000000    |115.800860  |0.000000    |30.000040       |
+[7] |2           |0           |0           |2000000000  |-102.279035 |0.000000    |5.000000    |5.000000    |112.279035  |0.000000    |30.000040       |
+[7] |2           |0           |0           |250000000   |-84.217235  |0.000000    |5.000000    |5.000000    |94.217235   |0.000000    |30.000040       |
+

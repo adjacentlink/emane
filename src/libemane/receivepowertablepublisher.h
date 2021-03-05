@@ -56,6 +56,7 @@ namespace EMANE
                 double dRxGaindBi,
                 double dTransmitPowerdBm,
                 double dPathloss,
+                double dDopplerShiftHz,
                 const TimePoint & rxTime);
 
     using ReceivePowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;

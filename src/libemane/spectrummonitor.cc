@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015,2019-2020 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2015,2019-2021 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -36,6 +36,7 @@
 
 #include "emane/spectrumserviceexception.h"
 #include "emane/utils/conversionutils.h"
+#include "emane/utils/dopplerutils.h"
 
 #include <algorithm>
 #include <functional>
@@ -116,13 +117,13 @@ void EMANE::SpectrumMonitor::initialize(std::uint16_t u16SubId,
     {
       noiseRecorderMap_.emplace(frequency,
                                 std::unique_ptr<NoiseRecorder>{new NoiseRecorder{binSize,
-                                                                                   maxOffset,
-                                                                                   maxPropagation,
-                                                                                   maxDuration,
-                                                                                   dReceiverSensitivityMilliWatt,
-                                                                                   frequency,
-                                                                                   u64BandwidthHz,
-                                                                                   0}});
+                                      maxOffset,
+                                      maxPropagation,
+                                      maxDuration,
+                                      dReceiverSensitivityMilliWatt,
+                                      frequency,
+                                      u64BandwidthHz,
+                                      0}});
     }
 
 }
@@ -131,6 +132,7 @@ std::tuple<EMANE::TimePoint,EMANE::Microseconds,EMANE::Microseconds,EMANE::Frequ
 EMANE::SpectrumMonitor::update(const TimePoint & now,
                                const TimePoint & txTime,
                                const Microseconds & propagationDelay,
+                               double dDopplerFactor,
                                const FrequencySegments & segments,
                                std::uint64_t u64SegmentBandwidthHz,
                                const std::vector<double> & rxPowersMilliWatt,
@@ -288,7 +290,10 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
           TimePoint startOfReception{};
           TimePoint endOfReception{};
 
-          auto iter = pCache->find(segment.getFrequencyHz());
+          std::uint64_t u64DopplerShiftedFequencyHz = segment.getFrequencyHz() +
+            Utils::dopplerShift(segment.getFrequencyHz(),dDopplerFactor);
+
+          auto iter = pCache->find(u64DopplerShiftedFequencyHz);
 
           auto validOffset = segment.getOffset();
 
@@ -368,7 +373,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                     }
                 }
             }
-          else if(!noOverlapSet.count(segment.getFrequencyHz()))
+          else if(!noOverlapSet.count(u64DopplerShiftedFequencyHz))
             {
               NoiseRecords recorderInfo;
 
@@ -385,7 +390,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                            u64UpperOverlapFrequencyHz) =
                     frequencyOverlapRatio(entry.first,
                                           u64ReceiverBandwidthHz_,
-                                          segment.getFrequencyHz(),
+                                          u64DopplerShiftedFequencyHz,
                                           u64SegmentBandwidthHz);
 
                   if(dOverlapRatio > 0)
@@ -423,11 +428,11 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                     }
                   else
                     {
-                      noOverlapSet.insert(segment.getFrequencyHz());
+                      noOverlapSet.insert(u64DopplerShiftedFequencyHz);
                     }
                 }
 
-              pCache->emplace(segment.getFrequencyHz(),std::move(recorderInfo));
+              pCache->emplace(u64DopplerShiftedFequencyHz,std::move(recorderInfo));
             }
 
           if(bFrequencyMatch)
@@ -456,6 +461,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
               applyEnergyToFilters_i(u64SegmentBandwidthHz,
                                      segment.getFrequencyHz(),
                                      u16SubId,
+                                     dDopplerFactor,
                                      now,
                                      validTxTime,
                                      validOffset,
@@ -685,13 +691,13 @@ void EMANE::SpectrumMonitor::initializeFilter(FilterIndex filterIndex,
                                                     std::make_tuple(u64FrequencyHz,
                                                                     u64BandwidthHz,
                                                                     std::unique_ptr<NoiseRecorder>{new NoiseRecorder{binSize_,
-                                                                                                                       maxOffset_,
-                                                                                                                       maxPropagation_,
-                                                                                                                       maxDuration_,
-                                                                                                                       dReceiverSensitivityMilliWatt_,
-                                                                                                                       u64FrequencyHz,
-                                                                                                                       u64BandwidthHz,
-                                                                                                                       u64BandwidthBinSizeHz}},
+                                                                          maxOffset_,
+                                                                          maxPropagation_,
+                                                                          maxDuration_,
+                                                                          dReceiverSensitivityMilliWatt_,
+                                                                          u64FrequencyHz,
+                                                                          u64BandwidthHz,
+                                                                          u64BandwidthBinSizeHz}},
                                                                     std::unique_ptr<const FilterMatchCriterion>{pFilterMatchCriterion})));
     }
   else
@@ -712,6 +718,7 @@ void EMANE::SpectrumMonitor::removeFilter(FilterIndex filterIndex)
 void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidthHz,
                                                     std::uint64_t u64TxFrequencyHz,
                                                     std::uint16_t u16SubId,
+                                                    double dDopplerFactor,
                                                     const TimePoint & now,
                                                     const TimePoint & txTime,
                                                     const Microseconds & offset,
@@ -745,8 +752,11 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
 
   auto & noOverlapSet = filterTransmitterBandwidthCacheIter->second.second;
 
+  std::uint64_t u64DopplerShiftedFequencyHz = u64TxFrequencyHz +
+    Utils::dopplerShift(u64TxFrequencyHz,dDopplerFactor);
+
   // check for the tx frequency cache entry
-  auto cacheIter = pCache->find(u64TxFrequencyHz);
+  auto cacheIter = pCache->find(u64DopplerShiftedFequencyHz);
 
   if(cacheIter != pCache->end())
     {
@@ -769,10 +779,10 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
 
           // subid matching this waveform subid is refered to as subid 0
           bool bApply{pFilterMatchCriterion ? (*pFilterMatchCriterion)({u64TxFrequencyHz,
-                                                                        u64TxBandwidthHz,
-                                                                        u16SubId == u16SubId_ ?
-                                                                        static_cast<unsigned short>(0) : u16SubId,
-                                                                        optionalFilterData.first}) : true};
+                u64TxBandwidthHz,
+                u16SubId == u16SubId_ ?
+                static_cast<unsigned short>(0) : u16SubId,
+                optionalFilterData.first}) : true};
 
           if(bApply && dOverlapRatio > 0)
             {
@@ -794,7 +804,7 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
             }
         }
     }
-  else if(!noOverlapSet.count(u64TxFrequencyHz))
+  else if(!noOverlapSet.count(u64DopplerShiftedFequencyHz))
     {
       FilterRecords filterRecorderInfo;
 
@@ -807,10 +817,10 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
 
           // subid matching this waveform subid is refered to as subid 0
           bool bApply{pFilterMatchCriterion ? (*pFilterMatchCriterion)({u64TxFrequencyHz,
-                                                                        u64TxBandwidthHz,
-                                                                        u16SubId == u16SubId_ ?
-                                                                        static_cast<unsigned short>(0) : u16SubId,
-                                                                        optionalFilterData.first}) : true};
+                u64TxBandwidthHz,
+                u16SubId == u16SubId_ ?
+                static_cast<unsigned short>(0) : u16SubId,
+                optionalFilterData.first}) : true};
 
           double dOverlapRatio{};
           std::uint64_t u64LowerOverlapFrequencyHz{};
@@ -821,7 +831,7 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
                    u64UpperOverlapFrequencyHz) =
             frequencyOverlapRatio(std::get<0>(entry.second),
                                   std::get<1>(entry.second),
-                                  u64TxFrequencyHz,
+                                  u64DopplerShiftedFequencyHz,
                                   u64TxBandwidthHz);
 
           if(bApply && dOverlapRatio > 0)
@@ -851,6 +861,6 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
             }
         }
 
-      pCache->emplace(u64TxFrequencyHz,std::move(filterRecorderInfo));
+      pCache->emplace(u64DopplerShiftedFequencyHz,std::move(filterRecorderInfo));
     }
 }

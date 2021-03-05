@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater
- * New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +30,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFO_HEADER_
-#define EMANELOCATIONINFO_HEADER_
-
-#include "positionorientationvelocity.h"
+#ifndef EMANEUTILSDOPPLERUTILS_HEADER_
+#define EMANEUTILSDOPPLERUTILS_HEADER_
 
 namespace EMANE
 {
-  class LocationInfo
+  namespace Utils
   {
-  public:
-    LocationInfo();
+    inline
+    double dopplerShift(std::uint64_t u64TxFrequencyHz,double dDopplerFactor)
+    {
+      return u64TxFrequencyHz * dDopplerFactor - u64TxFrequencyHz;
+    }
+  }
+}
 
-    LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV,
-                 std::uint64_t u64SequenceNumber);
-
-    const PositionOrientationVelocity & getLocalPOV() const;
-
-    const PositionOrientationVelocity & getRemotePOV() const;
-
-    std::uint64_t getSequenceNumber() const;
-
-    double getDistanceMeters() const;
-
-    double getDopplerFactor() const;
-
-    bool isValid() const;
-
-  private:
-    PositionOrientationVelocity localPOV_;
-    PositionOrientationVelocity remotePOV_;
-    double dDistanceMeters_;
-    std::uint64_t u64SequenceNumber_;
-    double dDopplerFactor_;
-  };
-};
-
-#include "locationinfo.inl"
-
-#endif // EMANELOCATIONINFO_HEADER_
+#endif // EMANEUTILSDOPPLERUTILS_HEADER_

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,10 @@
 #include "emane/types.h"
 #include "emane/controls/controlmessageids.h"
 #include "emane/controls/antennareceiveinfo.h"
+#include "emane/controls/dopplershifts.h"
 
 #include <memory>
+#include <map>
 
 namespace EMANE
 {
@@ -79,13 +81,15 @@ namespace EMANE
       static
       MIMOReceivePropertiesControlMessage * create(const TimePoint & txTime,
                                                    const Microseconds & propagation,
-                                                   const AntennaReceiveInfos & antennaReceiveInfos);
+                                                   const AntennaReceiveInfos & antennaReceiveInfos,
+                                                   const DopplerShifts & dopplerShifts);
 
 
       static
       MIMOReceivePropertiesControlMessage * create(const TimePoint & txTime,
                                                    const Microseconds & propagation,
-                                                   AntennaReceiveInfos && antennaReceiveInfos);
+                                                   AntennaReceiveInfos && antennaReceiveInfos,
+                                                   DopplerShifts && dopplerShifts);
       /**
        * Clones the control message on the heap
        *
@@ -123,6 +127,14 @@ namespace EMANE
        */
       const AntennaReceiveInfos & getAntennaReceiveInfos() const;
 
+
+      /**
+       * Gets the  Doppler shift frequency map
+       *
+       * @return Doppler shift frequency map
+       */
+      const DopplerShifts & getDopplerShifts() const;
+
       enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_MIMO_RECEIVE_PROPERTIES};
 
     private:
@@ -131,11 +143,13 @@ namespace EMANE
 
       MIMOReceivePropertiesControlMessage(const TimePoint & sot,
                                           const Microseconds & propagation,
-                                          const AntennaReceiveInfos & antennaReceiveInfos);
+                                          const AntennaReceiveInfos & antennaReceiveInfos,
+                                          const DopplerShifts & dopplerShifts);
 
       MIMOReceivePropertiesControlMessage(const TimePoint & sot,
                                           const Microseconds & propagation,
-                                          AntennaReceiveInfos && antennaReceiveInfos);
+                                          AntennaReceiveInfos && antennaReceiveInfos,
+                                          DopplerShifts && dopplerShifts );
 
       MIMOReceivePropertiesControlMessage(const MIMOReceivePropertiesControlMessage &);
 

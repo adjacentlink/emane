@@ -7,6 +7,7 @@ emaneinc_HEADERS =                           \
  antennaselfinterference.h                   \
  antennaselfinterference.inl                 \
  controlmessageids.h                         \
+ dopplershifts.h                             \
  flowcontrolcontrolmessage.h                 \
  frequencycontrolmessageformatter.h          \
  frequencycontrolmessage.h                   \

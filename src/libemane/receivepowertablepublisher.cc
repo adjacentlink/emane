@@ -66,6 +66,7 @@ void EMANE::ReceivePowerTablePublisher::registerStatistics(StatisticRegistrar & 
                                                             "Rx Gain",
                                                             "Tx Power",
                                                             "Pathloss",
+                                                            "Doppler",
                                                             "Last Packet Time"},
                                                            StatisticProperties::NONE,
                                                            "Shows the calculated receive power for the last received segment.");
@@ -80,6 +81,7 @@ void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
                                                double dRxGaindBi,
                                                double dTransmitPowerdBm,
                                                double dPathlossdB,
+                                               double dDopplerShiftHz,
                                                const TimePoint & rxTime)
 {
   auto key = ReceivePowerTableKey{nemId,rxAntennaIndex,txAntennaIndex,u64Frequency};
@@ -97,6 +99,7 @@ void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
                                     Any{dRxGaindBi},
                                     Any{dTransmitPowerdBm},
                                     Any{dPathlossdB},
+                                    Any{dDopplerShiftHz},
                                     Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
     }
   else
@@ -112,6 +115,7 @@ void EMANE::ReceivePowerTablePublisher::update(NEMId nemId,
                                     Any{dRxGaindBi},
                                     Any{dTransmitPowerdBm},
                                     Any{dPathlossdB},
+                                    Any{dDopplerShiftHz},
                                     Any{std::chrono::duration_cast<DoubleSeconds>(rxTime.time_since_epoch()).count()}});
 
       receivePowerTableSet_.insert(key);

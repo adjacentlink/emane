@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016-2017,2019-2020 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016-2017,2019-2021 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -134,8 +134,8 @@ namespace EMANE
 
     enum class CompatibilityMode
       {
-       MODE_1,
-       MODE_2,
+        MODE_1,
+        MODE_2,
       };
 
     CompatibilityMode compatibilityMode_;
@@ -144,6 +144,7 @@ namespace EMANE
     std::uint16_t u16ProccssingPoolSize_;
     bool bStatsReceivePowerTableEnable_;
     bool bRxSensitivityPromiscuousModeEnable_;
+    bool bDopplerShiftEnable_;
 
     void createDefaultAntennaIfNeeded();
   };

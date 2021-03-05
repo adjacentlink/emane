@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2019-2021 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -74,6 +74,7 @@ namespace EMANE
     update(const TimePoint & now,
            const TimePoint & txTime,
            const Microseconds & propagationDelay,
+           double dDopplerFactor,
            const FrequencySegments & segments,
            std::uint64_t u64SegmentBandwidthHz,
            const std::vector<double> & rxPowersMilliWatt,
@@ -176,6 +177,7 @@ namespace EMANE
     void applyEnergyToFilters_i(std::uint64_t u64TxBandwidthHz,
                                 std::uint64_t u64TxFrequencyHz,
                                 std::uint16_t u16SubId,
+                                double dDopplerFactor,
                                 const TimePoint & now,
                                 const TimePoint & txTime,
                                 const Microseconds & offset,

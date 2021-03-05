@@ -336,6 +336,10 @@ libemane_la_SOURCES =                         \
  transportmanagerimpl.h                       \
  transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
+ velocityecef.h                               \
+ velocityecef.inl                             \
+ velocityneu.h                                \
+ velocityneu.inl                              \
  wheel.h                                      \
  wheel.inl
 

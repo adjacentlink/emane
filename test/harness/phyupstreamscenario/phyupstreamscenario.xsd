@@ -1,160 +1,161 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' >
   <xs:element name='phyupstreamscenario'>
-    <xs:complexType>     
+    <xs:complexType>
       <xs:sequence>
         <xs:element name='action' maxOccurs='unbounded'>
-           <xs:complexType>
-             <xs:choice>
-               <xs:element name='locations'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='pov' maxOccurs='unbounded'>
-                       <xs:complexType>
-                         <xs:sequence>
-                           <xs:element name='position'>
-                             <xs:complexType>
-                               <xs:attribute name='latitude' type='xs:decimal' use='required'/>
-                               <xs:attribute name='longitude' type='xs:decimal' use='required'/>
-                               <xs:attribute name='altitude' type='xs:decimal' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                           <xs:element name='orientation' minOccurs="0">
-                             <xs:complexType>
-                               <xs:attribute name='pitch' type='xs:decimal' use='required'/>
-                               <xs:attribute name='roll' type='xs:decimal' use='required'/>
-                               <xs:attribute name='yaw' type='xs:decimal' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                           <xs:element name='velocity' minOccurs="0">
-                             <xs:complexType>
-                               <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
-                               <xs:attribute name='elevation' type='xs:decimal' use='required'/>
-                               <xs:attribute name='magnitude' type='xs:decimal' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                         </xs:sequence>
-                         <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='antennaprofiles'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='profile' maxOccurs='unbounded'>
-                       <xs:complexType>
-                         <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
-                         <xs:attribute name='id' type='xs:unsignedShort' use='required'/>
-                         <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
-                         <xs:attribute name='elevation' type='xs:decimal' use='required'/>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='pathloss'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='entry' maxOccurs='unbounded'>
-                       <xs:complexType>
-                         <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
-                         <xs:attribute name='pathloss' type='xs:decimal' use='required'/>
-                         <xs:attribute name='rpathloss' type='xs:decimal' use='optional'/>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='packet'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='segments'>
-                       <xs:complexType>
-                         <xs:sequence>
-                           <xs:element name='segment' maxOccurs='unbounded'>
-                             <xs:complexType>
-                               <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
-                               <xs:attribute name='duration' type='xs:unsignedLong' use='required'/>
-                               <xs:attribute name='offset' type='xs:unsignedLong' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                         </xs:sequence>
-                       </xs:complexType>
-                     </xs:element>
-                     <xs:element name='transmitters'>
-                       <xs:complexType>
-                         <xs:sequence>
-                           <xs:element name='transmitter' maxOccurs='unbounded'>
-                             <xs:complexType>
-                               <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
-                               <xs:attribute name='power' type='xs:decimal' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                         </xs:sequence>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                   <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
-                   <xs:attribute name='txtime' type='xs:unsignedLong' use='required'/>
-                   <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
-                   <xs:attribute name='size' type='xs:unsignedShort' use='required'/>
-                   <xs:attribute name='source' type='xs:unsignedShort' use='required'/>
-                   <xs:attribute name='destination' type='xs:unsignedShort' use='required'/>
-                   <xs:attribute name='fixedgain' type='xs:decimal' use='optional'/>
-                   <xs:attribute name='subid' type='xs:unsignedShort' use='required'/>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='configure'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='paramlist' minOccurs='0' maxOccurs='unbounded'>
-                       <xs:complexType>
-                         <xs:sequence>
-                           <xs:element name='item' maxOccurs='unbounded'>
-                             <xs:complexType>
-                               <xs:attribute name='value' type='xs:string' use='required'/>
-                             </xs:complexType>
-                           </xs:element>
-                         </xs:sequence>
-                         <xs:attribute name='name' type='xs:string' use='required'/>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='window'>
-                 <xs:complexType>
-                    <xs:sequence>
-                       <xs:element name='maxbinnoisefloor' minOccurs='0' maxOccurs='1'>
-                         <xs:complexType>
-                           <xs:attribute name='power' type='xs:decimal' use='required'/>
-                           <xs:attribute name='starttime' type='xs:unsignedLong' use='optional'/>
-                           <xs:attribute name='endtime' type='xs:unsignedLong' use='optional'/>
-                         </xs:complexType>
-                       </xs:element>
-                    </xs:sequence>
-                    <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
-                    <xs:attribute name='time' type='xs:unsignedLong' use='optional'/>
-                    <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
-                    <xs:attribute name='duration' type='xs:unsignedLong' use='optional'/>
-                 </xs:complexType>
-               </xs:element>
-               <xs:element name='frequencyofinterest'>
-                 <xs:complexType>
-                   <xs:sequence>
-                     <xs:element name='frequency' maxOccurs='unbounded'>
-                       <xs:complexType>
-                         <xs:attribute name='value' type='xs:unsignedLong' use='required'/>
-                       </xs:complexType>
-                     </xs:element>
-                   </xs:sequence>
-                   <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
-                 </xs:complexType>
-               </xs:element>
-             </xs:choice>
-           </xs:complexType>
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name='locations'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='pov' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='position'>
+                            <xs:complexType>
+                              <xs:attribute name='latitude' type='xs:decimal' use='required'/>
+                              <xs:attribute name='longitude' type='xs:decimal' use='required'/>
+                              <xs:attribute name='altitude' type='xs:decimal' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name='orientation' minOccurs="0">
+                            <xs:complexType>
+                              <xs:attribute name='pitch' type='xs:decimal' use='required'/>
+                              <xs:attribute name='roll' type='xs:decimal' use='required'/>
+                              <xs:attribute name='yaw' type='xs:decimal' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name='velocity' minOccurs="0">
+                            <xs:complexType>
+                              <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
+                              <xs:attribute name='elevation' type='xs:decimal' use='required'/>
+                              <xs:attribute name='magnitude' type='xs:decimal' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='antennaprofiles'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='profile' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                        <xs:attribute name='id' type='xs:unsignedShort' use='required'/>
+                        <xs:attribute name='azimuth' type='xs:decimal' use='required'/>
+                        <xs:attribute name='elevation' type='xs:decimal' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='pathloss'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='entry' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                        <xs:attribute name='pathloss' type='xs:decimal' use='required'/>
+                        <xs:attribute name='rpathloss' type='xs:decimal' use='optional'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='packet'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='segments'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='segment' maxOccurs='unbounded'>
+                            <xs:complexType>
+                              <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
+                              <xs:attribute name='duration' type='xs:unsignedLong' use='required'/>
+                              <xs:attribute name='offset' type='xs:unsignedLong' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name='transmitters'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='transmitter' maxOccurs='unbounded'>
+                            <xs:complexType>
+                              <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>
+                              <xs:attribute name='power' type='xs:decimal' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
+                  <xs:attribute name='txtime' type='xs:unsignedLong' use='required'/>
+                  <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
+                  <xs:attribute name='size' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='source' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='destination' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='fixedgain' type='xs:decimal' use='optional'/>
+                  <xs:attribute name='subid' type='xs:unsignedShort' use='required'/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='configure'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='paramlist' minOccurs='0' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name='item' maxOccurs='unbounded'>
+                            <xs:complexType>
+                              <xs:attribute name='value' type='xs:string' use='required'/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name='name' type='xs:string' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='window'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='maxbinnoisefloor' minOccurs='0' maxOccurs='1'>
+                      <xs:complexType>
+                        <xs:attribute name='power' type='xs:decimal' use='required'/>
+                        <xs:attribute name='starttime' type='xs:unsignedLong' use='optional'/>
+                        <xs:attribute name='endtime' type='xs:unsignedLong' use='optional'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name='now' type='xs:unsignedLong' use='required'/>
+                  <xs:attribute name='time' type='xs:unsignedLong' use='optional'/>
+                  <xs:attribute name='frequency' type='xs:unsignedLong' use='required'/>
+                  <xs:attribute name='duration' type='xs:unsignedLong' use='optional'/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='frequencyofinterest'>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name='frequency' maxOccurs='unbounded'>
+                      <xs:complexType>
+                        <xs:attribute name='value' type='xs:unsignedLong' use='required'/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name='bandwidth' type='xs:unsignedLong' use='required'/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name='adddefaultrxantenna'/>
+            </xs:choice>
+          </xs:complexType>
         </xs:element>
       </xs:sequence>
       <xs:attribute name='nem' type='xs:unsignedShort' use='required'/>

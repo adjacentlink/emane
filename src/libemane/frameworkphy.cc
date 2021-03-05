@@ -147,7 +147,8 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   compatibilityMode_{CompatibilityMode::MODE_1},
   processingPool_{},
   u16ProccssingPoolSize_{},
-  bRxSensitivityPromiscuousModeEnable_{}{}
+  bRxSensitivityPromiscuousModeEnable_{},
+  bDopplerShiftEnable_{}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -333,6 +334,12 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         "Defines whether over-the-air messages are sent upstream if below receiver"
                                         " sensitivity. Compatibility mode  > 1 only. Messages sent upstream"
                                         " without a MIMOReceivePropertiesControlMessage.");
+
+  configRegistrar.registerNumeric<bool>("dopplershiftenable",
+                                        EMANE::ConfigurationProperties::DEFAULT,
+                                        {true},
+                                        "Defines whether to perform Doppler shift processing when location and"
+                                        " velocity information is known for both the transmitter and receiver.");
 
 
   /** [eventservice-registerevent-snippet] */
@@ -690,6 +697,18 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   bRxSensitivityPromiscuousModeEnable_ ? "on" : "off");
         }
+      else if(item.first == "dopplershiftenable")
+        {
+          bDopplerShiftEnable_ = item.second[0].asBool();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bDopplerShiftEnable_ ? "on" : "off");
+        }
       else
         {
           if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
@@ -1039,7 +1058,8 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                                                                                 pSpectrumMonitor,
                                                                                                 pPropagationModelAlgorithm_.get(),
                                                                                                 fadingManager_.createFadingAlgorithmStore(),
-                                                                                                bStatsReceivePowerTableEnable_}));
+                                                                                                bStatsReceivePowerTableEnable_,
+                                                                                                bDopplerShiftEnable_}));
             }
           else
             {
@@ -1699,6 +1719,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
   if(bInBand || noiseMode_ != NoiseMode::NONE)
     {
       Controls::AntennaReceiveInfos antennaReceiveInfos{};
+      Controls::DopplerShifts dopplerShifts{};
       std::set<TimePoint> mimoSoT{};
       std::set<Microseconds> mimoPropagationDelay{};
       std::vector<std::pair<LocationInfo,bool>> locationInfos{};
@@ -1788,6 +1809,10 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               antennaReceiveInfos.insert(antennaReceiveInfos.end(),
                                          std::make_move_iterator(result.antennaReceiveInfos_.begin()),
                                          std::make_move_iterator(result.antennaReceiveInfos_.end()));
+
+              dopplerShifts.insert(std::make_move_iterator(result.dopplerShifts_.begin()),
+                                   std::make_move_iterator(result.dopplerShifts_.end()));
+
               if(result.bGainCacheHit_)
                 {
                   ++*pGainCacheHit_;
@@ -1808,6 +1833,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                      std::get<2>(entry.second),
                                                      std::get<3>(entry.second),
                                                      std::get<4>(entry.second),
+                                                     std::get<5>(entry.second),
                                                      commonPHYHeader.getTxTime());
                 }
             }
@@ -1953,7 +1979,8 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
               sendUpstreamPacket(pkt,
                                  {Controls::MIMOReceivePropertiesControlMessage::create(*mimoSoT.begin(),
                                                                                         *mimoPropagationDelay.begin(),
-                                                                                        std::move(antennaReceiveInfos))});
+                                                                                        std::move(antennaReceiveInfos),
+                                                                                        std::move(dopplerShifts))});
             }
 
           if(*mimoSoT.begin() != commonPHYHeader.getTxTime())
@@ -2134,6 +2161,7 @@ void EMANE::FrameworkPHY::createDefaultAntennaIfNeeded()
                                                                                         pSpectrumMonitor,
                                                                                         pPropagationModelAlgorithm_.get(),
                                                                                         fadingManager_.createFadingAlgorithmStore(),
-                                                                                        bStatsReceivePowerTableEnable_}));
+                                                                                        bStatsReceivePowerTableEnable_,
+                                                                                        bDopplerShiftEnable_}));
     }
 }

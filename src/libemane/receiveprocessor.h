@@ -43,6 +43,7 @@
 #include "emane/commonphyheader.h"
 #include "emane/controls/antennareceiveinfo.h"
 #include "emane/controls/antennaselfinterference.h"
+#include "emane/controls/dopplershifts.h"
 
 namespace EMANE
 {
@@ -56,7 +57,8 @@ namespace EMANE
                      SpectrumMonitor * pSpectrumMonitor,
                      PropagationModelAlgorithm * pPropagationModelAlgorithm,
                      FadingAlgorithmStore && fadingAlgorithmStore,
-                     bool bPopulateReceivePowerMap);
+                     bool bPopulateReceivePowerMap,
+                     bool bDopperShift);
 
     struct ProcessResult
     {
@@ -91,8 +93,10 @@ namespace EMANE
                           double, // tx gain dBi
                           double, // rx gain dBi
                           double, // tx power
-                          double>> // pathloss
+                          double, // pathloss
+                          double>> // doppler
       receivePowerMap_{};
+      Controls::DopplerShifts dopplerShifts_{};
 
       ProcessResult() = default;
 
@@ -102,7 +106,8 @@ namespace EMANE
         mimoPropagationDelay_{std::move(rhs.mimoPropagationDelay_)},
         antennaReceiveInfos_{std::move(rhs.antennaReceiveInfos_)},
         bGainCacheHit_{rhs.bGainCacheHit_},
-        receivePowerMap_{std::move(rhs.receivePowerMap_)}{}
+        receivePowerMap_{std::move(rhs.receivePowerMap_)},
+        dopplerShifts_{std::move(rhs.dopplerShifts_)}{}
 
     };
 
@@ -144,6 +149,7 @@ namespace EMANE
     FadingAlgorithmStore fadingAlgorithmStore_;
     bool bPopulateReceivePowerMap_;
     std::uint64_t u64SpectrumMonitorUpdateSequence_;
+    bool bDopplerShift_;
   };
 }
 

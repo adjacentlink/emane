@@ -3,6 +3,8 @@
 [1]    1200000
 [1]  compatibilitymode:
 [1]    1
+[1]  dopplershiftenable:
+[1]    1
 [1]  excludesamesubidfromfilterenable:
 [1]    1
 [1]  fading.model:
@@ -203,6 +205,10 @@
 [12]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[12] ReceivePowerTable
+[12] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[12] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000060       |
+
 [13] window
 [13]  request window time: 30000160
 [13]  frequency: 250000000
@@ -270,6 +276,10 @@ Processing upstream packet...
 [15]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[15] ReceivePowerTable
+[15] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[15] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |30.002000       |
+
 [16] window
 [16]  request window time: 30002000
 [16]  frequency: 250000000
@@ -312,6 +322,10 @@ Processing upstream packet...
 [17]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[17] ReceivePowerTable
+[17] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[17] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |40.002010       |
+
 [18] packet
 [18]  Common PHY Header data:
 [18]   regid: 7

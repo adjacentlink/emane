@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016,2019-2020 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016,2019-2021 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -57,9 +57,9 @@ int main(int argc, char * argv[])
 
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"schema",1,nullptr,'s'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -527,6 +527,7 @@ int main(int argc, char * argv[])
                                        dReceiverSensitivityMilliWatt)  = spectrumMonitor.update(EMANE::TimePoint{start+now},
                                                                                                 EMANE::TimePoint{start+txTime},
                                                                                                 propagation,
+                                                                                                1,
                                                                                                 segments,
                                                                                                 transmitterBandwidth,
                                                                                                 powers,

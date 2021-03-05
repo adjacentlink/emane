@@ -33,6 +33,7 @@
 
 #include "receiveprocessor.h"
 #include "emane/spectrumserviceexception.h"
+#include "emane/utils/dopplerutils.h"
 
 EMANE::ReceiveProcessor::ReceiveProcessor(NEMId id,
                                           std::uint16_t u16SubId,
@@ -41,7 +42,8 @@ EMANE::ReceiveProcessor::ReceiveProcessor(NEMId id,
                                           SpectrumMonitor * pSpectrumMonitor,
                                           PropagationModelAlgorithm * pPropagationModelAlgorithm,
                                           FadingAlgorithmStore && fadingAlgorithmStore,
-                                          bool bPopulateReceivePowerMap):
+                                          bool bPopulateReceivePowerMap,
+                                          bool bDopplerShift):
   id_{id},
   u16SubId_{u16SubId},
   rxAntennaIndex_{rxAntennaIndex},
@@ -50,7 +52,8 @@ EMANE::ReceiveProcessor::ReceiveProcessor(NEMId id,
   pPropagationModelAlgorithm_{pPropagationModelAlgorithm},
   fadingAlgorithmStore_{std::move(fadingAlgorithmStore)},
   bPopulateReceivePowerMap_{bPopulateReceivePowerMap},
-  u64SpectrumMonitorUpdateSequence_{}{}
+  u64SpectrumMonitorUpdateSequence_{},
+  bDopplerShift_{bDopplerShift}{}
 
 EMANE::ReceiveProcessor::ProcessResult
 EMANE::ReceiveProcessor::process(const TimePoint & now,
@@ -117,12 +120,6 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
               if(std::get<2>(gainInfodBi) == EMANE::GainManager::GainStatus::SUCCESS)
                 {
                   result.bGainCacheHit_ = std::get<3>(gainInfodBi);
-
-                  //using ReceivePowerPubisherUpdate = std::tuple<NEMId,std::uint64_t,double>;
-
-                  // set to prevent multiple ReceivePowerTablePublisher updates
-                  // for the same NEM frequency pair in a frequency segment list
-                  //std::set<ReceivePowerPubisherUpdate> receivePowerTableUpdate{};
 
                   // frequency segment iterator to map pathloss per segment to
                   // the associated segment
@@ -195,6 +192,16 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
 
                       rxPowerSegmentsMilliWatt[i++] += dRxPowerSegmentsMilliWatt;
 
+                      double dDopplerShiftHz{};
+
+                      if(bDopplerShift_)
+                        {
+                          dDopplerShiftHz = Utils::dopplerShift(freqIter->getFrequencyHz(),
+                                                                locationInfo.first.getDopplerFactor());
+
+                          result.dopplerShifts_[freqIter->getFrequencyHz()] = dDopplerShiftHz;
+                        }
+
                       if(bPopulateReceivePowerMap_)
                         {
                           result.receivePowerMap_[std::make_tuple(transmitter.getNEMId(),
@@ -204,7 +211,8 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                                                                                                                 std::get<0>(gainInfodBi),
                                                                                                                 std::get<1>(gainInfodBi),
                                                                                                                 dTxPowerdBm,
-                                                                                                                dPathlossdB);
+                                                                                                                dPathlossdB,
+                                                                                                                dDopplerShiftHz);
                         }
 
                       ++freqIter;
@@ -272,6 +280,7 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
           auto spectrumInfo = pSpectrumMonitor_->update(now,
                                                         commonPHYHeader.getTxTime(),
                                                         propagation,
+                                                        bDopplerShift_ ? locationInfos[0].first.getDopplerFactor() : 1,
                                                         frequencySegments,
                                                         transmitAntenna.getBandwidthHz(),
                                                         rxPowerSegmentsMilliWatt,
@@ -381,6 +390,7 @@ EMANE::ReceiveProcessor::processSelfInterference(const TimePoint & now,
               pSpectrumMonitor_->update(now,
                                         txTimeStamp,
                                         Microseconds{},
+                                        1,
                                         segments,
                                         u64SegmentBandwidthHz,
                                         std::vector<double>(numberSegments,
@@ -397,6 +407,7 @@ EMANE::ReceiveProcessor::processSelfInterference(const TimePoint & now,
               pSpectrumMonitor_->update(now,
                                         txTimeStamp,
                                         Microseconds{},
+                                        1,
                                         segments,
                                         u64SegmentBandwidthHz,
                                         antennaSelfInterference.getPowerMilliWatts(),

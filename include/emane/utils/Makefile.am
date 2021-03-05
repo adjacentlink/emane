@@ -4,6 +4,7 @@ emaneinc_HEADERS =                       \
  bitpool.h                               \
  bitpool.inl                             \
  conversionutils.h                       \
+ dopplerutils.h                          \
  factoryexception.h                      \
  functionwrapper.h                       \
  functionwrapper.inl                     \

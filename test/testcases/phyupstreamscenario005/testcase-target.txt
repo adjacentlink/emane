@@ -3,6 +3,8 @@
 [1]    1200000
 [1]  compatibilitymode:
 [1]    1
+[1]  dopplershiftenable:
+[1]    1
 [1]  excludesamesubidfromfilterenable:
 [1]    1
 [1]  fading.model:
@@ -101,6 +103,10 @@
 [6]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[6] ReceivePowerTable
+[6] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[6] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000060       |
+
 [7] window
 [7]  request window time: 30000160
 [7]  frequency: 250000000
@@ -155,6 +161,10 @@ Processing upstream packet...
 [10]   receiver sensitivity: -106.989700
 
 Processing upstream packet...
+[10] ReceivePowerTable
+[10] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[10] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+
 [11] packet
 [11]  Common PHY Header data:
 [11]   regid: 7
@@ -186,6 +196,11 @@ Processing upstream packet...
 [11]   receiver sensitivity: -106.989700
 
 Processing upstream packet...
+[11] ReceivePowerTable
+[11] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[11] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[11] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+
 [12] frequencyofinterest 
 [12]    bandwidth: 2000000
 [12]    frequency: 250000000
@@ -269,6 +284,11 @@ Processing upstream packet...
 [17]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[17] ReceivePowerTable
+[17] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[17] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[17] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |30.002000       |
+
 [18] window
 [18]  request window time: 30002000
 [18]  frequency: 250000000
@@ -341,6 +361,11 @@ Processing upstream packet...
 [21]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[21] ReceivePowerTable
+[21] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[21] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[21] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |30.005000       |
+
 [22] window
 [22]  request window time: 40005000
 [22]  frequency: 250000000

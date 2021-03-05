@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2020-2021 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -36,6 +36,8 @@
 
 #include "positionecef.h"
 #include "positionneu.h"
+#include "velocityecef.h"
+
 #include "emane/position.h"
 #include "emane/orientation.h"
 #include "emane/velocity.h"
@@ -69,6 +71,8 @@ namespace EMANE
 
     PositionNEU getPositionNEU(const PositionOrientationVelocity & other) const;
 
+    const VelocityECEF & getVelocityECEF() const;
+
     bool isValid() const;
 
   private:
@@ -79,6 +83,7 @@ namespace EMANE
     bool bHasOrientation_;
     bool bHasVelocity_;
     PositionECEF positionECEF_;
+    VelocityECEF velocityECEF_;
     Orientation adjustedOrientation_;
   };
 }

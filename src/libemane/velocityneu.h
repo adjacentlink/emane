@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater
- * New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +30,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONINFO_HEADER_
-#define EMANELOCATIONINFO_HEADER_
+#ifndef EMANEPHYVELOCITYNEU_HEADER_
+#define EMANEPHYVELOCITYNEU_HEADER_
 
-#include "positionorientationvelocity.h"
+#include "emane/velocity.h"
 
 namespace EMANE
 {
-  class LocationInfo
+  class VelocityNEU
   {
   public:
-    LocationInfo();
+    VelocityNEU();
 
-    LocationInfo(const PositionOrientationVelocity & localPOV,
-                 const PositionOrientationVelocity & remotePOV,
-                 std::uint64_t u64SequenceNumber);
+    VelocityNEU(const Velocity & velocity);
 
-    const PositionOrientationVelocity & getLocalPOV() const;
+    double getNorthMetersPerSecond() const;
 
-    const PositionOrientationVelocity & getRemotePOV() const;
+    double getEastMetersPerSecond() const;
 
-    std::uint64_t getSequenceNumber() const;
-
-    double getDistanceMeters() const;
-
-    double getDopplerFactor() const;
-
-    bool isValid() const;
+    double getUpMetersPerSecond() const;
 
   private:
-    PositionOrientationVelocity localPOV_;
-    PositionOrientationVelocity remotePOV_;
-    double dDistanceMeters_;
-    std::uint64_t u64SequenceNumber_;
-    double dDopplerFactor_;
+    double dMagnitudeMetersPerSecond_;
+    double dNorthMetersPerSecond_;
+    double dEastMetersPerSecond_;
+    double dUpMetersPerSecond_;
   };
-};
+}
 
-#include "locationinfo.inl"
+#include "velocityneu.inl"
 
-#endif // EMANELOCATIONINFO_HEADER_
+#endif // EMANEPHYVELOCITYNEU_HEADER_

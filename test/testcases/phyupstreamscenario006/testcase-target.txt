@@ -1,0 +1,563 @@
+[1] configure 
+[1]  bandwidth:
+[1]    1200000
+[1]  compatibilitymode:
+[1]    2
+[1]  dopplershiftenable:
+[1]    1
+[1]  excludesamesubidfromfilterenable:
+[1]    1
+[1]  fading.model:
+[1]    none
+[1]  fading.nakagami.distance0:
+[1]    100.000000
+[1]  fading.nakagami.distance1:
+[1]    250.000000
+[1]  fading.nakagami.m0:
+[1]    0.750000
+[1]  fading.nakagami.m1:
+[1]    1.000000
+[1]  fading.nakagami.m2:
+[1]    200.000000
+[1]  fixedantennagain:
+[1]    0.000000
+[1]  fixedantennagainenable:
+[1]    1
+[1]  frequency:
+[1]    250000000
+[1]  frequencyofinterest:
+[1]    250000000
+[1]  noisebinsize:
+[1]    20
+[1]  noisemaxclampenable:
+[1]    1
+[1]  noisemaxmessagepropagation:
+[1]    200000
+[1]  noisemaxsegmentduration:
+[1]    1000000
+[1]  noisemaxsegmentoffset:
+[1]    300000
+[1]  noisemode:
+[1]    all
+[1]  processingpoolsize:
+[1]    0
+[1]  propagationmodel:
+[1]    precomputed
+[1]  rxsensitivitypromiscuousmodeenable:
+[1]    0
+[1]  stats.receivepowertableenable:
+[1]    1
+[1]  subid:
+[1]    1
+[1]  systemnoisefigure:
+[1]    4.000000
+[1]  timesyncthreshold:
+[1]    1000
+[1]  txpower:
+[1]    0.000000
+
+[2] adddefaultrxantenna 
+
+[3] pathloss 2 Forward Pathloss: 0 Reverse Pathloss: 0
+
+[4] location 1 P:[40.025495,-74.312501,3] V:[0,0,0]
+[4] location 2 P:[40.025495,-74.315441,3] V:[45,0,120]
+
+[5] packet
+[5]  Common PHY Header data:
+[5]   regid: 7
+[5]   seq: 1
+[5]   tx time: 30.000060
+[5]   freq group: 0
+[5]   freq: 250000000
+[5]   duration: 200
+[5]   offset: 100
+[5]   antenna: 0
+[5]   freq index: 0
+[5]   bandwidth: 1200000
+[5]   fixed gain: 1
+[5]   src: 2
+[5]   transmitter power: 0.000000
+
+[5]  Packet forwarded to next layer
+
+[5]  MAC MIMOReceivePropertiesControlMessage data:
+[5]   sot: 30.000060
+[5]   prop delay: 1
+[5]   rx antenna index: 0
+[5]   tx antenna index: 0
+[5]   span: 200
+[5]   rx sensitivity: -109.208188
+[5]   freq: 250000000
+[5]   duration: 200
+[5]   offset: 100
+[5]   power: 0.000000
+[5]   shift freq: 250000000
+[5]   shift hz: 70.760818
+
+Processing upstream packet...
+[5] ReceivePowerTable
+[5] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[5] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |70.760818   |30.000060       |
+
+[6] window
+[6]  request window time: 30000060
+[6]  frequency: 250000000
+[6]  window response timepoint: 30000060
+[6]  bin size: 20
+[6]  rx sensitivity: 1.2e-11
+[6]  signal in noise: yes
+[6]    5:0.9999416471
+
+[7] location 2 P:[40.025495,-74.315441,3] V:[90,0,120]
+
+[8] packet
+[8]  Common PHY Header data:
+[8]   regid: 7
+[8]   seq: 2
+[8]   tx time: 30.000360
+[8]   freq group: 0
+[8]   freq: 250000000
+[8]   duration: 200
+[8]   offset: 100
+[8]   antenna: 0
+[8]   freq index: 0
+[8]   bandwidth: 1200000
+[8]   fixed gain: 1
+[8]   src: 2
+[8]   transmitter power: 0.000000
+
+[8]  Packet forwarded to next layer
+
+[8]  MAC MIMOReceivePropertiesControlMessage data:
+[8]   sot: 30.000360
+[8]   prop delay: 1
+[8]   rx antenna index: 0
+[8]   tx antenna index: 0
+[8]   span: 200
+[8]   rx sensitivity: -109.208188
+[8]   freq: 250000000
+[8]   duration: 200
+[8]   offset: 100
+[8]   power: 0.000000
+[8]   shift freq: 250000000
+[8]   shift hz: 100.069269
+
+Processing upstream packet...
+[8] ReceivePowerTable
+[8] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[8] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |100.069269  |30.000360       |
+
+[9] window
+[9]  request window time: 30000360
+[9]  frequency: 250000000
+[9]  window response timepoint: 30000360
+[9]  bin size: 20
+[9]  rx sensitivity: 1.2e-11
+[9]  signal in noise: yes
+[9]    0:0.9999416471
+[9]    1:0
+[9]    5:0.9999166727
+
+[10] location 2 P:[40.025495,-74.315441,3] V:[135,0,120]
+
+[11] packet
+[11]  Common PHY Header data:
+[11]   regid: 7
+[11]   seq: 3
+[11]   tx time: 30.000660
+[11]   freq group: 0
+[11]   freq: 250000000
+[11]   duration: 200
+[11]   offset: 100
+[11]   antenna: 0
+[11]   freq index: 0
+[11]   bandwidth: 1200000
+[11]   fixed gain: 1
+[11]   src: 2
+[11]   transmitter power: 0.000000
+
+[11]  Packet forwarded to next layer
+
+[11]  MAC MIMOReceivePropertiesControlMessage data:
+[11]   sot: 30.000660
+[11]   prop delay: 1
+[11]   rx antenna index: 0
+[11]   tx antenna index: 0
+[11]   span: 200
+[11]   rx sensitivity: -109.208188
+[11]   freq: 250000000
+[11]   duration: 200
+[11]   offset: 100
+[11]   power: 0.000000
+[11]   shift freq: 250000000
+[11]   shift hz: 70.758483
+
+Processing upstream packet...
+[11] ReceivePowerTable
+[11] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[11] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |70.758483   |30.000660       |
+
+[12] window
+[12]  request window time: 30000660
+[12]  frequency: 250000000
+[12]  window response timepoint: 30000660
+[12]  bin size: 20
+[12]  rx sensitivity: 1.2e-11
+[12]  signal in noise: yes
+[12]    0:0.9999166727
+[12]    1:0
+[12]    5:0.9999416471
+
+[13] location 2 P:[40.025495,-74.315441,3] V:[180,0,120]
+
+[14] packet
+[14]  Common PHY Header data:
+[14]   regid: 7
+[14]   seq: 4
+[14]   tx time: 30.000960
+[14]   freq group: 0
+[14]   freq: 250000000
+[14]   duration: 200
+[14]   offset: 100
+[14]   antenna: 0
+[14]   freq index: 0
+[14]   bandwidth: 1200000
+[14]   fixed gain: 1
+[14]   src: 2
+[14]   transmitter power: 0.000000
+
+[14]  Packet forwarded to next layer
+
+[14]  MAC MIMOReceivePropertiesControlMessage data:
+[14]   sot: 30.000960
+[14]   prop delay: 1
+[14]   rx antenna index: 0
+[14]   tx antenna index: 0
+[14]   span: 200
+[14]   rx sensitivity: -109.208188
+[14]   freq: 250000000
+[14]   duration: 200
+[14]   offset: 100
+[14]   power: 0.000000
+[14]   shift freq: 250000000
+[14]   shift hz: -0.001651
+
+Processing upstream packet...
+[14] ReceivePowerTable
+[14] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[14] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-0.001651   |30.000960       |
+
+[15] window
+[15]  request window time: 30000960
+[15]  frequency: 250000000
+[15]  window response timepoint: 30000960
+[15]  bin size: 20
+[15]  rx sensitivity: 1.2e-11
+[15]  signal in noise: yes
+[15]    0:0.9999416471
+[15]    1:0
+[15]    5:0.9999991655
+
+[16] location 2 P:[40.025495,-74.315441,3] V:[225,0,120]
+
+[17] packet
+[17]  Common PHY Header data:
+[17]   regid: 7
+[17]   seq: 5
+[17]   tx time: 30.001260
+[17]   freq group: 0
+[17]   freq: 250000000
+[17]   duration: 200
+[17]   offset: 100
+[17]   antenna: 0
+[17]   freq index: 0
+[17]   bandwidth: 1200000
+[17]   fixed gain: 1
+[17]   src: 2
+[17]   transmitter power: 0.000000
+
+[17]  Packet forwarded to next layer
+
+[17]  MAC MIMOReceivePropertiesControlMessage data:
+[17]   sot: 30.001260
+[17]   prop delay: 1
+[17]   rx antenna index: 0
+[17]   tx antenna index: 0
+[17]   span: 200
+[17]   rx sensitivity: -109.208188
+[17]   freq: 250000000
+[17]   duration: 200
+[17]   offset: 100
+[17]   power: 0.000000
+[17]   shift freq: 250000000
+[17]   shift hz: -70.760778
+
+Processing upstream packet...
+[17] ReceivePowerTable
+[17] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[17] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-70.760778  |30.001260       |
+
+[18] window
+[18]  request window time: 30001260
+[18]  frequency: 250000000
+[18]  window response timepoint: 30001260
+[18]  bin size: 20
+[18]  rx sensitivity: 1.2e-11
+[18]  signal in noise: yes
+[18]    0:0.9999991655
+[18]    1:0
+[18]    5:0.9999408126
+
+[19] location 2 P:[40.025495,-74.315441,3] V:[270,0,120]
+
+[20] packet
+[20]  Common PHY Header data:
+[20]   regid: 7
+[20]   seq: 6
+[20]   tx time: 30.001560
+[20]   freq group: 0
+[20]   freq: 250000000
+[20]   duration: 200
+[20]   offset: 100
+[20]   antenna: 0
+[20]   freq index: 0
+[20]   bandwidth: 1200000
+[20]   fixed gain: 1
+[20]   src: 2
+[20]   transmitter power: 0.000000
+
+[20]  Packet forwarded to next layer
+
+[20]  MAC MIMOReceivePropertiesControlMessage data:
+[20]   sot: 30.001560
+[20]   prop delay: 1
+[20]   rx antenna index: 0
+[20]   tx antenna index: 0
+[20]   span: 200
+[20]   rx sensitivity: -109.208188
+[20]   freq: 250000000
+[20]   duration: 200
+[20]   offset: 100
+[20]   power: 0.000000
+[20]   shift freq: 250000000
+[20]   shift hz: -100.069188
+
+Processing upstream packet...
+[20] ReceivePowerTable
+[20] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[20] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-100.069188 |30.001560       |
+
+[21] window
+[21]  request window time: 30001560
+[21]  frequency: 250000000
+[21]  window response timepoint: 30001560
+[21]  bin size: 20
+[21]  rx sensitivity: 1.2e-11
+[21]  signal in noise: yes
+[21]    0:0.9999408126
+[21]    1:0
+[21]    5:0.9999158382
+
+[22] location 2 P:[40.025495,-74.315441,3] V:[315,0,120]
+
+[23] packet
+[23]  Common PHY Header data:
+[23]   regid: 7
+[23]   seq: 7
+[23]   tx time: 30.001860
+[23]   freq group: 0
+[23]   freq: 250000000
+[23]   duration: 200
+[23]   offset: 100
+[23]   antenna: 0
+[23]   freq index: 0
+[23]   bandwidth: 1200000
+[23]   fixed gain: 1
+[23]   src: 2
+[23]   transmitter power: 0.000000
+
+[23]  Packet forwarded to next layer
+
+[23]  MAC MIMOReceivePropertiesControlMessage data:
+[23]   sot: 30.001860
+[23]   prop delay: 1
+[23]   rx antenna index: 0
+[23]   tx antenna index: 0
+[23]   span: 200
+[23]   rx sensitivity: -109.208188
+[23]   freq: 250000000
+[23]   duration: 200
+[23]   offset: 100
+[23]   power: 0.000000
+[23]   shift freq: 250000000
+[23]   shift hz: -70.758442
+
+Processing upstream packet...
+[23] ReceivePowerTable
+[23] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[23] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-70.758442  |30.001860       |
+
+[24] window
+[24]  request window time: 30001860
+[24]  frequency: 250000000
+[24]  window response timepoint: 30001860
+[24]  bin size: 20
+[24]  rx sensitivity: 1.2e-11
+[24]  signal in noise: yes
+[24]    0:0.9999158382
+[24]    1:0
+[24]    5:0.9999408126
+
+[25] location 2 P:[40.025495,-74.315441,3] V:[360,0,120]
+
+[26] packet
+[26]  Common PHY Header data:
+[26]   regid: 7
+[26]   seq: 8
+[26]   tx time: 30.002160
+[26]   freq group: 0
+[26]   freq: 250000000
+[26]   duration: 200
+[26]   offset: 100
+[26]   antenna: 0
+[26]   freq index: 0
+[26]   bandwidth: 1200000
+[26]   fixed gain: 1
+[26]   src: 2
+[26]   transmitter power: 0.000000
+
+[26]  Packet forwarded to next layer
+
+[26]  MAC MIMOReceivePropertiesControlMessage data:
+[26]   sot: 30.002160
+[26]   prop delay: 1
+[26]   rx antenna index: 0
+[26]   tx antenna index: 0
+[26]   span: 200
+[26]   rx sensitivity: -109.208188
+[26]   freq: 250000000
+[26]   duration: 200
+[26]   offset: 100
+[26]   power: 0.000000
+[26]   shift freq: 250000000
+[26]   shift hz: 0.001651
+
+Processing upstream packet...
+[26] ReceivePowerTable
+[26] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[26] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |0.001651    |30.002160       |
+
+[27] window
+[27]  request window time: 30002160
+[27]  frequency: 250000000
+[27]  window response timepoint: 30002160
+[27]  bin size: 20
+[27]  rx sensitivity: 1.2e-11
+[27]  signal in noise: yes
+[27]    0:0.9999408126
+[27]    1:0
+[27]    5:1
+
+[28] location 1 P:[40.025495,-74.312501,3] V:[90,0,90]
+[28] location 2 P:[40.025495,-74.315441,3] V:[90,0,30]
+
+[29] packet
+[29]  Common PHY Header data:
+[29]   regid: 7
+[29]   seq: 9
+[29]   tx time: 30.002460
+[29]   freq group: 0
+[29]   freq: 250000000
+[29]   duration: 200
+[29]   offset: 100
+[29]   antenna: 0
+[29]   freq index: 0
+[29]   bandwidth: 1200000
+[29]   fixed gain: 1
+[29]   src: 2
+[29]   transmitter power: 0.000000
+
+[29]  Packet forwarded to next layer
+
+[29]  MAC MIMOReceivePropertiesControlMessage data:
+[29]   sot: 30.002460
+[29]   prop delay: 1
+[29]   rx antenna index: 0
+[29]   tx antenna index: 0
+[29]   span: 200
+[29]   rx sensitivity: -109.208188
+[29]   freq: 250000000
+[29]   duration: 200
+[29]   offset: 100
+[29]   power: 0.000000
+[29]   shift freq: 250000000
+[29]   shift hz: -50.034604
+
+Processing upstream packet...
+[29] ReceivePowerTable
+[29] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[29] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-50.034604  |30.002460       |
+
+[30] window
+[30]  request window time: 30002460
+[30]  frequency: 250000000
+[30]  window response timepoint: 30002460
+[30]  bin size: 20
+[30]  rx sensitivity: 1.2e-11
+[30]  signal in noise: yes
+[30]    0:1
+[30]    1:0
+[30]    5:0.9999575019
+
+[31] location 1 P:[40.025495,-74.312501,3] V:[90,0,0]
+[31] location 2 P:[40.025495,-74.315441,3] V:[270,0,60]
+
+[32] packet
+[32]  Common PHY Header data:
+[32]   regid: 7
+[32]   seq: 10
+[32]   tx time: 30.002760
+[32]   freq group: 0
+[32]   freq: 250000000
+[32]   duration: 200
+[32]   offset: 100
+[32]   antenna: 0
+[32]   freq index: 0
+[32]   bandwidth: 1200000
+[32]   fixed gain: 1
+[32]   src: 2
+[32]   transmitter power: 0.000000
+
+[32]  Packet forwarded to next layer
+
+[32]  MAC MIMOReceivePropertiesControlMessage data:
+[32]   sot: 30.002760
+[32]   prop delay: 1
+[32]   rx antenna index: 0
+[32]   tx antenna index: 0
+[32]   span: 200
+[32]   rx sensitivity: -109.208188
+[32]   freq: 250000000
+[32]   duration: 200
+[32]   offset: 100
+[32]   power: 0.000000
+[32]   shift freq: 250000000
+[32]   shift hz: -50.034604
+
+Processing upstream packet...
+[32] ReceivePowerTable
+[32] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[32] |2           |0           |0           |250000000   |0.000000    |0.000000    |0.000000    |0.000000    |0.000000    |-50.034604  |30.002760       |
+
+[33] window
+[33]  request window time: 30002760
+[33]  frequency: 250000000
+[33]  window response timepoint: 30002760
+[33]  bin size: 20
+[33]  rx sensitivity: 1.2e-11
+[33]  signal in noise: yes
+[33]    0:0.9999575019
+[33]    1:0
+[33]    5:0.9999575019
+
