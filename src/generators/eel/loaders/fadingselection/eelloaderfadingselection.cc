@@ -72,7 +72,7 @@ void EMANE::Generators::EEL::LoaderFadingSelection::load(const ModuleType & modu
 
               // build a parameters vector holding all the
               // comma separeted elements
-              // <txModuleID>,none|nakagami ...
+              // <txModuleID>,none|nakagami|lognormal ...
               while(posEnd != std::string::npos)
                 {
                   posEnd = iterArg->find_first_of(",",posStart);
@@ -131,6 +131,10 @@ void EMANE::Generators::EEL::LoaderFadingSelection::load(const ModuleType & modu
                                 else if(sModel == "nakagami")
                                   {
                                     model = Events::FadingModel::NAKAGAMI;
+                                  }
+                                else if(sModel == "lognormal")
+                                  {
+                                    model = Events::FadingModel::LOGNORMAL;
                                   }
                                 else
                                   {

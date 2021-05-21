@@ -114,6 +114,8 @@ libemane_la_SOURCES =                         \
  logger.cc                                    \
  loglevelupdatehandler.cc                     \
  loggerrecordmessage.cc                       \
+ lognormalfadingalgorithm.cc                  \
+ lognormalfadingalgorithmmanager.cc           \
  logservice.cc                                \
  maclayer.cc                                  \
  main.cc                                      \
@@ -262,6 +264,8 @@ libemane_la_SOURCES =                         \
  loggerlevelconvert.inl                       \
  loglevelupdatehandler.h                      \
  loggerrecordmessage.h                        \
+ lognormalfadingalgorithm.h                   \
+ lognormalfadingalgorithmmanager.h            \
  logservice.h                                 \
  maclayer.h                                   \
  main.h                                       \
