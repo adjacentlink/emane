@@ -32,6 +32,7 @@
 
 #include "fadingmanager.h"
 #include "nakagamifadingalgorithmmanager.h"
+#include "lognormalfadingalgorithmmanager.h"
 
 EMANE::FadingManager::FadingManager(NEMId id,
                                     PlatformServiceProvider * pPlatformService,
@@ -44,6 +45,10 @@ EMANE::FadingManager::FadingManager(NEMId id,
 {
   fadingAlgorithmManagers_.insert(std::make_pair("nakagami",
                                                  std::unique_ptr<FadingAlgorithmManager>(new NakagamiFadingAlgorithmManager{id,
+                                                                                                                              pPlatformService,
+                                                                                                                              sPrefix})));
+  fadingAlgorithmManagers_.insert(std::make_pair("lognormal",
+                                                 std::unique_ptr<FadingAlgorithmManager>(new LognormalFadingAlgorithmManager{id,
                                                                                                                               pPlatformService,
                                                                                                                               sPrefix})));
 }
@@ -98,6 +103,7 @@ void EMANE::FadingManager::configure_i(const ConfigurationUpdate & update,
   std::map<std::string,std::tuple<ConfigurationUpdate,FadingAlgorithmManager*>> configurations{};
 
   ConfigurationUpdate nakagamiUpdate;
+  ConfigurationUpdate lognormalUpdate;
 
   for(const auto & entry : fadingAlgorithmManagers_)
     {
@@ -197,6 +203,11 @@ void EMANE::FadingManager::update(const Events::FadingSelections & fadingSelecti
         case Events::FadingModel::NAKAGAMI:
           TxNEMFadingSelections_[selection.getNEMId()] = {Events::FadingModel::NAKAGAMI,
                                                           fadingAlgorithmManagers_["nakagami"].get()};
+          break;
+
+        case Events::FadingModel::LOGNORMAL:
+          TxNEMFadingSelections_[selection.getNEMId()] = {Events::FadingModel::LOGNORMAL,
+                                                          fadingAlgorithmManagers_["lognormal"].get()};
           break;
         default:
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
