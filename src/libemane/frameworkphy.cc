@@ -1803,8 +1803,11 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
         {
           if(result.status_ == ReceiveProcessor::ProcessResult::Status::SUCCESS)
             {
-              mimoSoT.insert(result.mimoSoT_);
-              mimoPropagationDelay.insert(result.mimoPropagationDelay_);
+              if(result.mimoSoT_.time_since_epoch().count() != 0)
+                {
+                  mimoSoT.insert(result.mimoSoT_);
+                  mimoPropagationDelay.insert(result.mimoPropagationDelay_);
+                }
 
               antennaReceiveInfos.insert(antennaReceiveInfos.end(),
                                          std::make_move_iterator(result.antennaReceiveInfos_.begin()),
