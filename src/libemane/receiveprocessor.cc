@@ -64,6 +64,10 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
 {
   ProcessResult result{};
 
+  int iTreatedAsInBand{};
+  int iDropNotFOI{};
+  int iDropOutOfBand{};
+
   const auto & frequencyGroups =
     commonPHYHeader.getFrequencyGroups();
 
@@ -327,16 +331,26 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                                                            std::move(resultingFrequencySegments),
                                                            span,
                                                            Utils::MILLIWATT_TO_DB(dReceiverSensitivityMilliWatt));
+
+                  ++iTreatedAsInBand;
                 }
             }
           else
             {
-              // was this packet actually in-band, if so at least 1 freq was not in the foi
-              result.status_ = bInBand ?
-                ProcessResult::Status::DROP_CODE_NOT_FOI :
-                ProcessResult::Status::DROP_CODE_OUT_OF_BAND;
+              // not dropping yet, need to process each tx path in
+              // this message to see if any are valid
 
-              return result;
+              // record why this path was dropped
+              if(bInBand)
+                {
+                  // was this actually in-band, if so at least 1 freq
+                  // was not in the foi
+                  ++iDropNotFOI;
+                }
+              else
+                {
+                  ++iDropOutOfBand;
+                }
             }
         }
       catch(SpectrumServiceException & exp)
@@ -348,9 +362,24 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
         }
     }
 
-  // below receiver sensitivity is still considered a success at this
-  // point since multiple antennas may be in use
-  result.status_ = ProcessResult::Status::SUCCESS;
+  if(iTreatedAsInBand)
+    {
+      result.status_ = ProcessResult::Status::SUCCESS;
+    }
+  else if(iDropNotFOI)
+    {
+      result.status_ = ProcessResult::Status::DROP_CODE_NOT_FOI;
+    }
+  else if(iDropOutOfBand)
+    {
+      result.status_ = ProcessResult::Status::DROP_CODE_OUT_OF_BAND;
+    }
+  else
+    {
+      // below receiver sensitivity is still considered a success at this
+      // point since multiple antennas may be in use
+      result.status_ = ProcessResult::Status::SUCCESS;
+    }
 
   return result;
 }
