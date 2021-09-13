@@ -803,6 +803,13 @@ void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & updat
                                   item.first.c_str(),
                                   optionalFixedAntennaGaindBi_.first);
 
+          if(optionalFixedAntennaGaindBi_.second)
+            {
+              auto rxAntenna = Antenna::createIdealOmni(DEFAULT_ANTENNA_INDEX,
+                                                        optionalFixedAntennaGaindBi_.first);
+
+              antennaManager_.update(id_,rxAntenna);
+            }
         }
       else if(item.first == "txpower")
         {
