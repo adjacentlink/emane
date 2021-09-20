@@ -53,7 +53,7 @@ namespace EMANE
       unsigned int counter_{};
     };
 
-    double operator()(double dPowerdBm, double dDistanceMeters, const void * pParams) override
+    double operator()(double dPowerdBm, double, const void * pParams) override
     {
       auto pLognormalFadingParameters = reinterpret_cast<const Parameters *>(pParams);
 
