@@ -59,11 +59,15 @@ namespace EMANE
 
       if(dDistance)
         {
+	  double dLocalAlt{locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()};
+
+	  double dRemoteAlt{locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters()};
+
           dPathloss =
             (40.0 * log10(dDistance)) -
             (20.0 *
-             (log10(locationPairInfo.getLocalPOV().getPosition().getAltitudeMeters()) +
-              log10(locationPairInfo.getRemotePOV().getPosition().getAltitudeMeters())));
+             (log10(dLocalAlt < 1.0 ? 1.0 : dLocalAlt) +
+              log10(dRemoteAlt < 1.0 ? 1.0 : dRemoteAlt)));
         }
 
       return {std::vector<double>(segments.size(),dPathloss < 0 ? 0 : dPathloss),true};
