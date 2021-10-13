@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,24 +37,54 @@ inline
 EMANE::LocationInfo::LocationInfo():
   localPOV_{},
   remotePOV_{},
-  dDistanceMeters_{}{}
+  dDistanceMeters_{},
+  u64SequenceNumber_{},
+  dDopplerFactor_{1}{}
 
 inline
 EMANE::LocationInfo::LocationInfo(const PositionOrientationVelocity & localPOV,
-                                  const PositionOrientationVelocity & remotePOV):
+                                  const PositionOrientationVelocity & remotePOV,
+                                  std::uint64_t u64SequenceNumber):
   localPOV_{localPOV},
   remotePOV_{remotePOV},
-  dDistanceMeters_{}
+  dDistanceMeters_{},
+  u64SequenceNumber_{u64SequenceNumber},
+  dDopplerFactor_{1}
 {
   if(localPOV.getPosition() != remotePOV.getPosition())
     {
       const auto & pos1 = localPOV.getPositionECEF();
       const auto & pos2 = remotePOV.getPositionECEF();
-      
+
+      // position vector remote (transmitter) relative
+      // to local (receiver)
+      double dPosX{pos2.getX() - pos1.getX()};
+      double dPosY{pos2.getY() - pos1.getY()};
+      double dPosZ{pos2.getZ() - pos1.getZ()};
+
       // return distance
-      dDistanceMeters_ =  Utils::NORMALIZE_VECTOR(pos2.getX() - pos1.getX(), 
-                                                  pos2.getY() - pos1.getY(),
-                                                  pos2.getZ() - pos1.getZ());
+      dDistanceMeters_ =  Utils::NORMALIZE_VECTOR(dPosX,
+                                                  dPosY,
+                                                  dPosZ);
+
+      // calculate doppler factor
+      const auto & vel1 =  localPOV.getVelocityECEF();
+      const auto & vel2 =  remotePOV.getVelocityECEF();
+
+      if(vel1.isValid() && vel2.isValid())
+        {
+          // velocity vector remote (transmitter) relative
+          // to local (receiver)
+          double dVelX{vel1.getX() - vel2.getX()};
+          double dVelY{vel1.getY() - vel2.getY()};
+          double dVelZ{vel1.getZ() - vel2.getZ()};
+
+          double dDotProduct = dPosX * dVelX + dPosY * dVelY + dPosZ * dVelZ;
+          double dMagnitudeVelocityVector = Utils::NORMALIZE_VECTOR(dVelX,dVelY,dVelZ);
+          double dCosTheta = dDotProduct/(dDistanceMeters_*dMagnitudeVelocityVector);
+
+          dDopplerFactor_ =  SOL_MPS/(SOL_MPS - (dMagnitudeVelocityVector * dCosTheta));
+        }
     }
 }
 
@@ -63,7 +94,7 @@ const EMANE::PositionOrientationVelocity & EMANE::LocationInfo::getLocalPOV() co
   return localPOV_;
 }
 
-inline   
+inline
 const EMANE::PositionOrientationVelocity & EMANE::LocationInfo::getRemotePOV() const
 {
   return remotePOV_;
@@ -75,8 +106,20 @@ double EMANE::LocationInfo::getDistanceMeters() const
   return dDistanceMeters_;
 }
 
-inline   
-bool EMANE::LocationInfo::operator!() const
+inline
+std::uint64_t EMANE::LocationInfo::getSequenceNumber() const
 {
-  return !localPOV_ || !remotePOV_;
+  return u64SequenceNumber_;
+}
+
+inline
+bool EMANE::LocationInfo::isValid() const
+{
+  return localPOV_.isValid() && remotePOV_.isValid();
+}
+
+inline
+double EMANE::LocationInfo::getDopplerFactor() const
+{
+  return dDopplerFactor_;
 }

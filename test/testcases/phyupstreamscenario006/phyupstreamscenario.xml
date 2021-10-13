@@ -1,0 +1,357 @@
+<phyupstreamscenario nem="1">
+
+  <!-- action 1 -->
+  <action>
+    <configure>
+      <paramlist name='propagationmodel'>
+        <item value='precomputed'/>
+      </paramlist>
+      <paramlist name='fixedantennagainenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='compatibilitymode'>
+        <item value='2'/>
+      </paramlist>
+      <paramlist name='dopplershiftenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='systemnoisefigure'>
+        <item value='4'/>
+      </paramlist>
+      <paramlist name='noisemode'>
+        <item value='all'/>
+      </paramlist>
+      <paramlist name='bandwidth'>
+        <item value='1.2M'/>
+      </paramlist>
+      <paramlist name='frequency'>
+        <item value='250M'/>
+      </paramlist>
+      <paramlist name='frequencyofinterest'>
+        <item value='250M'/>
+      </paramlist>
+      <paramlist name='subid'>
+        <item value='1'/>
+      </paramlist>
+      <paramlist name='noisemaxclampenable'>
+        <item value='on'/>
+      </paramlist>
+      <paramlist name='timesyncthreshold'>
+        <item value='1000'/>
+      </paramlist>
+    </configure>
+  </action>
+
+  <!-- action 2 -->
+ <action>
+    <adddefaultrxantenna/>
+  </action>
+  
+  <!-- action 3 -->
+  <action>
+    <pathloss>
+      <entry nem='2' pathloss='0'/>
+    </pathloss>
+  </action>
+
+  <!-- action 4 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.312501" altitude="3.0"/>
+        <velocity azimuth="0" elevation="0" magnitude="0"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="45" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 5 -->
+  <action>                        
+    <packet now='30000065' txtime='30000060' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 6 -->
+  <action>
+    <window now='30000260' time='30000060' duration="200" frequency="250000000"/>
+  </action>
+
+  
+  <!-- action 7 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="90" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 8 -->
+  <action>                        
+    <packet now='30000365' txtime='30000360' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 9 -->
+  <action>
+    <window now='30000560' time='30000360' duration="200" frequency="250000000"/>
+  </action>
+
+  
+  <!-- action 10 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="135" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 11 -->
+  <action>                        
+    <packet now='30000665' txtime='30000660' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+
+ <!-- action 12 -->
+  <action>
+    <window now='30000860' time='30000660' duration="200" frequency="250000000"/>
+  </action>
+  
+  <!-- action 13 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="180" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 14 -->
+  <action>                        
+    <packet now='30000965' txtime='30000960' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 15 -->
+  <action>
+    <window now='30001160' time='30000960' duration="200" frequency="250000000"/>
+  </action>
+  
+  <!-- action 16 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="225" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 17 -->
+  <action>                        
+    <packet now='30001265' txtime='30001260' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 18 -->
+  <action>
+    <window now='30001460' time='30001260' duration="200" frequency="250000000"/>
+  </action>
+
+  
+  <!-- action 19 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="270" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 20 -->
+  <action>                        
+    <packet now='30001565' txtime='30001560' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 21 -->
+  <action>
+    <window now='30001760' time='30001560' duration="200" frequency="250000000"/>
+  </action>
+
+  
+  <!-- action 22 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="315" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 23 -->
+  <action>                        
+    <packet now='30001865' txtime='30001860' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 24 -->
+  <action>
+    <window now='30002060' time='30001860' duration="200" frequency="250000000"/>
+  </action>
+  
+  <!-- action 25 -->
+  <action>
+    <locations>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="360" elevation="0" magnitude="120"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 26 -->
+  <action>                        
+    <packet now='30002165' txtime='30002160' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+ <!-- action 27 -->
+  <action>
+    <window now='30002360' time='30002160' duration="200" frequency="250000000"/>
+  </action>
+  
+  <!-- action 28 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.312501" altitude="3.0"/>
+        <velocity azimuth="90" elevation="0" magnitude="90"/>
+      </pov>
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="90" elevation="0" magnitude="30"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 29 -->
+  <action>                        
+    <packet now='30002465' txtime='30002460' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 30 -->
+  <action>
+    <window now='30002660' time='30002460' duration="200" frequency="250000000"/>
+  </action>
+
+  
+  <!-- action 31 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.312501" altitude="3.0"/>
+        <velocity azimuth="90" elevation="0" magnitude="0"/>
+      </pov>
+
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.315441" altitude="3.0"/>
+        <velocity azimuth="270" elevation="0" magnitude="60"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 32 -->
+  <action>                        
+    <packet now='30002765' txtime='30002760' bandwidth='1200000'
+            size='1024' source='2' destination='65535' subid='1' fixedgain='0'>
+      <segments>
+        <segment frequency="250000000" offset="100" duration="200"/>
+      </segments>
+      <transmitters>
+        <transmitter nem='2' power='0'/>
+      </transmitters>
+    </packet>
+  </action>
+
+  <!-- action 33 -->
+  <action>
+    <window now='30002960' time='30002760' duration="200" frequency="250000000"/>
+  </action>
+
+  
+</phyupstreamscenario>

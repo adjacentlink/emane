@@ -57,21 +57,27 @@ class OTAMessage:
         self._phyHeader = commonphyheader_pb2.CommonPHYHeader()
         self._phyHeader.registrationId = registrationId;
         self._phyHeader.subId = subId;
-        self._phyHeader.bandwidthHz = bandwidthHz;
-
-        if fixedAntennaGain is not None:
-            self._phyHeader.fixedAntennaGain = fixedAntennaGain
 
         for nemId,powerdBm in transmitters:
             transmitter = self._phyHeader.transmitters.add()
             transmitter.nemId = nemId
             transmitter.powerdBm = powerdBm
 
+        frequencyGroup =  self._phyHeader.frequencyGroups.add()
+
         for frequencyHz, offsetMicroseconds, durationMicroseconds in segments:
-            segment = self._phyHeader.frequencySegments.add()
+            segment = frequencyGroup.frequencySegments.add()
             segment.frequencyHz = frequencyHz
             segment.offsetMicroseconds = offsetMicroseconds
             segment.durationMicroseconds = durationMicroseconds
+
+        txantenna = self._phyHeader.transmitAntennas.add()
+        txantenna.antennaIndex = 0
+        txantenna.bandwidthHz = bandwidthHz
+        txantenna.frequencyGroupIndex = 0
+
+        if fixedAntennaGain is not None:
+            txantenna.fixedGaindBi = fixedAntennaGain
 
     def generate(self,txTimeMicroseconds,sequence,uuid):
         self._otaHeader.uuid = uuid.bytes

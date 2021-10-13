@@ -36,7 +36,7 @@ from . import fadingselectionevent_pb2
 class FadingSelectionEvent(Event):
     IDENTIFIER = 106
 
-    MODELS = ('none','nakagami')
+    MODELS = ('none','nakagami','lognormal')
 
     def __init__(self):
         self._event = fadingselectionevent_pb2.FadingSelectionEvent()
@@ -55,6 +55,9 @@ class FadingSelectionEvent(Event):
                     hasModel = True
                 elif value == 'nakagami':
                     entry.model  = fadingselectionevent_pb2.FadingSelectionEvent.TYPE_NAKAGAMI
+                    hasModel = True
+                elif value == 'lognormal':
+                    entry.model  = fadingselectionevent_pb2.FadingSelectionEvent.TYPE_LOGNORMAL
                     hasModel = True
                 else:
                     raise ValueError("unknown model")
@@ -78,6 +81,8 @@ class FadingSelectionEvent(Event):
                 model = 'none'
             elif entry.model == fadingselectionevent_pb2.FadingSelectionEvent.TYPE_NAKAGAMI:
                 model = 'nakagami'
+            elif entry.model == fadingselectionevent_pb2.FadingSelectionEvent.TYPE_LOGNORMAL:
+                model = 'lognormal'
 
             kwargs = {'model' : model}
 

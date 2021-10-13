@@ -40,6 +40,8 @@ EMANE::Strings EMANE::Controls::SpectrumFilterAddControlMessageFormatter::operat
 {
   Strings strings{"filter idex: " + std::to_string(pMsg_->getFilterIndex())};
 
+  strings.push_back("antenna idex: " + std::to_string(pMsg_->getAntennaIndex()));
+
   strings.push_back("frequency: " + std::to_string(pMsg_->getFrequencyHz()));
 
   strings.push_back("bandwidth: " + std::to_string(pMsg_->getBandwidthHz()));

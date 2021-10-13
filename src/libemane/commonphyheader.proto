@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,23 +44,42 @@ message CommonPHYHeader
     required double powerdBm = 2;
   }
 
-  message FrequencySegment
+  message FrequencyGroup
   {
-    required uint64 frequencyHz = 1;
-    required uint64 offsetMicroseconds = 2;
-    required uint64 durationMicroseconds = 3;
-    optional double powerdBm = 4;
+    message FrequencySegment
+    {
+      required uint64 frequencyHz = 1;
+      required uint64 offsetMicroseconds = 2;
+      required uint64 durationMicroseconds = 3;
+      optional double powerdBm = 4;
+    }
+
+    repeated FrequencySegment frequencySegments = 1;
+  }
+
+  message TransmitAntenna
+  {
+    message Pointing
+    {
+      required uint32 profileId = 1;
+      required double azimuthDegrees = 2;
+      required double elevationDegrees = 3;
+    }
+
+    required uint32 antennaIndex = 1;
+    required uint32 frequencyGroupIndex = 2;
+    required uint64 bandwidthHz = 3;
+    optional double fixedGaindBi = 4;
+    optional Pointing pointing = 5;
   }
 
   required uint32 registrationId = 1;
   required uint32 subId = 2;
   required uint32 sequenceNumber = 3;
-  required uint64 bandwidthHz = 4;
-  required uint64 txTimeMicroseconds = 5;
+  required uint64 txTimeMicroseconds = 4;
 
-  repeated Transmitter transmitters = 6;
-  repeated FrequencySegment frequencySegments = 7;
-
-  optional double fixedAntennaGain = 8;
-  optional bytes filterData = 9;
+  repeated Transmitter transmitters = 5;
+  repeated FrequencyGroup frequencyGroups = 6;
+  repeated TransmitAntenna transmitAntennas  = 7;
+  optional bytes filterData = 8;
 }

@@ -42,6 +42,7 @@ message FadingSelectionEvent
   {
     TYPE_NONE = 1;
     TYPE_NAKAGAMI = 2;
+    TYPE_LOGNORMAL = 3;
   }
 
   message Entry

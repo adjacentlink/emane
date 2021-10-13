@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016,2019-2020 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016,2019-2021 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -57,9 +57,9 @@ int main(int argc, char * argv[])
 
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"schema",1,nullptr,'s'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"schema",1,nullptr,'s'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -221,19 +221,19 @@ int main(int argc, char * argv[])
 
                           xmlChar * pNoiseMode = xmlGetProp(pActionNode,BAD_CAST "mode");
 
-                          EMANE::SpectrumMonitor::NoiseMode mode{};
+                          EMANE::NoiseMode mode{};
 
                           if(!xmlStrcmp(pNoiseMode,BAD_CAST "none"))
                             {
-                              mode = EMANE::SpectrumMonitor::NoiseMode::NONE;
+                              mode = EMANE::NoiseMode::NONE;
                             }
                           else if(!xmlStrcmp(pNoiseMode,BAD_CAST "all"))
                             {
-                              mode = EMANE::SpectrumMonitor::NoiseMode::ALL;
+                              mode = EMANE::NoiseMode::ALL;
                             }
                           else if(!xmlStrcmp(pNoiseMode,BAD_CAST "outofband"))
                             {
-                              mode = EMANE::SpectrumMonitor::NoiseMode::OUTOFBAND;
+                              mode = EMANE::NoiseMode::OUTOFBAND;
                             }
                           else
                             {
@@ -320,8 +320,8 @@ int main(int argc, char * argv[])
 
                           std::cout<<"["<<iActionIndex
                                    <<"]    mode: "
-                                   <<(mode == EMANE::SpectrumMonitor::NoiseMode::ALL ? "all" :
-                                      (mode == EMANE::SpectrumMonitor::NoiseMode::NONE ? "none" : "outofband"))
+                                   <<(mode == EMANE::NoiseMode::ALL ? "all" :
+                                      (mode == EMANE::NoiseMode::NONE ? "none" : "outofband"))
                                    <<std::endl;
 
 
@@ -517,21 +517,25 @@ int main(int argc, char * argv[])
                               EMANE::Microseconds span{};
                               EMANE::FrequencySegments reportableSegments{};
                               bool bTreatAsInBand{};
+                              double dReceiverSensitivityMilliWatt{};
 
                               std::tie(bin0Time,
                                        reportablePropagation,
                                        span,
                                        reportableSegments,
-                                       bTreatAsInBand)  = spectrumMonitor.update(EMANE::TimePoint{start+now},
-                                                                                 EMANE::TimePoint{start+txTime},
-                                                                                 propagation,
-                                                                                 segments,
-                                                                                 transmitterBandwidth,
-                                                                                 powers,
-                                                                                 bInBand,
-                                                                                 transmitters,
-                                                                                 0,
-                                                                                 {});
+                                       bTreatAsInBand,
+                                       dReceiverSensitivityMilliWatt)  = spectrumMonitor.update(EMANE::TimePoint{start+now},
+                                                                                                EMANE::TimePoint{start+txTime},
+                                                                                                propagation,
+                                                                                                1,
+                                                                                                segments,
+                                                                                                transmitterBandwidth,
+                                                                                                powers,
+                                                                                                bInBand,
+                                                                                                transmitters,
+                                                                                                0,
+                                                                                                0,
+                                                                                                {});
 
 
                               //std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool>

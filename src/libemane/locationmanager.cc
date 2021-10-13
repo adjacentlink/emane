@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,14 +34,15 @@
 #include "positionutils.h"
 
 EMANE::LocationManager::LocationManager(NEMId nemId):
-  nemId_{nemId}{}
+  nemId_{nemId},
+  u64CacheSequenceNumber_{}{}
 
 void EMANE::LocationManager::update(const Events::Locations & locations)
 {
   for(const auto & location : locations)
     {
       EMANE::NEMId targetNEMId{location.getNEMId()};
-          
+
       if(nemId_ == targetNEMId)
         {
           // if self nem location changes clear
@@ -56,7 +57,7 @@ void EMANE::LocationManager::update(const Events::Locations & locations)
       else
         {
           auto iter = locationStore_.find(targetNEMId);
-              
+
           if(iter != locationStore_.end())
             {
               // if nem location changes clear the
@@ -71,20 +72,20 @@ void EMANE::LocationManager::update(const Events::Locations & locations)
           else
             {
               locationStore_.insert({targetNEMId,{location.getPosition(),
-                      location.getOrientation(),
-                      location.getVelocity()}});
+                                                  location.getOrientation(),
+                                                  location.getVelocity()}});
             }
         }
     }
 }
 
-      
+
 std::pair<EMANE::LocationInfo,bool> EMANE::LocationManager::getLocationInfo(NEMId remoteNEMId)
 {
-  if(!localPOV_ == false)
+  if(localPOV_.isValid())
     {
       auto cacheIter = locationInfoCache_.find(remoteNEMId);
-            
+
       if(cacheIter != locationInfoCache_.end())
         {
           return {cacheIter->second,true};
@@ -92,17 +93,17 @@ std::pair<EMANE::LocationInfo,bool> EMANE::LocationManager::getLocationInfo(NEMI
       else
         {
           auto iter = locationStore_.find(remoteNEMId);
-                    
+
           if(iter != locationStore_.end())
             {
-              LocationInfo locationInfo{localPOV_,iter->second};
-                    
+              LocationInfo locationInfo{localPOV_,iter->second,++u64CacheSequenceNumber_};
+
               locationInfoCache_[remoteNEMId] = locationInfo;
-                    
+
               return {locationInfo,true};
             }
         }
     }
-        
+
   return {LocationInfo{},false};
 }

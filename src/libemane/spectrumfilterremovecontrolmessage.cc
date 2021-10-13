@@ -35,19 +35,28 @@
 class EMANE::Controls::SpectrumFilterRemoveControlMessage::Implementation
 {
 public:
-  Implementation(FilterIndex filterIndex):
-    filterIndex_{filterIndex}{}
+  Implementation(FilterIndex filterIndex,
+                 AntennaIndex antennaIndex):
+    filterIndex_{filterIndex},
+    antennaIndex_{antennaIndex}{}
 
   Implementation(const Implementation & impl):
-    filterIndex_{impl.filterIndex_}{}
+    filterIndex_{impl.filterIndex_},
+    antennaIndex_{impl.antennaIndex_}{}
 
   FilterIndex getFilterIndex() const
   {
     return filterIndex_;
   }
 
+  AntennaIndex getAntennaIndex() const
+  {
+    return antennaIndex_;
+  }
+
 private:
   const FilterIndex filterIndex_;
+  const AntennaIndex antennaIndex_;
 };
 
 EMANE::Controls::SpectrumFilterRemoveControlMessage::
@@ -57,23 +66,37 @@ SpectrumFilterRemoveControlMessage(const SpectrumFilterRemoveControlMessage & ms
 {}
 
 EMANE::Controls::SpectrumFilterRemoveControlMessage::
-SpectrumFilterRemoveControlMessage(FilterIndex filterIndex):
+SpectrumFilterRemoveControlMessage(FilterIndex filterIndex,
+                                   AntennaIndex antennaIndex):
   ControlMessage{IDENTIFIER},
-  pImpl_{new Implementation{filterIndex}}{}
+  pImpl_{new Implementation{filterIndex,antennaIndex}}{}
 
 EMANE::Controls::SpectrumFilterRemoveControlMessage::~SpectrumFilterRemoveControlMessage(){}
 
 
 EMANE::Controls::SpectrumFilterRemoveControlMessage *
+EMANE::Controls::SpectrumFilterRemoveControlMessage::create(FilterIndex filterIndex,
+                                                            AntennaIndex antennaIndex)
+{
+  return new SpectrumFilterRemoveControlMessage{filterIndex,antennaIndex};
+}
+
+EMANE::Controls::SpectrumFilterRemoveControlMessage *
 EMANE::Controls::SpectrumFilterRemoveControlMessage::create(FilterIndex filterIndex)
 {
-  return new SpectrumFilterRemoveControlMessage{filterIndex};
+  return new SpectrumFilterRemoveControlMessage{filterIndex,DEFAULT_ANTENNA_INDEX};
 }
 
 EMANE::FilterIndex
 EMANE::Controls::SpectrumFilterRemoveControlMessage::getFilterIndex() const
 {
   return pImpl_->getFilterIndex();
+}
+
+EMANE::AntennaIndex
+EMANE::Controls::SpectrumFilterRemoveControlMessage::getAntennaIndex() const
+{
+  return pImpl_->getAntennaIndex();
 }
 
 EMANE::Controls::SpectrumFilterRemoveControlMessage *

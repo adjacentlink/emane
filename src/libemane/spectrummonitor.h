@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2019-2021 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -39,8 +39,8 @@
 #include "emane/spectrumserviceprovider.h"
 #include "emane/filtermatchcriterion.h"
 #include "noiserecorder.h"
+#include "noisemode.h"
 
-#include <set>
 #include <map>
 #include <vector>
 #include <memory>
@@ -49,13 +49,13 @@
 
 namespace EMANE
 {
-  class SpectrumMonitor : public SpectrumServiceProvider
+  using SpectrumUpdate =
+    std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool,double>;
+
+  class SpectrumMonitor
   {
   public:
     SpectrumMonitor();
-
-
-    enum class NoiseMode {NONE, ALL, OUTOFBAND, PASSTHROUGH};
 
     void initialize(uint16_t u16SubId,
                     const FrequencySet & foi,
@@ -70,22 +70,24 @@ namespace EMANE
                     bool bMaxClamp,
                     bool bExcludeSameSubIdFromFilter);
 
-    std::tuple<TimePoint,Microseconds,Microseconds,FrequencySegments,bool>
+    SpectrumUpdate
     update(const TimePoint & now,
            const TimePoint & txTime,
            const Microseconds & propagationDelay,
+           double dDopplerFactor,
            const FrequencySegments & segments,
            std::uint64_t u64SegmentBandwidthHz,
            const std::vector<double> & rxPowersMilliWatt,
            bool bInBand,
            const std::vector<NEMId> & transmitters,
            std::uint16_t u16SubId,
+           AntennaIndex txAntennaIndex,
            const std::pair<FilterData,bool> & optionalFilterData);
 
 
-    FrequencySet getFrequencies() const override;
+    FrequencySet getFrequencies() const;
 
-    double getReceiverSensitivitydBm() const override;
+    double getReceiverSensitivitydBm() const;
 
     // test harness access
     SpectrumWindow request_i(const TimePoint & now,
@@ -96,7 +98,7 @@ namespace EMANE
 
     SpectrumWindow request(std::uint64_t u64FrequencyHz,
                            const Microseconds & duration = Microseconds::zero(),
-                           const TimePoint & timepoint = TimePoint::min()) const override;
+                           const TimePoint & timepoint = TimePoint::min()) const;
 
     void initializeFilter(FilterIndex filterIndex,
                           std::uint64_t u64FrequencyHz,
@@ -106,15 +108,15 @@ namespace EMANE
 
     void removeFilter(FilterIndex filterIndex);
 
+
     SpectrumFilterWindow requestFilter(FilterIndex filterIndex,
                                        const Microseconds & duration = Microseconds::zero(),
-                                       const TimePoint & timepoint = TimePoint::min()) const override;
+                                       const TimePoint & timepoint = TimePoint::min()) const;
 
     std::vector<double> dump(std::uint64_t u64FrequencyHz) const;
 
   private:
     using NoiseRecorderMap = std::map<std::uint64_t,std::unique_ptr<NoiseRecorder>>;
-
 
     using NoiseRecord = std::tuple<NoiseRecorder *,
                                    double,
@@ -144,7 +146,7 @@ namespace EMANE
     double dReceiverSensitivityMilliWatt_;
     uint16_t u16SubId_;
     mutable std::mutex mutex_;
-
+    FrequencySet foi_;
 
     using FilterRecord = std::tuple<NoiseRecorder *, // noise recorder
                                     double, // overlap
@@ -175,6 +177,7 @@ namespace EMANE
     void applyEnergyToFilters_i(std::uint64_t u64TxBandwidthHz,
                                 std::uint64_t u64TxFrequencyHz,
                                 std::uint16_t u16SubId,
+                                double dDopplerFactor,
                                 const TimePoint & now,
                                 const TimePoint & txTime,
                                 const Microseconds & offset,
@@ -182,6 +185,7 @@ namespace EMANE
                                 const Microseconds & duration,
                                 double dRxPowerMilliWatt,
                                 const std::vector<NEMId> & transmitters,
+                                AntennaIndex txAntennaIndex,
                                 const std::pair<FilterData,bool> & optionalFilterData);
   };
 }

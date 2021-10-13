@@ -186,6 +186,9 @@ void EMANE::EventTablePublisher::update(const Events::FadingSelections & selecti
         case Events::FadingModel::NAKAGAMI:
           sModel = "nakagami";
           break;
+        case Events::FadingModel::LOGNORMAL:
+          sModel = "lognormal";
+          break;
         }
 
       std::vector<Any> row{Any{targetNEM},

@@ -41,6 +41,7 @@ namespace EMANE
       {
         NONE,
         NAKAGAMI,
+        LOGNORMAL,
       };
   };
 }

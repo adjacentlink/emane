@@ -41,33 +41,21 @@ namespace EMANE
   class FadingAlgorithm
   {
   public:
-    FadingAlgorithm(const std::string & sName,
-                    NEMId id,
-                    PlatformServiceProvider * pPlatformService,
-                    const std::string & sPrefix):
-      sName_{sName},
+    FadingAlgorithm(NEMId id,
+                    PlatformServiceProvider * pPlatformService):
       id_{id},
-      pPlatformService_(pPlatformService),
-      sPrefix_{sPrefix}{}
+      pPlatformService_(pPlatformService){}
 
     virtual ~FadingAlgorithm(){};
 
-    virtual void initialize(Registrar & registrar) = 0;
-
-    virtual void configure(const ConfigurationUpdate & update) = 0;
-
-    virtual void modify(const ConfigurationUpdate & update) = 0;
-
+    // output power in mW
     virtual double operator()(double dPowerdBm,
-                              double dDistanceMeters) = 0;
-
-    std::string name() const {return sName_;}
+                              double dDistanceMeters,
+                              const void * pParams) = 0;
 
   protected:
-    const std::string sName_;
     const NEMId id_;
     PlatformServiceProvider * const pPlatformService_;
-    const std::string sPrefix_;
   };
 }
 

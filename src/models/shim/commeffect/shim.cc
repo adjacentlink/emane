@@ -50,18 +50,18 @@ namespace
 
   // time event arg
   struct TimedEventArg {
-     std::uint32_t       u32EventType_;
-     void *              pData_;
-     EMANE::TimePoint    timePoint_;
-     EMANE::Microseconds delay_;
+    std::uint32_t       u32EventType_;
+    void *              pData_;
+    EMANE::TimePoint    timePoint_;
+    EMANE::Microseconds delay_;
 
-     TimedEventArg(std::uint32_t type, void * pData, EMANE::TimePoint timePoint, EMANE::Microseconds delay) :
-       u32EventType_{type},
-       pData_{pData},
-       timePoint_{timePoint},
-       delay_{delay}
-      { }
-   };
+    TimedEventArg(std::uint32_t type, void * pData, EMANE::TimePoint timePoint, EMANE::Microseconds delay) :
+      u32EventType_{type},
+      pData_{pData},
+      timePoint_{timePoint},
+      delay_{delay}
+    { }
+  };
 
 
   const std::uint16_t DROP_CODE_DISCARD            = 1;
@@ -146,8 +146,8 @@ void EMANE::Models::CommEffect::Shim::initialize(Registrar & registrar)
 
   configRegistrar.registerNumeric<double>("receivebufferperiod",
                                           EMANE::ConfigurationProperties::DEFAULT,
-                                         {1.0},
-                                         "Defines the max buffering time in seconds for packets received from an NEM."
+                                          {1.0},
+                                          "Defines the max buffering time in seconds for packets received from an NEM."
                                           " The buffering interval for a given packet is determined by the bitrate"
                                           " for the source NEM and the packet size. Packets are then placed in a"
                                           " timed queue based on this interval and all packets that would cause the"
@@ -447,12 +447,12 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
         {
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
-                                 "SHIMI %03hu %s::%s, drop, no profile data for src %hu, "
-                                 "default connectivity is off",
-                                 id_,
-                                 pzLayerName,
-                                 __func__,
-                                 pktInfo.getSource());
+                                  "SHIMI %03hu %s::%s, drop, no profile data for src %hu, "
+                                  "default connectivity is off",
+                                  id_,
+                                  pzLayerName,
+                                  __func__,
+                                  pktInfo.getSource());
 
           commonLayerStatistics_.processOutbound(pkt,
                                                  std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
@@ -466,14 +466,14 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
     {
       // get bitrate based on pkt destination unicast or broadcast
       std::uint64_t u64BitRate{pktInfo.getDestination() == NEM_BROADCAST_MAC_ADDRESS ?
-          ret.first.getBroadcastBitRate() :
-          ret.first.getUnicastBitRate()};
+                               ret.first.getBroadcastBitRate() :
+                               ret.first.getUnicastBitRate()};
 
 
       // reception interval
       Microseconds rxIntervalMicroseconds{
-        std::chrono::duration_cast<Microseconds>(DoubleSeconds{u64BitRate == 0 ?
-              0.0 : (pkt.length() * 8) / static_cast<double>(u64BitRate)})};
+                                          std::chrono::duration_cast<Microseconds>(DoubleSeconds{u64BitRate == 0 ?
+                                                0.0 : (pkt.length() * 8) / static_cast<double>(u64BitRate)})};
 
       // get previous EOR time for this src NEM
       auto optionalEORTime = getEORTime(pktInfo.getSource());
@@ -495,8 +495,8 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
 
 
               commonLayerStatistics_.processOutbound(pkt,
-                                             std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
-                                             DROP_CODE_RX_BUFF);
+                                                     std::chrono::duration_cast<Microseconds>(Clock::now() - beginTime),
+                                                     DROP_CODE_RX_BUFF);
 
               // drop
               return;
@@ -559,9 +559,9 @@ void EMANE::Models::CommEffect::Shim::processUpstreamPacket(UpstreamPacket & pkt
           UpstreamPacket * pPacket{new UpstreamPacket(pkt)};
 
           TimedEventArg * pTimedEventArg{new TimedEventArg{TIMED_EVENT_UPSTREAM_PACKET,
-                                                           pPacket,
-                                                           beginTime,
-                                                           std::chrono::duration_cast<Microseconds>(tpTimeout - Clock::now())}};
+                                                             pPacket,
+                                                             beginTime,
+                                                             std::chrono::duration_cast<Microseconds>(tpTimeout - Clock::now())}};
 
           // schedule the time event, id, pkt, timeout
           pPlatformService_->timerService().scheduleTimedEvent(tpTimeout, pTimedEventArg);
@@ -610,14 +610,14 @@ void EMANE::Models::CommEffect::Shim::processDownstreamPacket(DownstreamPacket &
   pkt.prependLengthPrefixFraming(serialization.size());
 
   CommonPHYHeader commonPHYHeader{EMANE::REGISTERED_EMANE_PHY_COMM_EFFECT,
-      static_cast<std::uint16_t>(u32DownstreamSequenceNumber_),
-      0,
-      0,
-      Clock::now(),
-      FrequencySegments{},
-      Transmitters{{id_,0}},
-      {0,false},
-      {}};
+                                  static_cast<std::uint16_t>(u32DownstreamSequenceNumber_),
+                                  0,
+                                  Clock::now(),
+                                  {FrequencySegments{{0,Microseconds::zero()}}},
+                                  {},
+                                  Transmitters{{id_,0}},
+                                  {}};
+
 
   // prepend phy header to outgoing packet
   commonPHYHeader.prependTo(pkt);
@@ -688,8 +688,8 @@ void EMANE::Models::CommEffect::Shim::processTimedEvent(TimerEventId eventId __a
 
       // processing delay is when we rx the pkt to now, minus the intended delay and latency
       commonLayerStatistics_.processOutbound(
-        *pPacket, std::chrono::duration_cast<Microseconds>(
-           Clock::now() - pTimedEventArg->timePoint_) - pTimedEventArg->delay_ - latencyMicroseconds);
+                                             *pPacket, std::chrono::duration_cast<Microseconds>(
+                                                                                                Clock::now() - pTimedEventArg->timePoint_) - pTimedEventArg->delay_ - latencyMicroseconds);
 
       sendUpstreamPacket(*pPacket);
 

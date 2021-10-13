@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,14 +69,14 @@ namespace EMANE
        * start-of-reception (SoR) frequency segment and latest end-of-reception (EoR) segment.
        * @param dReceiverSensitivitydBm Receiver sensitivity in dBm
        *
-       * @note Once a control message is passed to another NEM layer using 
+       * @note Once a control message is passed to another NEM layer using
        * EMANE::UpstreamTransport::processUpstreamPacket(),
        * EMANE::UpstreamTransport::processUpstreamControl(),
-       * EMANE::DownstreamTransport::processDownstreamPacket() or 
+       * EMANE::DownstreamTransport::processDownstreamPacket() or
        * EMANE::DownstreamTransport::processDownstreamControl() object ownership is
        * transferred to the emulator infrastructure along with deallocation responsibility.
        * It is not valid to use a control message instance after it has been passed to another
-       * layer. 
+       * layer.
        */
       static
       ReceivePropertiesControlMessage * create(const TimePoint & txTime,
@@ -96,7 +97,7 @@ namespace EMANE
        * Destroys an instance
        */
       ~ReceivePropertiesControlMessage();
-      
+
       /**
        * Gets the Tx time
        *
@@ -104,7 +105,7 @@ namespace EMANE
        */
       TimePoint getTxTime() const;
 
-      
+
       /**
        * Gets the propagation delay in microseconds
        *
@@ -126,7 +127,7 @@ namespace EMANE
        * frequencies vs time, for quick access to the noise information occurring during
        * the entire message duration.
        *
-       * @note The main consideration is that one large noise window request is 
+       * @note The main consideration is that one large noise window request is
        * less expensive than many small requests.
        *
        * @note The span is the length of time after transmit time, propagation delay and
@@ -138,25 +139,25 @@ namespace EMANE
        * @snippet models/mac/rfpipe/maclayer.cc startofreception-calculation-snibbet
        */
       Microseconds getSpan() const;
-      
+
       /**
        * Gets the receiver sensitivity in dBm
-       * 
+       *
        * @return receiver sensitivity id dBm
        */
       double getReceiverSensitivitydBm() const;
-      
+
       enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_RECEIVE_PROPERTIES};
-      
+
     private:
       class Implementation;
-      std::unique_ptr<Implementation> pImpl_;
-      
+      std::shared_ptr<Implementation> pImpl_;
+
       ReceivePropertiesControlMessage(const TimePoint & sot,
                                       const Microseconds & propagation,
                                       const Microseconds & span,
                                       double dReceiverSensitivitydBm);
-      
+
       ReceivePropertiesControlMessage(const ReceivePropertiesControlMessage &);
 
       ReceivePropertiesControlMessage &

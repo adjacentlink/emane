@@ -1,0 +1,211 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of Adjacent Link LLC nor the names of its
+#   contributors may be used to endorse or promote products derived
+#   from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+from __future__ import absolute_import, division, print_function
+
+from argparse import ArgumentParser
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import re
+
+argument_parser = ArgumentParser()
+
+argument_parser.add_argument('duration-file-csv',
+                             type=str,
+                             nargs='+',
+                             help='duration input file')
+
+argument_parser.add_argument('--out-dir',
+                             type=str,
+                             default='.',
+                             help='output directory [default: %(default)s].')
+
+argument_parser.add_argument('--out-file-box-prefix',
+                             type=str,
+                             default='process-upstream-packet-box',
+                             help='output file [default: %(default)s].')
+
+argument_parser.add_argument('--out-file-cdf-prefix',
+                             type=str,
+                             default='process-upstream-packet-cdf',
+                             help='output file [default: %(default)s].')
+
+argument_parser.add_argument('--out-file-duration-prefix',
+                             type=str,
+                             default='process-upstream-packet-line',
+                             help='output file [default: %(default)s].')
+
+argument_parser.add_argument('--pool-size',
+                             type=int,
+                             default=0,
+                             help='processing pool size used [default: %(default)s].')
+
+ns = argument_parser.parse_args()
+
+args = vars(ns)
+
+dfs = {}
+
+tests = []
+df_total = pd.DataFrame()
+
+for csv in args['duration-file-csv']:
+    iteration_name=os.path.basename(csv[:-4])
+    dfs[iteration_name] = pd.read_csv(csv)
+
+    if not tests:
+        tests = list(dfs[iteration_name].columns)
+
+    if df_total.empty:
+        df_total = dfs[iteration_name]
+
+    else:
+        df_total = pd.concat([df_total,dfs[iteration_name]],axis=0)
+
+test_dfs = {}
+
+for test in tests:
+    df_combined = pd.DataFrame()
+
+    for name,df in dfs.items():
+        if df_combined.empty:
+            df_combined = pd.DataFrame(df[test])
+        else:
+            df_combined = pd.concat([df_combined,df[test]],axis=1,join='inner')
+
+        df_combined.rename(columns={test : name},
+                           inplace=True)
+
+    test_dfs[test] = df_combined
+
+for test,df in test_dfs.items():
+    fig,ax1 = plt.subplots(1,1)
+
+    df.boxplot(ax=ax1)
+
+    ax1.set_title('Phy Process Upstream Packet: {} Pool {}'.format(test,args['pool_size']))
+
+    ax1.set_ylabel('Microseconds')
+
+    plt.xticks(rotation=90)
+
+    labels = ['{}\n{}'.format(item.get_text()[:-15],
+                              item.get_text()[-15:]) for item in ax1.get_xticklabels()]
+
+    ax1.set_xticklabels(labels)
+
+    fig.subplots_adjust(bottom=0.3)
+
+
+    fig.set_size_inches(17,11)
+
+    plt.savefig(os.path.join(args['out_dir'],
+                             args['out_file_box_prefix'] + '-' + test + '-pool-{}.png'.format(args['pool_size'])))
+    plt.close()
+
+    fig,ax1 = plt.subplots(1,1)
+
+    for iteration in list(df.columns):
+        ax1.hist(x=df[iteration],
+                 bins=100000,
+                 density=True,
+                 histtype='step',
+                 cumulative=True,
+                 label=iteration)
+
+    ax1.set_title('Phy Process Upstream Packet CDF: {} Pool {}'.format(test,args['pool_size']))
+    ax1.set_xlabel('Microseconds')
+    ax1.legend()
+    ax1.grid(linestyle='dotted')
+
+    fig.set_size_inches(17,11)
+    plt.savefig(os.path.join(args['out_dir'],
+                             args['out_file_cdf_prefix'] + '-' + test + '-pool-{}.png'.format(args['pool_size'])))
+    plt.close()
+
+df_agg = df_total.agg(['mean', 'std']).transpose()
+
+df_agg['Type'] = ""
+df_agg['RxAntenna'] = 0
+df_agg['TxAntenna'] = 0
+df_agg['Segments'] = 0
+
+for index,_ in df_agg.iterrows():
+    m = re.match(r'(.+)\-(\d+)x(\d+)\-(\d+).*',index)
+
+    if m:
+        df_agg.at[index,'Type'] = m.group(1)
+        df_agg.at[index,'TxAntenna'] = m.group(2)
+        df_agg.at[index,'RxAntenna'] = m.group(3)
+        df_agg.at[index,'Segments'] = m.group(4)
+
+df_agg = df_agg.reset_index(drop=True)
+
+fig,ax1 = plt.subplots(1,1)
+
+for info,df in df_agg.groupby(['Type','TxAntenna','RxAntenna']):
+    ax1.plot(df['Segments'],
+             df['mean'],
+             label='{}-{}x{}'.format(*info))
+
+ax1.set_title('Mean Phy Process Upstream Packet Pool {}'.format(args['pool_size']))
+ax1.set_xlabel('Frequency Segments')
+ax1.set_ylabel('Microseconds')
+ax1.legend()
+ax1.grid(linestyle='dotted')
+
+fig.set_size_inches(17,11)
+plt.savefig(os.path.join(args['out_dir'],
+                         args['out_file_duration_prefix']+'-pool-{}'.format(args['pool_size'])+'.png'))
+
+plt.close()
+
+for info,df in df_agg.groupby(['Type','TxAntenna','RxAntenna']):
+    fig,ax1 = plt.subplots(1,1)
+
+    ax1.plot(df['Segments'],
+             df['mean'],
+             label='{}-{}x{}'.format(*info))
+
+    ax1.set_title('Mean Phy Process Upstream Packet: {}-{}x{} Pool {}'.format(*info,args['pool_size']))
+    ax1.set_xlabel('Frequency Segments')
+    ax1.set_ylabel('Microseconds')
+    ax1.legend()
+    ax1.grid(linestyle='dotted')
+
+    fig.set_size_inches(17,11)
+    plt.savefig(os.path.join(args['out_dir'],
+                             args['out_file_duration_prefix']+'-{}-{}x{}-pool-{}'.format(*info,args['pool_size'])+'.png'))
+
+    plt.close()

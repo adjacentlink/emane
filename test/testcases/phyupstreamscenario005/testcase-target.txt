@@ -1,8 +1,28 @@
 [1] configure 
 [1]  bandwidth:
 [1]    1200000
+[1]  compatibilitymode:
+[1]    1
+[1]  dopplershiftenable:
+[1]    1
 [1]  excludesamesubidfromfilterenable:
 [1]    1
+[1]  fading.lognormal.dlthresh:
+[1]    0.250000
+[1]  fading.lognormal.dmu:
+[1]    5.000000
+[1]  fading.lognormal.dsigma:
+[1]    1.000000
+[1]  fading.lognormal.duthresh:
+[1]    0.750000
+[1]  fading.lognormal.lmean:
+[1]    0.005000
+[1]  fading.lognormal.lstddev:
+[1]    0.001000
+[1]  fading.lognormal.maxpathloss:
+[1]    100.000000
+[1]  fading.lognormal.minpathloss:
+[1]    0.000000
 [1]  fading.model:
 [1]    none
 [1]  fading.nakagami.distance0:
@@ -37,8 +57,14 @@
 [1]    300000
 [1]  noisemode:
 [1]    all
+[1]  processingpoolsize:
+[1]    0
 [1]  propagationmodel:
 [1]    precomputed
+[1]  rxsensitivitypromiscuousmodeenable:
+[1]    0
+[1]  stats.receivepowertableenable:
+[1]    1
 [1]  subid:
 [1]    1
 [1]  systemnoisefigure:
@@ -66,13 +92,14 @@
 [6]  Common PHY Header data:
 [6]   regid: 7
 [6]   seq: 1
-[6]   bandwidth: 1200000
-[6]   fixed antenna gain: off
-[6]   fixed antenna gain: 0.000000
 [6]   tx time: 30.000060
+[6]   freq group: 0
 [6]   freq: 250000000
 [6]   duration: 200
 [6]   offset: 100
+[6]   antenna: 0
+[6]   freq index: 0
+[6]   bandwidth: 1200000
 [6]   src: 4
 [6]   transmitter power: 2.000000
 
@@ -89,9 +116,13 @@
 [6]   sot: 30.000060
 [6]   span: 200
 [6]   prop delay: 1
-[6]   receiver sensativity: -109.208188
+[6]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[6] ReceivePowerTable
+[6] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[6] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000060       |
+
 [7] window
 [7]  request window time: 30000160
 [7]  frequency: 250000000
@@ -119,13 +150,14 @@ Processing upstream packet...
 [10]  Common PHY Header data:
 [10]   regid: 7
 [10]   seq: 2
-[10]   bandwidth: 2000000
-[10]   fixed antenna gain: off
-[10]   fixed antenna gain: 0.000000
 [10]   tx time: 30.000360
+[10]   freq group: 0
 [10]   freq: 250000000
 [10]   duration: 200
 [10]   offset: 100
+[10]   antenna: 0
+[10]   freq index: 0
+[10]   bandwidth: 2000000
 [10]   src: 4
 [10]   transmitter power: 2.000000
 
@@ -142,20 +174,25 @@ Processing upstream packet...
 [10]   sot: 30.000360
 [10]   span: 200
 [10]   prop delay: 1
-[10]   receiver sensativity: -106.989700
+[10]   receiver sensitivity: -106.989700
 
 Processing upstream packet...
+[10] ReceivePowerTable
+[10] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[10] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+
 [11] packet
 [11]  Common PHY Header data:
 [11]   regid: 7
 [11]   seq: 3
-[11]   bandwidth: 2000000
-[11]   fixed antenna gain: off
-[11]   fixed antenna gain: 0.000000
 [11]   tx time: 30.000360
+[11]   freq group: 0
 [11]   freq: 2000000000
 [11]   duration: 200
 [11]   offset: 100
+[11]   antenna: 0
+[11]   freq index: 0
+[11]   bandwidth: 2000000
 [11]   src: 4
 [11]   transmitter power: 2.000000
 
@@ -172,9 +209,14 @@ Processing upstream packet...
 [11]   sot: 30.000360
 [11]   span: 200
 [11]   prop delay: 1
-[11]   receiver sensativity: -106.989700
+[11]   receiver sensitivity: -106.989700
 
 Processing upstream packet...
+[11] ReceivePowerTable
+[11] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[11] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[11] |4           |0           |0           |250000000   |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+
 [12] frequencyofinterest 
 [12]    bandwidth: 2000000
 [12]    frequency: 250000000
@@ -205,13 +247,15 @@ Processing upstream packet...
 [16]  Common PHY Header data:
 [16]   regid: 7
 [16]   seq: 4
-[16]   bandwidth: 1200000
-[16]   fixed antenna gain: on
-[16]   fixed antenna gain: 0.000000
 [16]   tx time: 30.002000
+[16]   freq group: 0
 [16]   freq: 250000000
 [16]   duration: 100
 [16]   offset: 200
+[16]   antenna: 0
+[16]   freq index: 0
+[16]   bandwidth: 1200000
+[16]   fixed gain: 1
 [16]   src: 2
 [16]   transmitter power: 0.000000
 [16]   src: 3
@@ -220,22 +264,23 @@ Processing upstream packet...
 [16]  Packet dropped
 
 [16] BroadcastPacketDropTable0
-[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[16] |2  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[16] |2  |1          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [16] UnicastPacketDropTable0
-[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[16] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [17] packet
 [17]  Common PHY Header data:
 [17]   regid: 7
 [17]   seq: 5
-[17]   bandwidth: 1200000
-[17]   fixed antenna gain: off
-[17]   fixed antenna gain: 0.000000
 [17]   tx time: 30.002000
+[17]   freq group: 0
 [17]   freq: 250000000
 [17]   duration: 500
 [17]   offset: 0
+[17]   antenna: 0
+[17]   freq index: 0
+[17]   bandwidth: 1200000
 [17]   src: 4
 [17]   transmitter power: 12.000000
 
@@ -252,9 +297,14 @@ Processing upstream packet...
 [17]   sot: 30.002000
 [17]   span: 500
 [17]   prop delay: 1
-[17]   receiver sensativity: -109.208188
+[17]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[17] ReceivePowerTable
+[17] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[17] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[17] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |30.002000       |
+
 [18] window
 [18]  request window time: 30002000
 [18]  frequency: 250000000
@@ -270,13 +320,15 @@ Processing upstream packet...
 [19]  Common PHY Header data:
 [19]   regid: 7
 [19]   seq: 6
-[19]   bandwidth: 1200000
-[19]   fixed antenna gain: on
-[19]   fixed antenna gain: 0.000000
 [19]   tx time: 30.005000
+[19]   freq group: 0
 [19]   freq: 250000000
 [19]   duration: 100
 [19]   offset: 200
+[19]   antenna: 0
+[19]   freq index: 0
+[19]   bandwidth: 1200000
+[19]   fixed gain: 1
 [19]   src: 2
 [19]   transmitter power: 0.000000
 [19]   src: 3
@@ -285,10 +337,10 @@ Processing upstream packet...
 [19]  Packet dropped
 
 [19] BroadcastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
-[19] |2  |2          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
+[19] |2  |2          |0             |0                |0            |0           |0           |0      |0             |0            |0             |0          |0           |0           |0              |
 [19] UnicastPacketDropTable0
-[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|
+[19] |NEM|Out-of-Band|Rx Sensitivity|Propagation Model|Gain Location|Gain Horizon|Gain Profile|Not FOI|Spectrum Clamp|Fade Location|Fade Algorithm|Fade Select|Antenna Freq|Gain Antenna|Missing Control|
 
 [20] frequencyofinterest 
 [20]    bandwidth: 1200000
@@ -298,13 +350,14 @@ Processing upstream packet...
 [21]  Common PHY Header data:
 [21]   regid: 7
 [21]   seq: 7
-[21]   bandwidth: 1200000
-[21]   fixed antenna gain: off
-[21]   fixed antenna gain: 0.000000
 [21]   tx time: 30.005000
+[21]   freq group: 0
 [21]   freq: 250000000
 [21]   duration: 500
 [21]   offset: 0
+[21]   antenna: 0
+[21]   freq index: 0
+[21]   bandwidth: 1200000
 [21]   src: 4
 [21]   transmitter power: 12.000000
 
@@ -321,9 +374,14 @@ Processing upstream packet...
 [21]   sot: 30.005000
 [21]   span: 500
 [21]   prop delay: 1
-[21]   receiver sensativity: -109.208188
+[21]   receiver sensitivity: -109.208188
 
 Processing upstream packet...
+[21] ReceivePowerTable
+[21] |NEM         |Rx Antenna  |Tx Antenna  |Frequency   |Rx Power    |Tx Gain     |Rx Gain     |Tx Power    |Pathloss    |Doppler     |Last Packet Time|
+[21] |4           |0           |0           |2000000000  |-100.000000 |0.000000    |-2.000000   |2.000000    |100.000000  |0.000000    |30.000360       |
+[21] |4           |0           |0           |250000000   |-90.000000  |0.000000    |-2.000000   |12.000000   |100.000000  |0.000000    |30.005000       |
+
 [22] window
 [22]  request window time: 40005000
 [22]  frequency: 250000000

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +40,7 @@
 #include "emane/downstreampacket.h"
 #include "emane/upstreampacket.h"
 #include "emane/serializationexception.h"
+#include "emane/antenna.h"
 
 #include <memory>
 
@@ -50,6 +52,9 @@ namespace EMANE
    * @brief The common physical layer header used to facilitate heterogeneous
    * radio model experimentation
    */
+
+  using Durations = std::vector<Microseconds>;
+
   class CommonPHYHeader
   {
   public:
@@ -59,11 +64,10 @@ namespace EMANE
      * @param registrationId Registration id of the physical layer
      * @param subId Sub id used to delineate different waveforms
      * @param u16SequenceNumber Sequence number
-     * @param u64BandwidthHz Transceiver bandwidth in Hz
      * @param txTime Transmit time stamp
-     * @param frequencySegments List of frequency segments
+     * @param frequencyGroups Frequency segment groups
+     * @param transmitAntennas List of transmit antennas
      * @param transmitters List of transmitters
-     * @param optionalFixedAntennaGaindBi Optional fixed antenna gain
      * @param optionalFilterData Optional filter data
      *
      * @note The transmit time stamp is used as the start of transmission (SoT)
@@ -75,12 +79,11 @@ namespace EMANE
     CommonPHYHeader(RegistrationId registrationId,
                     std::uint16_t subId,
                     std::uint16_t u16SequenceNumber,
-                    std::uint64_t u64BandwidthHz,
                     const TimePoint & txTime,
-                    const FrequencySegments & frequencySegments,
+                    const FrequencyGroups & frequencyGroups,
+                    const Antennas & transmitAntennas,
                     const Transmitters & transmitters,
-                    const std::pair<double,bool> & optionalFixedAntennaGaindBi,
-                    const std::pair<FilterData,bool> & optionalFilterCookie);
+                    const std::pair<FilterData,bool> & optionalFilterData);
 
     /**
      * Creates a CommonPHYHeader instance by stripping an UpstreamPacket
@@ -119,16 +122,6 @@ namespace EMANE
     std::uint16_t getSubId() const;
 
     /**
-     * Gets the optional fixed antenna gain in dBi
-     *
-     * @return optional antenna gain as a pair, where @c first is the
-     * antenna gain in dBi and @c second is a boolean flag indicating whether
-     * the gain is valid (present)
-     *
-     */
-    const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const;
-
-    /**
      * Gets the optional filter data
      *
      * @return optional filter data as a pair, where @c first is the
@@ -154,14 +147,7 @@ namespace EMANE
      * earliest frequency segment offset and the latest ending frequency
      * segment.
      */
-    Microseconds getDuration() const;
-
-    /**
-     * Gets the transceiver bandwidth in Hz
-     *
-     * @return bandwidth
-     */
-    std::uint64_t getBandwidthHz() const;
+    Durations getDurations() const;
 
     /**
      * Gets the sequence number
@@ -171,11 +157,18 @@ namespace EMANE
     std::uint16_t getSequenceNumber() const;
 
     /**
-     * Gets a reference to the frequency segment list
+     * Gets a reference to the antenna frequency segment list
      *
      * @return frequency segments
      */
-    const FrequencySegments & getFrequencySegments() const;
+    const FrequencyGroups & getFrequencyGroups() const;
+
+    /**
+     * Gets a reference to the transmit antenna list
+     *
+     * @return transmit antennas
+     */
+    const Antennas & getTransmitAntennas() const;
 
     /**
      * Gets a reference to the transmitters list

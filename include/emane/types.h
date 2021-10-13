@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +38,8 @@
 #include <chrono>
 #include <string>
 #include <list>
+#include <set>
+#include <vector>
 
 namespace EMANE
 {
@@ -65,8 +68,16 @@ namespace EMANE
 
   using Strings = std::list<std::string>;
 
+  using AntennaIndex = std::uint16_t;
   using FilterIndex = std::uint16_t;
   using FilterData = std::string;
+
+  using FrequencyGroupIndex = std::uint16_t;
+
+  using FrequencySet = std::set<std::uint64_t>;
+  using FrequencySets = std::vector<FrequencySet>;
+
+  constexpr AntennaIndex DEFAULT_ANTENNA_INDEX{0};
 
   // All 1's NEMId represents a broad cast packet
   constexpr NEMId NEM_BROADCAST_MAC_ADDRESS{std::numeric_limits<NEMId>::max()};

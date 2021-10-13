@@ -62,6 +62,30 @@ namespace EMANE
        * Creates a SpectrumFilterAddControlMessage on the heap
        *
        * @param u16FilterIndex Unique filter index
+       * @param antennaIndex Antenna index to attach filter
+       * @param u64FrequencyHz Filter center frequency in Hz
+       * @param u64BandwidthHz Filter bandwidth Hz
+       * @param u64SubBandBinSizeHz Size of a bandwidth bin in Hz
+       * @param pFilterMatchCriterion Heap allocated filter match
+       * crierion object.
+       *
+       * @note FilterMatchCriterion object ownership is transferred to
+       * the emulator infrastructure along with deallocation
+       * responsibility.  It is not valid to use a FilterMatchCriterion
+       * instance after it has been added to a control message.
+       */
+      static
+      SpectrumFilterAddControlMessage * create(FilterIndex u16FilterIndex,
+                                               AntennaIndex antennaIndex,
+                                               std::uint64_t u64FrequencyHz,
+                                               std::uint64_t u64BandwidthHz,
+                                               std::uint64_t u64SubBandBinSizeHz = 0,
+                                               FilterMatchCriterion * pFilterMatchCriterion = nullptr);
+
+      /**
+       * Creates a SpectrumFilterAddControlMessage on the heap
+       *
+       * @param u16FilterIndex Unique filter index
        * @param u64FrequencyHz Filter center frequency in Hz
        * @param u64BandwidthHz Filter bandwidth Hz
        * @param u64SubBandBinSizeHz Size of a bandwidth bin in Hz
@@ -103,6 +127,13 @@ namespace EMANE
       FilterIndex getFilterIndex() const;
 
       /**
+       * Gets the antenna index
+       *
+       * @return antenna index
+       */
+      AntennaIndex getAntennaIndex() const;
+
+      /**
        * Gets the bandwidth in Hz
        *
        * @return bandwidth
@@ -142,6 +173,7 @@ namespace EMANE
       std::unique_ptr<Implementation> pImpl_;
 
       SpectrumFilterAddControlMessage(FilterIndex u16FilterIndex,
+                                      AntennaIndex antennaIndex,
                                       std::uint64_t u64FrequencyHz,
                                       std::uint64_t u64BandwidthHz,
                                       std::uint64_t u64SubBandBinSizeHz,

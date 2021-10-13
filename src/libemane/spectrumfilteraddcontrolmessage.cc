@@ -36,11 +36,13 @@ class EMANE::Controls::SpectrumFilterAddControlMessage::Implementation
 {
 public:
   Implementation(FilterIndex filterIndex,
+                 AntennaIndex antennaIndex,
                  std::uint64_t u64FrequencyHz,
                  std::uint64_t u64BandwidthHz,
                  std::uint64_t u64SubBandBinSizeHz,
                  const FilterMatchCriterion * pFilterMatchCriterion):
     filterIndex_{filterIndex},
+    antennaIndex_{antennaIndex},
     u64FrequencyHz_{u64FrequencyHz},
     u64BandwidthHz_{u64BandwidthHz},
     u64SubBandBinSizeHz_{u64SubBandBinSizeHz},
@@ -48,6 +50,7 @@ public:
 
   Implementation(const Implementation & impl):
     filterIndex_{impl.filterIndex_},
+    antennaIndex_{impl.antennaIndex_},
     u64FrequencyHz_{impl.u64FrequencyHz_},
     u64BandwidthHz_{impl.u64BandwidthHz_},
     u64SubBandBinSizeHz_{impl.u64SubBandBinSizeHz_},
@@ -56,6 +59,11 @@ public:
   FilterIndex getFilterIndex() const
   {
     return filterIndex_;
+  }
+
+  AntennaIndex getAntennaIndex() const
+  {
+    return antennaIndex_;
   }
 
   std::uint64_t getBandwidthHz() const
@@ -80,6 +88,7 @@ public:
 
 private:
   const FilterIndex filterIndex_;
+  const AntennaIndex antennaIndex_;
   const std::uint64_t u64FrequencyHz_;
   const std::uint64_t u64BandwidthHz_;
   const std::uint64_t u64SubBandBinSizeHz_;
@@ -94,12 +103,14 @@ SpectrumFilterAddControlMessage(const SpectrumFilterAddControlMessage & msg):
 
 EMANE::Controls::SpectrumFilterAddControlMessage::
 SpectrumFilterAddControlMessage(FilterIndex filterIndex,
+                                AntennaIndex antennaIndex,
                                 std::uint64_t u64FrequencyHz,
                                 std::uint64_t u64BandwidthHz,
                                 std::uint64_t u64SubBandBinSizeHz,
                                 FilterMatchCriterion * pFilterMatchCriterion):
   ControlMessage{IDENTIFIER},
   pImpl_{new Implementation{filterIndex,
+                            antennaIndex,
                             u64FrequencyHz,
                             u64BandwidthHz,
                             u64SubBandBinSizeHz,
@@ -110,12 +121,30 @@ EMANE::Controls::SpectrumFilterAddControlMessage::~SpectrumFilterAddControlMessa
 
 EMANE::Controls::SpectrumFilterAddControlMessage *
 EMANE::Controls::SpectrumFilterAddControlMessage::create(FilterIndex filterIndex,
+                                                         AntennaIndex antennaIndex,
                                                          std::uint64_t u64FrequencyHz,
                                                          std::uint64_t u64BandwidthHz,
                                                          std::uint64_t u64SubBandBinSizeHz,
                                                          FilterMatchCriterion * pFilterMatchCriterion)
 {
   return new SpectrumFilterAddControlMessage{filterIndex,
+                                               antennaIndex,
+                                               u64FrequencyHz,
+                                               u64BandwidthHz,
+                                               u64SubBandBinSizeHz,
+                                               pFilterMatchCriterion};
+
+}
+
+EMANE::Controls::SpectrumFilterAddControlMessage *
+EMANE::Controls::SpectrumFilterAddControlMessage::create(FilterIndex filterIndex,
+                                                         std::uint64_t u64FrequencyHz,
+                                                         std::uint64_t u64BandwidthHz,
+                                                         std::uint64_t u64SubBandBinSizeHz,
+                                                         FilterMatchCriterion * pFilterMatchCriterion)
+{
+  return new SpectrumFilterAddControlMessage{filterIndex,
+                                               DEFAULT_ANTENNA_INDEX,
                                                u64FrequencyHz,
                                                u64BandwidthHz,
                                                u64SubBandBinSizeHz,
@@ -145,6 +174,12 @@ EMANE::FilterIndex
 EMANE::Controls::SpectrumFilterAddControlMessage::getFilterIndex() const
 {
   return pImpl_->getFilterIndex();
+}
+
+EMANE::AntennaIndex
+EMANE::Controls::SpectrumFilterAddControlMessage::getAntennaIndex() const
+{
+  return pImpl_->getAntennaIndex();
 }
 
 std::uint64_t

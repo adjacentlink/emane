@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017-2018 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017-2018,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,159 +32,10 @@
  */
 
 #include "nakagamifadingalgorithm.h"
-#include "emane/configurationexception.h"
-#include "emane/utils/conversionutils.h"
-#include <random>
-#include <map>
 
 EMANE::NakagamiFadingAlgorithm::NakagamiFadingAlgorithm(NEMId id,
-                                                        PlatformServiceProvider * pPlatformService,
-                                                        const std::string & sPrefix):
-  FadingAlgorithm{"nakagami",id,pPlatformService,sPrefix},
-  dm0_{},
-  dm1_{},
-  dm2_{},
-  dDistance0Meters_{},
-  dDistance1Meters_{}{}
+                                                        PlatformServiceProvider * pPlatformService):
+  FadingAlgorithm{id,pPlatformService}{}
 
-void EMANE::NakagamiFadingAlgorithm::initialize(Registrar & registrar)
-{
-  auto & configRegistrar = registrar.configurationRegistrar();
 
-  configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m0",
-                                          EMANE::ConfigurationProperties::DEFAULT |
-                                          EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {0.75},
-                                          "Defines the shape factor to use for distance"
-                                          " < fading.nakagami.distance0.",
-                                          0.5);
-
-  configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m1",
-                                          EMANE::ConfigurationProperties::DEFAULT |
-                                          EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {1.0},
-                                          "Defines the shape factor to use for distance"
-                                          " >= fading.nakagami.distance0 and <"
-                                          " fading.nakagami.distance1.",
-                                          0.5);
-
-  configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.m2",
-                                          EMANE::ConfigurationProperties::DEFAULT |
-                                          EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {200},
-                                          "Defines the shape factor to use for distance"
-                                          " >= fading.nakagami.distance1.",
-                                          0.5);
-
-  configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.distance0",
-                                          EMANE::ConfigurationProperties::DEFAULT |
-                                          EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {100},
-                                          "Defines the distance in meters used for"
-                                          " lower bound shape selection.");
-
-  configRegistrar.registerNumeric<double>(sPrefix_ + "nakagami.distance1",
-                                          EMANE::ConfigurationProperties::DEFAULT |
-                                          EMANE::ConfigurationProperties::MODIFIABLE,
-                                          {250},
-                                          "Defines the distance in meters used for"
-                                          " upper bound shape selection.");
-
-  configRegistrar.registerValidator([this](const ConfigurationUpdate & update) noexcept
-                                    {
-                                      std::map<std::string,std::vector<Any>>  parameters;
-
-                                      std::transform(update.begin(),
-                                                     update.end(),
-                                                     std::inserter(parameters,parameters.end()),
-                                                     [](const ConfigurationUpdate::value_type & p)
-                                                     {
-                                                       return std::make_pair(p.first,p.second);
-                                                     });
-
-                                      if(parameters[sPrefix_ + "nakagami.distance0"][0].asDouble() >=
-                                         parameters[sPrefix_ + "nakagami.distance1"][0].asDouble())
-                                        {
-                                          return std::make_pair("nakagami.distance0 < nakagami.distance1", false);
-                                        }
-
-                                      return  std::make_pair("",true);
-                                    });
-}
-
-void EMANE::NakagamiFadingAlgorithm::configure(const ConfigurationUpdate & update)
-{
-  configure_i(update);
-}
-
-void EMANE::NakagamiFadingAlgorithm::modify(const ConfigurationUpdate & update)
-{
-  configure_i(update);
-}
-
-void EMANE::NakagamiFadingAlgorithm::configure_i(const ConfigurationUpdate & update)
-{
-  for(const auto & item : update)
-    {
-      if(item.first == sPrefix_ + "nakagami.m0")
-        {
-          dm0_ = item.second[0].asDouble();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::NakagamiFadingAlgorithm::%s: %s = %lf",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  dm0_);
-        }
-      else if(item.first == sPrefix_ + "nakagami.m1")
-        {
-          dm1_ = item.second[0].asDouble();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::NakagamiFadingAlgorithm::%s: %s = %lf",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  dm1_);
-        }
-      else if(item.first == sPrefix_ + "nakagami.m2")
-        {
-          dm2_ = item.second[0].asDouble();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::NakagamiFadingAlgorithm::%s: %s = %lf",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  dm2_);
-        }
-      else if(item.first == sPrefix_ + "nakagami.distance0")
-        {
-          dDistance0Meters_ = item.second[0].asDouble();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::NakagamiFadingAlgorithm::%s: %s = %lf",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  dDistance0Meters_);
-        }
-      else if(item.first == sPrefix_ + "nakagami.distance1")
-        {
-          dDistance1Meters_ = item.second[0].asDouble();
-
-          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                                  INFO_LEVEL,
-                                  "PHYI %03hu FrameworkPHY::NakagamiFadingAlgorithm::%s: %s = %lf",
-                                  id_,
-                                  __func__,
-                                  item.first.c_str(),
-                                  dDistance1Meters_);
-        }
-    }
-}
+EMANE::NakagamiFadingAlgorithm::~NakagamiFadingAlgorithm(){}

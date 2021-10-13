@@ -84,6 +84,8 @@ test/harness/noisescenario/noisescenario
 test/harness/phyupstreamscenario/phyupstreamscenario
 test/harness/profilescenario/profilescenario
 test/harness/propagationscenario/propagationscenario
+test/harness/phydownstreamspeed/phydownstreamspeed
+test/harness/phyupstreamspeed/phyupstreamspeed
 
 # test case output
 **/testcase-output.txt

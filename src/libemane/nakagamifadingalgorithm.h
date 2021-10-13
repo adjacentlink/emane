@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@
 #define EMANENAKAGAMIFADINGALGORITHM_HEADER_
 
 #include "fadingalgorithm.h"
-#include "emane/platformserviceprovider.h"
 #include "emane/utils/conversionutils.h"
 #include <random>
 
@@ -44,48 +43,47 @@ namespace EMANE
   {
   public:
     NakagamiFadingAlgorithm(NEMId id,
-                            PlatformServiceProvider * pPlatformService,
-                            const std::string & sPrefix);
+                            PlatformServiceProvider * pPlatformService);
 
-    void initialize(Registrar & registrar) override;
+    ~NakagamiFadingAlgorithm();
 
-    void configure(const ConfigurationUpdate & update);
-
-    void modify(const ConfigurationUpdate & update) override;
-
-    double operator()(double dPowerdBm, double dDistanceMeters) override
+    struct Parameters
     {
+      double dDistance0Meters_{};
+      double dDistance1Meters_{};
+      double dm0_{};
+      double dm1_{};
+      double dm2_{};
+    };
+
+    double operator()(double dPowerdBm, double dDistanceMeters, const void * pParams) override
+    {
+      auto pNakagamiFadingParameters = reinterpret_cast<const Parameters *>(pParams);
+
       double m{};
 
-      if(dDistanceMeters < dDistance0Meters_)
+      if(dDistanceMeters < pNakagamiFadingParameters->dDistance0Meters_)
         {
-          m = dm0_;
+          m = pNakagamiFadingParameters->dm0_;
         }
-      else if (dDistanceMeters < dDistance1Meters_)
+      else if (dDistanceMeters < pNakagamiFadingParameters->dDistance1Meters_)
         {
-          m = dm1_;
+          m = pNakagamiFadingParameters->dm1_;
         }
       else
         {
-          m = dm2_;
+          m = pNakagamiFadingParameters->dm2_;
         }
 
-      return Utils::MILLIWATT_TO_DB(distribution_(generator_,
-                                                  Distribution::param_type{m,
-                                                      Utils::DB_TO_MILLIWATT(dPowerdBm) / m}));
+      return distribution_(generator_,
+                           Distribution::param_type{m,
+                                                      Utils::DB_TO_MILLIWATT(dPowerdBm) / m});
     }
 
   private:
-    double dm0_;
-    double dm1_;
-    double dm2_;
-    double dDistance0Meters_;
-    double dDistance1Meters_;
     std::mt19937 generator_;
     using  Distribution = std::gamma_distribution<>;
     Distribution distribution_;
-
-    void configure_i(const ConfigurationUpdate & update);
   };
 }
 

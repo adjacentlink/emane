@@ -48,6 +48,7 @@ EMANE::Strings EMANE::Events::FadingSelectionEventFormatter::operator()() const
                         " model: " +
                         (selection.getFadingModel() ==  Events::FadingModel::NONE ? "none" :
                          selection.getFadingModel() ==  Events::FadingModel::NAKAGAMI ? "nakagami" :
+                         selection.getFadingModel() ==  Events::FadingModel::LOGNORMAL ? "lognormal" :
                          "unknown"));
     }
 

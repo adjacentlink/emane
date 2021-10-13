@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014- Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,36 +42,36 @@ namespace EMANE
   {
   public:
     FreeSpacePropagationModelAlgorithm(NEMId){}
-    
+
     std::pair<std::vector<double>, bool> operator()(NEMId,
                                                     const LocationInfo & locationInfo,
                                                     const FrequencySegments & segments) override
     {
       const double FSPL_CONST{41.916900439033640};
-      
+
       // at least one location is unknown
-      if(!locationInfo)
+      if(!locationInfo.isValid())
         {
           return {{},false};
         }
-      
+
       std::vector<double> pathloss(segments.size(),0);
-      
+
       double dDistance{locationInfo.getDistanceMeters()};
-      
+
       if(dDistance)
         {
           size_t i {};
-          
+
           for(const auto & segment : segments)
             {
-              auto val = 
+              auto val =
                 20.0 * log10(FSPL_CONST * (segment.getFrequencyHz() / 1000000.0) * (dDistance / 1000.0));
 
               pathloss[i++] = val < 0 ? 0 : val;
             }
         }
-      
+
       return {pathloss,true};
     }
   };

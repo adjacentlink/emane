@@ -39,20 +39,18 @@ public:
   Implementation(RegistrationId registrationId,
                  std::uint16_t u16SubId,
                  std::uint16_t u16SequenceNumber,
-                 std::uint64_t u64BandwidthHz,
-                 const TimePoint  & txTime,
-                 const FrequencySegments & frequencySegments,
+                 const TimePoint & txTime,
+                 const FrequencyGroups & frequencyGroups,
+                 const Antennas & transmitAntennas,
                  const Transmitters & transmitters,
-                 const std::pair<double,bool> & optionalFixedAntennaGaindBi,
                  const std::pair<FilterData,bool> & optionalFilterData):
     registrationId_{registrationId},
     u16SubId_{u16SubId},
     u16SequenceNumber_{u16SequenceNumber},
-    u64BandwidthHz_{u64BandwidthHz},
     txTime_{txTime},
-    frequencySegments_{frequencySegments},
+    frequencyGroups_{frequencyGroups},
+    transmitAntennas_{transmitAntennas},
     transmitters_{transmitters},
-    optionalFixedAntennaGaindBi_{optionalFixedAntennaGaindBi},
     optionalFilterData_{optionalFilterData}{}
 
   RegistrationId getRegistrationId() const
@@ -65,11 +63,6 @@ public:
     return u16SubId_;
   }
 
-  const std::pair<double,bool> & getOptionalFixedAntennaGaindBi() const
-  {
-    return optionalFixedAntennaGaindBi_;
-  }
-
   const std::pair<FilterData,bool> & getOptionalFilterData() const
   {
     return optionalFilterData_;
@@ -80,19 +73,19 @@ public:
     return txTime_;
   }
 
-  std::uint64_t getBandwidthHz() const
-  {
-    return u64BandwidthHz_;
-  }
-
   std::uint16_t getSequenceNumber() const
   {
     return u16SequenceNumber_;
   }
 
-  const FrequencySegments & getFrequencySegments() const
+  const FrequencyGroups & getFrequencyGroups() const
   {
-    return frequencySegments_;
+    return frequencyGroups_;
+  }
+
+  const Antennas & getTransmitAntennas() const
+  {
+    return transmitAntennas_;
   }
 
   const Transmitters & getTransmitters() const
@@ -104,11 +97,10 @@ private:
   RegistrationId registrationId_;
   std::uint16_t u16SubId_;
   std::uint16_t u16SequenceNumber_;
-  std::uint64_t u64BandwidthHz_;
   TimePoint txTime_;
-  FrequencySegments frequencySegments_;
+  FrequencyGroups frequencyGroups_;
+  Antennas transmitAntennas_;
   Transmitters transmitters_;
-  std::pair<double,bool> optionalFixedAntennaGaindBi_;
   std::pair<FilterData,bool> optionalFilterData_;
 };
 
@@ -135,51 +127,94 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
                                       transmitter.powerdbm()});
             }
 
-          FrequencySegments frequencySegments{};
+          FrequencyGroups frequencyGroups{};
 
-          for(const auto & segment : msg.frequencysegments())
+          for(const auto & group : msg.frequencygroups())
             {
-              if(segment.has_powerdbm())
+              FrequencySegments frequencySegments{};
+
+              for(const auto & segment : group.frequencysegments())
                 {
-                  frequencySegments.push_back({segment.frequencyhz(),
-                                               segment.powerdbm(),
-                                               Microseconds(segment.durationmicroseconds()),
-                                               Microseconds(segment.offsetmicroseconds())});
+                  if(segment.has_powerdbm())
+                    {
+                      frequencySegments.push_back({segment.frequencyhz(),
+                                                   segment.powerdbm(),
+                                                   Microseconds(segment.durationmicroseconds()),
+                                                   Microseconds(segment.offsetmicroseconds())});
+                    }
+                  else
+                    {
+                      frequencySegments.push_back({segment.frequencyhz(),
+                                                   Microseconds(segment.durationmicroseconds()),
+                                                   Microseconds(segment.offsetmicroseconds())});
+                    }
                 }
-              else
-                {
-                  frequencySegments.push_back({segment.frequencyhz(),
-                                               Microseconds(segment.durationmicroseconds()),
-                                               Microseconds(segment.offsetmicroseconds())});
-                }
+              frequencyGroups.push_back(frequencySegments);
             }
 
           RegistrationId registrationId{static_cast<RegistrationId>(msg.registrationid())};
           std::uint16_t u16SubId{static_cast<std::uint16_t>(msg.subid())};
           std::uint16_t u16SequenceNumber{static_cast<std::uint16_t>(msg.sequencenumber())};
-          std::uint64_t u64BandwidthHz{msg.bandwidthhz()};
           TimePoint txTime{static_cast<Microseconds>(msg.txtimemicroseconds())};
-          std::pair<double,bool> optionalFixedAntennaGaindBi{0,msg.has_fixedantennagain()};
           std::pair<FilterData,bool> optionalFilterData{{},msg.has_filterdata()};
-
-          if(optionalFixedAntennaGaindBi.second)
-            {
-              optionalFixedAntennaGaindBi.first = msg.fixedantennagain();
-            }
 
           if(optionalFilterData.second)
             {
               optionalFilterData.first = msg.filterdata();
             }
 
+          Antennas transmitAntennas{};
+
+          for(const auto & transmitAntenna : msg.transmitantennas())
+            {
+              if(transmitAntenna.has_fixedgaindbi())
+                {
+                  auto antenna = Antenna::createIdealOmni(transmitAntenna.antennaindex(),
+                                                          transmitAntenna.fixedgaindbi());
+
+                  antenna.setFrequencyGroupIndex(static_cast<FrequencyGroupIndex>(transmitAntenna.frequencygroupindex()));
+
+                  antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
+
+                  transmitAntennas.push_back(std::move(antenna));
+                }
+              else
+                {
+                  if(transmitAntenna.has_pointing())
+                    {
+                      const auto & pointing = transmitAntenna.pointing();
+
+                      auto antenna = Antenna::createProfileDefined(transmitAntenna.antennaindex(),
+                                                                   {static_cast<AntennaProfileId>(pointing.profileid()),
+                                                                    pointing.azimuthdegrees(),
+                                                                    pointing.elevationdegrees()});
+
+                      antenna.setFrequencyGroupIndex(static_cast<FrequencyGroupIndex>(transmitAntenna.frequencygroupindex()));
+
+                      antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
+
+                      transmitAntennas.push_back(std::move(antenna));
+                    }
+                  else
+                    {
+                      auto antenna = Antenna::createProfileDefined(transmitAntenna.antennaindex());
+
+                      antenna.setFrequencyGroupIndex(static_cast<FrequencyGroupIndex>(transmitAntenna.frequencygroupindex()));
+
+                      antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
+
+                      transmitAntennas.push_back(std::move(antenna));
+                    }
+                }
+            }
+
           pImpl_.reset(new Implementation{registrationId,
                                             u16SubId,
                                             u16SequenceNumber,
-                                            u64BandwidthHz,
                                             txTime,
-                                            frequencySegments,
+                                            frequencyGroups,
+                                            transmitAntennas,
                                             transmitters,
-                                            optionalFixedAntennaGaindBi,
                                             optionalFilterData});
 
         }
@@ -201,20 +236,18 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
 EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId,
                                         std::uint16_t u16SubId,
                                         std::uint16_t u16SequenceNumber,
-                                        std::uint64_t u64BandwidthHz,
                                         const TimePoint & txTime,
-                                        const FrequencySegments & frequencySegments,
+                                        const FrequencyGroups & frequencyGroups,
+                                        const Antennas & transmitAntennas,
                                         const Transmitters & transmitters,
-                                        const std::pair<double,bool> & optionalFixedAntennaGaindBi,
                                         const std::pair<FilterData,bool> & optionalFilterData):
   pImpl_{new Implementation{registrationId,
                             u16SubId,
                             u16SequenceNumber,
-                            u64BandwidthHz,
                             txTime,
-                            frequencySegments,
+                            frequencyGroups,
+                            transmitAntennas,
                             transmitters,
-                            optionalFixedAntennaGaindBi,
                             optionalFilterData}}
 {}
 
@@ -235,11 +268,6 @@ std::uint16_t EMANE::CommonPHYHeader::getSubId() const
   return pImpl_->getSubId();
 }
 
-const std::pair<double,bool> & EMANE::CommonPHYHeader::getOptionalFixedAntennaGaindBi() const
-{
-  return pImpl_->getOptionalFixedAntennaGaindBi();
-}
-
 const std::pair<EMANE::FilterData,bool> &
 EMANE::CommonPHYHeader::getOptionalFilterData() const
 {
@@ -252,41 +280,42 @@ const EMANE::TimePoint & EMANE::CommonPHYHeader::getTxTime() const
 }
 
 
-EMANE::Microseconds EMANE::CommonPHYHeader::getDuration() const
+EMANE::Durations EMANE::CommonPHYHeader::getDurations() const
 {
-  Microseconds start = Microseconds::zero();
-  Microseconds end = Microseconds::zero();
+  std::vector<EMANE::Microseconds> durations{};
 
-  for(const auto & segment: pImpl_->getFrequencySegments())
+  for(const auto & group : pImpl_->getFrequencyGroups())
     {
-      // the offset
-      const auto & offset = segment.getOffset();
-      const auto & duration = segment.getDuration();
+      Microseconds start = Microseconds::zero();
+      Microseconds end = Microseconds::zero();
 
-      // duration position
-      const auto relative = offset + duration;
-
-      // get the begin time
-      if(offset < start)
+      for(const auto & segment : group)
         {
-          start = offset;
+          // the offset
+          const auto & offset = segment.getOffset();
+          const auto & duration = segment.getDuration();
+
+          // duration position
+          const auto relative = offset + duration;
+
+          // get the begin time
+          if(offset < start)
+            {
+              start = offset;
+            }
+
+          // get the end time
+          if(relative > end)
+            {
+              end = relative;
+            }
         }
 
-      // get the end time
-      if(relative > end)
-        {
-          end = relative;
-        }
+      // the total duration with gaps/overlap
+      durations.push_back(end - start);
     }
 
-  // the total duration with gaps/overlap
-  return end - start;
-}
-
-
-std::uint64_t EMANE::CommonPHYHeader::getBandwidthHz() const
-{
-  return pImpl_->getBandwidthHz();
+  return durations;
 }
 
 
@@ -296,9 +325,17 @@ std::uint16_t EMANE::CommonPHYHeader::getSequenceNumber() const
 }
 
 
-const EMANE::FrequencySegments & EMANE::CommonPHYHeader::getFrequencySegments() const
+const EMANE::FrequencyGroups &
+EMANE::CommonPHYHeader::getFrequencyGroups() const
 {
-  return pImpl_->getFrequencySegments();
+  return pImpl_->getFrequencyGroups();
+}
+
+
+const EMANE::Antennas &
+EMANE::CommonPHYHeader::getTransmitAntennas() const
+{
+  return pImpl_->getTransmitAntennas();
 }
 
 
@@ -313,14 +350,13 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
   msg.set_registrationid(pImpl_->getRegistrationId());
   msg.set_subid(pImpl_->getSubId());
   msg.set_sequencenumber(pImpl_->getSequenceNumber());
-  msg.set_bandwidthhz(pImpl_->getBandwidthHz());
   msg.set_txtimemicroseconds(std::chrono::duration_cast<Microseconds>(pImpl_->getTxTime().time_since_epoch()).count());
 
-  const auto & optionalFixedAntennaGaindBi = pImpl_->getOptionalFixedAntennaGaindBi();
+  const auto & optionalFilterData = pImpl_->getOptionalFilterData();
 
-  if(optionalFixedAntennaGaindBi.second)
+  if(optionalFilterData.second)
     {
-      msg.set_fixedantennagain(optionalFixedAntennaGaindBi.first);
+      msg.set_filterdata(optionalFilterData.first);
     }
 
   for(const auto & transmitter : pImpl_->getTransmitters())
@@ -330,26 +366,53 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
       pTransmitter->set_powerdbm(transmitter.getPowerdBm());
     }
 
-  for(const auto & segment : pImpl_->getFrequencySegments())
+  for(const auto & group : pImpl_->getFrequencyGroups())
     {
-      auto pSegment = msg.add_frequencysegments();
-      pSegment->set_frequencyhz(segment.getFrequencyHz());
-      pSegment->set_offsetmicroseconds(segment.getOffset().count());
-      pSegment->set_durationmicroseconds(segment.getDuration().count());
+      auto pGroup = msg.add_frequencygroups();
 
-      if(segment.getPowerdBm().second)
+      for(const auto & segment : group)
         {
-          pSegment->set_powerdbm(segment.getPowerdBm().first);
+          auto pSegment = pGroup->add_frequencysegments();
+          pSegment->set_frequencyhz(segment.getFrequencyHz());
+          pSegment->set_offsetmicroseconds(segment.getOffset().count());
+          pSegment->set_durationmicroseconds(segment.getDuration().count());
+
+          if(segment.getPowerdBm().second)
+            {
+              pSegment->set_powerdbm(segment.getPowerdBm().first);
+            }
         }
     }
 
-  const auto & optionalFilterData = pImpl_->getOptionalFilterData();
-
-  if(optionalFilterData.second)
+  for(const auto & transmitAntenna : pImpl_->getTransmitAntennas())
     {
-      msg.set_filterdata(optionalFilterData.first.data(),
-                         optionalFilterData.first.size());
+      auto pTransmitAntenna = msg.add_transmitantennas();
+
+      pTransmitAntenna->set_antennaindex(transmitAntenna.getIndex());
+
+      pTransmitAntenna->set_frequencygroupindex(transmitAntenna.getFrequencyGroupIndex());
+
+      pTransmitAntenna->set_bandwidthhz(transmitAntenna.getBandwidthHz());
+
+      if(transmitAntenna.isIdealOmni())
+        {
+          pTransmitAntenna->set_fixedgaindbi(transmitAntenna.getFixedGaindBi().first);
+        }
+      else
+        {
+          auto pointing = transmitAntenna.getPointing();
+
+          if(pointing.second)
+            {
+              auto pPointing = pTransmitAntenna->mutable_pointing();
+
+              pPointing->set_profileid(pointing.first.getProfileId());
+              pPointing->set_azimuthdegrees(pointing.first.getAzimuthDegrees());
+              pPointing->set_elevationdegrees(pointing.first.getElevationDegrees());
+            }
+        }
     }
+
 
   std::string sSerialization;
 
@@ -366,24 +429,49 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
 
 EMANE::Strings EMANE::CommonPHYHeader::format() const
 {
-  const auto & optionalFixedAntennaGaindBi =
-    pImpl_->getOptionalFixedAntennaGaindBi();
-
   Strings sFormat{{"regid: " + std::to_string( pImpl_->getRegistrationId())},
                   {"seq: " + std::to_string(pImpl_->getSequenceNumber())},
-                  {"bandwidth: " + std::to_string(pImpl_->getBandwidthHz())},
-                  {"fixed antenna gain: " + std::string(optionalFixedAntennaGaindBi.second ? "on" : "off")},
-                  {"fixed antenna gain: " + std::to_string(optionalFixedAntennaGaindBi.first)},
                   {"tx time: " +  std::to_string(std::chrono::duration_cast<DoubleSeconds>(pImpl_->getTxTime().time_since_epoch()).count())}};
 
-  for(const auto & segment : pImpl_->getFrequencySegments())
+  int i{};
+
+  for(const auto & group : pImpl_->getFrequencyGroups())
     {
-      sFormat.push_back("freq: " + std::to_string(segment.getFrequencyHz()));
-      sFormat.push_back("duration: " + std::to_string(segment.getDuration().count()));
-      sFormat.push_back("offset: " + std::to_string(segment.getOffset().count()));
-      if(segment.getPowerdBm().second)
+      sFormat.push_back("freq group: " + std::to_string(i++));
+
+      for(const auto & segment : group)
         {
-          sFormat.push_back("segment power: " + std::to_string(segment.getPowerdBm().first));
+          sFormat.push_back("freq: " + std::to_string(segment.getFrequencyHz()));
+          sFormat.push_back("duration: " + std::to_string(segment.getDuration().count()));
+          sFormat.push_back("offset: " + std::to_string(segment.getOffset().count()));
+          if(segment.getPowerdBm().second)
+            {
+              sFormat.push_back("segment power: " + std::to_string(segment.getPowerdBm().first));
+            }
+        }
+    }
+
+
+  for(const auto & transmitAntenna : pImpl_->getTransmitAntennas())
+    {
+      sFormat.push_back("antenna: " + std::to_string(transmitAntenna.getIndex()));
+      sFormat.push_back("freq index: " + std::to_string(transmitAntenna.getFrequencyGroupIndex()));
+      sFormat.push_back("bandwidth: " + std::to_string(transmitAntenna.getBandwidthHz()));
+
+      if(transmitAntenna.isIdealOmni())
+        {
+          sFormat.push_back("fixed gain: " + std::to_string(transmitAntenna.getFixedGaindBi().second));
+        }
+      else
+        {
+          const auto & pointing = transmitAntenna.getPointing();
+
+          if(pointing.second)
+            {
+              sFormat.push_back("profile id: " + std::to_string(pointing.first.getProfileId()));
+              sFormat.push_back("azimuth: " + std::to_string(pointing.first.getAzimuthDegrees()));
+              sFormat.push_back("elevation: " + std::to_string(pointing.first.getElevationDegrees()));
+            }
         }
     }
 

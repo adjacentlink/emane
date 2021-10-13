@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ namespace EMANE
     LocationManager(NEMId nemId);
 
     void update(const Events::Locations & locations);
-      
+
     std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
 
   private:
@@ -58,8 +58,8 @@ namespace EMANE
     PositionOrientationVelocity localPOV_;
     LocationStore locationStore_;
     LocationInfoCache locationInfoCache_;
+    std::uint64_t u64CacheSequenceNumber_;
   };
 }
 
 #endif // EMANELOCATIONMANAGER_HEADER_
-

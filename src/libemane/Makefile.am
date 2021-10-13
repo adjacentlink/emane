@@ -52,6 +52,7 @@ nodist_libemane_la_SOURCES =             \
  tdmascheduleevent.pb.h
 
 libemane_la_SOURCES =                         \
+ antennamanager.cc                            \
  antennapattern.cc                            \
  antennaprofilecontrolmessage.cc              \
  antennaprofileevent.cc                       \
@@ -113,12 +114,19 @@ libemane_la_SOURCES =                         \
  logger.cc                                    \
  loglevelupdatehandler.cc                     \
  loggerrecordmessage.cc                       \
+ lognormalfadingalgorithm.cc                  \
+ lognormalfadingalgorithmmanager.cc           \
  logservice.cc                                \
  maclayer.cc                                  \
  main.cc                                      \
  manifestqueryhandler.cc                      \
+ mimoreceivepropertiescontrolmessage.cc       \
+ mimoreceivepropertiescontrolmessageformatter.cc \
+ mimotransmitpropertiescontrolmessage.cc      \
+ mimotxwhilerxinterferencecontrolmessage.cc   \
  multicastsocket.cc                           \
  nakagamifadingalgorithm.cc                   \
+ nakagamifadingalgorithmmanager.cc            \
  neighbormetricmanager.cc                     \
  nembuilder.cc                                \
  nemimpl.cc                                   \
@@ -151,6 +159,7 @@ libemane_la_SOURCES =                         \
  positionformatter.cc                         \
  positionneuformatter.cc                      \
  positionorientationvelocityformatter.cc      \
+ processingpool.cc                            \
  queuemetricmanager.cc                        \
  r2rineighbormetriccontrolmessage.cc          \
  r2rineighbormetriccontrolmessageformatter.cc \
@@ -159,11 +168,18 @@ libemane_la_SOURCES =                         \
  r2riselfmetriccontrolmessage.cc              \
  r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
+ receiveprocessor.cc                          \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
  receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
+ rxantennaaddcontrolmessage.cc                \
+ rxantennaaddcontrolmessageformatter.cc       \
+ rxantennaremovecontrolmessage.cc             \
+ rxantennaremovecontrolmessageformatter.cc    \
+ rxantennaupdatecontrolmessage.cc             \
+ rxantennaupdatecontrolmessageformatter.cc    \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
  socket.cc                                    \
@@ -173,6 +189,7 @@ libemane_la_SOURCES =                         \
  spectrumfilterremovecontrolmessage.cc        \
  spectrumfilterremovecontrolmessageformatter.cc \
  spectrummonitor.cc                           \
+ spectrumservice.cc                           \
  spectrumwindowutils.cc                       \
  statisticclearupdatehandler.cc               \
  statisticcontroller.cc                       \
@@ -198,6 +215,7 @@ libemane_la_SOURCES =                         \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \
+ antennamanager.h                             \
  antennapattern.h                             \
  antennaprofileexception.h                    \
  antennaprofilemanifest.h                     \
@@ -230,6 +248,7 @@ libemane_la_SOURCES =                         \
  eventstatisticpublisher.h                    \
  eventtablepublisher.h                        \
  fadingalgorithm.h                            \
+ fadingalgorithmmanager.h                     \
  fadingmanager.h                              \
  frameworkphy.h                               \
  freespacepropagationmodelalgorithm.h         \
@@ -245,12 +264,15 @@ libemane_la_SOURCES =                         \
  loggerlevelconvert.inl                       \
  loglevelupdatehandler.h                      \
  loggerrecordmessage.h                        \
+ lognormalfadingalgorithm.h                   \
+ lognormalfadingalgorithmmanager.h            \
  logservice.h                                 \
  maclayer.h                                   \
  main.h                                       \
  manifestqueryhandler.h                       \
  multicastsocket.h                            \
  nakagamifadingalgorithm.h                    \
+ nakagamifadingalgorithmmanager.h             \
  nemimpl.h                                    \
  nemlayerstack.h                              \
  nemlayerstateconfigured.h                    \
@@ -270,6 +292,7 @@ libemane_la_SOURCES =                         \
  nemtimerserviceproxy.h                       \
  netadaptermessage.h                          \
  networkadapterexception.h                    \
+ noisemode.h                                  \
  noiserecorder.h                              \
  nopfiledescriptorservice.h                   \
  otaexception.h                               \
@@ -295,10 +318,12 @@ libemane_la_SOURCES =                         \
  registrarproxy.h                             \
  requestmessagehandler.h                      \
  receivepowertablepublisher.h                 \
+ receiveprocessor.h                           \
  socket.h                                     \
  socketexception.h                            \
  shimlayer.h                                  \
  spectrummonitor.h                            \
+ spectrumservice.h                            \
  statisticclearupdatehandler.h                \
  statisticqueryhandler.h                      \
  statisticregistrarproxy.h                    \
@@ -315,6 +340,10 @@ libemane_la_SOURCES =                         \
  transportmanagerimpl.h                       \
  transportlayer.h                             \
  tworaypropagationmodelalgorithm.h            \
+ velocityecef.h                               \
+ velocityecef.inl                             \
+ velocityneu.h                                \
+ velocityneu.inl                              \
  wheel.h                                      \
  wheel.inl
 

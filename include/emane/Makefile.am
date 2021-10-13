@@ -9,6 +9,8 @@ SUBDIRS=     \
 emaneincdir = $(includedir)/emane/
 
 emaneinc_HEADERS =                       \
+ antenna.h                               \
+ antenna.inl                             \
  antennamode.h                           \
  anyexception.h                          \
  any.h                                   \

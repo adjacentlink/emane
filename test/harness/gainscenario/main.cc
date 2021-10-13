@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2020-2021 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +39,10 @@
 
 #include "locationmanager.h"
 #include "gainmanager.h"
+#include "antennamanager.h"
 #include "antennaprofilemanifest.h"
+#include "emane/commonphyheader.h"
+#include "emane/types.h"
 #include "emane/utils/parameterconvert.h"
 
 #include <getopt.h>
@@ -99,7 +103,7 @@ int main(int argc, char* argv[])
 
   ++optind;
 
- if(optind >= argc)
+  if(optind >= argc)
     {
       std::cerr<<"missing scenario"<<std::endl;
       return EXIT_FAILURE;
@@ -171,7 +175,11 @@ int main(int argc, char* argv[])
 
       xmlFree(pNEMId);
 
-      EMANE::GainManager gainManager{id};
+      EMANE::AntennaManager antennaManager{};
+
+      EMANE::GainManager gainManager{id,EMANE::DEFAULT_ANTENNA_INDEX,antennaManager};
+
+      antennaManager.update(id,EMANE::Antenna::createIdealOmni(0,0));
 
       EMANE::LocationManager locationManager{id};
 
@@ -374,7 +382,7 @@ int main(int argc, char* argv[])
                                     }
                                 }
 
-                              gainManager.update(profiles);
+                              antennaManager.update(profiles);
                               std::cout<<std::endl;
                             }
                           else if(!xmlStrcmp(pActionNode->name,BAD_CAST "request"))
@@ -403,6 +411,7 @@ int main(int argc, char* argv[])
                                   bRxHasFixedGain = true;
                                 }
 
+                              EMANE::Antennas transmitAntennas{};
 
                               xmlChar * pTxFixedGain = xmlGetProp(pActionNode,BAD_CAST "txfixedgain");
 
@@ -414,15 +423,29 @@ int main(int argc, char* argv[])
                                   xmlFree(pTxFixedGain);
 
                                   bTxHasFixedGain = true;
+
+                                  antennaManager.update(nemId,EMANE::Antenna::createIdealOmni(0,dTxFixedGain));
+                                }
+                              else
+                                {
+                                  antennaManager.update(nemId,EMANE::Antenna::createProfileDefined(0));
                                 }
 
 
                               auto locationInfoRet = locationManager.getLocationInfo(nemId);
 
+                              if(bRxHasFixedGain)
+                                {
+                                  antennaManager.update(id,EMANE::Antenna::createIdealOmni(0,dRxFixedGain));
+                                }
+                              else
+                                {
+                                  antennaManager.update(id,EMANE::Antenna::createProfileDefined(0));
+                                }
+
                               auto gainInfodBi = gainManager.determineGain(nemId,
-                                                                           locationInfoRet.first,
-                                                                           std::make_pair(dRxFixedGain,bRxHasFixedGain),
-                                                                           std::make_pair(dTxFixedGain,bTxHasFixedGain));
+                                                                           EMANE::DEFAULT_ANTENNA_INDEX,
+                                                                           {locationInfoRet.first});
 
                               std::cout<<"["<<++iActionIndex<<"] request "<<nemId;
 
@@ -436,10 +459,10 @@ int main(int argc, char* argv[])
                                   std::cout<<" txgain="<<dTxFixedGain;
                                 }
 
-                              switch(gainInfodBi.second)
+                              switch(std::get<2>(gainInfodBi))
                                 {
                                 case EMANE::GainManager::GainStatus::SUCCESS:
-                                  std::cout<<" -> gain: "<<gainInfodBi.first<<std::endl;
+                                  std::cout<<" -> gain: "<<std::get<0>(gainInfodBi) + std::get<1>(gainInfodBi)<<std::endl;
                                   break;
                                 case EMANE::GainManager::GainStatus::ERROR_LOCATIONINFO:
                                   std::cout<<" -> error: Missing required location info"<<std::endl;

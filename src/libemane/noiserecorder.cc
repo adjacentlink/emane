@@ -55,7 +55,7 @@ EMANE::NoiseRecorder::NoiseRecorder(const Microseconds & bin,
   minStartOfReceptionBin_{}
 {}
 
-std::pair<EMANE::TimePoint,EMANE::TimePoint>
+std::tuple<EMANE::TimePoint,EMANE::TimePoint>
 EMANE::NoiseRecorder::update(const TimePoint &,
                              const TimePoint & txTime,
                              const Microseconds & offset,
@@ -64,7 +64,8 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                              double dRxPower,
                              const std::vector<NEMId> & transmitters,
                              std::uint64_t u64StartFrequencyHz,
-                             std::uint64_t u64EndFrequencyHz)
+                             std::uint64_t u64EndFrequencyHz,
+                             AntennaIndex txAntennaIndex)
 {
   auto startOfReception = txTime + offset + propagation;
 
@@ -76,7 +77,7 @@ EMANE::NoiseRecorder::update(const TimePoint &,
 
   Microseconds::rep startOfReceptionBin{reportedStartOfReceptionBin};
 
-  Microseconds::rep maxEoRBin{};
+  Microseconds::rep storedMaxEoRBin{};
 
   size_t subBandBinStart{0};
   size_t subBandBins{1};
@@ -88,17 +89,28 @@ EMANE::NoiseRecorder::update(const TimePoint &,
     }
 
   // Determine the last EoR bin for the transmitter - we only
-  // allow one bin noise entry per transmitter. For multiple
-  // transmitters use the max EoR
+  // allow one bin noise entry per transmitter per tx antenna. For
+  // multiple transmitters use the max EoR
+
   for(const auto & transmitter : transmitters)
     {
-      const auto iter = nemEoRBinMap_.find(transmitter);
+      auto nemIter = nemAntennaIndexEORBinMap_.find(transmitter);
 
-      if(iter != nemEoRBinMap_.end())
+      if(nemIter == nemAntennaIndexEORBinMap_.end())
         {
-          maxEoRBin = std::max(iter->second,maxEoRBin);
+          nemIter = nemAntennaIndexEORBinMap_.emplace(transmitter,
+                                                      AntennaIndexEORMap{}).first;
+        }
+
+      auto antennaIter = nemIter->second.find(txAntennaIndex);
+
+      if(antennaIter != nemIter->second.end())
+        {
+          storedMaxEoRBin = std::max(antennaIter->second,storedMaxEoRBin);
         }
     }
+
+  Microseconds::rep maxEoRBin{storedMaxEoRBin};
 
   // adjust the SoR bin to be the next after max EoR bin
   // if necessary
@@ -369,11 +381,11 @@ EMANE::NoiseRecorder::update(const TimePoint &,
       // update the max EOR bin for all the transmitters
       for(const auto & transmitter : transmitters)
         {
-          nemEoRBinMap_[transmitter] = endOfReceptionBin;
+          nemAntennaIndexEORBinMap_[transmitter][txAntennaIndex] = endOfReceptionBin;
         }
     }
 
-  return {startOfReception,endOfReception};
+  return std::make_tuple(startOfReception,endOfReception);
 }
 
 

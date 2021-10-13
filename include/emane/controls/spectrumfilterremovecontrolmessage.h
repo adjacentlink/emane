@@ -58,6 +58,16 @@ namespace EMANE
        * Creates a SpectrumFilterRemoveControlMessage on the heap
        *
        * @param filterIndex Index of filter to be removed.
+       * @param antennaIndex Index of antenna containg the filter.
+       */
+      static
+      SpectrumFilterRemoveControlMessage * create(FilterIndex filterIndex,
+                                                  AntennaIndex antennaIndex);
+
+      /**
+       * Creates a SpectrumFilterRemoveControlMessage on the heap
+       *
+       * @param filterIndex Index of filter to be removed.
        */
       static
       SpectrumFilterRemoveControlMessage * create(FilterIndex filterIndex);
@@ -83,13 +93,21 @@ namespace EMANE
        */
       FilterIndex getFilterIndex() const;
 
+      /**
+       * Gets the antenna index
+       *
+       * @return antenna index
+       */
+      AntennaIndex getAntennaIndex() const;
+
       enum {IDENTIFIER = EMANE_CONTROL_MEASSGE_SPECTRUM_FILTER_REMOVE};
 
     private:
       class Implementation;
       std::unique_ptr<Implementation> pImpl_;
 
-      SpectrumFilterRemoveControlMessage(FilterIndex filterIndex);
+      SpectrumFilterRemoveControlMessage(FilterIndex filterIndex,
+                                         AntennaIndex antennaIndex);
 
       SpectrumFilterRemoveControlMessage(const SpectrumFilterRemoveControlMessage &);
 

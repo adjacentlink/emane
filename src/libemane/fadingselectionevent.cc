@@ -73,6 +73,9 @@ EMANE::Events::FadingSelectionEvent::FadingSelectionEvent(const Serialization & 
         case EMANEMessage::FadingSelectionEvent::TYPE_NAKAGAMI:
           fadingModel = FadingModel::NAKAGAMI;
           break;
+        case EMANEMessage::FadingSelectionEvent::TYPE_LOGNORMAL:
+          fadingModel = FadingModel::LOGNORMAL;
+          break;
         default:
           break;
         }
@@ -136,6 +139,9 @@ EMANE::Serialization EMANE::Events::FadingSelectionEvent::serialize() const
           break;
         case FadingModel::NAKAGAMI:
           pFadingSelectionMessage->set_model(EMANEMessage::FadingSelectionEvent::TYPE_NAKAGAMI);
+          break;
+        case FadingModel::LOGNORMAL:
+          pFadingSelectionMessage->set_model(EMANEMessage::FadingSelectionEvent::TYPE_LOGNORMAL);
           break;
         default:
           throw SerializationException("unable to serialize : FadingSelectionEvent unknown model");

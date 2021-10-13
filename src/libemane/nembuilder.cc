@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016,2018 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016,2018,2020 - Adjacent Link LLC,
+ * Bridgewater, New Jersey
  * Copyright (c) 2008-2009-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -50,32 +50,32 @@
 #include "registrarproxy.h"
 #include "frameworkphy.h"
 #include "radioservice.h"
-#include "spectrummonitor.h"
+#include "spectrumservice.h"
 
 class EMANE::Application::NEMBuilder::NEMBuilderImpl
 {
 public:
-  SpectrumMonitor * getSpectrumMonitor(NEMId id)
+  SpectrumService * getSpectrumService(NEMId id)
   {
-    auto iter = spectrumMonitorCache_.find(id);
+    auto iter = spectrumServiceCache_.find(id);
 
-    if(iter != spectrumMonitorCache_.end())
+    if(iter != spectrumServiceCache_.end())
       {
         return iter->second;
       }
     else
       {
-        SpectrumMonitor * pSpectrumMonitor{new SpectrumMonitor};
+        SpectrumService * pSpectrumService{new SpectrumService};
 
-        spectrumMonitorCache_.insert(std::make_pair(id,pSpectrumMonitor));
+        spectrumServiceCache_.insert(std::make_pair(id,pSpectrumService));
 
-        return pSpectrumMonitor;
+        return pSpectrumService;
       }
   }
 
 private:
-  using SpectrumMonitorCache = std::map<NEMId,SpectrumMonitor *>;
-  SpectrumMonitorCache spectrumMonitorCache_;
+  using SpectrumServiceCache = std::map<NEMId,SpectrumService *>;
+  SpectrumServiceCache spectrumServiceCache_;
 };
 
 EMANE::Application::NEMBuilder::NEMBuilder():
@@ -104,7 +104,7 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
   // should be used
   if(sLibraryFile.empty())
     {
-      pImpl = new FrameworkPHY{id, pPlatformService, pImpl_->getSpectrumMonitor(id)};
+      pImpl = new FrameworkPHY{id, pPlatformService, pImpl_->getSpectrumService(id)};
 
       sRegistrationName = "emanephy";
     }
@@ -121,10 +121,10 @@ EMANE::Application::NEMBuilder::buildPHYLayer(NEMId id,
 
 
   std::unique_ptr<NEMQueuedLayer> pNEMLayer{new PHYLayer{id,
-        new NEMStatefulLayer{id,
-          pImpl,
-          pPlatformService},
-        pPlatformService}};
+                                                           new NEMStatefulLayer{id,
+                                                                                  pImpl,
+                                                                                  pPlatformService},
+                                                           pPlatformService}};
 
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
                                                                          COMPONENT_PHYILAYER,
@@ -172,7 +172,7 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
   NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // new radio service
-  RadioService * pRadioService{new RadioService{pImpl_->getSpectrumMonitor(id)}};
+  RadioService * pRadioService{new RadioService{pImpl_->getSpectrumService(id)}};
 
   // create plugin
   MACLayerImplementor * pImpl =
@@ -184,7 +184,7 @@ EMANE::Application::NEMBuilder::buildMACLayer(NEMId id,
 EMANE::RadioServiceProvider *
 EMANE::Application::NEMBuilder::createRadioService(NEMId id)
 {
-  return new RadioService{pImpl_->getSpectrumMonitor(id)};
+  return new RadioService{pImpl_->getSpectrumService(id)};
 }
 
 EMANE::PlatformServiceProvider *
@@ -204,10 +204,10 @@ EMANE::Application::NEMBuilder::buildMACLayer_i(MACLayerImplementor * pImpl,
   EMANE::NEMPlatformService * pPlatformService{dynamic_cast<EMANE::NEMPlatformService*>(pProvider)};
 
   std::unique_ptr<NEMQueuedLayer> pNEMLayer{new MACLayer{id,
-        new NEMStatefulLayer{id,
-          pImpl,
-          pPlatformService},
-        pPlatformService}};
+                                                         new NEMStatefulLayer{id,
+                                                                              pImpl,
+                                                                              pPlatformService},
+                                                         pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -258,17 +258,17 @@ EMANE::Application::NEMBuilder::buildShimLayer(NEMId id,
   NEMPlatformService * pPlatformService{new NEMPlatformService{}};
 
   // new radio service
-  RadioService * pRadioService{new RadioService{pImpl_->getSpectrumMonitor(id)}};
+  RadioService * pRadioService{new RadioService{pImpl_->getSpectrumService(id)}};
 
   // create plugin
   ShimLayerImplementor * pImpl =
     shimLayerFactory.createLayer(id, pPlatformService,pRadioService);
 
   std::unique_ptr<NEMQueuedLayer> pNEMLayer{new ShimLayer{id,
-        new NEMStatefulLayer{id,
-          pImpl,
-          pPlatformService},
-        pPlatformService}};
+                                                          new NEMStatefulLayer{id,
+                                                                               pImpl,
+                                                                               pPlatformService},
+                                                          pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),
@@ -397,10 +397,10 @@ EMANE::Application::NEMBuilder::buildTransportLayer(NEMId id,
     transportLayerFactory.createTransport(id, pPlatformService);
 
   std::unique_ptr<NEMQueuedLayer> pNEMLayer{new TransportLayer{id,
-        new NEMStatefulLayer{id,
-          pImpl,
-          pPlatformService},
-        pPlatformService}};
+                                                               new NEMStatefulLayer{id,
+                                                                                    pImpl,
+                                                                                    pPlatformService},
+                                                               pPlatformService}};
 
   // register to the component map
   BuildId buildId{BuildIdServiceSingleton::instance()->registerBuildable(pNEMLayer.get(),

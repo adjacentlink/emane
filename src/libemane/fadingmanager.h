@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2017,2020 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEFADINGMANAGER_HEADER
+#ifndef EMANEFADINGMANAGER_HEADER_
 #define EMANEFADINGMANAGER_HEADER_
 
 #include "emane/platformserviceprovider.h"
@@ -38,12 +38,18 @@
 #include "emane/events/fadingselection.h"
 #include "locationinfo.h"
 #include "fadingalgorithm.h"
+#include "fadingalgorithmmanager.h"
 
 #include <map>
 #include <memory>
 
 namespace EMANE
 {
+  using FadingAlgorithmStore = std::map<Events::FadingModel,
+                                        std::unique_ptr<FadingAlgorithm>>;
+
+  using FadingInfo = std::pair<Events::FadingModel,const void *>;
+
   class FadingManager
   {
   public:
@@ -59,15 +65,19 @@ namespace EMANE
 
     enum class FadingStatus
       {
-        SUCCESS = 0,
-        ERROR_LOCATIONINFO,
-        ERROR_ALGORITHM,
-        ERROR_SELECTION,
+       SUCCESS = 0,
+       ERROR_LOCATIONINFO,
+       ERROR_ALGORITHM,
+       ERROR_SELECTION,
       };
+
+    FadingAlgorithmStore createFadingAlgorithmStore() const;
+
+    std::pair<FadingInfo,bool> getFadingSelection(NEMId nemId) const;
 
     std::pair<double,FadingStatus> calculate(NEMId txNEMId,
                                              double dPowerdBm,
-                                             const std::pair<LocationInfo,bool> & location);
+                                             const std::pair<LocationInfo,bool> & location) const;
 
     void update(const Events::FadingSelections & fadingSelections);
 
@@ -75,18 +85,20 @@ namespace EMANE
     NEMId id_;
     PlatformServiceProvider * pPlatformService_;
     std::string sPrefix_;
-    using FadingModels = std::map<std::string,
-                                  std::unique_ptr<FadingAlgorithm>>;
-    FadingModels fadingModels_;
+    using FadingAlgorithmManagers = std::map<std::string,
+                                             std::unique_ptr<FadingAlgorithmManager>>;
+
     using TxNEMFadingSelections = std::map<NEMId,
-                                           FadingAlgorithm *>;
+                                           std::pair<Events::FadingModel,
+                                                     FadingAlgorithmManager *>>;
 
     TxNEMFadingSelections TxNEMFadingSelections_;
     bool bFading_;
-    FadingAlgorithm * pFadingAlgorithmForAll_;
+    FadingAlgorithmManagers fadingAlgorithmManagers_;
+    FadingAlgorithmManager * pFadingAlgorithmManagerForAll_;
 
     void configure_i(const ConfigurationUpdate & update,
-                     void (EMANE::FadingAlgorithm::*)(const ConfigurationUpdate&));
+                     void (FadingAlgorithmManager::*)(const ConfigurationUpdate&));
   };
 };
 
