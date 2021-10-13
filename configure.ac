@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.2.7,[emane at adjacent link dot com])
+AC_INIT([emane],1.3.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
