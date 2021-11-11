@@ -114,7 +114,9 @@ void EMANE::AntennaManager::update(NEMId nemId, const Antenna & antenna)
           const auto & currentPointing = iterAntenna->second.antenna_.getPointing();
           const auto & targetPointing = target.getPointing();
 
-          if(targetPointing.first.getProfileId() != currentPointing.first.getProfileId())
+          // if current pointing not valid or profile id changed
+          if(!currentPointing.second ||
+             targetPointing.first.getProfileId() != currentPointing.first.getProfileId())
             {
               const auto ret =
                 AntennaProfileManifest::instance()->getProfileInfo(targetPointing.first.getProfileId());

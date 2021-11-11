@@ -243,66 +243,70 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
           return std::make_tuple(0,0,GainStatus::ERROR_LOCATIONINFO,false);
         }
 
-      if(!localPointing.second)
+      // we have the profile info w/ pattern info
+      if(localPointing.second && localAntennaInfo.first.pPattern_)
         {
+          // calculate the direction: azimuth, elvation and distance
+          auto direction =
+            Utils::calculateDirection(locationPairInfo.getLocalPOV(),
+                                      localAntennaInfo.first.placement_,
+                                      locationPairInfo.getRemotePOV(),
+                                      remoteAntennaInfo.first.placement_);
+
+          // adjust the direction azimuth and elevation based on the antenna pointing azimuth and elvation
+          auto lookupAngles =
+            Utils::calculateLookupAngles(std::get<0>(direction),
+                                         localPointing.first.getAzimuthDegrees(),
+                                         std::get<1>(direction),
+                                         localPointing.first.getElevationDegrees());
+
+          // get the local receiver antenna gain
+          double dRxAntennaGaindBi{localAntennaInfo.first.pPattern_->getGain(std::round(lookupAngles.first),
+                                                                             std::round(lookupAngles.second))};
+
+          // get the blockage, if specified
+          //  Note: no adjustment is necessary to the direction azimuth and elvation
+          double dRxAntennaBlockagedBi{localAntennaInfo.first.pBlockage_ ?
+            localAntennaInfo.first.pBlockage_->getGain(std::round(std::get<0>(direction)),
+                                                       std::round(std::get<1>(direction))) :
+            0};
+
+          LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
+                                          DEBUG_LEVEL,
+                                          [this,&remoteAntennaInfo,&localAntennaInfo]()
+                                          {
+                                            Strings strings;
+
+                                            strings.push_back("local antenna");
+                                            strings.splice(strings.end(),PositionNEUFormatter(localAntennaInfo.first.placement_)());
+
+                                            strings.push_back("remote antenna");
+                                            strings.splice(strings.end(),PositionNEUFormatter(remoteAntennaInfo.first.placement_)());
+
+                                            return strings;
+                                          },
+                                          "PHYI %03hu GainManager::%s local calc rx antenna gain: %lf rx antenna"
+                                          " blockage: %lf direction az: %lf el: %lf dist: %lf local antenna az: %lf el: %lf"
+                                          " lookup bearing: %lf lookup el: %lf",
+                                          id_,
+                                          __func__,
+                                          dRxAntennaGaindBi,
+                                          dRxAntennaBlockagedBi,
+                                          std::get<0>(direction),
+                                          std::get<1>(direction),
+                                          std::get<2>(direction),
+                                          localPointing.first.getAzimuthDegrees(),
+                                          localPointing.first.getElevationDegrees(),
+                                          lookupAngles.first,
+                                          lookupAngles.second);
+
+          dLocalAntennaGaindBi = dRxAntennaGaindBi + dRxAntennaBlockagedBi;
+        }
+      else
+        {
+          // profile info is missing
           return std::make_tuple(0,0,GainStatus::ERROR_PROFILEINFO,false);
         }
-
-      // calculate the direction: azimuth, elvation and distance
-      auto direction =
-        Utils::calculateDirection(locationPairInfo.getLocalPOV(),
-                                  localAntennaInfo.first.placement_,
-                                  locationPairInfo.getRemotePOV(),
-                                  remoteAntennaInfo.first.placement_);
-
-      // adjust the direction azimuth and elevation based on the antenna pointing azimuth and elvation
-      auto lookupAngles =
-        Utils::calculateLookupAngles(std::get<0>(direction),
-                                     localPointing.first.getAzimuthDegrees(),
-                                     std::get<1>(direction),
-                                     localPointing.first.getElevationDegrees());
-
-      // get the local receiver antenna gain
-      double dRxAntennaGaindBi{localAntennaInfo.first.pPattern_->getGain(std::round(lookupAngles.first),
-                                                                         std::round(lookupAngles.second))};
-
-      // get the blockage, if specified
-      //  Note: no adjustment is necessary to the direction azimuth and elvation
-      double dRxAntennaBlockagedBi{localAntennaInfo.first.pBlockage_ ?
-        localAntennaInfo.first.pBlockage_->getGain(std::round(std::get<0>(direction)),
-                                                   std::round(std::get<1>(direction))) :
-        0};
-
-      LOGGER_VERBOSE_LOGGING_FN_VARGS(*LogServiceSingleton::instance(),
-                                      DEBUG_LEVEL,
-                                      [this,&remoteAntennaInfo,&localAntennaInfo]()
-                                      {
-                                        Strings strings;
-
-                                        strings.push_back("local antenna");
-                                        strings.splice(strings.end(),PositionNEUFormatter(localAntennaInfo.first.placement_)());
-
-                                        strings.push_back("remote antenna");
-                                        strings.splice(strings.end(),PositionNEUFormatter(remoteAntennaInfo.first.placement_)());
-
-                                        return strings;
-                                      },
-                                      "PHYI %03hu GainManager::%s local calc rx antenna gain: %lf rx antenna"
-                                      " blockage: %lf direction az: %lf el: %lf dist: %lf local antenna az: %lf el: %lf"
-                                      " lookup bearing: %lf lookup el: %lf",
-                                      id_,
-                                      __func__,
-                                      dRxAntennaGaindBi,
-                                      dRxAntennaBlockagedBi,
-                                      std::get<0>(direction),
-                                      std::get<1>(direction),
-                                      std::get<2>(direction),
-                                      localPointing.first.getAzimuthDegrees(),
-                                      localPointing.first.getElevationDegrees(),
-                                      lookupAngles.first,
-                                      lookupAngles.second);
-
-      dLocalAntennaGaindBi = dRxAntennaGaindBi + dRxAntennaBlockagedBi;
     }
   else
     {
