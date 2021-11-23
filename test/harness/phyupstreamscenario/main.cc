@@ -860,7 +860,7 @@ int main(int argc, char * argv[])
                                                                                      "BroadcastPacketDropTable0"});
 
 
-                                  for(const auto entry : results)
+                                  for(const auto & entry : results)
                                     {
                                       std::cout<<"["<<iActionIndex<<"] "<<entry.first<<std::endl;
                                       std::vector<int> labelLengths;
@@ -894,7 +894,7 @@ int main(int argc, char * argv[])
                                                                                     {"ReceivePowerTable"});
 
 
-                                  for(const auto entry : results)
+                                  for(const auto & entry : results)
                                     {
                                       std::cout<<"["<<iActionIndex<<"] "<<entry.first<<std::endl;
                                       std::vector<int> labelLengths;

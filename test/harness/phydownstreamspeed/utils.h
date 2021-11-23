@@ -85,7 +85,7 @@ namespace EMANE
                                                   "BroadcastPacketDropTable0"});
 
 
-      for(const auto entry : results)
+      for(const auto & entry : results)
         {
           std::vector<int> labelLengths;
           for(const auto & label : entry.second.first)

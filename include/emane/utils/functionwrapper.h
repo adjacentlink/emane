@@ -53,8 +53,8 @@ namespace EMANE
 
       FunctionWrapper & operator=(FunctionWrapper && rhs);
 
-    private:
       class ImplementaionBase;
+    private:
       std::unique_ptr<ImplementaionBase> pImpl_;
 
       FunctionWrapper(const FunctionWrapper &) = delete;

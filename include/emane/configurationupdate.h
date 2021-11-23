@@ -101,7 +101,7 @@ namespace EMANE
    * which indicates an error when set @a false.
    */
   using ConfigurationValidator = 
-    std::function<std::pair<std::string,bool>(const ConfigurationUpdate & update) noexcept>;
+    std::function<std::pair<std::string,bool>(const ConfigurationUpdate & update)>;
 };
 
 #endif //EMANECONFIGURATIONUPDATE_HEADER_
