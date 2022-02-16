@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014,2016,2019-2021 - Adjacent Link LLC,
- *  Bridgewater, New Jersey
+ * Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
 #include "emane/types.h"
 #include "emane/utils/parameterconvert.h"
 #include "emane/utils/spectrumwindowutils.h"
-
 #include "spectrummonitor.h"
+#include "spectralmaskmanager.h"
 
 #include <getopt.h>
 
@@ -59,15 +59,17 @@ int main(int argc, char * argv[])
     {
       {"help",0,nullptr,'h'},
       {"schema",1,nullptr,'s'},
+      {"masks",1,nullptr,'m'},
       {0, 0,nullptr,0},
     };
 
   int iOption{};
   int iOptionIndex{};
   std::string sScenario{};
-  std::string sSchema{"noisescenario.xsd"};
+  std::string sSchema{"filterscenario.xsd"};
+  std::string sMasks{};
 
-  while((iOption = getopt_long(argc,argv,"hs:", &options[0],&iOptionIndex)) != -1)
+  while((iOption = getopt_long(argc,argv,"hs:m:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -79,6 +81,11 @@ int main(int argc, char * argv[])
         case 's':
           // --schema
           sSchema = optarg;
+          break;
+
+        case 'm':
+          // --masks
+          sMasks = optarg;
           break;
 
         case ':':
@@ -104,7 +111,14 @@ int main(int argc, char * argv[])
 
   EMANE::SpectrumMonitor spectrumMonitor{};
 
+  if(!sMasks.empty())
+    {
+      EMANE::SpectralMaskManager::instance()->load(sMasks);
+    }
+
   EMANE::FrequencySet foi;
+
+  std::set<EMANE::FilterIndex> filters;
 
   xmlDocPtr pSchemaDoc{xmlReadFile(sSchema.c_str(),
                                    NULL,
@@ -336,9 +350,73 @@ int main(int argc, char * argv[])
                                                      maxSegmentDuration,
                                                      timeSyncThreshold,
                                                      bClamp,
-                                                     true);
+                                                     false);
                           std::cout<<std::endl;
 
+                        }
+                      else if(!xmlStrcmp(pActionNode->name,BAD_CAST "add-filter"))
+                        {
+                          xmlChar * pBandwidth = xmlGetProp(pActionNode,BAD_CAST "bandwidth");
+
+                          auto bandwidth =
+                            EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidth)).toUINT64();
+
+                          xmlFree(pBandwidth);
+
+                          xmlChar * pFrequency = xmlGetProp(pActionNode,BAD_CAST "frequency");
+
+                          auto frequency =
+                            EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pFrequency)).toUINT64();
+
+                          xmlFree(pFrequency);
+
+                          xmlChar * pBandwidthBinSize = xmlGetProp(pActionNode,BAD_CAST "bandwidthbinsize");
+
+                          auto bandwidthBinSize =
+                            EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pBandwidthBinSize)).toUINT64();
+
+                          xmlFree(pBandwidthBinSize);
+
+                          xmlChar * pIndex = xmlGetProp(pActionNode,BAD_CAST "index");
+
+                          auto index =
+                            EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pIndex)).toUINT16();
+
+                          xmlFree(pIndex);
+
+                          std::cout<<"["<<++iActionIndex
+                                   <<"] add-filter"
+                                   <<std::endl;
+
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    frequency: "
+                                   <<frequency
+                                   <<std::endl;
+
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    bandwidth: "
+                                   <<bandwidth
+                                   <<std::endl;
+
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    bandwidth sub bin size: "
+                                   <<bandwidthBinSize
+                                   <<std::endl;
+
+                          std::cout<<"["<<iActionIndex
+                                   <<"]    index: "
+                                   <<index
+                                   <<std::endl;
+
+                          spectrumMonitor.initializeFilter(index,
+                                                           frequency,
+                                                           bandwidth,
+                                                           bandwidthBinSize,
+                                                           nullptr);
+
+                          filters.insert(index);
+
+                          std::cout<<std::endl;
                         }
                       else if(!xmlStrcmp(pActionNode->name,BAD_CAST "update"))
                         {
@@ -376,7 +454,6 @@ int main(int argc, char * argv[])
 
                           xmlChar * pInBand = xmlGetProp(pActionNode,BAD_CAST "inband");
 
-
                           bool bInBand{};
 
                           bInBand =
@@ -384,6 +461,12 @@ int main(int argc, char * argv[])
 
                           xmlFree(pInBand);
 
+                          xmlChar * pMask = xmlGetProp(pActionNode,BAD_CAST "mask");
+
+                          auto u16MaskIndex =
+                            EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pMask)).toUINT16();
+
+                          xmlFree(pMask);
 
                           EMANE::FrequencySegments segments;
                           std::vector<double> powers;
@@ -477,6 +560,11 @@ int main(int argc, char * argv[])
                                        <<(bInBand ? "yes" : "no")
                                        <<std::endl;
 
+                              std::cout<<"["<<iActionIndex
+                                       <<"] mask: "
+                                       <<u16MaskIndex
+                                       <<std::endl;
+
                               int i = 0;
 
                               for(const auto & segment : segments)
@@ -535,7 +623,7 @@ int main(int argc, char * argv[])
                                                                                                 transmitters,
                                                                                                 0,
                                                                                                 0,
-                                                                                                EMANE::DEFAULT_SPECTRAL_MASK_INDEX,
+                                                                                                u16MaskIndex,
                                                                                                 {});
 
 
@@ -592,6 +680,27 @@ int main(int argc, char * argv[])
                                       std::cout<<"  "<<entry.first<<":"<<entry.second<<std::endl;
                                     }
                                 }
+
+
+                              for(const auto & filter : filters)
+                                {
+                                  std::cout<<" Filter: "<<filter<<std::endl;
+
+                                  auto dump = spectrumMonitor.dumpFilter(filter);
+
+                                  for(const auto & entry : EMANE::Utils::spectrumSubBandCompress(dump.first,dump.second))
+                                    {
+                                      std::cout<<"  "<<entry.first<<":";
+
+                                      for(const auto & subBandEntry : entry.second)
+                                        {
+                                          std::cout<<subBandEntry<<" ";
+                                        }
+
+                                      std::cout<<std::endl;
+                                    }
+                                }
+
                               std::cout<<std::endl;
                             }
                           catch(...)
@@ -694,6 +803,45 @@ int main(int argc, char * argv[])
                                 }
 
                               std::cout<<std::endl;
+
+                              for(const auto & filter : filters)
+                                {
+                                  std::vector<double> bins;
+                                  EMANE::TimePoint startOfBinTime;
+                                  EMANE::Microseconds binSize;
+                                  double dReceiverSensativityMilliWatt;
+                                  size_t numberSubBandBins;
+
+                                  std::tie(bins,startOfBinTime,binSize,dReceiverSensativityMilliWatt,numberSubBandBins) =
+                                    spectrumMonitor.requestFilter_i(EMANE::TimePoint{start+now},filter,duration,timepoint);
+
+                                  std::cout<<" Filter: " <<filter<<std::endl;
+
+                                  if(numberSubBandBins > 1)
+                                    {
+                                      for(const auto & entry : EMANE::Utils::spectrumSubBandCompress(bins,numberSubBandBins))
+                                        {
+                                          std::cout<<"  "<<entry.first<<":";
+
+                                          for(const auto & subBandEntry : entry.second)
+                                            {
+                                              std::cout<<subBandEntry<<" ";
+                                            }
+
+                                          std::cout<<std::endl;
+                                        }
+                                    }
+                                  else
+                                    {
+                                      for(const auto & entry : EMANE::Utils::spectrumCompress(bins))
+                                        {
+                                          std::cout<<"  "<<entry.first<<":"<<entry.second<<std::endl;
+                                        }
+                                    }
+                                }
+
+                              std::cout<<std::endl;
+
                             }
                           catch(...)
                             {
@@ -720,15 +868,11 @@ int main(int argc, char * argv[])
 
 void usage()
 {
-  std::cout<<"usage: ew [OPTIONS]... SCENARIOXML"<<std::endl;
+  std::cout<<"usage: noisescenario [OPTIONS]... SCENARIOXML"<<std::endl;
   std::cout<<std::endl;
   std::cout<<"options:"<<std::endl;
   std::cout<<"  -h, --help                     Print this message and exit."<<std::endl;
-  std::cout<<"  -i, --iterations NUM           Number of iterations per test case."<<std::endl;
-  std::cout<<"                                   Default: 1"<<std::endl;
-  std::cout<<"  -o, --outdir DIR               Directory to write output."<<std::endl;
-  std::cout<<"                                   Default: CWD"<<std::endl;
   std::cout<<"  -s, --schema                   Scenario schema"<<std::endl;
-  std::cout<<"                                   Default: noisescenario.xsd"<<std::endl;
+  std::cout<<"                                   Default: filterscenario.xsd"<<std::endl;
   std::cout<<std::endl;
 }

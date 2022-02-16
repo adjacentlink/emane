@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,7 +109,8 @@ EMANE::Antenna::Antenna():
   bIsIdealOmni_{false},
   bIsProfileDefined_{false},
   frequencyGroupIndex_{},
-  u64BandwidthHz_{}{}
+  u64BandwidthHz_{},
+  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX}{}
 
 inline
 bool EMANE::Antenna::isDefault() const
@@ -179,6 +180,18 @@ void EMANE::Antenna::setBandwidthHz(std::uint64_t u64BandwidthHz)
 }
 
 inline
+EMANE::SpectralMaskIndex EMANE::Antenna::getSpectralMaskIndex() const
+{
+  return spectralMaskIndex_;
+}
+
+inline
+void EMANE::Antenna::setSpectralMaskIndex(SpectralMaskIndex spectralMaskIndex)
+{
+  spectralMaskIndex_ = spectralMaskIndex;
+}
+
+inline
 void EMANE::Antenna::setFixedGaindBi(double dFixedGaindBi)
 {
   dFixedGaindBi_ = dFixedGaindBi;
@@ -220,7 +233,8 @@ EMANE::Antenna::Antenna(AntennaIndex antennaIndex,
   bIsIdealOmni_{true},
   bIsProfileDefined_{},
   frequencyGroupIndex_{},
-  u64BandwidthHz_{}{}
+  u64BandwidthHz_{},
+  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX}{}
 
 inline
 EMANE::Antenna::Antenna(AntennaIndex antennaIndex,
@@ -231,4 +245,5 @@ EMANE::Antenna::Antenna(AntennaIndex antennaIndex,
   bIsIdealOmni_{},
   bIsProfileDefined_{true},
   frequencyGroupIndex_{},
-  u64BandwidthHz_{}{}
+  u64BandwidthHz_{},
+  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX}{}

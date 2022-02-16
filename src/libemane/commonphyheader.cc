@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,7 +125,7 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
           for(const auto & transmitter : msg.transmitters())
             {
               transmitters.push_back({static_cast<NEMId>(transmitter.nemid()),
-                                      transmitter.powerdbm()});
+                  transmitter.powerdbm()});
             }
 
           FrequencyGroups frequencyGroups{};
@@ -138,15 +139,15 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
                   if(segment.has_powerdbm())
                     {
                       frequencySegments.push_back({segment.frequencyhz(),
-                                                   segment.powerdbm(),
-                                                   Microseconds(segment.durationmicroseconds()),
-                                                   Microseconds(segment.offsetmicroseconds())});
+                          segment.powerdbm(),
+                          Microseconds(segment.durationmicroseconds()),
+                          Microseconds(segment.offsetmicroseconds())});
                     }
                   else
                     {
                       frequencySegments.push_back({segment.frequencyhz(),
-                                                   Microseconds(segment.durationmicroseconds()),
-                                                   Microseconds(segment.offsetmicroseconds())});
+                          Microseconds(segment.durationmicroseconds()),
+                          Microseconds(segment.offsetmicroseconds())});
                     }
                 }
               frequencyGroups.push_back(frequencySegments);
@@ -176,6 +177,11 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
 
                   antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
 
+                  if(transmitAntenna.has_spectralmaskindex())
+                    {
+                      antenna.setSpectralMaskIndex(transmitAntenna.spectralmaskindex());
+                    }
+
                   transmitAntennas.push_back(std::move(antenna));
                 }
               else
@@ -193,6 +199,11 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
 
                       antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
 
+                      if(transmitAntenna.has_spectralmaskindex())
+                        {
+                          antenna.setSpectralMaskIndex(transmitAntenna.spectralmaskindex());
+                        }
+
                       transmitAntennas.push_back(std::move(antenna));
                     }
                   else
@@ -203,19 +214,24 @@ EMANE::CommonPHYHeader::CommonPHYHeader(UpstreamPacket & pkt)
 
                       antenna.setBandwidthHz(transmitAntenna.bandwidthhz());
 
+                      if(transmitAntenna.has_spectralmaskindex())
+                        {
+                          antenna.setSpectralMaskIndex(transmitAntenna.spectralmaskindex());
+                        }
+
                       transmitAntennas.push_back(std::move(antenna));
                     }
                 }
             }
 
           pImpl_.reset(new Implementation{registrationId,
-                                            u16SubId,
-                                            u16SequenceNumber,
-                                            txTime,
-                                            frequencyGroups,
-                                            transmitAntennas,
-                                            transmitters,
-                                            optionalFilterData});
+                                          u16SubId,
+                                          u16SequenceNumber,
+                                          txTime,
+                                          frequencyGroups,
+                                          transmitAntennas,
+                                          transmitters,
+                                          optionalFilterData});
 
         }
       else
@@ -242,13 +258,13 @@ EMANE::CommonPHYHeader::CommonPHYHeader(RegistrationId registrationId,
                                         const Transmitters & transmitters,
                                         const std::pair<FilterData,bool> & optionalFilterData):
   pImpl_{new Implementation{registrationId,
-                            u16SubId,
-                            u16SequenceNumber,
-                            txTime,
-                            frequencyGroups,
-                            transmitAntennas,
-                            transmitters,
-                            optionalFilterData}}
+    u16SubId,
+    u16SequenceNumber,
+    txTime,
+    frequencyGroups,
+    transmitAntennas,
+    transmitters,
+    optionalFilterData}}
 {}
 
 
@@ -392,7 +408,16 @@ void EMANE::CommonPHYHeader::prependTo(DownstreamPacket & pkt) const
 
       pTransmitAntenna->set_frequencygroupindex(transmitAntenna.getFrequencyGroupIndex());
 
-      pTransmitAntenna->set_bandwidthhz(transmitAntenna.getBandwidthHz());
+      // only set the bandwidth if spectral mask is not in use
+      if(transmitAntenna.getSpectralMaskIndex())
+        {
+          pTransmitAntenna->set_spectralmaskindex(transmitAntenna.getSpectralMaskIndex());
+          pTransmitAntenna->set_bandwidthhz(0);
+        }
+      else
+        {
+          pTransmitAntenna->set_bandwidthhz(transmitAntenna.getBandwidthHz());
+        }
 
       if(transmitAntenna.isIdealOmni())
         {
@@ -457,6 +482,7 @@ EMANE::Strings EMANE::CommonPHYHeader::format() const
       sFormat.push_back("antenna: " + std::to_string(transmitAntenna.getIndex()));
       sFormat.push_back("freq index: " + std::to_string(transmitAntenna.getFrequencyGroupIndex()));
       sFormat.push_back("bandwidth: " + std::to_string(transmitAntenna.getBandwidthHz()));
+      sFormat.push_back("mask: " + std::to_string(transmitAntenna.getSpectralMaskIndex()));
 
       if(transmitAntenna.isIdealOmni())
         {

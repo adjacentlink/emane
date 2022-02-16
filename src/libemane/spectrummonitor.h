@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014,2019-2021 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 #include "emane/filtermatchcriterion.h"
 #include "noiserecorder.h"
 #include "noisemode.h"
+#include "spectralmaskmanager.h"
 
 #include <map>
 #include <vector>
@@ -82,6 +83,7 @@ namespace EMANE
            const std::vector<NEMId> & transmitters,
            std::uint16_t u16SubId,
            AntennaIndex txAntennaIndex,
+           SpectralMaskIndex spectralMaskIndex,
            const std::pair<FilterData,bool> & optionalFilterData);
 
 
@@ -108,6 +110,11 @@ namespace EMANE
 
     void removeFilter(FilterIndex filterIndex);
 
+    // test harness access
+    SpectrumFilterWindow requestFilter_i(const TimePoint & now,
+                                         FilterIndex filterIndex,
+                                         const Microseconds & duration = Microseconds::zero(),
+                                         const TimePoint & timepoint = TimePoint::min()) const;
 
     SpectrumFilterWindow requestFilter(FilterIndex filterIndex,
                                        const Microseconds & duration = Microseconds::zero(),
@@ -115,12 +122,14 @@ namespace EMANE
 
     std::vector<double> dump(std::uint64_t u64FrequencyHz) const;
 
+    std::pair<std::vector<double>,std::size_t> dumpFilter(FilterIndex filterIndex) const;
+
   private:
     using NoiseRecorderMap = std::map<std::uint64_t,std::unique_ptr<NoiseRecorder>>;
 
     using NoiseRecord = std::tuple<NoiseRecorder *,
-                                   double,
-                                   std::uint64_t,
+                                   SpectralMaskManager::MaskOverlap,
+                                   std::uint64_t, // frequency
                                    std::uint64_t, // start rx freq
                                    std::uint64_t>; // end rx freq>;
 
@@ -129,9 +138,10 @@ namespace EMANE
     using Cache = std::map<std::uint64_t, // frequency Hz
                            NoiseRecords>;
 
-    using TransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz
+    using TransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz or spectral mask
                                                std::pair<std::unique_ptr<Cache>,
                                                          FrequencySet>>; // no overlap set
+
     Microseconds binSize_;
     Microseconds maxOffset_;
     Microseconds maxPropagation_;
@@ -140,6 +150,7 @@ namespace EMANE
     bool bExcludeSameSubIdFromFilter_;
     Microseconds timeSyncThreshold_;
     TransmitterBandwidthCache transmitterBandwidthCache_;
+    TransmitterBandwidthCache transmitterSpectralMaskCache_;
     NoiseRecorderMap noiseRecorderMap_;
     std::uint64_t u64ReceiverBandwidthHz_;
     NoiseMode mode_;
@@ -149,7 +160,7 @@ namespace EMANE
     FrequencySet foi_;
 
     using FilterRecord = std::tuple<NoiseRecorder *, // noise recorder
-                                    double, // overlap
+                                    SpectralMaskManager::MaskOverlap, // overlap
                                     std::uint64_t, // tx freq
                                     const FilterMatchCriterion *, // match
                                     std::uint64_t, // start rx freq
@@ -160,7 +171,7 @@ namespace EMANE
     using FilterCache = std::map<std::uint64_t, // frequency Hz
                                  FilterRecords>;
 
-    using FitlerTransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz
+    using FilterTransmitterBandwidthCache = std::map<std::uint64_t, // bandwidth Hz
                                                      std::pair<std::unique_ptr<FilterCache>,
                                                                FrequencySet>>; // no overlap set
 
@@ -172,12 +183,14 @@ namespace EMANE
                                                        std::unique_ptr<const FilterMatchCriterion>>>;
 
     FilterNoiseRecorderMap filterNoiseRecorderMap_;
-    FitlerTransmitterBandwidthCache filterTransmitterBandwidthCache_;
+    FilterTransmitterBandwidthCache filterTransmitterBandwidthCache_;
+    FilterTransmitterBandwidthCache filterTransmitterSpectralMaskCache_;
 
     void applyEnergyToFilters_i(std::uint64_t u64TxBandwidthHz,
                                 std::uint64_t u64TxFrequencyHz,
                                 std::uint16_t u16SubId,
                                 double dDopplerFactor,
+                                SpectralMaskIndex spectralMaskIndex,
                                 const TimePoint & now,
                                 const TimePoint & txTime,
                                 const Microseconds & offset,

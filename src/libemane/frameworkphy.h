@@ -46,6 +46,7 @@
 #include "propagationmodelalgorithm.h"
 #include "eventtablepublisher.h"
 #include "receivepowertablepublisher.h"
+#include "observedpowertablepublisher.h"
 #include "fadingmanager.h"
 #include "receiveprocessor.h"
 
@@ -118,6 +119,7 @@ namespace EMANE
     Utils::CommonLayerStatistics commonLayerStatistics_;
     EventTablePublisher eventTablePublisher_;
     ReceivePowerTablePublisher receivePowerTablePublisher_;
+    ObservedPowerTablePublisher observedPowerTablePublisher_;
     Microseconds noiseBinSize_;
     Microseconds maxSegmentOffset_;
     Microseconds maxMessagePropagation_;
@@ -143,8 +145,10 @@ namespace EMANE
     Utils::ProcessingPool processingPool_;
     std::uint16_t u16ProccssingPoolSize_;
     bool bStatsReceivePowerTableEnable_;
+    bool bStatsObservedPowerTableEnable_;
     bool bRxSensitivityPromiscuousModeEnable_;
     bool bDopplerShiftEnable_;
+    SpectralMaskIndex spectralMaskIndex_;
 
     void createDefaultAntennaIfNeeded();
   };

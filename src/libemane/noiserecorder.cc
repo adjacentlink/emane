@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2019-2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2019-2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
  */
 
 #include "noiserecorder.h"
+#include "frequencyoverlapratio.h"
 #include "emane/spectrumserviceexception.h"
 #include <cmath>
 
@@ -49,6 +50,7 @@ EMANE::NoiseRecorder::NoiseRecorder(const Microseconds & bin,
   u64BandwidthBinSizeHz_{u64BandwidthBinSizeHz},
   u64BandStartFrequencyHz_{static_cast<std::uint64_t>(u64FrequencyHz - u64BandwidthHz / 2.0)},
   totalSubBandBins_{u64BandwidthBinSizeHz ? static_cast<size_t>(std::ceil(u64BandwidthHz/static_cast<double>(u64BandwidthBinSizeHz)))+1 : 1},
+  u64BandEndFrequencyHz_{u64BandStartFrequencyHz_ +  totalSubBandBins_ * u64BandwidthBinSizeHz - 1},
   wheel_{static_cast<std::size_t>(totalWheelBins_), totalSubBandBins_},
   dRxSensitivityMilliWatt_{dRxSensitivityMilliWatt},
   maxEndOfReceptionBin_{},
@@ -65,7 +67,8 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                              const std::vector<NEMId> & transmitters,
                              std::uint64_t u64StartFrequencyHz,
                              std::uint64_t u64EndFrequencyHz,
-                             AntennaIndex txAntennaIndex)
+                             AntennaIndex txAntennaIndex,
+                             bool bIsMore)
 {
   auto startOfReception = txTime + offset + propagation;
 
@@ -80,12 +83,112 @@ EMANE::NoiseRecorder::update(const TimePoint &,
   Microseconds::rep storedMaxEoRBin{};
 
   size_t subBandBinStart{0};
+  size_t subBandBinEnd{totalSubBandBins_ -1};
   size_t subBandBins{1};
+
+  BinPowerApply pendingBinPowerApply{};
+  BinPowerApplyMap::iterator binPowerApplyMapIter{};
 
   if(u64BandwidthBinSizeHz_)
     {
-      subBandBinStart = (u64StartFrequencyHz - u64BandStartFrequencyHz_) / u64BandwidthBinSizeHz_;
-      subBandBins =  (u64EndFrequencyHz - u64BandStartFrequencyHz_) / u64BandwidthBinSizeHz_ - subBandBinStart + 1;
+      if(u64StartFrequencyHz > u64BandStartFrequencyHz_)
+        {
+          subBandBinStart = (u64StartFrequencyHz - u64BandStartFrequencyHz_) / u64BandwidthBinSizeHz_;
+        }
+
+      if(u64EndFrequencyHz < u64BandEndFrequencyHz_)
+        {
+          subBandBinEnd = totalSubBandBins_ - (u64BandEndFrequencyHz_ - u64EndFrequencyHz) / u64BandwidthBinSizeHz_;
+        }
+
+
+      subBandBins = subBandBinEnd - subBandBinStart + 1;
+
+      binPowerApplyMapIter =
+        binPowerApplyMap_.find(std::make_pair(u64StartFrequencyHz,u64EndFrequencyHz));
+
+      // no cache entry found
+      if(binPowerApplyMapIter == binPowerApplyMap_.end())
+        {
+          BinPowerApplies binPowerApplies{};
+
+          // for each bin, determine the overlap multiplier
+          for(size_t bin = subBandBinStart; bin <= subBandBinEnd; ++bin)
+            {
+              std::uint64_t u64BinStartFrequencyHz{bin * u64BandwidthBinSizeHz_ + u64BandStartFrequencyHz_};
+
+              double dOverlapRatio{};
+              std::uint64_t u64LowerOverlapFrequencyHz{};
+              std::uint64_t u64UpperOverlapFrequencyHz{};
+
+              std::tie(dOverlapRatio,
+                       u64LowerOverlapFrequencyHz,
+                       u64UpperOverlapFrequencyHz) =
+                frequencyOverlapRatio(u64BinStartFrequencyHz + u64BandwidthBinSizeHz_ / 2,
+                                      u64BandwidthBinSizeHz_,
+                                      u64StartFrequencyHz + (u64EndFrequencyHz - u64StartFrequencyHz) / 2,
+                                      u64EndFrequencyHz - u64StartFrequencyHz);
+
+
+              // signal is partially in bin
+              if(dOverlapRatio > 0 && dOverlapRatio < 1)
+                {
+                  // if keeping count of bins with full overlap, we
+                  // need to store and reset
+                  if(std::get<2>(pendingBinPowerApply))
+                    {
+                      // set end bin
+                      std::get<1>(pendingBinPowerApply) = bin - 1;
+
+                      // store the pending BinPowerApply
+                      binPowerApplies.push_back(pendingBinPowerApply);
+
+                      // reset, the multiplier used as a flag for valid data
+                      std::get<2>(pendingBinPowerApply) = 0;
+                    }
+
+                  // store the current BinPowerApply, for the single bin
+                  binPowerApplies.emplace_back(std::make_tuple(bin,bin,dOverlapRatio));
+                }
+              else if(dOverlapRatio == 1)
+                {
+                  // bin has full overlap, if not tracking -- begin
+                  if(!std::get<2>(pendingBinPowerApply))
+                    {
+                      std::get<0>(pendingBinPowerApply) = bin;
+
+                      std::get<2>(pendingBinPowerApply) = dOverlapRatio;
+                    }
+                }
+              else
+                {
+                  // dOverlapRatio == 0
+                  if(std::get<2>(pendingBinPowerApply))
+                    {
+                      // set end bin
+                      std::get<1>(pendingBinPowerApply) = bin - 1;
+
+                      // store the pending BinPowerApply
+                      binPowerApplies.push_back(pendingBinPowerApply);
+
+                      // reset, the multiplier used as a flag for valid data
+                      std::get<2>(pendingBinPowerApply) = 0;
+                    }
+                }
+            }
+
+          // if the last bin was full overlap, we need to store
+          if(std::get<2>(pendingBinPowerApply))
+            {
+              std::get<1>(pendingBinPowerApply) = subBandBinEnd;
+              binPowerApplies.push_back(pendingBinPowerApply);
+            }
+
+          binPowerApplyMapIter =
+            binPowerApplyMap_.emplace(std::make_pair(u64StartFrequencyHz,
+                                                     u64EndFrequencyHz),
+                                      std::move(binPowerApplies)).first;
+        }
     }
 
   // Determine the last EoR bin for the transmitter - we only
@@ -133,7 +236,6 @@ EMANE::NoiseRecorder::update(const TimePoint &,
           //  the last bin we received on
           maxEndOfReceptionBin_ = 0;
 
-
           // reset the min start of reception bin
           // the first bin we received on
           minStartOfReceptionBin_ = 0;
@@ -142,12 +244,31 @@ EMANE::NoiseRecorder::update(const TimePoint &,
       // if wheel is empty, place entire duration
       if(!maxEndOfReceptionBin_ && !minStartOfReceptionBin_)
         {
-          // we can fill the entire duration
-          wheel_.set(startIndex,
-                     durationBinCount,
-                     dRxPower,
-                     subBandBinStart,
-                     subBandBins);
+          if(totalSubBandBins_ > 1)
+            {
+              for(const auto & binPowerApply :
+                    binPowerApplyMapIter->second)
+                {
+                  auto & start = std::get<0>(binPowerApply);
+                  auto & end = std::get<1>(binPowerApply);
+                  auto & dMultipler = std::get<2>(binPowerApply);
+
+                  wheel_.set(startIndex,
+                             durationBinCount,
+                             dRxPower * dMultipler,
+                             start,
+                             end - start + 1);
+                }
+            }
+          else
+            {
+              // we can fill the entire duration
+              wheel_.set(startIndex,
+                         durationBinCount,
+                         dRxPower,
+                         subBandBinStart,
+                         subBandBins);
+            }
 
           minStartOfReceptionBin_ = startOfReceptionBin;
 
@@ -203,13 +324,29 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                              0,
                              0,
                              totalSubBandBins_);
-                }
 
-              wheel_.set(startIndex,
-                         beforeMinSORBinDurationCount,
-                         dRxPower,
-                         subBandBinStart,
-                         subBandBins);
+                  for(const auto & binPowerApply :
+                        binPowerApplyMapIter->second)
+                    {
+                      auto & start = std::get<0>(binPowerApply);
+                      auto & end = std::get<1>(binPowerApply);
+                      auto & dMultipler = std::get<2>(binPowerApply);
+
+                      wheel_.set(startIndex,
+                                 durationBinCount,
+                                 dRxPower * dMultipler,
+                                 start,
+                                 end - start + 1);
+                    }
+                }
+              else
+                {
+                  wheel_.set(startIndex,
+                             beforeMinSORBinDurationCount,
+                             dRxPower,
+                             subBandBinStart,
+                             subBandBins);
+                }
             }
 
           // set any values after the maxEndOfReceptionBin, we are
@@ -255,13 +392,29 @@ EMANE::NoiseRecorder::update(const TimePoint &,
                              0,
                              0,
                              totalSubBandBins_);
-                }
 
-              wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
-                         afterMaxEORBinDurationCount,
-                         dRxPower,
-                         subBandBinStart,
-                         subBandBins);
+                  for(const auto & binPowerApply :
+                        binPowerApplyMapIter->second)
+                    {
+                      auto & start = std::get<0>(binPowerApply);
+                      auto & end = std::get<1>(binPowerApply);
+                      auto & dMultipler = std::get<2>(binPowerApply);
+
+                      wheel_.set(startIndex,
+                                 durationBinCount,
+                                 dRxPower * dMultipler,
+                                 start,
+                                 end - start + 1);
+                    }
+                }
+              else
+                {
+                  wheel_.set((startIndex + durationBinCount - afterMaxEORBinDurationCount) % totalWheelBins_,
+                             afterMaxEORBinDurationCount,
+                             dRxPower,
+                             subBandBinStart,
+                             subBandBins);
+                }
             }
 
           auto withinMinSORMaxEORBinCount =
@@ -305,11 +458,30 @@ EMANE::NoiseRecorder::update(const TimePoint &,
               //                          energy to accumulate
 
               // accumulate bins up to and including maxEndOfReceptionBin
-              wheel_.add((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
-                         withinMinSORMaxEORBinCount,
-                         dRxPower,
-                         subBandBinStart,
-                         subBandBins);
+              if(totalSubBandBins_ > 1)
+                {
+                  for(const auto & binPowerApply :
+                        binPowerApplyMapIter->second)
+                    {
+                      auto & start = std::get<0>(binPowerApply);
+                      auto & end = std::get<1>(binPowerApply);
+                      auto & dMultipler = std::get<2>(binPowerApply);
+
+                      wheel_.add((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
+                                 withinMinSORMaxEORBinCount,
+                                 dRxPower * dMultipler,
+                                 start,
+                                 end - start + 1);
+                    }
+                }
+              else
+                {
+                  wheel_.add((startIndex + beforeMinSORBinDurationCount) % totalWheelBins_,
+                             withinMinSORMaxEORBinCount,
+                             dRxPower,
+                             subBandBinStart,
+                             subBandBins);
+                }
             }
           else
             {
@@ -378,10 +550,13 @@ EMANE::NoiseRecorder::update(const TimePoint &,
             }
         }
 
-      // update the max EOR bin for all the transmitters
-      for(const auto & transmitter : transmitters)
+      if(!bIsMore)
         {
-          nemAntennaIndexEORBinMap_[transmitter][txAntennaIndex] = endOfReceptionBin;
+          // update the max EOR bin for all the transmitters
+          for(const auto & transmitter : transmitters)
+            {
+              nemAntennaIndexEORBinMap_[transmitter][txAntennaIndex] = endOfReceptionBin;
+            }
         }
     }
 

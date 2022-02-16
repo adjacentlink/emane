@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014,2016,2021 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 #include "frameworkphy.h"
 #include "antennaprofilemanifest.h"
 #include "statisticservice.h"
+#include "spectralmaskmanager.h"
 
 #include "emane/configurationupdate.h"
 #include "emane/utils/parameterconvert.h"
@@ -169,6 +170,7 @@ int main(int argc, char * argv[])
       {"help",0,nullptr,'h'},
       {"schema",1,nullptr,'s'},
       {"profiles",1,nullptr,'p'},
+      {"masks",1,nullptr,'m'},
       {0, 0,nullptr,0},
     };
 
@@ -178,8 +180,9 @@ int main(int argc, char * argv[])
   std::string sManifest{};
   std::string sSchema{"gainscenario.xsd"};
   std::string sProfiles{};
+  std::string sMasks{};
 
-  while((iOption = getopt_long(argc,argv,"hs:p:", &options[0],&iOptionIndex)) != -1)
+  while((iOption = getopt_long(argc,argv,"hs:p:m:", &options[0],&iOptionIndex)) != -1)
     {
       switch(iOption)
         {
@@ -196,6 +199,11 @@ int main(int argc, char * argv[])
         case 'p':
           // --profiles
           sProfiles = optarg;
+          break;
+
+        case 'm':
+          // --masks
+          sMasks = optarg;
           break;
 
         case ':':
@@ -230,6 +238,10 @@ int main(int argc, char * argv[])
           EMANE::AntennaProfileManifest::instance()->load(sProfiles);
         }
 
+      if(!sMasks.empty())
+        {
+          EMANE::SpectralMaskManager::instance()->load(sMasks);
+        }
 
       xmlDocPtr pSchemaDoc{xmlReadFile(sSchema.c_str(),
                                        NULL,
@@ -732,6 +744,18 @@ int main(int argc, char * argv[])
 
                               xmlFree(pSubId);
 
+                              xmlChar * pSpectralMask = xmlGetProp(pActionNode,BAD_CAST "spectralmask");
+
+                              EMANE::SpectralMaskIndex spectralMaskIndex{};
+
+                              if(pSpectralMask)
+                                {
+                                  spectralMaskIndex =
+                                    EMANE::Utils::ParameterConvert(reinterpret_cast<const char *>(pSpectralMask)).toUINT16();
+
+                                  xmlFree(pSpectralMask);
+                                }
+
                               EMANE::FrequencySegments segments;
                               EMANE::Transmitters transmitters;
 
@@ -824,7 +848,14 @@ int main(int argc, char * argv[])
 
                               antenna.setFrequencyGroupIndex(0);
 
-                              antenna.setBandwidthHz(bandwidth);
+                              if(spectralMaskIndex)
+                                {
+                                  antenna.setSpectralMaskIndex(spectralMaskIndex);
+                                }
+                              else
+                                {
+                                  antenna.setBandwidthHz(bandwidth);
+                                }
 
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
                                 subId,
@@ -1238,6 +1269,7 @@ void usage()
   std::cout<<"  -s, --schema                   Scenario schema"<<std::endl;
   std::cout<<"                                   Default: phyupstreamscenario.xsd"<<std::endl;
   std::cout<<"  -p, --profiles PROFILEXML      Antenna profile XML"<<std::endl;
+  std::cout<<"  -m, --masks                    Spectral mask XML"<<std::endl;
   std::cout<<std::endl;
 }
 

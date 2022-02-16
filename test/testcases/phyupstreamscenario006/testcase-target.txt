@@ -61,6 +61,10 @@
 [1]    precomputed
 [1]  rxsensitivitypromiscuousmodeenable:
 [1]    0
+[1]  spectralmaskindex:
+[1]    0
+[1]  stats.observedpowertableenable:
+[1]    1
 [1]  stats.receivepowertableenable:
 [1]    1
 [1]  subid:
@@ -91,6 +95,7 @@
 [5]   antenna: 0
 [5]   freq index: 0
 [5]   bandwidth: 1200000
+[5]   mask: 0
 [5]   fixed gain: 1
 [5]   src: 2
 [5]   transmitter power: 0.000000
@@ -107,7 +112,7 @@
 [5]   freq: 250000000
 [5]   duration: 200
 [5]   offset: 100
-[5]   power: 0.000000
+[5]   power: -0.000253
 [5]   shift freq: 250000000
 [5]   shift hz: 70.760818
 
@@ -139,6 +144,7 @@ Processing upstream packet...
 [8]   antenna: 0
 [8]   freq index: 0
 [8]   bandwidth: 1200000
+[8]   mask: 0
 [8]   fixed gain: 1
 [8]   src: 2
 [8]   transmitter power: 0.000000
@@ -155,7 +161,7 @@ Processing upstream packet...
 [8]   freq: 250000000
 [8]   duration: 200
 [8]   offset: 100
-[8]   power: 0.000000
+[8]   power: -0.000362
 [8]   shift freq: 250000000
 [8]   shift hz: 100.069269
 
@@ -189,6 +195,7 @@ Processing upstream packet...
 [11]   antenna: 0
 [11]   freq index: 0
 [11]   bandwidth: 1200000
+[11]   mask: 0
 [11]   fixed gain: 1
 [11]   src: 2
 [11]   transmitter power: 0.000000
@@ -205,7 +212,7 @@ Processing upstream packet...
 [11]   freq: 250000000
 [11]   duration: 200
 [11]   offset: 100
-[11]   power: 0.000000
+[11]   power: -0.000253
 [11]   shift freq: 250000000
 [11]   shift hz: 70.758483
 
@@ -239,6 +246,7 @@ Processing upstream packet...
 [14]   antenna: 0
 [14]   freq index: 0
 [14]   bandwidth: 1200000
+[14]   mask: 0
 [14]   fixed gain: 1
 [14]   src: 2
 [14]   transmitter power: 0.000000
@@ -255,7 +263,7 @@ Processing upstream packet...
 [14]   freq: 250000000
 [14]   duration: 200
 [14]   offset: 100
-[14]   power: 0.000000
+[14]   power: -0.000004
 [14]   shift freq: 250000000
 [14]   shift hz: -0.001651
 
@@ -289,6 +297,7 @@ Processing upstream packet...
 [17]   antenna: 0
 [17]   freq index: 0
 [17]   bandwidth: 1200000
+[17]   mask: 0
 [17]   fixed gain: 1
 [17]   src: 2
 [17]   transmitter power: 0.000000
@@ -305,7 +314,7 @@ Processing upstream packet...
 [17]   freq: 250000000
 [17]   duration: 200
 [17]   offset: 100
-[17]   power: 0.000000
+[17]   power: -0.000257
 [17]   shift freq: 250000000
 [17]   shift hz: -70.760778
 
@@ -339,6 +348,7 @@ Processing upstream packet...
 [20]   antenna: 0
 [20]   freq index: 0
 [20]   bandwidth: 1200000
+[20]   mask: 0
 [20]   fixed gain: 1
 [20]   src: 2
 [20]   transmitter power: 0.000000
@@ -355,7 +365,7 @@ Processing upstream packet...
 [20]   freq: 250000000
 [20]   duration: 200
 [20]   offset: 100
-[20]   power: 0.000000
+[20]   power: -0.000366
 [20]   shift freq: 250000000
 [20]   shift hz: -100.069188
 
@@ -389,6 +399,7 @@ Processing upstream packet...
 [23]   antenna: 0
 [23]   freq index: 0
 [23]   bandwidth: 1200000
+[23]   mask: 0
 [23]   fixed gain: 1
 [23]   src: 2
 [23]   transmitter power: 0.000000
@@ -405,7 +416,7 @@ Processing upstream packet...
 [23]   freq: 250000000
 [23]   duration: 200
 [23]   offset: 100
-[23]   power: 0.000000
+[23]   power: -0.000257
 [23]   shift freq: 250000000
 [23]   shift hz: -70.758442
 
@@ -439,6 +450,7 @@ Processing upstream packet...
 [26]   antenna: 0
 [26]   freq index: 0
 [26]   bandwidth: 1200000
+[26]   mask: 0
 [26]   fixed gain: 1
 [26]   src: 2
 [26]   transmitter power: 0.000000
@@ -490,6 +502,7 @@ Processing upstream packet...
 [29]   antenna: 0
 [29]   freq index: 0
 [29]   bandwidth: 1200000
+[29]   mask: 0
 [29]   fixed gain: 1
 [29]   src: 2
 [29]   transmitter power: 0.000000
@@ -506,7 +519,7 @@ Processing upstream packet...
 [29]   freq: 250000000
 [29]   duration: 200
 [29]   offset: 100
-[29]   power: 0.000000
+[29]   power: -0.000185
 [29]   shift freq: 250000000
 [29]   shift hz: -50.034604
 
@@ -541,6 +554,7 @@ Processing upstream packet...
 [32]   antenna: 0
 [32]   freq index: 0
 [32]   bandwidth: 1200000
+[32]   mask: 0
 [32]   fixed gain: 1
 [32]   src: 2
 [32]   transmitter power: 0.000000
@@ -557,7 +571,7 @@ Processing upstream packet...
 [32]   freq: 250000000
 [32]   duration: 200
 [32]   offset: 100
-[32]   power: 0.000000
+[32]   power: -0.000185
 [32]   shift freq: 250000000
 [32]   shift hz: -50.034604
 

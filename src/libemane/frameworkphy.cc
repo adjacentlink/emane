@@ -147,8 +147,11 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   compatibilityMode_{CompatibilityMode::MODE_1},
   processingPool_{},
   u16ProccssingPoolSize_{},
+  bStatsReceivePowerTableEnable_{},
+  bStatsObservedPowerTableEnable_{},
   bRxSensitivityPromiscuousModeEnable_{},
-  bDopplerShiftEnable_{}{}
+  bDopplerShiftEnable_{},
+  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -328,6 +331,13 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         " of antenna (MIMO) and/or frequency segments will increases processing"
                                         " load when populating.");
 
+  configRegistrar.registerNumeric<bool>("stats.observedpowertableenable",
+                                        EMANE::ConfigurationProperties::DEFAULT,
+                                        {true},
+                                        "Defines whether the observed power table will be populated. Large number"
+                                        " of antenna (MIMO) and/or frequency segments will increases processing"
+                                        " load when populating.");
+
   configRegistrar.registerNumeric<bool>("rxsensitivitypromiscuousmodeenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {false},
@@ -341,6 +351,11 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         "Defines whether to perform Doppler shift processing when location and"
                                         " velocity information is known for both the transmitter and receiver.");
 
+  configRegistrar.registerNumeric<SpectralMaskIndex>("spectralmaskindex",
+                                                     EMANE::ConfigurationProperties::DEFAULT,
+                                                     {DEFAULT_SPECTRAL_MASK_INDEX},
+                                                     "Defines the spectral mask index used for all transmissions."
+                                                     " Set to 0 to use the emulator default square spectral mask.");
 
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
@@ -362,6 +377,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   eventTablePublisher_.registerStatistics(statisticRegistrar);
 
   receivePowerTablePublisher_.registerStatistics(statisticRegistrar);
+
+  observedPowerTablePublisher_.registerStatistics(statisticRegistrar);
 
   pTimeSyncThresholdRewrite_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("numTimeSyncThresholdRewrite",
@@ -685,6 +702,18 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   bStatsReceivePowerTableEnable_ ? "on" : "off");
         }
+      else if(item.first == "stats.observedpowertableenable")
+        {
+          bStatsObservedPowerTableEnable_ = item.second[0].asBool();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bStatsObservedPowerTableEnable_ ? "on" : "off");
+        }
       else if(item.first == "rxsensitivitypromiscuousmodeenable")
         {
           bRxSensitivityPromiscuousModeEnable_ = item.second[0].asBool();
@@ -708,6 +737,18 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   __func__,
                                   item.first.c_str(),
                                   bDopplerShiftEnable_ ? "on" : "off");
+        }
+      else if(item.first == "spectralmaskindex")
+        {
+          spectralMaskIndex_ = item.second[0].asUINT16();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %hu",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  spectralMaskIndex_);
         }
       else
         {
@@ -1066,6 +1107,7 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                                                                                 pPropagationModelAlgorithm_.get(),
                                                                                                 fadingManager_.createFadingAlgorithmStore(),
                                                                                                 bStatsReceivePowerTableEnable_,
+                                                                                                bStatsObservedPowerTableEnable_,
                                                                                                 bDopplerShiftEnable_}));
             }
           else
@@ -1511,7 +1553,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
         }
     }
 
-  // for compat mode 1 and for compat mode 2 convience, specifying no
+  // for compat mode 1 and for compat mode 2 convenience, specifying no
   // transmit antennas results in a transmission using the default
   // antenna which is created based on whether fixed gain (ideal omni)
   // configuration is present
@@ -1526,7 +1568,28 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
 
       txAntenna.setBandwidthHz(u64BandwidthHz_);
 
+      if(spectralMaskIndex_)
+        {
+          txAntenna.setSpectralMaskIndex(spectralMaskIndex_);
+        }
+
       transmitAntennas.push_back(std::move(txAntenna));
+    }
+  else
+    {
+      // for convenience, if you specify a non-zero spectral mask in the
+      // phy config vi spectralmaskindex, that value will be used for
+      // all transmit antenna without a non-zero spectral mask.
+      if(spectralMaskIndex_)
+        {
+          for(auto & transmitAntenna : transmitAntennas)
+            {
+              if(!transmitAntenna.getSpectralMaskIndex())
+                {
+                  transmitAntenna.setSpectralMaskIndex(spectralMaskIndex_);
+                }
+            }
+        }
     }
 
   // verify the transmitters list include this nem
@@ -1845,6 +1908,17 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
                                                      std::get<4>(entry.second),
                                                      std::get<5>(entry.second),
                                                      commonPHYHeader.getTxTime());
+                }
+
+              for(const auto & entry : result.observedPowerMap_)
+                {
+                  observedPowerTablePublisher_.update(std::get<0>(entry.first),
+                                                      std::get<1>(entry.first),
+                                                      std::get<2>(entry.first),
+                                                      std::get<3>(entry.first),
+                                                      std::get<0>(entry.second),
+                                                      std::get<1>(entry.second),
+                                                      commonPHYHeader.getTxTime());
                 }
             }
           else
@@ -2172,6 +2246,7 @@ void EMANE::FrameworkPHY::createDefaultAntennaIfNeeded()
                                                                                         pPropagationModelAlgorithm_.get(),
                                                                                         fadingManager_.createFadingAlgorithmStore(),
                                                                                         bStatsReceivePowerTableEnable_,
+                                                                                        bStatsObservedPowerTableEnable_,
                                                                                         bDopplerShiftEnable_}));
     }
 }

@@ -63,6 +63,10 @@
 [1]    precomputed
 [1]  rxsensitivitypromiscuousmodeenable:
 [1]    0
+[1]  spectralmaskindex:
+[1]    0
+[1]  stats.observedpowertableenable:
+[1]    1
 [1]  stats.receivepowertableenable:
 [1]    1
 [1]  subid:
@@ -86,6 +90,7 @@
 [2]   antenna: 0
 [2]   freq index: 0
 [2]   bandwidth: 20000000
+[2]   mask: 0
 [2]   fixed gain: 1
 [2]   src: 2
 [2]   transmitter power: 0.000000
@@ -114,6 +119,7 @@
 [4]   antenna: 0
 [4]   freq index: 0
 [4]   bandwidth: 20000000
+[4]   mask: 0
 [4]   fixed gain: 1
 [4]   src: 2
 [4]   transmitter power: 0.000000
@@ -138,6 +144,7 @@
 [5]   antenna: 0
 [5]   freq index: 0
 [5]   bandwidth: 20000000
+[5]   mask: 0
 [5]   fixed gain: 1
 [5]   src: 4
 [5]   transmitter power: 3.000000
@@ -163,6 +170,7 @@
 [6]   antenna: 0
 [6]   freq index: 0
 [6]   bandwidth: 20000000
+[6]   mask: 0
 [6]   fixed gain: 1
 [6]   src: 2
 [6]   transmitter power: 3.000000
@@ -202,6 +210,7 @@ Processing upstream packet...
 [8]   antenna: 0
 [8]   freq index: 0
 [8]   bandwidth: 20000000
+[8]   mask: 0
 [8]   fixed gain: 1
 [8]   src: 2
 [8]   transmitter power: 5.000000
@@ -229,6 +238,7 @@ Processing upstream packet...
 [10]   antenna: 0
 [10]   freq index: 0
 [10]   bandwidth: 20000000
+[10]   mask: 0
 [10]   fixed gain: 1
 [10]   src: 2
 [10]   transmitter power: 5.000000
@@ -265,6 +275,7 @@ Processing upstream packet...
 [11]   antenna: 0
 [11]   freq index: 0
 [11]   bandwidth: 20000000
+[11]   mask: 0
 [11]   fixed gain: 1
 [11]   src: 3
 [11]   transmitter power: 0.000000
@@ -294,6 +305,7 @@ Processing upstream packet...
 [12]   antenna: 0
 [12]   freq index: 0
 [12]   bandwidth: 20000000
+[12]   mask: 0
 [12]   fixed gain: 1
 [12]   src: 2
 [12]   transmitter power: 5.000000

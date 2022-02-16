@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2015,2019-2021 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 
 #include "spectrummonitor.h"
 #include "noiserecorder.h"
+#include "spectralmaskmanager.h"
 
 #include "emane/spectrumserviceexception.h"
 #include "emane/utils/conversionutils.h"
@@ -40,17 +41,6 @@
 
 #include <algorithm>
 #include <functional>
-
-namespace
-{
-  std::tuple<double, // overlap ratio
-             std::uint64_t, // lower overlap frequency hz
-             std::uint64_t> // upper overlap frequency hz
-  frequencyOverlapRatio(std::uint64_t u64FrequencyHz1,
-                        std::uint64_t u64BandwidthHz1,
-                        std::uint64_t u64FrequencyHz2,
-                        std::uint64_t u64BandwidthHz2);
-}
 
 EMANE::SpectrumMonitor::SpectrumMonitor():
   binSize_{},
@@ -107,8 +97,6 @@ void EMANE::SpectrumMonitor::initialize(std::uint16_t u16SubId,
   // (re-)initialize transmitter bandwidth cache
   transmitterBandwidthCache_.clear();
 
-  TransmitterBandwidthCache transmitterBandwidthCache_;
-
   transmitterBandwidthCache_.emplace(u64BandwidthHz,std::make_pair(std::unique_ptr<Cache>(new Cache{}),FrequencySet{}));
 
   noiseRecorderMap_.clear();
@@ -128,7 +116,7 @@ void EMANE::SpectrumMonitor::initialize(std::uint16_t u16SubId,
 
 }
 
-std::tuple<EMANE::TimePoint,EMANE::Microseconds,EMANE::Microseconds,EMANE::FrequencySegments,bool,double>
+EMANE::SpectrumUpdate
 EMANE::SpectrumMonitor::update(const TimePoint & now,
                                const TimePoint & txTime,
                                const Microseconds & propagationDelay,
@@ -140,6 +128,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                                const std::vector<NEMId> & transmitters,
                                std::uint16_t u16SubId,
                                AntennaIndex txAntennaIndex,
+                               SpectralMaskIndex spectralMaskIndex,
                                const std::pair<FilterData,bool> & optionalFilterData)
 {
   std::lock_guard<std::mutex> m(mutex_);
@@ -198,7 +187,37 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
           if(mode_ == NoiseMode::PASSTHROUGH ||
              noiseRecorderMap_.find(segment.getFrequencyHz()) != noiseRecorderMap_.end())
             {
-              if(rxPowersMilliWatt[i] >= dReceiverSensitivityMilliWatt_)
+              std::uint64_t u64DopplerShiftedFequencyHz = segment.getFrequencyHz() +
+                Utils::dopplerShift(segment.getFrequencyHz(),dDopplerFactor);
+
+              auto maskOverlap =
+                SpectralMaskManager::instance()->getSpectralOverlap(u64DopplerShiftedFequencyHz, // tx freq
+                                                                    segment.getFrequencyHz(), // rx freq
+                                                                    u64ReceiverBandwidthHz_, // rx bandwidth
+                                                                    u64SegmentBandwidthHz,
+                                                                    spectralMaskIndex);
+
+              auto & spectralOverlaps = std::get<0>(maskOverlap);
+              double dOverlapRxPowerMillWatt{};
+
+              if(!spectralOverlaps.empty())
+                {
+                  for(const auto & spectralOverlap : spectralOverlaps)
+                    {
+                      const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                      for(const auto & spectralSegment : spectralSegments)
+                        {
+                          dOverlapRxPowerMillWatt +=
+                            // rx_power_mW * modifier_mWr * overlap_ratio
+                            rxPowersMilliWatt[i] *
+                            std::get<1>(spectralSegment) *
+                            std::get<0>(spectralSegment);
+                        }
+                    }
+                }
+
+              if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                 {
                   auto validOffset = segment.getOffset();
 
@@ -240,8 +259,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                   minSoR =
                     std::min(minSoR,validTxTime + validOffset + validPropagation);
 
+
                   reportableFrequencySegments.emplace_back(segment.getFrequencyHz(),
-                                                           Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
+                                                           Utils::MILLIWATT_TO_DB(dOverlapRxPowerMillWatt),
                                                            validDuration,
                                                            validOffset);
                 }
@@ -256,14 +276,28 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
     }
   else
     {
+      TransmitterBandwidthCache * pTransmitterBandwidthCache{};
+      std::uint64_t u64TransmitterBandwidthCacheKey{};
+
+      if(spectralMaskIndex)
+        {
+          pTransmitterBandwidthCache = &transmitterSpectralMaskCache_;
+          u64TransmitterBandwidthCacheKey = spectralMaskIndex;
+        }
+      else
+        {
+          pTransmitterBandwidthCache = &transmitterBandwidthCache_;
+          u64TransmitterBandwidthCacheKey = u64SegmentBandwidthHz;
+        }
+
       Cache * pCache{};
 
       // find the cache for the transmitter bandwidth
       auto transmitterBandwidthCacheIter =
-        transmitterBandwidthCache_.find(u64SegmentBandwidthHz);
+        pTransmitterBandwidthCache->find(u64TransmitterBandwidthCacheKey);
 
       // cache found
-      if(transmitterBandwidthCacheIter != transmitterBandwidthCache_.end())
+      if(transmitterBandwidthCacheIter != pTransmitterBandwidthCache->end())
         {
           // get frequency overlap cache
           pCache = transmitterBandwidthCacheIter->second.first.get();
@@ -273,9 +307,9 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
           // none found - create a transmitter bandwidth cache
           pCache = new Cache{};
 
-          transmitterBandwidthCacheIter = transmitterBandwidthCache_.emplace(u64SegmentBandwidthHz,
-                                                                             std::make_pair(std::unique_ptr<Cache>(pCache),
-                                                                                            FrequencySet{})).first;
+          transmitterBandwidthCacheIter = pTransmitterBandwidthCache->emplace(u64TransmitterBandwidthCacheKey,
+                                                                              std::make_pair(std::unique_ptr<Cache>(pCache),
+                                                                                             FrequencySet{})).first;
         }
 
       auto & noOverlapSet = transmitterBandwidthCacheIter->second.second;
@@ -284,6 +318,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
 
       for(const auto & segment : segments)
         {
+          double dOverlapRxPowerMillWatt{};
           bool bFrequencyMatch{};
           bool bAboveSensitivity{};
 
@@ -333,21 +368,28 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
             {
               for(auto & entry : iter->second)
                 {
-                  NoiseRecorder * pNoiseRecorder{};
-                  double dOverlapRatio{};
-                  std::uint64_t u64RecorderFrequencyHz{};
-                  std::uint64_t u64LowerOverlapFrequencyHz{};
-                  std::uint64_t u64UpperOverlapFrequencyHz{};
+                  NoiseRecorder * pNoiseRecorder{std::get<0>(entry)};
+                  auto & maskOverlap = std::get<1>(entry);
+                  std::uint64_t u64RecorderFrequencyHz{std::get<2>(entry)};
+                  auto & spectralOverlaps = std::get<0>(maskOverlap);
+                  std::uint64_t u64LowerOverlapFrequencyHz{std::get<1>(maskOverlap)};
+                  std::uint64_t u64UpperOverlapFrequencyHz{std::get<2>(maskOverlap)};
 
-                  std::tie(pNoiseRecorder,
-                           dOverlapRatio,
-                           u64RecorderFrequencyHz,
-                           u64LowerOverlapFrequencyHz,
-                           u64UpperOverlapFrequencyHz) = entry;
-
-                  if(dOverlapRatio > 0)
+                  if(!spectralOverlaps.empty())
                     {
-                      double dOverlapRxPowerMillWatt{rxPowersMilliWatt[i] * dOverlapRatio};
+                      for(const auto & spectralOverlap : spectralOverlaps)
+                        {
+                          const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                          for(const auto & spectralSegment : spectralSegments)
+                            {
+                              dOverlapRxPowerMillWatt +=
+                                // rx_power_mW * multipler_mWr * overlap_ratio
+                                rxPowersMilliWatt[i] *
+                                std::get<1>(spectralSegment) *
+                                std::get<0>(spectralSegment);
+                            }
+                        }
 
                       if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                         {
@@ -381,21 +423,32 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
 
               for(const auto & entry : noiseRecorderMap_)
                 {
-                  double dOverlapRatio{};
-                  std::uint64_t u64LowerOverlapFrequencyHz{};
-                  std::uint64_t u64UpperOverlapFrequencyHz{};
+                  auto maskOverlap =
+                    SpectralMaskManager::instance()->getSpectralOverlap(u64DopplerShiftedFequencyHz, // tx freq
+                                                                        entry.first, // rx freq
+                                                                        u64ReceiverBandwidthHz_, // rx bandwidth
+                                                                        u64SegmentBandwidthHz,
+                                                                        spectralMaskIndex);
 
-                  std::tie(dOverlapRatio,
-                           u64LowerOverlapFrequencyHz,
-                           u64UpperOverlapFrequencyHz) =
-                    frequencyOverlapRatio(entry.first,
-                                          u64ReceiverBandwidthHz_,
-                                          u64DopplerShiftedFequencyHz,
-                                          u64SegmentBandwidthHz);
+                  auto & spectralOverlaps = std::get<0>(maskOverlap);
+                  std::uint64_t u64LowerOverlapFrequencyHz{std::get<1>(maskOverlap)};
+                  std::uint64_t u64UpperOverlapFrequencyHz{std::get<2>(maskOverlap)};
 
-                  if(dOverlapRatio > 0)
+                  if(!spectralOverlaps.empty())
                     {
-                      double dOverlapRxPowerMillWatt{rxPowersMilliWatt[i] * dOverlapRatio};
+                      for(const auto & spectralOverlap : spectralOverlaps)
+                        {
+                          const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                          for(const auto & spectralSegment : spectralSegments)
+                            {
+                              dOverlapRxPowerMillWatt +=
+                                // rx_power_mW * modifier_mWr * overlap_ratio
+                                rxPowersMilliWatt[i] *
+                                std::get<1>(spectralSegment) *
+                                std::get<0>(spectralSegment);
+                            }
+                        }
 
                       if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                         {
@@ -419,9 +472,8 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                           bFrequencyMatch = (entry.first == segment.getFrequencyHz());
                         }
 
-
                       recorderInfo.emplace_back(entry.second.get(),
-                                                dOverlapRatio,
+                                                std::move(maskOverlap),
                                                 entry.first,
                                                 u64LowerOverlapFrequencyHz,
                                                 u64UpperOverlapFrequencyHz);
@@ -449,7 +501,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                   minSoR = std::min(minSoR,startOfReception);
 
                   reportableFrequencySegments.emplace_back(segment.getFrequencyHz(),
-                                                           Utils::MILLIWATT_TO_DB(rxPowersMilliWatt[i]),
+                                                           Utils::MILLIWATT_TO_DB(dOverlapRxPowerMillWatt),//rxPowersMilliWatt[i]),
                                                            validDuration,
                                                            validOffset);
                 }
@@ -462,6 +514,7 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                                      segment.getFrequencyHz(),
                                      u16SubId,
                                      dDopplerFactor,
+                                     spectralMaskIndex,
                                      now,
                                      validTxTime,
                                      validOffset,
@@ -547,11 +600,19 @@ EMANE::SpectrumMonitor::request(std::uint64_t u64FrequencyHz,
   return request_i(Clock::now(),u64FrequencyHz,duration,timepoint);
 }
 
-
 EMANE::SpectrumFilterWindow
 EMANE::SpectrumMonitor::requestFilter(FilterIndex filterIndex,
                                       const Microseconds & duration,
                                       const TimePoint & timepoint) const
+{
+  return requestFilter_i(Clock::now(),filterIndex,duration,timepoint);
+}
+
+EMANE::SpectrumFilterWindow
+EMANE::SpectrumMonitor::requestFilter_i(const TimePoint & now,
+                                        FilterIndex filterIndex,
+                                        const Microseconds & duration,
+                                        const TimePoint & timepoint) const
 {
   std::lock_guard<std::mutex> m(mutex_);
 
@@ -576,7 +637,7 @@ EMANE::SpectrumMonitor::requestFilter(FilterIndex filterIndex,
 
   if(iter !=  filterNoiseRecorderMap_.end())
     {
-      auto ret = std::get<2>(iter->second)->get(Clock::now(),validDuration,timepoint);
+      auto ret = std::get<2>(iter->second)->get(now,validDuration,timepoint);
 
       return std::tuple_cat(std::move(ret),std::make_tuple(binSize_,
                                                            dReceiverSensitivityMilliWatt_,
@@ -603,77 +664,23 @@ std::vector<double> EMANE::SpectrumMonitor::dump(std::uint64_t u64FrequencyHz) c
   return {};
 }
 
-namespace
+
+std::pair<std::vector<double>,std::size_t>
+EMANE::SpectrumMonitor::dumpFilter(FilterIndex filterIndex) const
 {
-  std::tuple<double, std::uint64_t, std::uint64_t>
-  frequencyOverlapRatio(std::uint64_t u64FrequencyHz1,
-                        std::uint64_t u64BandwidthHz1,
-                        std::uint64_t u64FrequencyHz2,
-                        std::uint64_t u64BandwidthHz2)
-  {
-    double u64UpperFrequencyHz1{u64FrequencyHz1 + u64BandwidthHz1 / 2.0};
-    double u64LowerFrequencyHz1{u64FrequencyHz1 - u64BandwidthHz1 / 2.0};
+  std::lock_guard<std::mutex> m(mutex_);
 
-    double u64UpperFrequencyHz2{u64FrequencyHz2 + u64BandwidthHz2 / 2.0};
-    double u64LowerFrequencyHz2{u64FrequencyHz2 - u64BandwidthHz2 / 2.0};
+  auto iter = filterNoiseRecorderMap_.find(filterIndex);
 
-    double u64LowerOverlapFrequencyHz{};
-    double u64UpperOverlapFrequencyHz{};
+  if(iter != filterNoiseRecorderMap_.end())
+    {
+      return std::make_pair(std::get<2>(iter->second)->dump(),
+                            std::get<2>(iter->second)->getSubBandBinCount());
+    }
 
-    // percent in band, defaults to no coverage
-    double dRatio{};
-
-    // signal is somewhere in band
-    if((u64LowerFrequencyHz2 < u64UpperFrequencyHz1) && (u64UpperFrequencyHz2 > u64LowerFrequencyHz1))
-      {
-        // low is within lower bound
-        if(u64LowerFrequencyHz2 >= u64LowerFrequencyHz1)
-          {
-            u64LowerOverlapFrequencyHz = u64LowerFrequencyHz2;
-
-            // high is within upper bound
-            if(u64UpperFrequencyHz2 <= u64UpperFrequencyHz1)
-              {
-                u64UpperOverlapFrequencyHz = u64UpperFrequencyHz2;
-
-                // full coverage
-                dRatio = 1.0;
-              }
-            // exceeded upper bound
-            else
-              {
-                u64UpperOverlapFrequencyHz = u64UpperFrequencyHz1;
-
-                // partial coverage
-                dRatio = (u64UpperFrequencyHz1 - u64LowerFrequencyHz2) / u64BandwidthHz2;
-              }
-          }
-        // low is below lower bound
-        else
-          {
-            u64LowerOverlapFrequencyHz = u64LowerFrequencyHz1;
-
-            // the signal is at or beyond
-            if(u64UpperFrequencyHz2 <= u64UpperFrequencyHz1)
-              {
-                u64UpperOverlapFrequencyHz = u64UpperFrequencyHz2;
-
-                // partial coverage
-                dRatio = (u64UpperFrequencyHz2 - u64LowerFrequencyHz1) / u64BandwidthHz2;
-              }
-            else
-              {
-                u64UpperOverlapFrequencyHz = u64UpperFrequencyHz1;
-
-                dRatio = (u64UpperFrequencyHz1 - u64LowerFrequencyHz1) / u64BandwidthHz2;
-              }
-          }
-      }
-
-    // return ratio
-    return std::make_tuple(dRatio,u64LowerOverlapFrequencyHz,u64UpperOverlapFrequencyHz);
-  }
+  return {{},0};
 }
+
 
 void EMANE::SpectrumMonitor::initializeFilter(FilterIndex filterIndex,
                                               std::uint64_t u64FrequencyHz,
@@ -719,23 +726,38 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
                                                     std::uint64_t u64TxFrequencyHz,
                                                     std::uint16_t u16SubId,
                                                     double dDopplerFactor,
+                                                    SpectralMaskIndex spectralMaskIndex,
                                                     const TimePoint & now,
                                                     const TimePoint & txTime,
                                                     const Microseconds & offset,
                                                     const Microseconds & propagation,
                                                     const Microseconds & duration,
-                                                    double dRxPowerMilliWat,
+                                                    double dRxPowerMilliWatt,
                                                     const std::vector<NEMId> & transmitters,
                                                     AntennaIndex txAntennaIndex,
                                                     const std::pair<FilterData,bool> & optionalFilterData)
 {
+  FilterTransmitterBandwidthCache * pFilterTransmitterBandwidthCache{};
+  std::uint64_t u64FilterTransmitterBandwidthCacheKey{};
+
+  if(spectralMaskIndex)
+    {
+      pFilterTransmitterBandwidthCache = &filterTransmitterSpectralMaskCache_;
+      u64FilterTransmitterBandwidthCacheKey = spectralMaskIndex;
+    }
+  else
+    {
+      pFilterTransmitterBandwidthCache = &filterTransmitterBandwidthCache_;
+      u64FilterTransmitterBandwidthCacheKey = u64TxBandwidthHz;
+    }
+
   FilterCache * pCache{};
 
   // check for a entry in the filter bandwitdh cache for a given transmit bandwidth
   auto filterTransmitterBandwidthCacheIter =
-    filterTransmitterBandwidthCache_.find(u64TxBandwidthHz);
+    pFilterTransmitterBandwidthCache->find(u64FilterTransmitterBandwidthCacheKey);
 
-  if(filterTransmitterBandwidthCacheIter != filterTransmitterBandwidthCache_.end())
+  if(filterTransmitterBandwidthCacheIter != pFilterTransmitterBandwidthCache->end())
     {
       pCache = filterTransmitterBandwidthCacheIter->second.first.get();
     }
@@ -745,9 +767,9 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
       pCache = new FilterCache{};
 
       filterTransmitterBandwidthCacheIter =
-        filterTransmitterBandwidthCache_.emplace(u64TxBandwidthHz,
-                                                 std::make_pair(std::unique_ptr<FilterCache>(pCache),
-                                                                FrequencySet{})).first;
+        pFilterTransmitterBandwidthCache->emplace(u64FilterTransmitterBandwidthCacheKey,
+                                                  std::make_pair(std::unique_ptr<FilterCache>(pCache),
+                                                                 FrequencySet{})).first;
     }
 
   auto & noOverlapSet = filterTransmitterBandwidthCacheIter->second.second;
@@ -763,43 +785,87 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
       // frequency entry found, iterate over all applicable filters and apply the energy
       for(auto & entry : cacheIter->second)
         {
-          NoiseRecorder * pNoiseRecorder{};
-          double dOverlapRatio{};
-          std::uint64_t u64RecorderFrequencyHz{};
-          const FilterMatchCriterion * pFilterMatchCriterion{};
-          std::uint64_t u64LowerOverlapFrequencyHz{};
-          std::uint64_t u64UpperOverlapFrequencyHz{};
-
-          std::tie(pNoiseRecorder,
-                   dOverlapRatio,
-                   u64RecorderFrequencyHz,
-                   pFilterMatchCriterion,
-                   u64LowerOverlapFrequencyHz,
-                   u64UpperOverlapFrequencyHz) = entry;
+          NoiseRecorder * pNoiseRecorder{std::get<0>(entry)};
+          auto & maskOverlap = std::get<1>(entry);
+          const FilterMatchCriterion * pFilterMatchCriterion{std::get<3>(entry)};
+          std::uint64_t u64LowerOverlapFrequencyHz{std::get<4>(entry)};
+          std::uint64_t u64UpperOverlapFrequencyHz{std::get<5>(entry)};
+          std::uint64_t u64TotalSegments{std::get<3>(maskOverlap)};
 
           // subid matching this waveform subid is refered to as subid 0
           bool bApply{pFilterMatchCriterion ? (*pFilterMatchCriterion)({u64TxFrequencyHz,
-                u64TxBandwidthHz,
+                u64UpperOverlapFrequencyHz - u64LowerOverlapFrequencyHz,
                 u16SubId == u16SubId_ ?
                 static_cast<unsigned short>(0) : u16SubId,
                 optionalFilterData.first}) : true};
 
-          if(bApply && dOverlapRatio > 0)
+          auto & spectralOverlaps = std::get<0>(maskOverlap);
+
+          if(bApply && !spectralOverlaps.empty() > 0)
             {
-              double dOverlapRxPowerMillWatt{dRxPowerMilliWat * dOverlapRatio};
+              double dOverlapRxPowerMillWatt{};
+
+              for(const auto & spectralOverlap : spectralOverlaps)
+                {
+                  const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                  for(const auto & spectralSegment : spectralSegments)
+                    {
+                      dOverlapRxPowerMillWatt +=
+                        // rx_power_mW * modifier_mWr * overlap_ratio
+                        dRxPowerMilliWatt *
+                        std::get<1>(spectralSegment) *
+                        std::get<0>(spectralSegment);
+                    }
+                }
 
               if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                 {
-                  pNoiseRecorder->update(now,
-                                         txTime,
-                                         offset,
-                                         propagation,
-                                         duration,
-                                         dOverlapRxPowerMillWatt,
-                                         transmitters,
-                                         u64LowerOverlapFrequencyHz,
-                                         u64UpperOverlapFrequencyHz,
-                                         txAntennaIndex);
+                  std::uint64_t u64Index{1};
+
+                  if(pNoiseRecorder->getSubBandBinCount() > 1)
+                    {
+                      for(const auto & spectralOverlap : spectralOverlaps)
+                        {
+                          const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                          for(const auto & spectralSegment : spectralSegments)
+                            {
+                              // rx_power_mW * multipler_mWr * overlap_ratio
+                              dOverlapRxPowerMillWatt =
+                                dRxPowerMilliWatt *
+                                std::get<1>(spectralSegment) *
+                                std::get<0>(spectralSegment);
+
+                              pNoiseRecorder->update(now,
+                                                     txTime,
+                                                     offset,
+                                                     propagation,
+                                                     duration,
+                                                     dOverlapRxPowerMillWatt,
+                                                     transmitters,
+                                                     std::get<2>(spectralSegment),
+                                                     std::get<3>(spectralSegment),
+                                                     txAntennaIndex,
+                                                     u64Index != u64TotalSegments);
+
+                              ++u64Index;
+                            }
+                        }
+                    }
+                  else
+                    {
+                      pNoiseRecorder->update(now,
+                                             txTime,
+                                             offset,
+                                             propagation,
+                                             duration,
+                                             dOverlapRxPowerMillWatt,
+                                             transmitters,
+                                             u64LowerOverlapFrequencyHz,
+                                             u64UpperOverlapFrequencyHz,
+                                             txAntennaIndex);
+                    }
                 }
             }
         }
@@ -812,48 +878,94 @@ void EMANE::SpectrumMonitor::applyEnergyToFilters_i(std::uint64_t u64TxBandwidth
 
       for(const auto & entry : filterNoiseRecorderMap_)
         {
+          std::uint64_t u64FilterBandwidthHz = std::get<1>(entry.second);
           auto pNoiseRecorder = std::get<2>(entry.second).get();
           auto pFilterMatchCriterion = std::get<3>(entry.second).get();
 
+          auto maskOverlap =
+            SpectralMaskManager::instance()->getSpectralOverlap(u64DopplerShiftedFequencyHz, // tx freq
+                                                                std::get<0>(entry.second), // rx freq
+                                                                u64FilterBandwidthHz,
+                                                                u64TxBandwidthHz,
+                                                                spectralMaskIndex);
+
+          auto & spectralOverlaps = std::get<0>(maskOverlap);
+          std::uint64_t u64LowerOverlapFrequencyHz{std::get<1>(maskOverlap)};
+          std::uint64_t u64UpperOverlapFrequencyHz{std::get<2>(maskOverlap)};
+          std::uint64_t u64TotalSegments{std::get<3>(maskOverlap)};
+
           // subid matching this waveform subid is refered to as subid 0
           bool bApply{pFilterMatchCriterion ? (*pFilterMatchCriterion)({u64TxFrequencyHz,
-                u64TxBandwidthHz,
+                u64UpperOverlapFrequencyHz - u64LowerOverlapFrequencyHz, //u64TxBandwidthHz,
                 u16SubId == u16SubId_ ?
                 static_cast<unsigned short>(0) : u16SubId,
                 optionalFilterData.first}) : true};
 
-          double dOverlapRatio{};
-          std::uint64_t u64LowerOverlapFrequencyHz{};
-          std::uint64_t u64UpperOverlapFrequencyHz{};
-
-          std::tie(dOverlapRatio,
-                   u64LowerOverlapFrequencyHz,
-                   u64UpperOverlapFrequencyHz) =
-            frequencyOverlapRatio(std::get<0>(entry.second),
-                                  std::get<1>(entry.second),
-                                  u64DopplerShiftedFequencyHz,
-                                  u64TxBandwidthHz);
-
-          if(bApply && dOverlapRatio > 0)
+          if(bApply && !spectralOverlaps.empty())
             {
-              double dOverlapRxPowerMillWatt{dRxPowerMilliWat * dOverlapRatio};
+              double dOverlapRxPowerMillWatt{};
+
+              for(const auto & spectralOverlap : spectralOverlaps)
+                {
+                  const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                  for(const auto & spectralSegment : spectralSegments)
+                    {
+                      dOverlapRxPowerMillWatt +=
+                        // rx_power_mW * multipler_mWr * overlap_ratio
+                        dRxPowerMilliWatt *
+                        std::get<1>(spectralSegment) *
+                        std::get<0>(spectralSegment);
+                    }
+                }
 
               if(dOverlapRxPowerMillWatt >= dReceiverSensitivityMilliWatt_)
                 {
-                  pNoiseRecorder->update(now,
-                                         txTime,
-                                         offset,
-                                         propagation,
-                                         duration,
-                                         dOverlapRxPowerMillWatt,
-                                         transmitters,
-                                         u64LowerOverlapFrequencyHz,
-                                         u64UpperOverlapFrequencyHz,
-                                         txAntennaIndex);
+                  if(pNoiseRecorder->getSubBandBinCount() > 1)
+                    {
+                      std::uint64_t u64Index{1};
+
+                      for(const auto & spectralOverlap : spectralOverlaps)
+                        {
+                          const auto & spectralSegments =  std::get<0>(spectralOverlap);
+
+                          for(const auto & spectralSegment : spectralSegments)
+                            {
+                              // overlap is calculated for each sub
+                              // bin by the noise recorder
+                              pNoiseRecorder->update(now,
+                                                     txTime,
+                                                     offset,
+                                                     propagation,
+                                                     duration,
+                                                     dRxPowerMilliWatt * std::get<1>(spectralSegment),
+                                                     transmitters,
+                                                     std::get<2>(spectralSegment),
+                                                     std::get<3>(spectralSegment),
+                                                     txAntennaIndex,
+                                                     u64Index != u64TotalSegments);
+
+                              ++u64Index;
+                            }
+                        }
+                    }
+                  else
+                    {
+                      pNoiseRecorder->update(now,
+                                             txTime,
+                                             offset,
+                                             propagation,
+                                             duration,
+                                             dOverlapRxPowerMillWatt,
+                                             transmitters,
+                                             u64LowerOverlapFrequencyHz,
+                                             u64UpperOverlapFrequencyHz,
+                                             txAntennaIndex);
+                    }
                 }
 
               filterRecorderInfo.emplace_back(pNoiseRecorder,
-                                              dOverlapRatio,
+                                              std::move(maskOverlap),
                                               u64TxFrequencyHz,
                                               pFilterMatchCriterion,
                                               u64LowerOverlapFrequencyHz,

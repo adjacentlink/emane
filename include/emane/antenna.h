@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020-2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -103,6 +103,10 @@ namespace EMANE
 
     void setFixedGaindBi(double dFixedGaindBi);
 
+    SpectralMaskIndex getSpectralMaskIndex() const;
+
+    void setSpectralMaskIndex(SpectralMaskIndex spectralMaskIndex);
+
     bool operator==(const Antenna & rhs) const;
 
     bool operator!=(const Antenna & rhs) const;
@@ -115,6 +119,7 @@ namespace EMANE
     bool bIsProfileDefined_;
     FrequencyGroupIndex frequencyGroupIndex_;
     std::uint64_t u64BandwidthHz_;
+    SpectralMaskIndex spectralMaskIndex_;
 
     // ideal omni
     Antenna(AntennaIndex antennaIndex,

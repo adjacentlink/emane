@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater,
- *  New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,57 +30,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-syntax = "proto2";
+#ifndef EMANESPECTRALMASKEXCEPTION_HEADER_
+#define EMANESPECTRALMASKEXCEPTION_HEADER_
 
-package EMANEMessage;
+#include "emane/exception.h"
 
-option optimize_for = SPEED;
-
-message CommonPHYHeader
+namespace EMANE
 {
-  message Transmitter
+  /**
+   * @class SpectralMaskException
+   *
+   * @brief SpectralMaskException is thrown when an exception
+   * occurs during spectral mask processing.
+   */
+  class SpectralMaskException : public Exception
   {
-    required uint32 nemId = 1;
-    required double powerdBm = 2;
-  }
+  public:
+    SpectralMaskException(const std::string & sDescription = {}):
+      Exception("SpectralMaskException",sDescription){}
 
-  message FrequencyGroup
-  {
-    message FrequencySegment
-    {
-      required uint64 frequencyHz = 1;
-      required uint64 offsetMicroseconds = 2;
-      required uint64 durationMicroseconds = 3;
-      optional double powerdBm = 4;
-    }
-
-    repeated FrequencySegment frequencySegments = 1;
-  }
-
-  message TransmitAntenna
-  {
-    message Pointing
-    {
-      required uint32 profileId = 1;
-      required double azimuthDegrees = 2;
-      required double elevationDegrees = 3;
-    }
-
-    required uint32 antennaIndex = 1;
-    required uint32 frequencyGroupIndex = 2;
-    required uint64 bandwidthHz = 3;
-    optional double fixedGaindBi = 4;
-    optional Pointing pointing = 5;
-    optional uint32 spectralMaskIndex = 6;
-  }
-
-  required uint32 registrationId = 1;
-  required uint32 subId = 2;
-  required uint32 sequenceNumber = 3;
-  required uint64 txTimeMicroseconds = 4;
-
-  repeated Transmitter transmitters = 5;
-  repeated FrequencyGroup frequencyGroups = 6;
-  repeated TransmitAntenna transmitAntennas  = 7;
-  optional bytes filterData = 8;
+    ~SpectralMaskException() throw() {}
+  };
 }
+
+#endif // EMANESPECTRALMASKEXCEPTION_HEADER_

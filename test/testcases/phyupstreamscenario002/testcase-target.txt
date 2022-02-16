@@ -63,6 +63,10 @@
 [1]    freespace
 [1]  rxsensitivitypromiscuousmodeenable:
 [1]    0
+[1]  spectralmaskindex:
+[1]    0
+[1]  stats.observedpowertableenable:
+[1]    1
 [1]  stats.receivepowertableenable:
 [1]    1
 [1]  subid:
@@ -90,6 +94,7 @@
 [3]   antenna: 0
 [3]   freq index: 0
 [3]   bandwidth: 1200000
+[3]   mask: 0
 [3]   fixed gain: 1
 [3]   src: 2
 [3]   transmitter power: 0.000000
@@ -123,6 +128,7 @@
 [5]   antenna: 0
 [5]   freq index: 0
 [5]   bandwidth: 1200000
+[5]   mask: 0
 [5]   fixed gain: 1
 [5]   src: 2
 [5]   transmitter power: 5.000000
@@ -155,6 +161,7 @@
 [7]   antenna: 0
 [7]   freq index: 0
 [7]   bandwidth: 1200000
+[7]   mask: 0
 [7]   fixed gain: 1
 [7]   src: 2
 [7]   transmitter power: 5.000000

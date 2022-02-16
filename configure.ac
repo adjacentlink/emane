@@ -242,6 +242,7 @@ AC_OUTPUT(
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile
+ test/harness/filterscenario/Makefile
  test/harness/noisescenario/Makefile
  test/harness/profilescenario/Makefile
  test/harness/propagationscenario/Makefile
@@ -250,6 +251,7 @@ AC_OUTPUT(
  test/harness/phyupstreamspeed/Makefile
  test/testcases/Makefile
  test/testcases/gainscenario001/Makefile
+ test/testcases/filterscenario001/Makefile
  test/testcases/noisescenario001/Makefile
  test/testcases/noisescenario002/Makefile
  test/testcases/profilescenario001/Makefile

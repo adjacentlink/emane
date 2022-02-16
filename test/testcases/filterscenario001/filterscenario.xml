@@ -1,0 +1,193 @@
+<filterscenario start='3000000'>
+  <action>
+    <initialize binduration='20' bandwidth='1000000' mode='all' sensitivity='0'
+                maxsegmentoffset='300000' maxsegmentduration='500000' maxmessagepropagation='200000'
+                clamp='yes' timesyncthreshold='1000'>
+      <frequency value='1000000000'/>
+    </initialize>
+  </action>
+
+  <!-- filter captures the middle segment only of all masks with no subbins -->
+  <action>
+    <add-filter frequency='1000000000' bandwidth='1000000' bandwidthbinsize='0' index='1'/>
+  </action>
+
+  <!-- filter captures the right two segments of masks-2 and 3 with no subbins  -->
+  <action>
+    <add-filter frequency='1001000000' bandwidth='1000000' bandwidthbinsize='0' index='2'/>
+  </action>
+
+  <!-- filter captures the left two segments of masks-2 and 3 with no subbins  -->
+  <action>
+    <add-filter frequency= '999000000' bandwidth='1000000' bandwidthbinsize='0' index='3'/>
+  </action>
+
+  <!-- filter captures the all segments with no subbins -->
+  <action>
+    <add-filter frequency='1000000000' bandwidth='3000000' bandwidthbinsize='0' index='4' />
+  </action>
+
+  <!-- same as filter-4 but now adds 100KHz subins aligned with the masks -->
+  <action>
+    <add-filter frequency='1000000000' bandwidth='3000000' bandwidthbinsize='100000' index='5'/>
+  </action>
+
+  <!-- filter with bins where first and last bins are cover segments 2 and 3, and 3 and 4 respectively -->
+  <action>
+    <add-filter frequency='1000000000' bandwidth='1100000' bandwidthbinsize='100000' index='6' />
+  </action>
+
+  <!-- filter with empty bins and overlap bins  -->
+  <action>
+    <add-filter frequency='1000000000' bandwidth='3500000' bandwidthbinsize='100000' index='7' />
+  </action>
+
+  <!-- filter to detect spur/signal at 2nd harmoic -->
+  <action>
+    <add-filter frequency='2000000000' bandwidth='1000000' bandwidthbinsize='100000' index='8'/>
+  </action>
+
+
+  <!-- Single transmitter with mask-1 with all filters at receiver. -->
+  <action>
+    <update now='3005' txtime='3005' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='3215' time='3005' duration='210' frequency='1000000000'/>
+  </action>
+
+  <!--   Two transmitters (mask-1 and mask-2) with all filters at receiver. -->
+  <action>
+    <update now='3220' txtime='3220' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='3220' txtime='3220' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='2'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='2'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='3430' time='3220' duration='210' frequency='1000000000'/>
+  </action>
+
+
+  <!--   Three transmitters (masks 1 through 3) with all filters at receiver. -->
+  <action>
+    <update now='3500' txtime='3500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='3500' txtime='3500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='2'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='2'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='3500' txtime='3500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='3'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='3'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='3710' time='3500' duration='210' frequency='1000000000'/>
+  </action>
+
+
+
+  <!-- Single transmitter with mask-1 with all filters at receiver. -->
+  <action>
+    <update now='4005' txtime='4005' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='4215' time='4005' duration='210' frequency='1000000000'/>
+  </action>
+
+  <!--   Two transmitters (mask-1 and mask-2) with all filters at receiver. -->
+  <action>
+    <update now='4220' txtime='4220' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='4220' txtime='4220' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='2'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='2'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='4430' time='4220' duration='210' frequency='1000000000'/>
+  </action>
+
+
+  <!--   Three transmitters (masks 1 through 3) with all filters at receiver. -->
+  <action>
+    <update now='4500' txtime='4500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='1'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='1'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='4500' txtime='4500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='2'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='2'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <update now='4500' txtime='4500' propagation='0' transmitterbandwidth='1000000' inband='yes' mask='3'>
+      <segment frequency='1000000000' offset='0' duration='210' rxpower='1'/>
+      <transmitters>
+        <transmitter nem='3'/>
+      </transmitters>
+    </update>
+  </action>
+
+  <action>
+    <request now='4710' time='4500' duration='210' frequency='1000000000'/>
+  </action>
+
+</filterscenario>

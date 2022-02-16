@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2020-2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,6 +78,9 @@ namespace EMANE
   using FrequencySets = std::vector<FrequencySet>;
 
   constexpr AntennaIndex DEFAULT_ANTENNA_INDEX{0};
+
+  using SpectralMaskIndex = std::uint16_t;
+  constexpr SpectralMaskIndex DEFAULT_SPECTRAL_MASK_INDEX{0};
 
   // All 1's NEMId represents a broad cast packet
   constexpr NEMId NEM_BROADCAST_MAC_ADDRESS{std::numeric_limits<NEMId>::max()};
