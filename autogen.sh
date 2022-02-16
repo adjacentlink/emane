@@ -74,7 +74,7 @@ then
        ! -name 'ax_check_compile_flag.m4' \
        ! -name 'ax_check_link_flag.m4' \
        ! -name 'ax_cxx_compile_stdcxx.m4' \
-       ! -name 'ax_cxx_compile_stdcxx_11.m4' \
+       ! -name 'ax_cxx_compile_stdcxx_17.m4' \
        -delete
     find . -name 'Makefile.in' -delete
     find . -name '.deps' -delete
