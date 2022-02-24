@@ -1,8 +1,10 @@
-FROM fedora:35
+FROM rockylinux:8.5
 
 RUN mkdir -p /opt/built
 
 RUN dnf -y update
+RUN dnf -y install epel-release dnf-plugins-core
+RUN dnf config-manager --set-enabled powertools
 RUN dnf clean all
 
 

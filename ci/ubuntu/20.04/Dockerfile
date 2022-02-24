@@ -17,9 +17,7 @@ WORKDIR /opt
 RUN git clone https://github.com/adjacentlink/emane -b develop
 
 WORKDIR emane
-RUN ./autogen.sh
-RUN ./configure
-RUN make deb
+RUN ./autogen.sh && ./configure && make deb
 RUN cp $(find .debbuild -name "*\.deb") /opt/built
 RUN dpkg -i /opt/built/python3*\.deb /opt/built/emane*\.deb; apt-get -y install -f
 
