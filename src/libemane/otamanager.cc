@@ -246,24 +246,9 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
 
       ControlMessageSerializer controlMessageSerializer{msgs};
 
-      // create an ota message to carry the packet_info, and variable ctrl data len only
-      // total message length with data payload is defined below
-      EMANEMessage::OTAHeader otaheader;
-
       size_t totalSizeBytes = pkt.length() +
         controlMessageSerializer.getLength() +
         sEventSerialization.size();
-
-      otaheader.set_source(pktInfo.getSource());
-      otaheader.set_destination(pktInfo.getDestination());
-      otaheader.set_sequence(++u64SequenceNumber_);
-      otaheader.set_uuid(reinterpret_cast<const char *>(uuid_),sizeof(uuid_));
-
-      auto pPayloadInfo = otaheader.mutable_payloadinfo();
-
-      pPayloadInfo->set_datalength(pkt.length());
-      pPayloadInfo->set_controllength(controlMessageSerializer.getLength());
-      pPayloadInfo->set_eventlength(sEventSerialization.size());
 
       // vector hold everything to be transmitted except the OTAHeader
       Utils::VectorIO stagingVectorIO{};
