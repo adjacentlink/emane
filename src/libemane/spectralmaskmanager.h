@@ -68,12 +68,14 @@ namespace EMANE
                                    std::uint64_t, // upper mask overlap freq Hz
                                    std::uint64_t>;
 
-
     MaskOverlap getSpectralOverlap(std::uint64_t u64TxFrequency,
                                    std::uint64_t u64RxFrequency,
                                    std::uint64_t u64RxBandwidth,
                                    std::uint64_t u64TxBandwidth,
                                    std::uint16_t u16SpectalMaskId) const;
+
+    std::uint64_t getPrimarySignalBandwidth( std::uint16_t u16SpectalMaskId) const;
+
   private:
     using MaskShape = std::vector<std::tuple<uint64_t, // width hz
                                              double>>; // mWr

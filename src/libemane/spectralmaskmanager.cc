@@ -439,3 +439,22 @@ EMANE::SpectralMaskManager::getSpectralOverlap(std::uint64_t u64TxFrequencyHz,
 
   return maskOverlap;
 }
+
+std::uint64_t
+EMANE::SpectralMaskManager::getPrimarySignalBandwidth(std::uint16_t u16SpectalMaskId) const
+{
+  if(u16SpectalMaskId)
+    {
+      const auto iter = spectralMaskStore_.find(u16SpectalMaskId);
+
+      if(iter != spectralMaskStore_.end())
+        {
+          if(!iter->second.empty())
+            {
+              return std::get<1>(iter->second[0]);
+            }
+        }
+    }
+
+  return 0;
+}
