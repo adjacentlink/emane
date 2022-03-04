@@ -51,6 +51,8 @@ namespace EMANE
 
     std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
 
+    const PositionOrientationVelocity & getLocalPOV() const;
+
   private:
     using LocationStore = std::map<NEMId,PositionOrientationVelocity>;
     using LocationInfoCache = std::map<NEMId,LocationInfo>;
