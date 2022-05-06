@@ -1566,7 +1566,7 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
 
       txAntenna.setFrequencyGroupIndex(0);
 
-      txAntenna.setBandwidthHz(u64BandwidthHz_);
+      txAntenna.setBandwidthHz(u64BandwidthHz);
 
       if(spectralMaskIndex_)
         {
