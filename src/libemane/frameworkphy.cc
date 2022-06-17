@@ -2043,6 +2043,9 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
 
       if(!antennaReceiveInfos.empty())
         {
+          commonLayerStatistics_.processOutbound(pkt,
+                                                 std::chrono::duration_cast<Microseconds>(Clock::now() - now));
+
           if(compatibilityMode_ == CompatibilityMode::MODE_1)
             {
               const auto & defaultAntennaReceiveInfo = antennaReceiveInfos[0];
