@@ -185,6 +185,7 @@ libemane_la_SOURCES =                         \
  rxantennaupdatecontrolmessageformatter.cc    \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
+ sinrtable.cc                                 \
  socket.cc                                    \
  spectralmaskmanager.cc                       \
  spectralmaskmanager.h                        \
