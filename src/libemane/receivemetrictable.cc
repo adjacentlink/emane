@@ -31,7 +31,7 @@
  */
 
 #include "emane/types.h"
-#include "emane/sinrtable.h"
+#include "emane/receivemetrictable.h"
 #include "emane/statistictable.h"
 #include "emane/utils/conversionutils.h"
 
@@ -41,14 +41,14 @@
 
 
 namespace {
-  const EMANE::StatisticTableLabels sSINRTableLables {"NEM",           // 0
-                                                      "AntennaId",     // 1
-                                                      "FrequencyHz",   // 2
-                                                      "NumSamples",    // 3
-                                                      "AvgRxPower",    // 4
-                                                      "AvgNoiseFloor", // 5
-                                                      "AvgSINR",       // 6
-                                                      "AvgINR"};       // 7
+  const EMANE::StatisticTableLabels sReceiveMetricTableLables {"NEM",           // 0
+                                                               "AntennaId",     // 1
+                                                               "FrequencyHz",   // 2
+                                                               "NumSamples",    // 3
+                                                               "AvgRxPower",    // 4
+                                                               "AvgNoiseFloor", // 5
+                                                               "AvgSINR",       // 6
+                                                               "AvgINR"};       // 7
 
   const EMANE::AntennaIndex AntennaIndexDontCare = 0;
   const std::uint64_t       FrequencyDontCare    = 0;
@@ -61,12 +61,12 @@ namespace {
 }
 
 
-class EMANE::SINRTable::Implementation
+class EMANE::ReceiveMetricTable::Implementation
   {
     public:
       Implementation(EMANE::NEMId nemId) :
        nemId_{nemId},
-       pStatisticSinrTable_{},
+       pStatisticReceiveMetricTable_{},
        bAverageAllAntenna_{},
        bAverageAllFrequencies_{}
        { }
@@ -78,21 +78,21 @@ class EMANE::SINRTable::Implementation
        {
          auto & statisticRegistrar = registrar.statisticRegistrar();
 
-         pStatisticSinrTable_ =
-           statisticRegistrar.registerTable<std::string>("SINRTable", 
-                                                         sSINRTableLables,
+         pStatisticReceiveMetricTable_ =
+           statisticRegistrar.registerTable<std::string>("ReceiveMetricTable", 
+                                                         sReceiveMetricTableLables,
                                                          StatisticProperties::NONE,
-                                                         "SINR Table");
+                                                         "Receive Metric Table");
 
 
          auto & configRegistrar = registrar.configurationRegistrar();
 
-         configRegistrar.registerNumeric<bool>("sinrtable.averageallantena",
+         configRegistrar.registerNumeric<bool>("rxmetrictable.averageallantenas",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all antennas with be averaged together.");
 
-         configRegistrar.registerNumeric<bool>("sinrtable.averageallfrequencies",
+         configRegistrar.registerNumeric<bool>("rxmetrictable.averageallfrequencies",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all frequencies with be averaged together.");
@@ -103,13 +103,19 @@ class EMANE::SINRTable::Implementation
        {
          for(const auto & item : configurationUpdate)
           {
-            if(item.first == "sinrtable.averageallantena")
+            if(item.first == "rxmetrictable.averageallantenas")
              {
                bAverageAllAntenna_ = item.second[0].asBool();
              }
-            else if(item.first == "sinrtable.averageallfrequencies")
+            else if(item.first == "rxmetrictable.averageallfrequencies")
              {
                bAverageAllFrequencies_ = item.second[0].asBool();
+             }
+            else
+             {
+               const std::string sErr = "Unexpected rxmetrictable config " + item.first;
+
+               throw(EMANE::ConfigurationException(sErr));
              }
           }
 
@@ -174,9 +180,9 @@ class EMANE::SINRTable::Implementation
               {
                 const auto key = makeKey(std::get<0>(e), rxAntennaId, std::get<1>(e));
 
-                sinrCache_.erase(key);                
+                receiveMetricCache_.erase(key);                
 
-                pStatisticSinrTable_->deleteRow(key);
+                pStatisticReceiveMetricTable_->deleteRow(key);
               }
 
              antennaTracker_.erase(rxAntennaId);
@@ -186,9 +192,9 @@ class EMANE::SINRTable::Implementation
 
       void resetAll()
        {
-         pStatisticSinrTable_->clear();
+         pStatisticReceiveMetricTable_->clear();
 
-         sinrCache_.clear();
+         receiveMetricCache_.clear();
 
          antennaTracker_.clear();
        }
@@ -202,7 +208,7 @@ class EMANE::SINRTable::Implementation
                   double fReceiverSensitivity_mW)
        { 
           // sanity check, we have not been initialized
-          if(! pStatisticSinrTable_)
+          if(! pStatisticReceiveMetricTable_)
            {
              return;
            }
@@ -222,12 +228,12 @@ class EMANE::SINRTable::Implementation
           // cache and table key
           const auto key = makeKey(src, rxAntennaId, frequencyHz);
 
-          auto iter = sinrCache_.find(key);
+          auto iter = receiveMetricCache_.find(key);
 
-          if(iter == sinrCache_.end())
+          if(iter == receiveMetricCache_.end())
            {
              // new entry
-             const auto result = sinrCache_.emplace(key, SinrCacheEntry{});
+             const auto result = receiveMetricCache_.emplace(key, ReceiveMetricCacheEntry{});
 
              // insert sanity check
              if(result.second)
@@ -235,19 +241,19 @@ class EMANE::SINRTable::Implementation
                 iter = result.first;
 
                 // add row to statistic table
-                pStatisticSinrTable_->addRow(key, tableRowTemplate_);
+                pStatisticReceiveMetricTable_->addRow(key, tableRowTemplate_);
 
                 // set constant values that represent this key
-                pStatisticSinrTable_->setCell(key, SINR_TBL_NEMID, Any{src});
+                pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_NEMID, Any{src});
 
                 if(! bAverageAllAntenna_)
                  {
-                   pStatisticSinrTable_->setCell(key, SINR_TBL_ANTENNA_ID, Any{rxAntennaId});
+                   pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_ANTENNA_ID, Any{rxAntennaId});
                  }
 
                 if(! bAverageAllFrequencies_)
                  {
-                   pStatisticSinrTable_->setCell(key, SINR_TBL_FREQUENCY,  Any{frequencyHz});
+                   pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_FREQUENCY,  Any{frequencyHz});
                  }
 
                 // add src/frequency to the antenna tracker
@@ -264,29 +270,29 @@ class EMANE::SINRTable::Implementation
           const auto tableData = iter->second.update(fRxPower_mW, fNoiseFloor_mW, fReceiverSensitivity_mW);
 
           // update table cells
-          pStatisticSinrTable_->setCell(key, SINR_TBL_NUM_SAMPLES,     Any{std::get<0>(tableData)});
-          pStatisticSinrTable_->setCell(key, SINR_TBL_AVG_RX_POWER,    Any{std::get<1>(tableData)});
-          pStatisticSinrTable_->setCell(key, SINR_TBL_AVG_NOISE_FLOOR, Any{std::get<2>(tableData)});
-          pStatisticSinrTable_->setCell(key, SINR_TBL_AVG_SINR,        Any{std::get<3>(tableData)});
-          pStatisticSinrTable_->setCell(key, SINR_TBL_AVG_INR ,        Any{std::get<4>(tableData)});
+          pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_NUM_SAMPLES,     Any{std::get<0>(tableData)});
+          pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_AVG_RX_POWER,    Any{std::get<1>(tableData)});
+          pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_AVG_NOISE_FLOOR, Any{std::get<2>(tableData)});
+          pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_AVG_SINR,        Any{std::get<3>(tableData)});
+          pStatisticReceiveMetricTable_->setCell(key, RX_METRIC_TBL_AVG_INR ,        Any{std::get<4>(tableData)});
        }
 
     // cache update result in dB, <numSamples, avgRxPower, avgNoiseFloor, avgSinr, avgInr>
-    using SinrCacheUpdateResult = std::tuple<std::uint64_t, double, double, double, double>;
+    using ReceiveMetricCacheUpdateResult = std::tuple<std::uint64_t, double, double, double, double>;
 
     private:
-      // !!! keep this is line with sSINRTableLables !!!
-      enum SINRTableIds { SINR_TBL_NEMID           = 0,   // src nem id
-                          SINR_TBL_ANTENNA_ID      = 1,   // rx antenna id
-                          SINR_TBL_FREQUENCY       = 2,   // frequency hz
-                          SINR_TBL_NUM_SAMPLES     = 3,   // num samples
-                          SINR_TBL_AVG_RX_POWER    = 4,   // avg rx power
-                          SINR_TBL_AVG_NOISE_FLOOR = 5,   // avg noise floor
-                          SINR_TBL_AVG_SINR        = 6,   // avg sinr
-                          SINR_TBL_AVG_INR         = 7};  // avg inr
+      // !!! keep this is line with sReceiveMetircTableLables !!!
+      enum ReceiveMetircTableIds { RX_METRIC_TBL_NEMID           = 0,   // src nem id
+                                   RX_METRIC_TBL_ANTENNA_ID      = 1,   // rx antenna id
+                                   RX_METRIC_TBL_FREQUENCY       = 2,   // frequency hz
+                                   RX_METRIC_TBL_NUM_SAMPLES     = 3,   // num samples
+                                   RX_METRIC_TBL_AVG_RX_POWER    = 4,   // avg rx power
+                                   RX_METRIC_TBL_AVG_NOISE_FLOOR = 5,   // avg noise floor
+                                   RX_METRIC_TBL_AVG_SINR        = 6,   // avg sinr
+                                   RX_METRIC_TBL_AVG_INR         = 7};  // avg inr
                          
  
-      // make a string key for the sinr statistic table and sinr cache/database
+      // make a string key for the receive metric statistic table and receive metric cache/database
       // example: src = 1, rxAntennaId = 0, frequency = 1000000, result = 1:0:1000000
       inline std::string makeKey(EMANE::NEMId src, EMANE::AntennaIndex rxAntennaId, std::uint64_t frequencyHz)
        {
@@ -297,10 +303,10 @@ class EMANE::SINRTable::Implementation
                 std::to_string(frequencyHz);
        }
 
-      // sinr cache entry 
-      class SinrCacheEntry {
+      // receive metric cache entry 
+      class ReceiveMetricCacheEntry {
         public:
-         SinrCacheEntry() :
+         ReceiveMetricCacheEntry() :
            u64NumSamples_{},
            fAvgRxPower_mW_{},
            fAvgNoiseFloor_mW_{},
@@ -308,7 +314,7 @@ class EMANE::SINRTable::Implementation
            fAvgInr_mW_{}
           { }
 
-         SinrCacheUpdateResult update(double fRxPower_mW, double fNoiseFloor_mW, double receiverSensitivity_mW)
+         ReceiveMetricCacheUpdateResult update(double fRxPower_mW, double fNoiseFloor_mW, double receiverSensitivity_mW)
           {
              getRunningAvg(fAvgRxPower_mW_,    u64NumSamples_, fRxPower_mW);
              getRunningAvg(fAvgNoiseFloor_mW_, u64NumSamples_, fNoiseFloor_mW);
@@ -326,11 +332,11 @@ class EMANE::SINRTable::Implementation
              ++u64NumSamples_;
 
              // parameter order is important here, convert to db
-             return SinrCacheUpdateResult{u64NumSamples_, 
-                                          EMANE::Utils::MILLIWATT_TO_DB(fAvgRxPower_mW_),
-                                          EMANE::Utils::MILLIWATT_TO_DB(fAvgNoiseFloor_mW_), 
-                                          EMANE::Utils::MILLIWATT_TO_DB(fAvgSinr_mW_), 
-                                          EMANE::Utils::MILLIWATT_TO_DB(fAvgInr_mW_)};
+             return ReceiveMetricCacheUpdateResult{u64NumSamples_, 
+                                                   EMANE::Utils::MILLIWATT_TO_DB(fAvgRxPower_mW_),
+                                                   EMANE::Utils::MILLIWATT_TO_DB(fAvgNoiseFloor_mW_), 
+                                                   EMANE::Utils::MILLIWATT_TO_DB(fAvgSinr_mW_), 
+                                                   EMANE::Utils::MILLIWATT_TO_DB(fAvgInr_mW_)};
           }
 
         private:
@@ -343,8 +349,8 @@ class EMANE::SINRTable::Implementation
       }; // end cache entry
 
 
-    // sinr cache
-    std::map<std::string, SinrCacheEntry> sinrCache_;
+    // receive metric cache
+    std::map<std::string, ReceiveMetricCacheEntry> receiveMetricCache_;
 
     // antenna tracking src/frequency
     std::map<EMANE::AntennaIndex, std::set<std::tuple<EMANE::NEMId, std::uint64_t>>> antennaTracker_;
@@ -352,7 +358,7 @@ class EMANE::SINRTable::Implementation
     // our nem id
     EMANE::NEMId nemId_;
 
-    StatisticTable<std::string> * pStatisticSinrTable_;
+    StatisticTable<std::string> * pStatisticReceiveMetricTable_;
 
     bool bAverageAllAntenna_;
 
@@ -363,46 +369,46 @@ class EMANE::SINRTable::Implementation
  };
 
 
-EMANE::SINRTable::SINRTable(EMANE::NEMId nemId) :
+EMANE::ReceiveMetricTable::ReceiveMetricTable(EMANE::NEMId nemId) :
   pImpl_{new Implementation{nemId}}
 { }
 
 
-EMANE::SINRTable::~SINRTable()
+EMANE::ReceiveMetricTable::~ReceiveMetricTable()
 { }
 
 
-void EMANE::SINRTable::configure(const EMANE::ConfigurationUpdate & configurationUpdate)
+void EMANE::ReceiveMetricTable::configure(const EMANE::ConfigurationUpdate & configurationUpdate)
 {
   pImpl_->configure(configurationUpdate);
 }
 
 
-void EMANE::SINRTable::initialize(EMANE::Registrar & registrar)
+void EMANE::ReceiveMetricTable::initialize(EMANE::Registrar & registrar)
 {
   pImpl_->initialize(registrar);
 }
 
 
-void EMANE::SINRTable::reset(EMANE::AntennaIndex rxAntennaId)
+void EMANE::ReceiveMetricTable::reset(EMANE::AntennaIndex rxAntennaId)
 {
   pImpl_->reset(rxAntennaId);
 }
 
 
-void EMANE::SINRTable::resetAll()
+void EMANE::ReceiveMetricTable::resetAll()
 {
   pImpl_->resetAll();
 }
 
 
 void
-EMANE::SINRTable::update(NEMId src,
-                         EMANE::AntennaIndex rxAntennaId,
-                         std::uint64_t frequencyHz,
-                         double fRxPower_mW,
-                         double fNoiseFloor_mW,
-                         double fReceiverSensitivity_mW)
+EMANE::ReceiveMetricTable::update(NEMId src,
+                                  EMANE::AntennaIndex rxAntennaId,
+                                  std::uint64_t frequencyHz,
+                                  double fRxPower_mW,
+                                  double fNoiseFloor_mW,
+                                  double fReceiverSensitivity_mW)
 {
   pImpl_->update(src, rxAntennaId, frequencyHz, fRxPower_mW, fNoiseFloor_mW, fReceiverSensitivity_mW);
 }

@@ -85,7 +85,7 @@ emaneinc_HEADERS =                       \
  serializable.h                          \
  serializationexception.h                \
  shimlayerimpl.h                         \
- sinrtable.h                             \
+ receivemetrictable.h                    \
  spectralmaskexception.h                 \
  spectrumserviceexception.h              \
  spectrumserviceprovider.h               \

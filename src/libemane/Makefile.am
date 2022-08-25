@@ -172,6 +172,7 @@ libemane_la_SOURCES =                         \
  r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
  receiveprocessor.cc                          \
+ receivemetrictable.cc                        \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
  receivepowertablepublisher.cc                \
@@ -185,7 +186,6 @@ libemane_la_SOURCES =                         \
  rxantennaupdatecontrolmessageformatter.cc    \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
- sinrtable.cc                                 \
  socket.cc                                    \
  spectralmaskmanager.cc                       \
  spectralmaskmanager.h                        \

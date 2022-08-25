@@ -31,8 +31,8 @@
  */
 
 
-#ifndef EMANESINRTABLE_HEADER_
-#define EMANESINRTABLE_HEADER_
+#ifndef EMANERECEIVEMETRICTABLE_HEADER_
+#define EMANERECEIVEMETRICTABLE_HEADER_
 
 #include "emane/types.h"
 #include "emane/statisticregistrar.h"
@@ -45,26 +45,26 @@ namespace EMANE
 {
  /**
   *
-  * @class SINRTable
+  * @class ReceiveMetricTable
   *
-  * @brief Manages SINR Table
+  * @brief Manages ReveiveMetric Table
   *
   */
-  class SINRTable
+  class ReceiveMetricTable
   { 
     public:
      /**
-      * Creates a SINRTable instance
+      * Creates a ReceiveMetricTable instance
       *
       * @param nemId NEM id
       */
-      SINRTable(NEMId nemId);
+      ReceiveMetricTable(NEMId nemId);
     
      /**
       * Destroys an instance
       *
       */
-      ~SINRTable();
+      ~ReceiveMetricTable();
 
 
      void initialize(EMANE::Registrar & registrar);
@@ -72,7 +72,7 @@ namespace EMANE
      void configure(const EMANE::ConfigurationUpdate & update);
 
      /**
-      * Updates sinr metrics
+      * Updates rx metrics
       *
       * @param src                     src NEM
       * @param rxAntennaId             rx antenna Id
@@ -90,7 +90,7 @@ namespace EMANE
                  double fReceiverSensitivity_mW);
 
      /**
-      * Clear all sinr table entries for a given antenna
+      * Clear all rx metric table entries for a given antenna
       *
       * @param rxAntennaId             rx antenna Id
       *
@@ -98,7 +98,7 @@ namespace EMANE
      void reset(AntennaIndex rxAntennaId);
 
      /**
-      * Clear all sinr table entries
+      * Clear all rx metric table entries
       *
       */
      void resetAll();
@@ -109,10 +109,10 @@ namespace EMANE
 
      std::unique_ptr<Implementation> pImpl_;
 
-     SINRTable(const SINRTable &) = delete;
+     ReceiveMetricTable(const ReceiveMetricTable &) = delete;
 
-     SINRTable & operator=(const SINRTable &) = delete;
+     ReceiveMetricTable & operator=(const ReceiveMetricTable &) = delete;
   };
 }
 
-#endif // EMANESINRTABLE_HEADER_
+#endif // EMANERECEIVEMETRICTABLE_HEADER_
