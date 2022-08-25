@@ -87,7 +87,7 @@ class EMANE::ReceiveMetricTable::Implementation
 
          auto & configRegistrar = registrar.configurationRegistrar();
 
-         configRegistrar.registerNumeric<bool>("rxmetrictable.averageallantenas",
+         configRegistrar.registerNumeric<bool>("rxmetrictable.averageallantennas",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all antennas with be averaged together.");
@@ -103,7 +103,7 @@ class EMANE::ReceiveMetricTable::Implementation
        {
          for(const auto & item : configurationUpdate)
           {
-            if(item.first == "rxmetrictable.averageallantenas")
+            if(item.first == "rxmetrictable.averageallantennas")
              {
                bAverageAllAntenna_ = item.second[0].asBool();
              }
