@@ -31,8 +31,8 @@
  */
 
 
-#ifndef EMANERECEIVEMETRICTABLE_HEADER_
-#define EMANERECEIVEMETRICTABLE_HEADER_
+#ifndef EMANERFRECEIVEMETRICTABLE_HEADER_
+#define EMANERFRECEIVEMETRICTABLE_HEADER_
 
 #include "emane/types.h"
 #include "emane/statisticregistrar.h"
@@ -45,26 +45,26 @@ namespace EMANE
 {
  /**
   *
-  * @class ReceiveMetricTable
+  * @class RfReceiveMetricTable
   *
-  * @brief Manages ReveiveMetric Table
+  * @brief Manages RF ReveiveMetric Table
   *
   */
-  class ReceiveMetricTable
+  class RfReceiveMetricTable
   { 
     public:
      /**
-      * Creates a ReceiveMetricTable instance
+      * Creates a RfReceiveMetricTable instance
       *
       * @param nemId NEM id
       */
-      ReceiveMetricTable(NEMId nemId);
+      RfReceiveMetricTable(NEMId nemId);
     
      /**
       * Destroys an instance
       *
       */
-      ~ReceiveMetricTable();
+      ~RfReceiveMetricTable();
 
 
      void initialize(EMANE::Registrar & registrar);
@@ -72,7 +72,7 @@ namespace EMANE
      void configure(const EMANE::ConfigurationUpdate & update);
 
      /**
-      * Updates rx metrics
+      * Updates rf rx metrics
       *
       * @param src                     src NEM
       * @param rxAntennaId             rx antenna Id
@@ -90,7 +90,7 @@ namespace EMANE
                  double fReceiverSensitivity_mW);
 
      /**
-      * Clear all rx metric table entries for a given antenna
+      * Clear all rf rx metric table entries for a given antenna
       *
       * @param rxAntennaId             rx antenna Id
       *
@@ -109,10 +109,10 @@ namespace EMANE
 
      std::unique_ptr<Implementation> pImpl_;
 
-     ReceiveMetricTable(const ReceiveMetricTable &) = delete;
+     RfReceiveMetricTable(const RfReceiveMetricTable &) = delete;
 
-     ReceiveMetricTable & operator=(const ReceiveMetricTable &) = delete;
+     RfReceiveMetricTable & operator=(const RfReceiveMetricTable &) = delete;
   };
 }
 
-#endif // EMANERECEIVEMETRICTABLE_HEADER_
+#endif // EMANERFRECEIVEMETRICTABLE_HEADER_

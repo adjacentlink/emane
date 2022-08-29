@@ -172,12 +172,12 @@ libemane_la_SOURCES =                         \
  r2riselfmetriccontrolmessageformatter.cc     \
  radioservice.cc                              \
  receiveprocessor.cc                          \
- receivemetrictable.cc                        \
  receivepropertiescontrolmessage.cc           \
  receivepropertiescontrolmessageformatter.cc  \
  receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
+ rfreceivemetrictable.cc                      \
  rxantennaaddcontrolmessage.cc                \
  rxantennaaddcontrolmessageformatter.cc       \
  rxantennaremovecontrolmessage.cc             \
