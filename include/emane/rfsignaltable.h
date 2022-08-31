@@ -31,8 +31,8 @@
  */
 
 
-#ifndef EMANERFRECEIVEMETRICTABLE_HEADER_
-#define EMANERFRECEIVEMETRICTABLE_HEADER_
+#ifndef EMANERFSIGNALTABLE_HEADER_
+#define EMANERFSIGNALTABLE_HEADER_
 
 #include "emane/types.h"
 #include "emane/statisticregistrar.h"
@@ -45,34 +45,41 @@ namespace EMANE
 {
  /**
   *
-  * @class RfReceiveMetricTable
+  * @class RFSignalTable
   *
-  * @brief Manages RF ReveiveMetric Table
+  * @brief Manages RF Signal Table
   *
   */
-  class RfReceiveMetricTable
+  class RFSignalTable
   { 
     public:
      /**
-      * Creates a RfReceiveMetricTable instance
+      * Creates a RFSignalTable instance
       *
       * @param nemId NEM id
       */
-      RfReceiveMetricTable(NEMId nemId);
+      RFSignalTable(NEMId nemId);
     
      /**
       * Destroys an instance
       *
       */
-      ~RfReceiveMetricTable();
+      ~RFSignalTable();
 
-
+     /**
+      * Registers the table with the EMANE framework
+      *
+      */
      void initialize(EMANE::Registrar & registrar);
 
+     /**
+      * Configures the table via the EMANE framework
+      *
+      */
      void configure(const EMANE::ConfigurationUpdate & update);
 
      /**
-      * Updates rf rx metrics
+      * Updates RF Signal Table
       *
       * @param src                     src NEM
       * @param rxAntennaId             rx antenna Id
@@ -90,7 +97,7 @@ namespace EMANE
                  double fReceiverSensitivity_mW);
 
      /**
-      * Clear all rf rx metric table entries for a given antenna
+      * Clear all table table entries for a given antenna
       *
       * @param rxAntennaId             rx antenna Id
       *
@@ -98,22 +105,22 @@ namespace EMANE
      void reset(AntennaIndex rxAntennaId);
 
      /**
-      * Clear all rx metric table entries
+      * Clear all table entries
       *
       */
      void resetAll();
 
-     static const std::string CONFIGURATION_PREFIX;
+     static const std::string CONFIG_PREFIX;
 
    private:
      class Implementation;
 
      std::unique_ptr<Implementation> pImpl_;
 
-     RfReceiveMetricTable(const RfReceiveMetricTable &) = delete;
+     RFSignalTable(const RFSignalTable &) = delete;
 
-     RfReceiveMetricTable & operator=(const RfReceiveMetricTable &) = delete;
+     RFSignalTable & operator=(const RFSignalTable &) = delete;
   };
 }
 
-#endif // EMANERFRECEIVEMETRICTABLE_HEADER_
+#endif // EMANERFSIGNALTABLE_HEADER_

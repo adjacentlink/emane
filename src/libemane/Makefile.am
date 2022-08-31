@@ -177,7 +177,7 @@ libemane_la_SOURCES =                         \
  receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
- rfreceivemetrictable.cc                      \
+ rfsignaltable.cc                             \
  rxantennaaddcontrolmessage.cc                \
  rxantennaaddcontrolmessageformatter.cc       \
  rxantennaremovecontrolmessage.cc             \

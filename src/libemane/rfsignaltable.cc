@@ -31,7 +31,7 @@
  */
 
 #include "emane/types.h"
-#include "emane/rfreceivemetrictable.h"
+#include "emane/rfsignaltable.h"
 #include "emane/statistictable.h"
 #include "emane/utils/conversionutils.h"
 
@@ -41,27 +41,38 @@
 
 
 namespace {
-  const EMANE::StatisticTableLabels sRfReceiveMetricTableLables {"NEM",           // 0
-                                                                 "AntennaId",     // 1
-                                                                 "FrequencyHz",   // 2
-                                                                 "NumSamples",    // 3
-                                                                 "AvgRxPower",    // 4
-                                                                 "AvgNoiseFloor", // 5
-                                                                 "AvgSINR",       // 6
-                                                                 "AvgINR"};       // 7
+  // keep in sync with RFSignalTableIds
+  const EMANE::StatisticTableLabels sRFSignalTableLables {"NEM",           // 0
+                                                          "AntennaId",     // 1
+                                                          "FrequencyHz",   // 2
+                                                          "NumSamples",    // 3
+                                                          "AvgRxPower",    // 4
+                                                          "AvgNoiseFloor", // 5
+                                                          "AvgSINR",       // 6
+                                                          "AvgINR"};       // 7
 
+  // keep in sync sRFSignalTableLables
+  enum RFSignalTableIds { RFSIGNALTABLE_NEMID           = 0,   // src nem id
+                          RFSIGNALTABLE_ANTENNAID       = 1,   // rx antenna id
+                          RFSIGNALTABLE_FREQUENCY       = 2,   // frequency hz
+                          RFSIGNALTABLE_NUM_SAMPLES     = 3,   // num samples
+                          RFSIGNALTABLE_AVG_RX_POWER    = 4,   // avg rx power
+                          RFSIGNALTABLE_AVG_NOISE_FLOOR = 5,   // avg noise floor
+                          RFSIGNALTABLE_AVG_SINR        = 6,   // avg sinr
+                          RFSIGNALTABLE_AVG_INR         = 7};  // avg inr
+ 
   const EMANE::AntennaIndex AntennaIndexDontCare = 0;
   const std::uint64_t       FrequencyDontCare    = 0;
 }
 
-const std::string EMANE::RfReceiveMetricTable::CONFIGURATION_PREFIX = "rfrxmetrictable.";
+const std::string EMANE::RFSignalTable::CONFIG_PREFIX = "rfsignaltable.";
 
-class EMANE::RfReceiveMetricTable::Implementation
+class EMANE::RFSignalTable::Implementation
   {
     public:
       Implementation(EMANE::NEMId nemId) :
        nemId_{nemId},
-       pStatisticRfReceiveMetricTable_{},
+       pStatisticRFSignalTable_{},
        bAverageAllAntenna_{},
        bAverageAllFrequencies_{}
        { }
@@ -73,21 +84,21 @@ class EMANE::RfReceiveMetricTable::Implementation
        {
          auto & statisticRegistrar = registrar.statisticRegistrar();
 
-         pStatisticRfReceiveMetricTable_ =
-           statisticRegistrar.registerTable<std::string>("RfReceiveMetricTable", 
-                                                         sRfReceiveMetricTableLables,
+         pStatisticRFSignalTable_ =
+           statisticRegistrar.registerTable<std::string>("RFSignalTable", 
+                                                         sRFSignalTableLables,
                                                          StatisticProperties::NONE,
-                                                         "Rf Receive Metric Table");
+                                                         "Rf Signal Table");
 
 
          auto & configRegistrar = registrar.configurationRegistrar();
 
-         configRegistrar.registerNumeric<bool>(CONFIGURATION_PREFIX+"averageallantennas",
+         configRegistrar.registerNumeric<bool>(CONFIG_PREFIX+"averageallantennas",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all antennas with be averaged together.");
 
-         configRegistrar.registerNumeric<bool>(CONFIGURATION_PREFIX+"averageallfrequencies",
+         configRegistrar.registerNumeric<bool>(CONFIG_PREFIX+"averageallfrequencies",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all frequencies with be averaged together.");
@@ -98,17 +109,17 @@ class EMANE::RfReceiveMetricTable::Implementation
        {
          for(const auto & item : configurationUpdate)
           {
-            if(item.first == "rfrxmetrictable.averageallantennas")
+            if(item.first == CONFIG_PREFIX+"averageallantennas")
              {
                bAverageAllAntenna_ = item.second[0].asBool();
              }
-            else if(item.first == "rfrxmetrictable.averageallfrequencies")
+            else if(item.first == CONFIG_PREFIX+"averageallfrequencies")
              {
                bAverageAllFrequencies_ = item.second[0].asBool();
              }
             else
              {
-               const std::string sErr = "Unexpected rfrxmetrictable config " + item.first;
+               const std::string sErr = "Unexpected RFSignalTable config item" + item.first;
 
                throw(EMANE::ConfigurationException(sErr));
              }
@@ -126,7 +137,6 @@ class EMANE::RfReceiveMetricTable::Implementation
 
           // 2 - Frequency
           tableRowTemplate_.push_back(Any{std::string{"NA"}});
-
 
           // these will be set on each update
           // 3 - Count
@@ -161,7 +171,7 @@ class EMANE::RfReceiveMetricTable::Implementation
 
                 rfReceiveMetricCache_.erase(key);                
 
-                pStatisticRfReceiveMetricTable_->deleteRow(key);
+                pStatisticRFSignalTable_->deleteRow(key);
               }
 
              antennaTracker_.erase(rxAntennaId);
@@ -171,7 +181,7 @@ class EMANE::RfReceiveMetricTable::Implementation
 
       void resetAll()
        {
-         pStatisticRfReceiveMetricTable_->clear();
+         pStatisticRFSignalTable_->clear();
 
          rfReceiveMetricCache_.clear();
 
@@ -187,7 +197,7 @@ class EMANE::RfReceiveMetricTable::Implementation
                   double dReceiverSensitivity_mW)
        { 
           // sanity check, we have not been initialized
-          if(! pStatisticRfReceiveMetricTable_)
+          if(! pStatisticRFSignalTable_)
            {
              return;
            }
@@ -198,7 +208,6 @@ class EMANE::RfReceiveMetricTable::Implementation
           // adjust if frequency combining
           getAdjustedFrequency_i(frequencyHz);
 
-          // cache and table key
           const auto key = makeKey(src, rxAntennaId, frequencyHz);
 
           auto iter = rfReceiveMetricCache_.find(key);
@@ -206,27 +215,27 @@ class EMANE::RfReceiveMetricTable::Implementation
           if(iter == rfReceiveMetricCache_.end())
            {
              // new entry
-             const auto result = rfReceiveMetricCache_.emplace(key, RfReceiveMetricCacheEntry{});
+             const auto result = rfReceiveMetricCache_.emplace(key, RFSignalCacheEntry{});
 
              // insert sanity check
              if(result.second)
               {
                 iter = result.first;
 
-                // add row to statistic table
-                pStatisticRfReceiveMetricTable_->addRow(key, tableRowTemplate_);
+                // add row template to statistic table
+                pStatisticRFSignalTable_->addRow(key, tableRowTemplate_);
 
-                // set values that represent this new entry 
-                pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_NEMID, Any{src});
+                // set specific values that represent this new entry 
+                pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_NEMID, Any{src});
 
                 if(! bAverageAllAntenna_)
                  {
-                   pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_ANTENNA_ID, Any{rxAntennaId});
+                   pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_ANTENNAID, Any{rxAntennaId});
                  }
 
                 if(! bAverageAllFrequencies_)
                  {
-                   pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_FREQUENCY,  Any{frequencyHz});
+                   pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_FREQUENCY,  Any{frequencyHz});
                  }
 
                 // add src/frequency to the antenna tracker
@@ -243,27 +252,18 @@ class EMANE::RfReceiveMetricTable::Implementation
           const auto tableData = iter->second.update(dRxPower_mW, dNoiseFloor_mW, dReceiverSensitivity_mW);
 
           // update table cells
-          pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_NUM_SAMPLES,     Any{std::get<0>(tableData)});
-          pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_AVG_RX_POWER,    Any{std::get<1>(tableData)});
-          pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_AVG_NOISE_FLOOR, Any{std::get<2>(tableData)});
-          pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_AVG_SINR,        Any{std::get<3>(tableData)});
-          pStatisticRfReceiveMetricTable_->setCell(key, RF_RX_METRIC_TBL_AVG_INR ,        Any{std::get<4>(tableData)});
+          pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_NUM_SAMPLES,     Any{std::get<0>(tableData)});
+          pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_AVG_RX_POWER,    Any{std::get<1>(tableData)});
+          pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_AVG_NOISE_FLOOR, Any{std::get<2>(tableData)});
+          pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_AVG_SINR,        Any{std::get<3>(tableData)});
+          pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_AVG_INR ,        Any{std::get<4>(tableData)});
        }
 
     // cache update result in dB, <numSamples, avgRxPower, avgNoiseFloor, avgSinr, avgInr>
-    using RfReceiveMetricCacheUpdateResult = std::tuple<std::uint64_t, double, double, double, double>;
+    using RFSignalCacheUpdateResult = std::tuple<std::uint64_t, double, double, double, double>;
 
     private:
-      // !!! keep this is line with sReceiveMetircTableLables !!!
-      enum RfReceiveMetircTableIds { RF_RX_METRIC_TBL_NEMID           = 0,   // src nem id
-                                     RF_RX_METRIC_TBL_ANTENNA_ID      = 1,   // rx antenna id
-                                     RF_RX_METRIC_TBL_FREQUENCY       = 2,   // frequency hz
-                                     RF_RX_METRIC_TBL_NUM_SAMPLES     = 3,   // num samples
-                                     RF_RX_METRIC_TBL_AVG_RX_POWER    = 4,   // avg rx power
-                                     RF_RX_METRIC_TBL_AVG_NOISE_FLOOR = 5,   // avg noise floor
-                                     RF_RX_METRIC_TBL_AVG_SINR        = 6,   // avg sinr
-                                     RF_RX_METRIC_TBL_AVG_INR         = 7};  // avg inr
-                         
+                        
  
       // make a string key for the rf receive metric statistic table and receive metric cache/database
       // example: src = 1, rxAntennaId = 0, frequency = 1000000, result = 1:0:1000000
@@ -277,9 +277,9 @@ class EMANE::RfReceiveMetricTable::Implementation
        }
 
       // rf receive metric cache entry 
-      class RfReceiveMetricCacheEntry {
+      class RFSignalCacheEntry {
         public:
-         RfReceiveMetricCacheEntry() :
+         RFSignalCacheEntry() :
            u64NumSamples_{},
            dAvgRxPower_mW_{},
            dAvgNoiseFloor_mW_{},
@@ -287,18 +287,18 @@ class EMANE::RfReceiveMetricTable::Implementation
            dAvgInr_mW_{}
           { }
 
-         RfReceiveMetricCacheUpdateResult update(double dRxPower_mW, double dNoiseFloor_mW, double receiverSensitivity_mW)
+         RFSignalCacheUpdateResult update(double dRxPower_mW, double dNoiseFloor_mW, double receiverSensitivity_mW)
           {
              getRunningAvg_i(dAvgRxPower_mW_,    u64NumSamples_, dRxPower_mW);
              getRunningAvg_i(dAvgNoiseFloor_mW_, u64NumSamples_, dNoiseFloor_mW);
 
-	     // no divide by 0
+             // no divide by 0
              if(dAvgNoiseFloor_mW_ != 0.0)
               {
                 dAvgSinr_mW_ = dAvgRxPower_mW_/dAvgNoiseFloor_mW_;
               }
 
-	     // no divide by 0
+             // no divide by 0
              if(receiverSensitivity_mW != 0.0)
               {
                 dAvgInr_mW_ = dAvgNoiseFloor_mW_/receiverSensitivity_mW;
@@ -307,11 +307,11 @@ class EMANE::RfReceiveMetricTable::Implementation
              ++u64NumSamples_;
 
              // parameter order is important here, convert each to db
-             return RfReceiveMetricCacheUpdateResult{u64NumSamples_, 
-                                                   EMANE::Utils::MILLIWATT_TO_DB(dAvgRxPower_mW_),
-                                                   EMANE::Utils::MILLIWATT_TO_DB(dAvgNoiseFloor_mW_), 
-                                                   EMANE::Utils::MILLIWATT_TO_DB(dAvgSinr_mW_), 
-                                                   EMANE::Utils::MILLIWATT_TO_DB(dAvgInr_mW_)};
+             return RFSignalCacheUpdateResult{u64NumSamples_, 
+                                              EMANE::Utils::MILLIWATT_TO_DB(dAvgRxPower_mW_),
+                                              EMANE::Utils::MILLIWATT_TO_DB(dAvgNoiseFloor_mW_), 
+                                              EMANE::Utils::MILLIWATT_TO_DB(dAvgSinr_mW_), 
+                                              EMANE::Utils::MILLIWATT_TO_DB(dAvgInr_mW_)};
           }
 
         private:
@@ -329,26 +329,26 @@ class EMANE::RfReceiveMetricTable::Implementation
          }
       }; // end cache entry definition
 
-     inline void getAdjustedAntennaId_i(AntennaIndex & antennaId)
+     inline void getAdjustedAntennaId_i(AntennaIndex & rAntennaId)
       {
         if(bAverageAllAntenna_)
          {
            // lump all antenna
-           antennaId = AntennaIndexDontCare;
+           rAntennaId = AntennaIndexDontCare;
          }
       }
 
-     inline void getAdjustedFrequency_i(std::uint64_t & frequencyHz)
+     inline void getAdjustedFrequency_i(std::uint64_t & rFrequencyHz)
       {
         if(bAverageAllFrequencies_)
          {
            // lump all freqs(s) into the average
-           frequencyHz = FrequencyDontCare;
+           rFrequencyHz = FrequencyDontCare;
          }
       }
 
     // receive metric cache
-    std::map<std::string, RfReceiveMetricCacheEntry> rfReceiveMetricCache_;
+    std::map<std::string, RFSignalCacheEntry> rfReceiveMetricCache_;
 
     // antenna tracking src/frequency
     std::map<EMANE::AntennaIndex, std::set<std::tuple<EMANE::NEMId, std::uint64_t>>> antennaTracker_;
@@ -356,60 +356,59 @@ class EMANE::RfReceiveMetricTable::Implementation
     // our nem id
     EMANE::NEMId nemId_;
 
-    StatisticTable<std::string> * pStatisticRfReceiveMetricTable_;
+    StatisticTable<std::string> * pStatisticRFSignalTable_;
 
     bool bAverageAllAntenna_;
 
     bool bAverageAllFrequencies_;
 
-    // typical row entry
+    // typical row entry template
     std::vector<Any> tableRowTemplate_;
  };
 
 
 
 
-
-EMANE::RfReceiveMetricTable::RfReceiveMetricTable(EMANE::NEMId nemId) :
+EMANE::RFSignalTable::RFSignalTable(EMANE::NEMId nemId) :
   pImpl_{new Implementation{nemId}}
 { }
 
 
-EMANE::RfReceiveMetricTable::~RfReceiveMetricTable()
+EMANE::RFSignalTable::~RFSignalTable()
 { }
 
 
-void EMANE::RfReceiveMetricTable::configure(const EMANE::ConfigurationUpdate & configurationUpdate)
+void EMANE::RFSignalTable::configure(const EMANE::ConfigurationUpdate & configurationUpdate)
 {
   pImpl_->configure(configurationUpdate);
 }
 
 
-void EMANE::RfReceiveMetricTable::initialize(EMANE::Registrar & registrar)
+void EMANE::RFSignalTable::initialize(EMANE::Registrar & registrar)
 {
   pImpl_->initialize(registrar);
 }
 
 
-void EMANE::RfReceiveMetricTable::reset(EMANE::AntennaIndex rxAntennaId)
+void EMANE::RFSignalTable::reset(EMANE::AntennaIndex rxAntennaId)
 {
   pImpl_->reset(rxAntennaId);
 }
 
 
-void EMANE::RfReceiveMetricTable::resetAll()
+void EMANE::RFSignalTable::resetAll()
 {
   pImpl_->resetAll();
 }
 
 
 void
-EMANE::RfReceiveMetricTable::update(NEMId src,
-                                  EMANE::AntennaIndex rxAntennaId,
-                                  std::uint64_t frequencyHz,
-                                  double dRxPower_mW,
-                                  double dNoiseFloor_mW,
-                                  double dReceiverSensitivity_mW)
+EMANE::RFSignalTable::update(NEMId src,
+                             EMANE::AntennaIndex rxAntennaId,
+                             std::uint64_t frequencyHz,
+                             double dRxPower_mW,
+                             double dNoiseFloor_mW,
+                             double dReceiverSensitivity_mW)
 {
   pImpl_->update(src, rxAntennaId, frequencyHz, dRxPower_mW, dNoiseFloor_mW, dReceiverSensitivity_mW);
 }
