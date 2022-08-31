@@ -103,6 +103,7 @@ namespace EMANE
       */
      void resetAll();
 
+     static const std::string CONFIGURATION_PREFIX;
 
    private:
      class Implementation;

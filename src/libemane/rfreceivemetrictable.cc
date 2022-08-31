@@ -54,6 +54,7 @@ namespace {
   const std::uint64_t       FrequencyDontCare    = 0;
 }
 
+const std::string EMANE::RfReceiveMetricTable::CONFIGURATION_PREFIX = "rfrxmetrictable.";
 
 class EMANE::RfReceiveMetricTable::Implementation
   {
@@ -81,12 +82,12 @@ class EMANE::RfReceiveMetricTable::Implementation
 
          auto & configRegistrar = registrar.configurationRegistrar();
 
-         configRegistrar.registerNumeric<bool>("rfrxmetrictable.averageallantennas",
+         configRegistrar.registerNumeric<bool>(CONFIGURATION_PREFIX+"averageallantennas",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all antennas with be averaged together.");
 
-         configRegistrar.registerNumeric<bool>("rfrxmetrictable.averageallfrequencies",
+         configRegistrar.registerNumeric<bool>(CONFIGURATION_PREFIX+"averageallfrequencies",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all frequencies with be averaged together.");
@@ -364,6 +365,9 @@ class EMANE::RfReceiveMetricTable::Implementation
     // typical row entry
     std::vector<Any> tableRowTemplate_;
  };
+
+
+
 
 
 EMANE::RfReceiveMetricTable::RfReceiveMetricTable(EMANE::NEMId nemId) :
