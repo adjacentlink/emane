@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2020,2022 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,15 +56,9 @@ public:
     return frequencyOfInterestSet_;
   }
 
-  const std::pair<std::uint64_t,bool> & getBandwidthHz() const
-  {
-    return optionalBandwidthHz_;
-  }
-
 private:
   const Antenna antenna_;
   const FrequencySet frequencyOfInterestSet_;
-  const  std::pair<std::uint64_t,bool> optionalBandwidthHz_;
 };
 
 EMANE::Controls::RxAntennaAddControlMessage::

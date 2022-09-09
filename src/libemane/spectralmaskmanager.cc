@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2021-2022 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -422,19 +422,22 @@ EMANE::SpectralMaskManager::getSpectralOverlap(std::uint64_t u64TxFrequencyHz,
                               u64TxFrequencyHz,
                               u64TxBandwidthHz);
 
-      SpectralSegments spectralSegments{SpectralSegment{dOverlapRatio,
-          1,
-          u64LowerOverlapFrequencyHz,
-          u64UpperOverlapFrequencyHz}};
+      if(dOverlapRatio > 0.0)
+        {
+          SpectralSegments spectralSegments{SpectralSegment{dOverlapRatio,
+              1,
+              u64LowerOverlapFrequencyHz,
+              u64UpperOverlapFrequencyHz}};
 
-      SpectralOverlaps spectralOverlaps{SpectralOverlap{std::move(spectralSegments),
-          u64LowerOverlapFrequencyHz,
-          u64UpperOverlapFrequencyHz}};
+          SpectralOverlaps spectralOverlaps{SpectralOverlap{std::move(spectralSegments),
+              u64LowerOverlapFrequencyHz,
+              u64UpperOverlapFrequencyHz}};
 
-      maskOverlap = std::make_tuple(std::move(spectralOverlaps),
-                                    u64LowerOverlapFrequencyHz,
-                                    u64UpperOverlapFrequencyHz,
-                                    1);
+          maskOverlap = std::make_tuple(std::move(spectralOverlaps),
+                                        u64LowerOverlapFrequencyHz,
+                                        u64UpperOverlapFrequencyHz,
+                                        1);
+        }
     }
 
   return maskOverlap;

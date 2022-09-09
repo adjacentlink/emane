@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015,2019-2021 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2015,2019-2022 - Adjacent Link LLC, Bridgewater,
  *  New Jersey
  * All rights reserved.
  *
@@ -484,7 +484,10 @@ EMANE::SpectrumMonitor::update(const TimePoint & now,
                     }
                 }
 
-              pCache->emplace(u64DopplerShiftedFequencyHz,std::move(recorderInfo));
+              if(!recorderInfo.empty())
+                {
+                  pCache->emplace(u64DopplerShiftedFequencyHz,std::move(recorderInfo));
+                }
             }
 
           if(bFrequencyMatch)
