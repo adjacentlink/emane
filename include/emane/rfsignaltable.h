@@ -39,8 +39,6 @@
 #include "emane/configurationinfo.h"
 #include "emane/registrar.h"
 
-#include <uuid.h>
-
 namespace EMANE
 {
  /**
@@ -110,7 +108,7 @@ namespace EMANE
       */
      void resetAll();
 
-     static const std::string CONFIG_PREFIX;
+     static constexpr const char * CONFIG_PREFIX{"rfsignaltable."}; 
 
    private:
      class Implementation;

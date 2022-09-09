@@ -65,8 +65,6 @@ namespace {
   const std::uint64_t       FrequencyDontCare    = 0;
 }
 
-const std::string EMANE::RFSignalTable::CONFIG_PREFIX = "rfsignaltable.";
-
 class EMANE::RFSignalTable::Implementation
   {
     public:
@@ -82,6 +80,8 @@ class EMANE::RFSignalTable::Implementation
 
       void initialize(EMANE::Registrar & registrar)
        {
+         const auto sConfigPrefix = std::string(CONFIG_PREFIX);
+
          auto & statisticRegistrar = registrar.statisticRegistrar();
 
          pStatisticRFSignalTable_ =
@@ -93,12 +93,12 @@ class EMANE::RFSignalTable::Implementation
 
          auto & configRegistrar = registrar.configurationRegistrar();
 
-         configRegistrar.registerNumeric<bool>(CONFIG_PREFIX+"averageallantennas",
+         configRegistrar.registerNumeric<bool>(sConfigPrefix+"averageallantennas",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all antennas with be averaged together.");
 
-         configRegistrar.registerNumeric<bool>(CONFIG_PREFIX+"averageallfrequencies",
+         configRegistrar.registerNumeric<bool>(sConfigPrefix+"averageallfrequencies",
                                                ConfigurationProperties::DEFAULT,
                                                {false},
                                                "Defines whether statistics for all frequencies with be averaged together.");
@@ -107,13 +107,15 @@ class EMANE::RFSignalTable::Implementation
 
       void configure(const EMANE::ConfigurationUpdate & configurationUpdate)
        {
+         const auto sConfigPrefix = std::string(CONFIG_PREFIX);
+
          for(const auto & item : configurationUpdate)
           {
-            if(item.first == CONFIG_PREFIX+"averageallantennas")
+            if(item.first == sConfigPrefix+"averageallantennas")
              {
                bAverageAllAntenna_ = item.second[0].asBool();
              }
-            else if(item.first == CONFIG_PREFIX+"averageallfrequencies")
+            else if(item.first == sConfigPrefix+"averageallfrequencies")
              {
                bAverageAllFrequencies_ = item.second[0].asBool();
              }
@@ -128,7 +130,7 @@ class EMANE::RFSignalTable::Implementation
           // layout a typical table row
           tableRowTemplate_.clear();
 
-          // these will be set when new entry is added
+          // NEMId, AntennaId and Frequency will be adjusted when new entry is added
           // 0 - NEMId
           tableRowTemplate_.push_back(Any{std::uint16_t{}});
 
@@ -138,7 +140,7 @@ class EMANE::RFSignalTable::Implementation
           // 2 - Frequency
           tableRowTemplate_.push_back(Any{std::string{"NA"}});
 
-          // these will be set on each update
+          // the rest below will be set on each update
           // 3 - Count
           tableRowTemplate_.push_back(Any{std::uint64_t{}});
 
@@ -215,17 +217,17 @@ class EMANE::RFSignalTable::Implementation
           if(iter == rfReceiveMetricCache_.end())
            {
              // new entry
-             const auto result = rfReceiveMetricCache_.emplace(key, RFSignalCacheEntry{});
+             const auto insertResult = rfReceiveMetricCache_.emplace(key, RFSignalCacheEntry{});
 
              // insert sanity check
-             if(result.second)
+             if(insertResult.second)
               {
-                iter = result.first;
+                iter = insertResult.first;
 
                 // add row template to statistic table
                 pStatisticRFSignalTable_->addRow(key, tableRowTemplate_);
 
-                // set specific values that represent this new entry 
+                // set specific values that represent this new entry as needed
                 pStatisticRFSignalTable_->setCell(key, RFSIGNALTABLE_NEMID, Any{src});
 
                 if(! bAverageAllAntenna_)
@@ -265,14 +267,14 @@ class EMANE::RFSignalTable::Implementation
     private:
                         
  
-      // make a string key for the rf receive metric statistic table and receive metric cache/database
+      // make a key for the rf receive metric statistic table and receive metric cache/database
       // example: src = 1, rxAntennaId = 0, frequency = 1000000, result = 1:0:1000000
       inline std::string makeKey(EMANE::NEMId src, EMANE::AntennaIndex rxAntennaId, std::uint64_t frequencyHz)
        {
-         return std::to_string(src) + 
-                std::string{":"}    + 
+         return std::to_string(src)         + 
+                std::string{":"}            + 
                 std::to_string(rxAntennaId) + 
-                std::string{":"} + 
+                std::string{":"}            + 
                 std::to_string(frequencyHz);
        }
 
@@ -292,13 +294,13 @@ class EMANE::RFSignalTable::Implementation
              getRunningAvg_i(dAvgRxPower_mW_,    u64NumSamples_, dRxPower_mW);
              getRunningAvg_i(dAvgNoiseFloor_mW_, u64NumSamples_, dNoiseFloor_mW);
 
-             // no divide by 0
+             // no divide by 0 !
              if(dAvgNoiseFloor_mW_ != 0.0)
               {
                 dAvgSinr_mW_ = dAvgRxPower_mW_/dAvgNoiseFloor_mW_;
               }
 
-             // no divide by 0
+             // no divide by 0 !
              if(receiverSensitivity_mW != 0.0)
               {
                 dAvgInr_mW_ = dAvgNoiseFloor_mW_/receiverSensitivity_mW;
@@ -333,7 +335,7 @@ class EMANE::RFSignalTable::Implementation
       {
         if(bAverageAllAntenna_)
          {
-           // lump all antenna
+           // lump all antenna(s)
            rAntennaId = AntennaIndexDontCare;
          }
       }
@@ -350,7 +352,7 @@ class EMANE::RFSignalTable::Implementation
     // receive metric cache
     std::map<std::string, RFSignalCacheEntry> rfReceiveMetricCache_;
 
-    // antenna tracking src/frequency
+    // antenna tracking <src,frequency>
     std::map<EMANE::AntennaIndex, std::set<std::tuple<EMANE::NEMId, std::uint64_t>>> antennaTracker_;
 
     // our nem id
