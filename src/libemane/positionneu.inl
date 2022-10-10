@@ -83,7 +83,7 @@ void EMANE::PositionNEU::rotate(double dYawRadians, double dPitchRadians, double
         dUpMeters_    * sin(dPitchRadians);
             
       double dRotatedEastMeters =
-        -dNorthMeters_ * (cos(dYawRadians)   * sin(dPitchRadians) * sin(dRollRadians) + 
+        dNorthMeters_ * (cos(dYawRadians) * sin(dPitchRadians) * sin(dRollRadians) -
                          sin(dYawRadians)      * cos(dRollRadians))  +
         dEastMeters_  * (cos(dYawRadians)   * cos(dRollRadians)  +
                          sin(dYawRadians)      * sin(dPitchRadians)  * sin(dRollRadians)) -
