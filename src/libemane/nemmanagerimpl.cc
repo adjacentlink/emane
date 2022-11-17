@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017,2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -42,6 +43,7 @@
 #include "emane/startexception.h"
 #include "otaexception.h"
 #include "antennaprofilemanifest.h"
+#include "spectralmaskmanager.h"
 
 EMANE::Application::NEMManagerImpl::NEMManagerImpl(const uuid_t & uuid):
   NEMManager{uuid}{}
@@ -89,7 +91,7 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
 
   configRegistrar.registerNumeric<std::uint32_t>("otamanagermtu",
                                                  ConfigurationProperties::DEFAULT,
-    {0},
+                                                 {0},
                                                  "OTA channel MTU.");
 
   configRegistrar.registerNumeric<std::uint16_t>("otamanagerpartcheckthreshold",
@@ -100,7 +102,7 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
 
   configRegistrar.registerNumeric<std::uint16_t>("otamanagerparttimeoutthreshold",
                                                  ConfigurationProperties::DEFAULT,
-    {5},
+                                                 {5},
                                                  "Defines the threshold in seconds to wait for another OTA packet part"
                                                  " for an existing reassembly effort before abandoning the effort.");
 
@@ -152,6 +154,18 @@ void EMANE::Application::NEMManagerImpl::initialize(Registrar & registrar)
                                                  ConfigurationProperties::DEFAULT,
                                                  {0},
                                                  "Event channel max event count table rows.");
+
+  configRegistrar.registerNonNumeric<std::string>("spectralmaskmanifesturi",
+                                                  EMANE::ConfigurationProperties::NONE,
+                                                  {},
+                                                  "URI of the RF transmit spectral mask manifest to load."
+                                                  " The spectral mask manifest contains a list of"
+                                                  " spectral masks. Each spectral mask contains a unique"
+                                                  " mask identifier, a primary signal definition and zero"
+                                                  " or more spur definitions. This parameter is required when"
+                                                  " any NEM participating in the emulation is using spectral"
+                                                  " masks, even in the case where the local NEM is not.");
+
 
 }
 
@@ -334,6 +348,17 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
           EventServiceSingleton::instance()->
             setStatEventCountRowLimit(u32EventMaxEventCountRows);
         }
+      else if(item.first == "spectralmaskmanifesturi")
+        {
+          sSpectralMaskManifestURI_ = item.second[0].asString();
+
+          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                  INFO_LEVEL,
+                                  "NEMManagerImpl::configure %s: %s",
+                                  item.first.c_str(),
+                                  sSpectralMaskManifestURI_.c_str());
+
+        }
       else
         {
           throw makeException<ConfigureException>("NEMManagerImpl: "
@@ -348,6 +373,11 @@ void EMANE::Application::NEMManagerImpl::configure(const ConfigurationUpdate & u
       AntennaProfileManifest::instance()->load(sAntennaProfileManifestURI_);
     }
 
+
+  if(!sSpectralMaskManifestURI_.empty())
+    {
+      SpectralMaskManager::instance()->load(sSpectralMaskManifestURI_);
+    }
 }
 
 void EMANE::Application::NEMManagerImpl::start()

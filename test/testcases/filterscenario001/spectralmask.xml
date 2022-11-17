@@ -1,0 +1,30 @@
+<spectral-mask-manifest>
+  <mask id='1'>
+    <primary>
+      <width hz='1M'   dBr='0'/>
+    </primary>
+  </mask>
+  <mask id='2'>
+    <primary>
+      <width hz='500K' dBr='-50'/>
+      <width hz='500K' dBr='-30'/>
+      <width hz='1M'   dBr='0'/>
+      <width hz='500K' dBr='-30'/>
+      <width hz='500K' dBr='-50'/>
+    </primary>
+  </mask>
+  <mask id='3'>
+    <primary>
+      <width hz='500K' dBr='-50'/>
+      <width hz='500K' dBr='-30'/>
+      <width hz='1M'   dBr='0'/>
+      <width hz='500K' dBr='-30'/>
+      <width hz='500K' dBr='-50'/>
+    </primary>
+    <spurs>
+      <spur offset_from_center_hz='1G'>
+        <width hz='10K' dBr='10'/>
+      </spur>
+    </spurs>
+  </mask>
+</spectral-mask-manifest>

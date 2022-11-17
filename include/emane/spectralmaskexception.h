@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,38 +30,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONMANAGER_HEADER_
-#define EMANELOCATIONMANAGER_HEADER_
+#ifndef EMANESPECTRALMASKEXCEPTION_HEADER_
+#define EMANESPECTRALMASKEXCEPTION_HEADER_
 
-#include "emane/types.h"
-#include "emane/events/location.h"
-
-#include "locationinfo.h"
-
-#include <map>
+#include "emane/exception.h"
 
 namespace EMANE
 {
-  class LocationManager
+  /**
+   * @class SpectralMaskException
+   *
+   * @brief SpectralMaskException is thrown when an exception
+   * occurs during spectral mask processing.
+   */
+  class SpectralMaskException : public Exception
   {
   public:
-    LocationManager(NEMId nemId);
+    SpectralMaskException(const std::string & sDescription = {}):
+      Exception("SpectralMaskException",sDescription){}
 
-    void update(const Events::Locations & locations);
-
-    std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
-
-    const PositionOrientationVelocity & getLocalPOV() const;
-
-  private:
-    using LocationStore = std::map<NEMId,PositionOrientationVelocity>;
-    using LocationInfoCache = std::map<NEMId,LocationInfo>;
-    NEMId nemId_;
-    PositionOrientationVelocity localPOV_;
-    LocationStore locationStore_;
-    LocationInfoCache locationInfoCache_;
-    std::uint64_t u64CacheSequenceNumber_;
+    ~SpectralMaskException() throw() {}
   };
 }
 
-#endif // EMANELOCATIONMANAGER_HEADER_
+#endif // EMANESPECTRALMASKEXCEPTION_HEADER_

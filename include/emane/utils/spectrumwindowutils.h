@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ namespace EMANE
     std::pair<double,bool> maxBinNoiseFloor(const SpectrumWindow & window,
                                             double dRxPowerdBm,
                                             const TimePoint & startTime = TimePoint::min());
-    
+
     /**
      * Gets the noise floor for a given start and end bin index and spectrum window bin
      * data using the maximum bin power.
@@ -104,10 +104,10 @@ namespace EMANE
                                             std::size_t startBin,
                                             std::size_t endBin);
 
-    
+
     /**
      * Gets the absolute bin of a specified time point from the epoch.
-     * 
+     *
      * @param timePoint Desired time
      * @param binSize  FrameworkPHY bin size
      * @param bAdjust Flag that when @a true adjusts to the previous bin if
@@ -125,13 +125,13 @@ namespace EMANE
 
     using SpectrumCompressedRepresentation = std::vector<std::pair<std::size_t,float>>;
 
-    /** 
+    /**
      * Compresses spectrum window data into a smaller format.
      *
      * @param window A vector of spectrum window data
      *
      * @return compressed representation
-     * 
+     *
      * Compression format consists of wheel-index wheel-value pairs where:
      *  -# An implicit initial pair index=0, value=0 exists unless index 0
      *      is otherwise specified
@@ -146,6 +146,37 @@ namespace EMANE
      * @note This is currently used in the standalone test cases
      */
     SpectrumCompressedRepresentation spectrumCompress(const std::vector<double> & window);
+
+
+    using SpectrumSubBandCompressedRepresentation =
+      std::vector<std::pair<std::size_t,std::vector<double>>>;
+
+    /**
+     * Compresses spectrum sub band window data into a smaller format.
+     *
+     * @param window A vector of spectrum window data
+     * @param subBandBinCount Sub band bin count
+     *
+     * @return compressed representation
+     *
+     * Compression format consists of wheel-index wheel-value pairs where:
+     *  -# An implicit initial pair index=0, value=[0,...] exists
+     *      unless index 0 is otherwise specified
+     *  -# An index value is valid until a new index value is specified
+     *  -# The last index value pair is valid through the end of the wheel
+     *
+     * Examples if the wheel contained 1000 values with 10 sub band bins and:
+     *   -# All values were 0, the entire CompressedRepresentation would be empty: {}
+     *   -# First 50 values (10 bins per value) were 1 and the next 50
+     values were 2: {{0,[1...1]},{50,[2...2]}}
+     * -# First 10 values (10 bins per value) were 1 and the last 10
+     values were 1: {{0,[1...1]},{10,[0...0]},{90,[1...1]}}
+     *
+     * @note This is currently used in the standalone test cases
+     */
+    SpectrumSubBandCompressedRepresentation
+    spectrumSubBandCompress(const std::vector<double> & window,
+                            std::size_t subBandBinCount);
   }
 }
 

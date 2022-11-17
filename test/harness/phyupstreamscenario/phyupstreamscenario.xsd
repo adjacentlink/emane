@@ -104,6 +104,7 @@
                   <xs:attribute name='destination' type='xs:unsignedShort' use='required'/>
                   <xs:attribute name='fixedgain' type='xs:decimal' use='optional'/>
                   <xs:attribute name='subid' type='xs:unsignedShort' use='required'/>
+                  <xs:attribute name='spectralmask' type='xs:unsignedShort' use='optional'/>
                 </xs:complexType>
               </xs:element>
               <xs:element name='configure'>

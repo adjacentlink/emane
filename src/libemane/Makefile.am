@@ -103,6 +103,7 @@ libemane_la_SOURCES =                         \
  frequencycontrolmessageformatter.cc          \
  frequencyofinterestcontrolmessage.cc         \
  frequencyofinterestcontrolmessageformatter.cc\
+ frequencyoverlapratio.h                      \
  gainmanager.cc                               \
  inetaddr.cc                                  \
  layerfactorymanager.cc                       \
@@ -147,6 +148,8 @@ libemane_la_SOURCES =                         \
  nemtimerserviceproxy.cc                      \
  noiserecorder.cc                             \
  nopfiledescriptorservice.cc                  \
+ observedpowertablepublisher.cc               \
+ observedpowertablepublisher.h                \
  orientationformatter.cc                      \
  otamanager.cc                                \
  otastatisticpublisher.cc                     \
@@ -174,6 +177,7 @@ libemane_la_SOURCES =                         \
  receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
  requestmessagehandler.cc                     \
+ rfsignaltable.cc                             \
  rxantennaaddcontrolmessage.cc                \
  rxantennaaddcontrolmessageformatter.cc       \
  rxantennaremovecontrolmessage.cc             \
@@ -183,6 +187,8 @@ libemane_la_SOURCES =                         \
  serializedcontrolmessage.cc                  \
  shimlayer.cc                                 \
  socket.cc                                    \
+ spectralmaskmanager.cc                       \
+ spectralmaskmanager.h                        \
  spectrumfilteraddcontrolmessage.cc           \
  spectrumfilteraddcontrolmessageformatter.cc  \
  spectrumfilterdatacontrolmessage.cc          \

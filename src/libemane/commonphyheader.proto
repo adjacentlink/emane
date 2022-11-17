@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2020-2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,6 +72,7 @@ message CommonPHYHeader
     required uint64 bandwidthHz = 3;
     optional double fixedGaindBi = 4;
     optional Pointing pointing = 5;
+    optional uint32 spectralMaskIndex = 6;
   }
 
   required uint32 registrationId = 1;

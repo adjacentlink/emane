@@ -1,6 +1,7 @@
 if WITH_TESTCASES
 
 SUBDIRS=                \
+ filterscenario001      \
  gainscenario001        \
  noisescenario001       \
  noisescenario002       \
@@ -11,6 +12,6 @@ SUBDIRS=                \
  phyupstreamscenario003 \
  phyupstreamscenario004 \
  phyupstreamscenario005 \
- phyupstreamscenario006 
+ phyupstreamscenario006
 
 endif

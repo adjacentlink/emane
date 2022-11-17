@@ -1,4 +1,5 @@
 SUBDIRS=              \
+ filterscenario       \
  gainscenario         \
  noisescenario        \
  phyupstreamscenario  \

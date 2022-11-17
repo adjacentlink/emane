@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2022 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.3.3,[emane at adjacent link dot com])
+AC_INIT([emane],1.4.1,[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -46,7 +46,7 @@ AC_PROG_CXX
 
 AC_PROG_CXXCPP
 
-AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
+AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
 
 AC_PROG_INSTALL
 
@@ -242,6 +242,7 @@ AC_OUTPUT(
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile
+ test/harness/filterscenario/Makefile
  test/harness/noisescenario/Makefile
  test/harness/profilescenario/Makefile
  test/harness/propagationscenario/Makefile
@@ -250,6 +251,7 @@ AC_OUTPUT(
  test/harness/phyupstreamspeed/Makefile
  test/testcases/Makefile
  test/testcases/gainscenario001/Makefile
+ test/testcases/filterscenario001/Makefile
  test/testcases/noisescenario001/Makefile
  test/testcases/noisescenario002/Makefile
  test/testcases/profilescenario001/Makefile

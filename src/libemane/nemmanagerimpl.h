@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2015,2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2015,2017,2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -95,6 +95,7 @@ namespace EMANE
       std::uint8_t u8EventServiceTTL_;
       INETAddr controlPortAddr_;
       std::string sAntennaProfileManifestURI_;
+      std::string sSpectralMaskManifestURI_;
     };
   }
 }

@@ -107,28 +107,35 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 
   pProcessedDownstreamPacket_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedDownstreamPackets",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed downstream packets.");
 
   pProcessedUpstreamPacket_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedUpstreamPackets",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed upstream packets.");
 
   pProcessedDownstreamControl_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedDownstreamControl",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed downstream control.");
 
   pProcessedUpstreamControl_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedUpstreamControl",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed upstream control.");
   pProcessedEvent_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedEvents",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed events.");
   pProcessedConfiguration_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedConfiguration",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed configuration.");
   pProcessedTimedEvent_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedTimedEvents",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of processed timed events.");
 
   pStatisticHistogramTable_.reset(new Utils::StatisticHistogramTable<EventId>{
       statisticRegistrar,
@@ -154,7 +161,10 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 
   avgTimedEventLatency_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgTimedEventLatency",
-                                                StatisticProperties::CLEARABLE));
+                                                StatisticProperties::CLEARABLE,
+                                                "Average latency between the scheduled timer"
+                                                " expiration and the actual firing over the requested"
+                                                " duration."));
 
   avgTimedEventLatencyRatio_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgTimedEventLatencyRatio",

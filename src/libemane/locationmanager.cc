@@ -107,3 +107,8 @@ std::pair<EMANE::LocationInfo,bool> EMANE::LocationManager::getLocationInfo(NEMI
 
   return {LocationInfo{},false};
 }
+
+const EMANE::PositionOrientationVelocity & EMANE::LocationManager::getLocalPOV() const
+{
+  return localPOV_;
+}

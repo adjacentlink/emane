@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2020-2021 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,8 @@ namespace EMANE
            const std::vector<NEMId> & transmitters,
            std::uint64_t u64StartFrequencyHz,
            std::uint64_t u64EndFrequencyHz,
-           AntennaIndex txAntennaIndex);
+           AntennaIndex txAntennaIndex,
+           bool bIsMore = false);
 
     std::pair<std::vector<double>, TimePoint>
     get(const TimePoint & now,
@@ -85,6 +86,7 @@ namespace EMANE
     // dump the entire wheel for test-only-purposes
     std::vector<double> dump() const;
 
+
   private:
     const Microseconds::rep totalWindowBins_;
     const Microseconds::rep totalWheelBins_;
@@ -92,6 +94,7 @@ namespace EMANE
     std::uint64_t u64BandwidthBinSizeHz_;
     std::uint64_t u64BandStartFrequencyHz_;
     size_t totalSubBandBins_;
+    std::uint64_t  u64BandEndFrequencyHz_;
 
     Wheel<double> wheel_;
     double dRxSensitivityMilliWatt_;
@@ -101,6 +104,18 @@ namespace EMANE
     using AntennaIndexEORMap = std::map<AntennaIndex,Microseconds::rep>;
     using NEMAntennaIndexEORBinMap = std::map<NEMId,AntennaIndexEORMap>;
     NEMAntennaIndexEORBinMap nemAntennaIndexEORBinMap_;
+
+
+    using BinPowerApply = std::tuple<std::size_t, // start bin
+                                     std::size_t, // end bin
+                                     double>; // multipler
+
+    using BinPowerApplies = std::vector<BinPowerApply>;
+
+    using BinPowerApplyMap = std::map<std::pair<std::uint64_t, // start freq
+                                                std::uint64_t>, // end freq
+                                      BinPowerApplies>;
+    BinPowerApplyMap binPowerApplyMap_;
 
     Microseconds::rep timepointToBin(const TimePoint & tp, bool bAdjust = false);
   };

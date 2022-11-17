@@ -71,7 +71,7 @@ EMANE::LocationInfo::LocationInfo(const PositionOrientationVelocity & localPOV,
       const auto & vel1 =  localPOV.getVelocityECEF();
       const auto & vel2 =  remotePOV.getVelocityECEF();
 
-      if(vel1.isValid() && vel2.isValid())
+      if(vel1.isValid() && vel2.isValid() && dDistanceMeters_ > 0)
         {
           // velocity vector remote (transmitter) relative
           // to local (receiver)
@@ -83,7 +83,10 @@ EMANE::LocationInfo::LocationInfo(const PositionOrientationVelocity & localPOV,
           double dMagnitudeVelocityVector = Utils::NORMALIZE_VECTOR(dVelX,dVelY,dVelZ);
           double dCosTheta = dDotProduct/(dDistanceMeters_*dMagnitudeVelocityVector);
 
-          dDopplerFactor_ =  SOL_MPS/(SOL_MPS - (dMagnitudeVelocityVector * dCosTheta));
+          if(dMagnitudeVelocityVector > 0)
+            {
+              dDopplerFactor_ =  SOL_MPS/(SOL_MPS - (dMagnitudeVelocityVector * dCosTheta));
+            }
         }
     }
 }

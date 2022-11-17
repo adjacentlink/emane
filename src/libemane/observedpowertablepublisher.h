@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2020 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,38 +30,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANELOCATIONMANAGER_HEADER_
-#define EMANELOCATIONMANAGER_HEADER_
+#ifndef EMANEOBSERVEDPOWERTABLEPUBLISHER_HEADER_
+#define EMANEOBSERVEDPOWERTABLEPUBLISHER_HEADER_
 
 #include "emane/types.h"
-#include "emane/events/location.h"
+#include "emane/statistictable.h"
+#include "emane/statisticregistrar.h"
 
-#include "locationinfo.h"
-
-#include <map>
+#include <set>
+#include <tuple>
 
 namespace EMANE
 {
-  class LocationManager
+  class ObservedPowerTablePublisher
   {
   public:
-    LocationManager(NEMId nemId);
+    void registerStatistics(StatisticRegistrar & registrar);
 
-    void update(const Events::Locations & locations);
+    void update(NEMId nemId,
+                AntennaIndex rxAntennaIndex,
+                AntennaIndex txAntennaIndex,
+                std::uint64_t u64Frequency,
+                SpectralMaskIndex specralMaskIndex,
+                double dObservedPowerdBm,
+                const TimePoint & rxTime);
 
-    std::pair<LocationInfo,bool> getLocationInfo(NEMId remoteNEMId);
-
-    const PositionOrientationVelocity & getLocalPOV() const;
+    using ObservedPowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;
 
   private:
-    using LocationStore = std::map<NEMId,PositionOrientationVelocity>;
-    using LocationInfoCache = std::map<NEMId,LocationInfo>;
-    NEMId nemId_;
-    PositionOrientationVelocity localPOV_;
-    LocationStore locationStore_;
-    LocationInfoCache locationInfoCache_;
-    std::uint64_t u64CacheSequenceNumber_;
+    StatisticTable<ObservedPowerTableKey> * pObservedPowerTable_;
+    using ObservedPowerTableSet = std::set<ObservedPowerTableKey>;
+    ObservedPowerTableSet observedPowerTableSet_;
   };
 }
 
-#endif // EMANELOCATIONMANAGER_HEADER_
+#endif //EMANEOBSERVEDPOWERTABLEPUBLISHER_HEADER_

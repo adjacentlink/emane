@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014,2016-2017,2019-2021 - Adjacent Link LLC,
- * Bridgewater, New Jersey
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ EMANE::ReceiveProcessor::ReceiveProcessor(NEMId id,
                                           PropagationModelAlgorithm * pPropagationModelAlgorithm,
                                           FadingAlgorithmStore && fadingAlgorithmStore,
                                           bool bPopulateReceivePowerMap,
+                                          bool bPopulateObservedPowerMap,
                                           bool bDopplerShift):
   id_{id},
   u16SubId_{u16SubId},
@@ -52,6 +53,7 @@ EMANE::ReceiveProcessor::ReceiveProcessor(NEMId id,
   pPropagationModelAlgorithm_{pPropagationModelAlgorithm},
   fadingAlgorithmStore_{std::move(fadingAlgorithmStore)},
   bPopulateReceivePowerMap_{bPopulateReceivePowerMap},
+  bPopulateObservedPowerMap_{bPopulateObservedPowerMap},
   u64SpectrumMonitorUpdateSequence_{},
   bDopplerShift_{bDopplerShift}{}
 
@@ -292,6 +294,7 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                                                         transmitters,
                                                         commonPHYHeader.getSubId(),
                                                         transmitAntenna.getIndex(),
+                                                        transmitAntenna.getSpectralMaskIndex(),
                                                         commonPHYHeader.getOptionalFilterData());
 
           TimePoint sot{};
@@ -323,6 +326,18 @@ EMANE::ReceiveProcessor::process(const TimePoint & now,
                         {
                           result.status_ = ProcessResult::Status::DROP_CODE_SPECTRUM_CLAMP;
                           return result;
+                        }
+                    }
+
+                  if(bPopulateObservedPowerMap_)
+                    {
+                      for(const auto & segment : resultingFrequencySegments)
+                        {
+                          result.observedPowerMap_[std::make_tuple(transmitters[0], // use the first transmitter
+                                                                   rxAntennaIndex_,
+                                                                   transmitAntenna.getIndex(),
+                                                                   segment.getFrequencyHz())] = std::make_tuple(transmitAntenna.getSpectralMaskIndex(),
+                                                                                                                segment.getRxPowerdBm());
                         }
                     }
 
@@ -428,6 +443,7 @@ EMANE::ReceiveProcessor::processSelfInterference(const TimePoint & now,
                                         {id_},
                                         u16SubId_,
                                         antennaIndex,
+                                        DEFAULT_SPECTRAL_MASK_INDEX,
                                         optionalFilterData);
 
             }
@@ -444,6 +460,7 @@ EMANE::ReceiveProcessor::processSelfInterference(const TimePoint & now,
                                         {id_},
                                         u16SubId_,
                                         antennaIndex,
+                                        DEFAULT_SPECTRAL_MASK_INDEX,
                                         optionalFilterData);
 
             }
