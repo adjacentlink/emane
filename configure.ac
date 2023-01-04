@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],1.4.1,[emane at adjacent link dot com])
+AC_INIT([emane],[1.4.1],[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -50,7 +50,7 @@ AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
 
 AC_PROG_INSTALL
 
-AC_PROG_LIBTOOL
+LT_INIT
 
 AC_LANG([C++])
 
@@ -114,11 +114,6 @@ LDFLAGS=${_ldflags}
 AC_SUBST(pcap_CFLAGS)
 AC_SUBST(pcap_LIBS)
 
-AC_C_BIGENDIAN(AC_DEFINE([__BYTE_ORDER],__BIG_ENDIAN,[Big Endian]),
-AC_DEFINE([__BYTE_ORDER],__LITTLE_ENDIAN,[Little Endian]))
-AC_DEFINE([__LITTLE_ENDIAN],1234,[for the places where it is not defined])
-AC_DEFINE([__BIG_ENDIAN],4321,[for the places where it is not defined])
-
 # options for use with gprof
 if test "$with_profile" = "yes"
 then
@@ -168,7 +163,7 @@ else
 AM_CONDITIONAL(HAVE_DOT,false)
 fi
 
-AM_PATH_PYTHON([2.6])
+AM_PATH_PYTHON([3.6])
 
 # check for rpmbuild
 AC_CHECK_PROG(HAVE_RPMBUILD, rpmbuild, true, false)
@@ -188,8 +183,7 @@ AC_SUBST(DATE_RFC2822,`date -R`)
 AC_SUBST(PACKAGE_VERSION_CODE,
  [`echo $PACKAGE_VERSION | awk '/^([[0-9]]+)\.([[0-9]]+)\.([[0-9]]+)(\.([[0-9]]+)){0,1}$/ { split($0, m, "."); printf("%d", (m[[1]]*(2^16)) + (m[[2]]*(2^8)) + m[[3]]);}'`])
 
-AC_OUTPUT(
- Makefile 
+AC_CONFIG_FILES([Makefile
  include/emane/Makefile
  include/emane/utils/Makefile
  include/emane/controls/Makefile
@@ -267,4 +261,5 @@ AC_OUTPUT(
  dtd/Makefile
  schema/Makefile
  doc/Makefile
-)
+])
+AC_OUTPUT
