@@ -40,6 +40,7 @@
 #include "emane/neighbormetricmanager.h"
 #include "emane/queuemetricmanager.h"
 #include "emane/statisticnumeric.h"
+#include "emane/rfsignaltable.h"
 
 #include "emane/utils/runningaverage.h"
 #include "emane/utils/randomnumberdistribution.h"
@@ -135,6 +136,8 @@ namespace EMANE
         NeighborMetricManager neighborMetricManager_;
 
         QueueMetricManager queueMetricManager_;
+
+        RFSignalTable rfSignalTable_;
 
         // config items
         bool bPromiscuousMode_;

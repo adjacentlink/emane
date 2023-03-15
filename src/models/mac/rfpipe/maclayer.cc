@@ -85,6 +85,7 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
   pcrManager_(id, pPlatformService_),
   neighborMetricManager_(id),
   queueMetricManager_(id),
+  rfSignalTable_{id},
   radioMetricTimedEventId_{},
   commonLayerStatistics_{STATISTIC_TABLE_LABELS,{},"0"},
   RNDZeroToOne_{0.0f, 1.0f},
@@ -220,6 +221,8 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
                                                                                        StatisticProperties::CLEARABLE));
 
   neighborMetricManager_.registerStatistics(statisticRegistrar);
+
+  rfSignalTable_.initialize(registrar);
 }
 
 void
@@ -231,6 +234,8 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
                           id_,
                           pzLayerName,
                           __func__);
+
+  ConfigurationUpdate rfReceiveMetricTableConfiguration{};
 
   for(const auto & item : update)
     {
@@ -380,11 +385,21 @@ EMANE::Models::RFPipe::MACLayer::configure(const ConfigurationUpdate & update)
         }
       else
         {
-          throw makeException<ConfigureException>("RFPipe::MACLayer: "
-                                                  "Unexpected configuration item %s",
-                                                  item.first.c_str());
+           const std::string rfSignalTableConfigPrefix{EMANE::RFSignalTable::CONFIG_PREFIX};
+           if(!item.first.compare(0,rfSignalTableConfigPrefix.size(),rfSignalTableConfigPrefix))
+            {
+              rfReceiveMetricTableConfiguration.push_back(item);
+            }
+          else
+            {
+              throw makeException<ConfigureException>("RFPipe::MACLayer: "
+                                                      "Unexpected configuration item %s",
+                                                      item.first.c_str());
+            }
         }
     }
+
+    rfSignalTable_.configure(rfReceiveMetricTableConfiguration);
 }
 
 
@@ -868,6 +883,14 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                               Utils::maxBinNoiseFloor(window,frequencySegment.getRxPowerdBm());
 
                             dSINR = frequencySegment.getRxPowerdBm() - dNoiseFloordB;
+
+                            rfSignalTable_.update(pktInfo.getSource(),                                               // src nem
+                                                  0,                                                                 // antenna id always 0 for rf pipe
+                                                  frequencySegment.getFrequencyHz(),                                 // segment frequency
+                                                  EMANE::Utils::DB_TO_MILLIWATT(frequencySegment.getRxPowerdBm()),   // rx power mW
+                                                  EMANE::Utils::DB_TO_MILLIWATT(dNoiseFloordB),                      // noise floor mW
+                                                  std::get<3>(window));                                              // receiver sensitivity mW
+
                             /** [spectrumservice-request-snibbet] */
 
                             LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
