@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2014,2017,2023 - Adjacent Link LLC, Bridgewater,
+#  New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +45,8 @@ class OTAMessage:
                  bandwidthHz,
                  transmitters,
                  segments,
-                 fixedAntennaGain = None):
+                 fixedAntennaGain = None,
+                 spectralMaskIndex = None):
 
         self._sequence = 0
         self._otaHeader = otaheader_pb2.OTAHeader()
@@ -65,11 +67,16 @@ class OTAMessage:
 
         frequencyGroup =  self._phyHeader.frequencyGroups.add()
 
-        for frequencyHz, offsetMicroseconds, durationMicroseconds in segments:
+        for entry in segments:
+            frequencyHz, offsetMicroseconds, durationMicroseconds = entry[0:3]
             segment = frequencyGroup.frequencySegments.add()
             segment.frequencyHz = frequencyHz
             segment.offsetMicroseconds = offsetMicroseconds
             segment.durationMicroseconds = durationMicroseconds
+
+            if len(entry) > 3:
+                powerdBm = entry[3]
+                segment.powerdBm = powerdBm
 
         txantenna = self._phyHeader.transmitAntennas.add()
         txantenna.antennaIndex = 0
@@ -78,6 +85,9 @@ class OTAMessage:
 
         if fixedAntennaGain is not None:
             txantenna.fixedGaindBi = fixedAntennaGain
+
+        if spectralMaskIndex is not None:
+            txantenna.spectralMaskIndex = spectralMaskIndex
 
     def generate(self,txTimeMicroseconds,sequence,uuid):
         self._otaHeader.uuid = uuid.bytes
