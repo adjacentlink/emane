@@ -55,6 +55,7 @@ EMANE::NEMQueuedLayer::NEMQueuedLayer(NEMId id, PlatformServiceProvider *pPlatfo
   iFd_{},
   iepollFd_{},
   bCancel_{},
+  pNumQueued_{},
   pProcessedDownstreamPacket_{},
   pProcessedUpstreamPacket_{},
   pProcessedDownstreamControl_{},
@@ -104,6 +105,11 @@ EMANE::NEMQueuedLayer::~NEMQueuedLayer()
 void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 {
   auto & statisticRegistrar = registrar.statisticRegistrar();
+
+  pNumQueued_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numAPIQueued",
+                                                      StatisticProperties::CLEARABLE,
+                                                      "The number of queued API events.");
 
   pProcessedDownstreamPacket_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("processedDownstreamPackets",
@@ -196,6 +202,7 @@ void EMANE::NEMQueuedLayer::enqueue_i(QCallback && callback)
   std::lock_guard<std::mutex> m(mutex_);
   queue_.push_back(std::move(callback));
   avgQueueDepth_.update(queue_.size());
+  ++*pNumQueued_;
   write(iFd_,&one,sizeof(one));
 }
 
