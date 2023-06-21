@@ -115,6 +115,14 @@ Group: Libraries
 %description model-tdmaeventscheduler
 EMANE TDMA event scheduler model.
 
+%package model-bentpipe
+Summary: EMANE Bent Pipe radio model.
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Group: Libraries
+
+%description model-bentpipe
+EMANE Bent Pipe scheduler model.
+
 %package agent-gpsdlocation
 Requires: %{name}-eventdaemon%{?_isa} = %{version}-%{release}
 Summary: EMANE gpsd location agent
@@ -504,6 +512,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmanem.xml
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmaradiomodel.xml
 %{_datadir}/emane/xml/models/mac/tdmaeventscheduler/tdmabasemodelpcr.xml
+
+%doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
+
+%files model-bentpipe
+%defattr(-,root,root,-)
+%{_libdir}/libemane-model-bentpipe.*
 
 %doc %{_pkgdocdir}
 %if 0%{?_licensedir:1}

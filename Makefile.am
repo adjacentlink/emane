@@ -97,5 +97,5 @@ uninstall-local:
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transportmanager.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transraw.xml
 	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/transvirtual.xml
-	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/universalphylayer.xml
+	rm -f $(DESTDIR)$(datadir)/$(PACKAGE)/manifest/emane-model-bentpipe.xml
 

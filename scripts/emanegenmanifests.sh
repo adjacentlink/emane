@@ -30,7 +30,8 @@ for plugin in eelgenerator \
     transportmanager \
     eventgeneratormanager \
     eventagentmanager\
-    tdmaeventschedulerradiomodel;
+    tdmaeventschedulerradiomodel \
+    emane-model-bentpipe;
 do
     LD_LIBRARY_PATH=$ld_library_path_orig
     

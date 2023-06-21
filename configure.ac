@@ -219,6 +219,7 @@ AC_CONFIG_FILES([Makefile
  src/models/mac/ieee80211abg/Makefile
  src/models/mac/tdma/Makefile
  src/models/mac/tdma/eventscheduler/Makefile
+ src/models/mac/bentpipe/Makefile
  src/models/shim/Makefile
  src/models/shim/timinganalysis/Makefile
  src/models/shim/phyapitest/Makefile

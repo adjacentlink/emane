@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
- * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2023 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link, LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -31,49 +30,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMACTYPES_HEADER_
-#define EMANEMACTYPES_HEADER_
+#ifndef EMANE_UTILS_WEIGHTEDMOVINGAVERAGE_HEADER_
+#define EMANE_UTILS_WEIGHTEDMOVINGAVERAGE_HEADER_
 
-#include "emane/types.h"
+#include <vector>
 
 namespace EMANE
 {
-  /* 
-   * Resevered Mac Type Id Range (0,32767]
-   *.
-   * Local Mac Type Id Range     [32768,65535)
-   */
-  
-  /*
-   * Bypass/sample Mac Type. Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_BYPASS = 0x0001;
+  namespace Utils
+  {
+    class WeightedMovingAverage
+    {
+    public:
+      WeightedMovingAverage(size_t size):
+        samples_(size,{}),
+        size_{size},
+        oldestIndex_{},
+        totalSamples_{}{}
 
-  /*
-   * Low Fidelity 802.11 Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_LEGACY_802_11 = 0x0002;
+      void update(double dValue)
+      {
+        ++totalSamples_;
 
-  /*
-   * High Fidelity 802.11 Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_IEEE_802_11_ABG = 0x0003;
+        samples_[oldestIndex_] = dValue;
 
-  /*
-   * RF Pipe Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_RF_PIPE = 0x0004;
+        ++oldestIndex_;
 
-  /*
-   * TDMA Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2015.03.27
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_TDMA = 0x0005;
+        oldestIndex_ %= size_;
+      }
 
-  /*
-   * Bent Pipe Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2022.11.07
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_BENT_PIPE = 0x0006;
+      using MeanInfo = std::tuple<double,double,size_t>;
+
+
+      double value()
+      {
+        double dTotal{};
+
+        auto count =
+          std::min(totalSamples_,samples_.size());
+
+        for(size_t i = 0; i < count; ++i)
+          {
+            dTotal += samples_[(oldestIndex_ + i) %  count] * (i + 1);
+          }
+
+        return dTotal / (((1 + count) *  count) / 2);
+      }
+
+    private:
+      using Samples = std::vector<double>;
+      Samples samples_;
+      const size_t size_;
+      size_t oldestIndex_;
+      size_t totalSamples_;
+    };
+  }
 }
 
-
-#endif //EMANEMACTYPES_HEADER_
+#endif // EMANE_UTILS_WEIGHTEDMOVINGAVERAGE_HEADER_

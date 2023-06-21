@@ -50,6 +50,12 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
 Description: EMANE RF Pipe MAC layer
 
+Package: emane-model-bentpipe
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, emane (= ${binary:Version})
+Description: EMANE Bent Pipe radio model
+
 Package: emane-model-ieee80211abg
 Section: libs
 Architecture: any

@@ -23,7 +23,8 @@ emaneinc_HEADERS =                       \
  timer.inl                               \
  runningaverage.h                        \
  commonlayerstatistics.h                 \
- vectorio.h
+ vectorio.h                              \
+ weightedmovingaverage.h
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(emaneincdir)

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
- * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
+ * Copyright (c) 2015,2017-2018,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +13,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of DRS CenGen, LLC nor the names of its
+ * * Neither the name of Adjacent Link LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -31,49 +31,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEMACTYPES_HEADER_
-#define EMANEMACTYPES_HEADER_
+#ifndef EMANE_MODELS_BENDPIPE_SLOTTER_HEADER_
+#define EMANE_MODELS_BENDPIPE_SLOTTER_HEADER_
 
 #include "emane/types.h"
 
 namespace EMANE
 {
-  /* 
-   * Resevered Mac Type Id Range (0,32767]
-   *.
-   * Local Mac Type Id Range     [32768,65535)
-   */
-  
-  /*
-   * Bypass/sample Mac Type. Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_BYPASS = 0x0001;
+  namespace Models
+  {
+    namespace BentPipe
+    {
+      class Slotter
+      {
+      public:
+        Slotter();
 
-  /*
-   * Low Fidelity 802.11 Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_LEGACY_802_11 = 0x0002;
+        void reset(const Microseconds & slotSizeMicroseconds,
+                   std::uint64_t u64SlotsPerFrame);
 
-  /*
-   * High Fidelity 802.11 Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_IEEE_802_11_ABG = 0x0003;
+        TimePoint getFrameTime(std::uint64_t u64FrameIndex) const;
 
-  /*
-   * RF Pipe Mac Type.  Contrib. DRS CenGen, LLC<labs at cengen dot com> Reg. 2008.10.02
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_RF_PIPE = 0x0004;
+        TimePoint getSlotTime(std::uint64_t u64SlotIndex) const;
 
-  /*
-   * TDMA Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2015.03.27
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_TDMA = 0x0005;
+        std::tuple<std::uint64_t,std::uint64_t>
+        getAbsoluteIndex(const EMANE::TimePoint & timePoint) const;
 
-  /*
-   * Bent Pipe Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2022.11.07
-   */
-  const RegistrationId REGISTERED_EMANE_MAC_BENT_PIPE = 0x0006;
+        std::tuple<std::uint64_t,std::uint64_t>
+        getRelativeIndex(std::uint64_t u64SlotIndex) const;
+
+        double slotPortionRatio(const TimePoint & current,
+                                std::uint64_t u64AbsoluteSlotIndex) const;
+
+      private:
+        std::uint64_t u64SlotSizeMicroseconds_;
+        std::uint64_t u64SlotsPerFrame_;
+
+      };
+    }
+  }
 }
 
+#include "slotter.inl"
 
-#endif //EMANEMACTYPES_HEADER_
+#endif // EMANE_MODELS_BENDPIPE_SLOTTER_HEADER_
