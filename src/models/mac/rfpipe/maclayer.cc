@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -857,9 +858,8 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
 
 
                         double dSINR{};
-
                         double dNoiseFloordB{};
-
+                        double dReceiverSensitivitymW{};
 
                         try
                           {
@@ -884,12 +884,7 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
 
                             dSINR = frequencySegment.getRxPowerdBm() - dNoiseFloordB;
 
-                            rfSignalTable_.update(pktInfo.getSource(),                                               // src nem
-                                                  0,                                                                 // antenna id always 0 for rf pipe
-                                                  frequencySegment.getFrequencyHz(),                                 // segment frequency
-                                                  EMANE::Utils::DB_TO_MILLIWATT(frequencySegment.getRxPowerdBm()),   // rx power mW
-                                                  EMANE::Utils::DB_TO_MILLIWATT(dNoiseFloordB),                      // noise floor mW
-                                                  std::get<3>(window));                                              // receiver sensitivity mW
+                            dReceiverSensitivitymW = std::get<3>(window);
 
                             /** [spectrumservice-request-snibbet] */
 
@@ -956,6 +951,15 @@ EMANE::Models::RFPipe::MACLayer::processUpstreamPacket(const CommonMACHeader & c
                                                                       startOfReception,       // rx time
                                                                       durationMicroseconds,   // duration
                                                                       u64DataRate);           // data rate bps
+                        // update rf signal table
+                        rfSignalTable_.update(pktInfo.getSource(),               // src nem
+                                              0,                                 // antenna id always 0 for rf pipe
+                                              frequencySegment.getFrequencyHz(), // segment frequency
+                                              frequencySegment.getRxPowerdBm(),  // rx power dBm
+                                              dSINR,                             // SINR
+                                              dNoiseFloordB,                     // noise floor dB
+                                              Utils::MILLIWATT_TO_DB(dReceiverSensitivitymW)); // receiver sensitivity dB
+
 
                         // check promiscuous mode, destination is this nem or to all nem's
                         if(bPromiscuousMode_ ||
