@@ -182,8 +182,6 @@ namespace EMANE
 
         TimePoint currentEndOfTransmissionTime_;
 
-        Microseconds currentDelay_;
-
         void handleDownstreamQueueEntry(TimePoint sot,
                                         std::uint64_t u64TxSequenceNumber);
 

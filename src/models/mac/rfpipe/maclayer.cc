@@ -96,8 +96,7 @@ EMANE::Models::RFPipe::MACLayer::MACLayer(NEMId id,
   downstreamQueueTimedEventId_{},
   bHasPendingDownstreamQueueEntry_{},
   pendingDownstreamQueueEntry_{},
-  currentEndOfTransmissionTime_{},
-  currentDelay_{}
+  currentEndOfTransmissionTime_{}
 {}
 
 EMANE::Models::RFPipe::MACLayer::~MACLayer(){}
@@ -1102,49 +1101,41 @@ EMANE::Models::RFPipe::MACLayer::processDownstreamPacket(DownstreamPacket & pkt,
     }
   else
     {
-      bHasPendingDownstreamQueueEntry_ = true;
+      Microseconds currentDelay{delayMicroseconds_ + getJitter()};
 
-      pendingDownstreamQueueEntry_ = std::move(entry);
-
-      auto now = Clock::now();
-
-      if(currentEndOfTransmissionTime_ - currentDelay_ <= now)
+      // if we are delaying the transmission, we will delay adding it
+      // to the downstream queue
+      if(currentDelay > Microseconds::zero())
         {
-          currentDelay_ = delayMicroseconds_ + getJitter();
-
-          if(currentDelay_ > Microseconds::zero())
+          /** [timerservice-scheduletimedevent-2-snippet] */
+          pPlatformService_->timerService().
+            schedule([this,
+                      entry=std::move(entry)]
+                     (const TimePoint &,
+                      const TimePoint &,
+                      const TimePoint &) mutable
             {
-              currentEndOfTransmissionTime_ = now + currentDelay_;
+              auto now = Clock::now();
 
-              downstreamQueueTimedEventId_ =
-                pPlatformService_->timerService().
-                schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
-                                   this,
-                                   currentEndOfTransmissionTime_,
-                                   u64TxSequenceNumber_),
-                         currentEndOfTransmissionTime_);
-            }
-          else
-            {
+              bHasPendingDownstreamQueueEntry_ = true;
+
+              pendingDownstreamQueueEntry_ = std::move(entry);
+
               handleDownstreamQueueEntry(now,u64TxSequenceNumber_);
-            }
+            },
+                     beginTime + currentDelay);
+          /** [timerservice-scheduletimedevent-2-snippet] */
         }
       else
         {
-          /** [timerservice-scheduletimedevent-2-snippet] */
-          downstreamQueueTimedEventId_ =
-            pPlatformService_->timerService().
-            schedule(std::bind(&MACLayer::handleDownstreamQueueEntry,
-                               this,
-                               currentEndOfTransmissionTime_,
-                               u64TxSequenceNumber_),
-                     currentEndOfTransmissionTime_);
-          /** [timerservice-scheduletimedevent-2-snippet] */
+          bHasPendingDownstreamQueueEntry_ = true;
+
+          pendingDownstreamQueueEntry_ = std::move(entry);
+
+          handleDownstreamQueueEntry(beginTime,u64TxSequenceNumber_);
         }
     }
 }
-
-
 
 
 void
@@ -1227,11 +1218,9 @@ EMANE::Models::RFPipe::MACLayer::handleDownstreamQueueEntry(TimePoint sot,
                                                         pendingDownstreamQueueEntry_.u64DataRatebps_,
                                                         now);
 
-          currentDelay_ = delayMicroseconds_ + getJitter();
-
           // earliest you can send the next packet
           currentEndOfTransmissionTime_ =
-            sot + pendingDownstreamQueueEntry_.durationMicroseconds_ + currentDelay_;
+            sot + pendingDownstreamQueueEntry_.durationMicroseconds_;
 
           std::tie(pendingDownstreamQueueEntry_,
                    bHasPendingDownstreamQueueEntry_) =
