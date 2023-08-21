@@ -214,7 +214,8 @@ EMANE::Models::RFPipe::MACLayer::initialize(Registrar & registrar)
 
   pNumDownstreamQueueDelay_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("numDownstreamQueueDelay",
-                                                      StatisticProperties::CLEARABLE);
+                                                      StatisticProperties::CLEARABLE,
+                                                      "Accumulation of downstream queue delay in microseconds.");
 
   avgDownstreamQueueDelay_.registerStatistic(
                                              statisticRegistrar.registerNumeric<float>("avgDownstreamQueueDelay",

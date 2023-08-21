@@ -54,7 +54,8 @@ void EMANE::Models::RFPipe::DownstreamQueue::registerStatistics(StatisticRegistr
 { 
   pNumHighWaterMark_ =
      statisticRegistrar.registerNumeric<std::uint32_t>("numHighWaterMark",
-                                                       StatisticProperties::CLEARABLE);
+                                                       StatisticProperties::CLEARABLE,
+                                                       "Downstream queue high water mark in packets.");
 }
 
 
