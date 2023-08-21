@@ -328,14 +328,14 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
                                         "Defines whether the receive power table will be populated. Large number"
-                                        " of antenna (MIMO) and/or frequency segments will increases processing"
+                                        " of antenna (MIMO) and/or frequency segments will increase processing"
                                         " load when populating.");
 
   configRegistrar.registerNumeric<bool>("stats.observedpowertableenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
                                         "Defines whether the observed power table will be populated. Large number"
-                                        " of antenna (MIMO) and/or frequency segments will increases processing"
+                                        " of antenna (MIMO) and/or frequency segments will increase processing"
                                         " load when populating.");
 
   configRegistrar.registerNumeric<bool>("rxsensitivitypromiscuousmodeenable",
