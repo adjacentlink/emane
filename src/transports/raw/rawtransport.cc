@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -40,6 +40,8 @@
 #include "emane/startexception.h"
 
 #include "emane/utils/threadutils.h"
+#include "emane/utils/parameterconvert.h"
+
 #include "emane/controls/serializedcontrolmessage.h"
 
 #include <sstream>
@@ -133,6 +135,25 @@ void EMANE::Transports::Raw::RawTransport::initialize(Registrar & registrar)
                                         {true},
                                         "Enable ARP request/reply monitoring to map Ethernet address to NEM.");
 
+  configRegistrar.registerNonNumeric<std::string>("ethernet.type.unknown.priority",
+                                                  ConfigurationProperties::NONE,
+                                                  {},
+                                                  "Defines the emulator priority value (DSCP"
+                                                  " used for IP) to use when the specified"
+                                                  " unknown Ethernet type is encountered"
+                                                  " during downstream processing. Uses the"
+                                                  " following format: <ethernet type>:<priority>.",
+                                                  0,
+                                                  std::numeric_limits<std::uint16_t>::max(),
+                                                  "^(0[xX]){0,1}\\d+:\\d+$");
+
+  configRegistrar.registerNumeric<std::uint8_t>("ethernet.type.arp.priority",
+                                                ConfigurationProperties::DEFAULT,
+                                                {0},
+                                                "Defines the emulator priority value (DSCP"
+                                                " used for IP) to use when an ARP Ethernet"
+                                                " frame is encountered during downstream"
+                                                " processing.");
 }
 
 
@@ -189,6 +210,45 @@ void EMANE::Transports::Raw::RawTransport::configure(const ConfigurationUpdate &
                                   __func__,
                                   item.first.c_str(),
                                   bArpCacheMode_);
+        }
+      else if(item.first == "ethernet.type.arp.priority")
+        {
+          u8EtherTypeARPPriority_ = item.second[0].asUINT8();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "TRANSPORTI %03hu RawTransport::%s %s: %hhu",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  u8EtherTypeARPPriority_);
+        }
+      else if(item.first == "ethernet.type.unknown.priority")
+        {
+          for(const auto & value : item.second)
+            {
+              std::string sEntry{value.asString()};
+
+              auto pos = sEntry.find_first_of(':');
+
+              std::uint16_t u16EtherType =
+                Utils::ParameterConvert(sEntry.substr(0,pos)).toUINT16();
+
+              std::int8_t u8Priority =
+                Utils::ParameterConvert(sEntry.substr(pos+1)).toUINT8();
+
+              unknownEtherTypePriorityMap_[u16EtherType] = u8Priority;
+
+              LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                      INFO_LEVEL,
+                                      "TRANSPORTI %03hu RawTransport::%s %s: %#hx:%hhu",
+                                      id_,
+                                      __func__,
+                                      item.first.c_str(),
+                                      u16EtherType,
+                                      u8Priority);
+
+            }
         }
       else
         {
