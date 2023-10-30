@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008,2009,2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -182,14 +183,15 @@ namespace EMANE
 
         TimePoint currentEndOfTransmissionTime_;
 
-        void handleDownstreamQueueEntry(TimePoint sot,
-                                        std::uint64_t u64TxSequenceNumber);
+        void sendDownstreamQueueEntry();
 
         Microseconds getDurationMicroseconds(size_t lengthInBytes);
 
         Microseconds getJitter();
 
         bool checkPOR(float fSINR, size_t packetSize);
+
+        void pendOrEnqueueDownstreamQueueEntry(DownstreamQueueEntry && entry);
       };
     }
   }
