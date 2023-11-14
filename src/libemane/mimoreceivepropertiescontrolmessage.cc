@@ -50,7 +50,7 @@ public:
                  DopplerShifts && dopplerShifts):
     sot_{sot},
     propagation_{propagation},
-    antennaReceiveInfos_{std:move(antennaReceiveInfos)},
+    antennaReceiveInfos_(std::move(antennaReceiveInfos)),
     dopplerShifts_{std::move(dopplerShifts)}{}
 
   const TimePoint & getTxTime() const

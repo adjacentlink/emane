@@ -33,6 +33,7 @@
 #ifndef EMANEINETADDR_HEADER_
 #define EMANEINETADDR_HEADER_
 
+#include <cstdint>
 #include <string>
 #include <memory>
 #include <net/if.h>
