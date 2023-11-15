@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2009-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -74,6 +75,10 @@ namespace EMANE
 
         bool bBroadcastMode_;
         bool bArpCacheMode_;
+        std::uint8_t u8EtherTypeARPPriority_;
+
+        using UnknownEtherTypePriorityMap = std::map<std::uint16_t,std::uint8_t>;
+        UnknownEtherTypePriorityMap unknownEtherTypePriorityMap_;
 
       private:
         std::mutex mutex_;

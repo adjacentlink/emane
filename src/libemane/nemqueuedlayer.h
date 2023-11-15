@@ -135,6 +135,7 @@ namespace EMANE
                                                              Callback>>;
     FileDescriptorStore fileDescriptorStore_;
 
+    StatisticNumeric<std::uint64_t> * pNumQueued_;
     StatisticNumeric<std::uint64_t> * pProcessedDownstreamPacket_;
     StatisticNumeric<std::uint64_t> * pProcessedUpstreamPacket_;
     StatisticNumeric<std::uint64_t> * pProcessedDownstreamControl_;

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008,2009,2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -40,6 +41,7 @@
 #include "emane/neighbormetricmanager.h"
 #include "emane/queuemetricmanager.h"
 #include "emane/statisticnumeric.h"
+#include "emane/rfsignaltable.h"
 
 #include "emane/utils/runningaverage.h"
 #include "emane/utils/randomnumberdistribution.h"
@@ -136,6 +138,8 @@ namespace EMANE
 
         QueueMetricManager queueMetricManager_;
 
+        RFSignalTable rfSignalTable_;
+
         // config items
         bool bPromiscuousMode_;
 
@@ -179,16 +183,15 @@ namespace EMANE
 
         TimePoint currentEndOfTransmissionTime_;
 
-        Microseconds currentDelay_;
-
-        void handleDownstreamQueueEntry(TimePoint sot,
-                                        std::uint64_t u64TxSequenceNumber);
+        void sendDownstreamQueueEntry();
 
         Microseconds getDurationMicroseconds(size_t lengthInBytes);
 
         Microseconds getJitter();
 
         bool checkPOR(float fSINR, size_t packetSize);
+
+        void pendOrEnqueueDownstreamQueueEntry(DownstreamQueueEntry && entry);
       };
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2022-2023 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,17 +82,19 @@ namespace EMANE
       * @param src                     src NEM
       * @param rxAntennaId             rx antenna Id
       * @param frequencyHz             frequency in Hz
-      * @param fRxPower_mW             rx power in milli watts
-      * @param fNoiseFloor_mW          nosie floor milli watts
-      * @param freceiverSensitivity_mW receiver sensitivity milli watts
+      * @param dRxPower_dBm            rx power in dBm
+      * @param dSINR_dB                SINR in dB
+      * @param dNoiseFloor_dB          nosie floor dB
+      * @param freceiverSensitivity_dB receiver sensitivity dB
       *
       */
      void update(NEMId src,
                  AntennaIndex rxAntennaId,
                  std::uint64_t frequencyHz,
-                 double fRxPower_mW,
-                 double fNoiseFloor_mW,
-                 double fReceiverSensitivity_mW);
+                 double dRxPower_dBm,
+                 double dSINR_dB,
+                 double dNoiseFloor_dB,
+                 double dReceiverSensitivity_dB);
 
      /**
       * Clear all table table entries for a given antenna

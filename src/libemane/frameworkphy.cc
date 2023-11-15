@@ -314,11 +314,11 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                  " performance. The processing pool can reduce the amount of"
                                                  " processing time for an upstream message that contains a large"
                                                  " number of frequency segments and/or a large number of transmit"
-                                                 " antenna (MIMO). Without a processing pool receive paths are"
+                                                 " antenna (MIMO). Without a processing pool, receive paths are"
                                                  " calculated serially in a loop. There is a threshold where"
                                                  " serial processing is faster than the context switching of the"
                                                  " thread pool.  Additionally, if the number of cores available to"
-                                                 " a running emane process is less than the processing pool size"
+                                                 " a running emane process is less than the processing pool size,"
                                                  " worse performance may be encountered.",
                                                  std::numeric_limits<std::uint16_t>::min(),
                                                  std::numeric_limits<std::uint16_t>::max(), 1, 1,
@@ -328,14 +328,14 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
                                         "Defines whether the receive power table will be populated. Large number"
-                                        " of antenna (MIMO) and/or frequency segments will increases processing"
+                                        " of antenna (MIMO) and/or frequency segments will increase processing"
                                         " load when populating.");
 
   configRegistrar.registerNumeric<bool>("stats.observedpowertableenable",
                                         EMANE::ConfigurationProperties::DEFAULT,
                                         {true},
                                         "Defines whether the observed power table will be populated. Large number"
-                                        " of antenna (MIMO) and/or frequency segments will increases processing"
+                                        " of antenna (MIMO) and/or frequency segments will increase processing"
                                         " load when populating.");
 
   configRegistrar.registerNumeric<bool>("rxsensitivitypromiscuousmodeenable",

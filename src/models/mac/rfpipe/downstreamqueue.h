@@ -53,7 +53,7 @@ namespace EMANE
        *
        * @brief RFPipe MAC downstream queue entry definition
        */
-      struct DownstreamQueueEntry 
+      struct DownstreamQueueEntry
       {
         DownstreamPacket pkt_;              // packet payload
         TimePoint acquireTime_;             // packet acquire time (absolute time)
@@ -78,7 +78,7 @@ namespace EMANE
          * @param u64DataRatebps       data rate bps
          */
 
-        DownstreamQueueEntry(DownstreamPacket & pkt, 
+        DownstreamQueueEntry(DownstreamPacket & pkt,
                              const TimePoint & acquireTime,
                              const Microseconds & durationMicroseconds,
                              std::uint64_t u64DataRatebps) :
@@ -105,7 +105,7 @@ namespace EMANE
         /**
          * @brief Constructor
          *
-         */ 
+         */
         DownstreamQueue();
 
         /**
@@ -118,7 +118,7 @@ namespace EMANE
         void registerStatistics(StatisticRegistrar & statisticRegistrar);
 
         /**
-         * 
+         *
          * @brief Returns the number of discards
          * @param bClear clear counter
          *
@@ -129,7 +129,7 @@ namespace EMANE
 
 
         /**
-         * 
+         *
          * @brief Returns the current size of the queue
          *
          * @retval size_t current size of the queue
@@ -138,7 +138,7 @@ namespace EMANE
         size_t getCurrentDepth();
 
         /**
-         * 
+         *
          * @brief Returns the max size of the queue
          *
          * @retval size_t max size of the queue
@@ -147,7 +147,7 @@ namespace EMANE
         size_t getMaxCapacity();
 
         /**
-         * 
+         *
          * @brief removes an element from the queue
          *
          * @return entry the pop'd entry
@@ -156,7 +156,7 @@ namespace EMANE
         std::pair<DownstreamQueueEntry,bool> dequeue();
 
         /**
-         * 
+         *
          * @brief Adds an element to the queue
          *
          * @param entry the entry to be added to the queue
@@ -165,10 +165,10 @@ namespace EMANE
          *
          */
         std::vector<DownstreamQueueEntry>
-        enqueue(DownstreamQueueEntry &entry);
+        enqueue(DownstreamQueueEntry && entry);
 
         /**
-         * 
+         *
          * @brief Returns a reference to the element to be pop'd next
          *
          * @return entry the entry to be pop'd next

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,8 +101,8 @@ namespace EMANE
       * @param src                  src NEM (nbr)
       * @param u64SeqNum            pkt sequence number
       * @param uuid                 application uuid
-      * @param fSINR                sinr in dbm
-      * @param fNoiseFloor          noise floor in dBm
+      * @param dSINR                sinr in dbm
+      * @param dNoiseFloor          noise floor in dBm
       * @param rxTime               pkt rx time
       * @param durationMicroseconds pkt duration
       * @param u64DataRatebps       data rate in bps
@@ -110,8 +111,8 @@ namespace EMANE
       void updateNeighborRxMetric(const NEMId src, 
                                   std::uint64_t u64SeqNum,
                                   const uuid_t & uuid,
-                                  float fSINR,
-                                  float fNoiseFloor,
+                                  double dSINR,
+                                  double dNoiseFloor,
                                   const TimePoint & rxTime,
                                   const Microseconds & durationMicroseconds,
                                   std::uint64_t u64DataRatebps);

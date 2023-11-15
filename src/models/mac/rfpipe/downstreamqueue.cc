@@ -34,7 +34,7 @@
 
 #include "downstreamqueue.h"
 
-namespace 
+namespace
 {
   const std::uint16_t QUEUE_SIZE_DEFAULT{0xFF};
 }
@@ -46,22 +46,23 @@ EMANE::Models::RFPipe::DownstreamQueue::DownstreamQueue():
 {}
 
 
-EMANE::Models::RFPipe::DownstreamQueue::~DownstreamQueue() 
+EMANE::Models::RFPipe::DownstreamQueue::~DownstreamQueue()
 {}
 
 
 void EMANE::Models::RFPipe::DownstreamQueue::registerStatistics(StatisticRegistrar & statisticRegistrar)
-{ 
+{
   pNumHighWaterMark_ =
      statisticRegistrar.registerNumeric<std::uint32_t>("numHighWaterMark",
-                                                       StatisticProperties::CLEARABLE);
+                                                       StatisticProperties::CLEARABLE,
+                                                       "Downstream queue high water mark in packets.");
 }
 
 
 
-size_t 
-EMANE::Models::RFPipe::DownstreamQueue::getNumDiscards(bool bClear) 
-{ 
+size_t
+EMANE::Models::RFPipe::DownstreamQueue::getNumDiscards(bool bClear)
+{
    size_t result{numDiscards_};
 
    if(bClear)
@@ -73,43 +74,43 @@ EMANE::Models::RFPipe::DownstreamQueue::getNumDiscards(bool bClear)
 }
 
 
-size_t 
+size_t
 EMANE::Models::RFPipe::DownstreamQueue::getCurrentDepth()
-{ 
+{
    return queue_.size();
 }
 
 
-size_t 
+size_t
 EMANE::Models::RFPipe::DownstreamQueue::getMaxCapacity()
-{ 
+{
    return maxQueueSize_;
 }
 
 
 std::pair<EMANE::Models::RFPipe::DownstreamQueueEntry,bool>
 EMANE::Models::RFPipe::DownstreamQueue::dequeue()
-{ 
+{
   if(queue_.empty())
      {
        return {{},false};
      }
 
   DownstreamQueueEntry entry{queue_.front()};
-  
+
   queue_.pop();
-  
+
   return {entry,true};
 }
 
 
 std::vector<EMANE::Models::RFPipe::DownstreamQueueEntry>
-EMANE::Models::RFPipe::DownstreamQueue::enqueue(DownstreamQueueEntry &entry) 
-{ 
+EMANE::Models::RFPipe::DownstreamQueue::enqueue(DownstreamQueueEntry && entry)
+{
    std::vector<DownstreamQueueEntry> result;
 
    // check for queue overflow
-   while(queue_.size() >= maxQueueSize_) 
+   while(queue_.size() >= maxQueueSize_)
      {
        ++numDiscards_;
 
@@ -120,7 +121,7 @@ EMANE::Models::RFPipe::DownstreamQueue::enqueue(DownstreamQueueEntry &entry)
 
    queue_.push(std::move(entry));
 
-   if(queue_.size() > pNumHighWaterMark_->get()) 
+   if(queue_.size() > pNumHighWaterMark_->get())
      {
        *pNumHighWaterMark_ = queue_.size();
      }
@@ -130,9 +131,8 @@ EMANE::Models::RFPipe::DownstreamQueue::enqueue(DownstreamQueueEntry &entry)
 
 
 
-const EMANE::Models::RFPipe::DownstreamQueueEntry & 
+const EMANE::Models::RFPipe::DownstreamQueueEntry &
 EMANE::Models::RFPipe::DownstreamQueue::peek()
-{ 
+{
    return queue_.front();
 }
-

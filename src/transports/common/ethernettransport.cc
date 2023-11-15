@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2023 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2009-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -39,7 +40,8 @@ EMANE::Transports::Ethernet::EthernetTransport::EthernetTransport(NEMId id,
                                                                   PlatformServiceProvider *pPlatformService):
   Transport(id, pPlatformService),
   bBroadcastMode_(false),
-  bArpCacheMode_(true)
+  bArpCacheMode_(true),
+  u8EtherTypeARPPriority_{}
 { }
 
 
@@ -249,8 +251,8 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
              rNemDestination = Utils::ethaddr4_to_id(&pEthHeader->dst);
            }
 
-         // set dscp to 0 for all arp types
-         rDspc = 0;
+         // use configured arp priority value, default 0
+         rDspc = u8EtherTypeARPPriority_;
 
          // success
          return 0;
@@ -281,8 +283,17 @@ int EMANE::Transports::Ethernet::EthernetTransport::parseFrame(const Utils::Ethe
            rNemDestination = ntohs(pEthHeader->dst.words.word3);
          }
 
-       // set dscp to 0
-       rDspc = 0;
+       // check if unknown ethertype has a configured priority
+       if(auto iter = unknownEtherTypePriorityMap_.find(u16ethProtocol);
+          iter != unknownEtherTypePriorityMap_.end())
+         {
+           rDspc = iter->second;
+         }
+       else
+         {
+           // set dscp to 0
+           rDspc = 0;
+         }
 
        // but not an error
        return 1;

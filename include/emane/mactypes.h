@@ -69,6 +69,10 @@ namespace EMANE
    */
   const RegistrationId REGISTERED_EMANE_MAC_TDMA = 0x0005;
 
+  /*
+   * Bent Pipe Mac Type.  Contrib. Adjacent Link LLC <emane at adjacent link dot com> Reg. 2022.11.07
+   */
+  const RegistrationId REGISTERED_EMANE_MAC_BENT_PIPE = 0x0006;
 }
 
 
