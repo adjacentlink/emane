@@ -36,6 +36,7 @@
 #include <string>
 #include <map>
 #include <tuple>
+#include <cstdint>
 
 namespace EMANE
 {

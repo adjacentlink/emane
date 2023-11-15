@@ -83,7 +83,7 @@ def decodeSI(value):
 def expandIndex(index):
     result = set()
     for item in index.split(','):
-        match = re.match("(\d+):(\d+)",item)
+        match = re.match(r"(\d+):(\d+)",item)
 
         if match:
             list(map(lambda x: result.add(x),list(range(int(match.group(1)),int(match.group(2))+1))))
