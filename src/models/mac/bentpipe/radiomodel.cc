@@ -247,7 +247,7 @@ EMANE::Models::BentPipe::RadioModel::initialize(Registrar & registrar)
                                                   " <transponder index>:[slot|slot-slot];....",
                                                   1,
                                                   std::numeric_limits<std::uint16_t>::max(),
-                                                  "^\\d+:na|(\\d+|\\d+-\\d+)(;(\\d+|\\d+-\\d+)){0,}$");
+                                                  "^\\d+:(na|(\\d+|\\d+-\\d+)(;(\\d+|\\d+-\\d+)){0,})$");
 
   configRegistrar.registerNonNumeric<std::string>("transponder.transmit.mtu",
                                                   ConfigurationProperties::REQUIRED |

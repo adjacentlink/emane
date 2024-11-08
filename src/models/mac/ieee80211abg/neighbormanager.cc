@@ -878,6 +878,12 @@ EMANE::Models::IEEE80211ABG::NeighborManager::calculateBwUtilization_i(const Mic
                 // each one hop nbr (again)
                 for(auto & nbrEntry2 : oneHopNbrMap_)
                  {
+                    // a node can not be common or hidden from itself
+                    if(nbrEntry2.first == nbrEntry1.first)
+                      {
+                        continue;
+                      }
+
                     // does the nbr's one hop nbr set include our nbr
                     if(nbrOneHopNbrSet.find(nbrEntry2.first) != nbrOneHopNbrSet.end())
                      {
