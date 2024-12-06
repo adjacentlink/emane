@@ -127,6 +127,7 @@ namespace EMANE
     Microseconds timeSyncThreshold_;
     bool bNoiseMaxClamp_;
     double dSystemNoiseFiguredB_;
+    StatisticNumeric<std::uint64_t> * pNumDownstreamPacketsRadioSilenceEnabledDrop_;
     StatisticNumeric<std::uint64_t> * pTimeSyncThresholdRewrite_;
     StatisticNumeric<std::uint64_t> * pGainCacheHit_;
     StatisticNumeric<std::uint64_t> * pGainCacheMiss_;
@@ -149,6 +150,7 @@ namespace EMANE
     bool bRxSensitivityPromiscuousModeEnable_;
     bool bDopplerShiftEnable_;
     SpectralMaskIndex spectralMaskIndex_;
+    bool bRadioSilenceEnable_;
 
     void createDefaultAntennaIfNeeded();
   };

@@ -139,6 +139,7 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   timeSyncThreshold_{},
   bNoiseMaxClamp_{},
   dSystemNoiseFiguredB_{},
+  pNumDownstreamPacketsRadioSilenceEnabledDrop_{},
   pTimeSyncThresholdRewrite_{},
   pGainCacheHit_{},
   pGainCacheMiss_{},
@@ -151,7 +152,8 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   bStatsObservedPowerTableEnable_{},
   bRxSensitivityPromiscuousModeEnable_{},
   bDopplerShiftEnable_{},
-  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX}{}
+  spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX},
+  bRadioSilenceEnable_{}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -357,6 +359,13 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                      "Defines the spectral mask index used for all transmissions."
                                                      " Set to 0 to use the emulator default square spectral mask.");
 
+  configRegistrar.registerNumeric<bool>("radiosilenceenable",
+                                        EMANE::ConfigurationProperties::DEFAULT |
+                                        EMANE::ConfigurationProperties::MODIFIABLE,
+                                        {false},
+                                        "Defines whether transmission is allowed. When enabled"
+                                        "over-the-air (downstream) messages will be dropped.");
+
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
 
@@ -379,6 +388,10 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   receivePowerTablePublisher_.registerStatistics(statisticRegistrar);
 
   observedPowerTablePublisher_.registerStatistics(statisticRegistrar);
+
+  pNumDownstreamPacketsRadioSilenceEnabledDrop_ =
+    statisticRegistrar.registerNumeric<std::uint64_t>("numDownstreamPacketsRadioSilenceEnabledDrop",
+                                                      StatisticProperties::CLEARABLE);
 
   pTimeSyncThresholdRewrite_ =
     statisticRegistrar.registerNumeric<std::uint64_t>("numTimeSyncThresholdRewrite",
@@ -750,6 +763,19 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   spectralMaskIndex_);
         }
+      else if(item.first == "radiosilenceenable")
+        {
+          bRadioSilenceEnable_ = item.second[0].asBool();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bRadioSilenceEnable_ ? "on" : "off");
+        }
+
       else
         {
           if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
@@ -863,6 +889,19 @@ void EMANE::FrameworkPHY::processConfiguration(const ConfigurationUpdate & updat
                                   __func__,
                                   item.first.c_str(),
                                   dTxPowerdBm_);
+        }
+      else if(item.first == "radiosilenceenable")
+        {
+          bRadioSilenceEnable_ = item.second[0].asBool();
+
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bRadioSilenceEnable_ ? "on" : "off");
+
         }
       else
         {
@@ -1173,6 +1212,12 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
                                                     DownstreamPacket & pkt,
                                                     const ControlMessages & msgs)
 {
+
+  if (bRadioSilenceEnable_){
+    ++*pNumDownstreamPacketsRadioSilenceEnabledDrop_;
+    return;
+  }
+
   const PacketInfo & pktInfo{pkt.getPacketInfo()};
 
   LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
