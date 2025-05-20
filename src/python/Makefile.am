@@ -52,8 +52,10 @@ all-local:
 
 clean-local: setup.py
 	$(PYTHON) setup.py clean
-	-rm -rf build dist
+	-rm -rf build
+	-rm -rf dist
 	-rm -f MANIFEST $(BUILT_SOURCES)
+	-find . -name "*.pyc" -delete
 	if test -d emane/shell/schema; then rmdir emane/shell/schema; fi
 	-rm -f .installedfiles
 
@@ -61,7 +63,7 @@ sdist:
 	$(PYTHON) setup.py sdist
 
 edit = sed                              \
-        -e 's|@VERSION[@]|$(VERSION)|g' 
+	-e 's|@VERSION[@]|$(VERSION)|g'
 
 emane/shell/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emane/shell  $<
@@ -112,11 +114,13 @@ setup.py:	setup.py.in
 
 install-exec-hook: $(BUILT_SOURCES)
 	$(PYTHON) setup.py install \
+            --single-version-externally-managed \
 	    -O1 \
-        --record .installedfiles \
-	    --prefix=$(prefix) \
-	    --exec-prefix=$(exec_prefix) \
-	    $(if $(DESTDIR),--root=$(DESTDIR))
+            --record .installedfiles \
+            --prefix=$(prefix) \
+            --exec-prefix=$(exec_prefix) \
+            $(if $(DESTDIR),--root=$(DESTDIR)) \
+            $(if $(subst false,,$(HAVE_DEB)),--install-layout=deb)
 
 uninstall-hook:
 	if test -f .installedfiles; then xargs -a .installedfiles rm -f; fi

@@ -1,4 +1,4 @@
-usr/lib/python3.*/*-packages/*
+usr/lib/python3*/*-packages/*
 usr/bin/emanecommand-eel
 usr/bin/emaneevent-antennaprofile
 usr/bin/emaneevent-commeffect
