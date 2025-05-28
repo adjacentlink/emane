@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,13 +43,42 @@ namespace EMANE
   {
   public:
     PrecomputedPropagationModelAlgorithm(NEMId){}
-      
 
     void update(const Events::Pathlosses & pathlosses) override
     {
       for(const auto & pathloss : pathlosses)
-        {  
-          pathlossStore_[pathloss.getNEMId()] = pathloss.getForwardPathlossdB();
+        {
+          PathlossStore::iterator iter =
+            pathlossStore_.find(pathloss.getNEMId());
+
+          if(iter == pathlossStore_.end())
+            {
+              iter = pathlossStore_.emplace(pathloss.getNEMId(),
+                                            FrequencyPathlossStore{}).first;
+            }
+
+          // 0 Hz is the default when no frequency match is found
+          iter->second[0] = pathloss.getForwardPathlossdB();
+        }
+    }
+
+    void update(const Events::PathlossExs & pathlossExs) override
+    {
+      for(const auto & pathloss : pathlossExs)
+        {
+          PathlossStore::iterator iter =
+            pathlossStore_.find(pathloss.getNEMId());
+
+          if(iter == pathlossStore_.end())
+            {
+              iter = pathlossStore_.emplace(pathloss.getNEMId(),
+                                            FrequencyPathlossStore{}).first;
+            }
+
+          for(const auto & entry : pathloss.getFrequencyPathlossMap())
+            {
+              iter->second[entry.first] = entry.second;
+            }
         }
     }
 
@@ -61,14 +90,41 @@ namespace EMANE
 
       if(iter != pathlossStore_.end())
         {
-          return {std::vector<double>(segments.size(),iter->second),true};
+          std::vector<double> pathloss(segments.size(),0);
+
+          size_t i{};
+
+          for(const auto & segment : segments)
+            {
+              if(auto fiter = iter->second.find(segment.getFrequencyHz());
+                 fiter != iter->second.end())
+                {
+                  pathloss[i++] = fiter->second;
+                }
+              else
+                {
+                  // 0 Hz is the default when no frequency match is found
+                  if(auto fiter = iter->second.find(0);
+                     fiter != iter->second.end())
+                    {
+                      pathloss[i++] = fiter->second;
+                    }
+                  else
+                    {
+                      return {{},false};
+                    }
+                }
+            }
+
+          return {std::move(pathloss),true};
         }
-        
+
       return {{},false};
     }
 
   private:
-    using PathlossStore = std::map<NEMId,double>;
+    using FrequencyPathlossStore = std::map<std::uint64_t,double>;
+    using PathlossStore = std::map<NEMId,FrequencyPathlossStore>;
     PathlossStore pathlossStore_;
   };
 }

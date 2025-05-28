@@ -44,6 +44,8 @@ nodist_libemane_la_SOURCES =             \
  otatransmitter.pb.h                     \
  pathlossevent.pb.cc                     \
  pathlossevent.pb.h                      \
+ pathlossexevent.pb.cc                   \
+ pathlossexevent.pb.h                    \
  radiotorouter.pb.cc                     \
  radiotorouter.pb.h                      \
  remotecontrolportapi.pb.cc              \
@@ -156,6 +158,8 @@ libemane_la_SOURCES =                         \
  otatransmittercontrolmessage.cc              \
  pathlossevent.cc                             \
  pathlosseventformatter.cc                    \
+ pathlossexevent.cc                           \
+ pathlossexeventformatter.cc                  \
  phylayer.cc                                  \
  phylayerfactory.cc                           \
  platformservice.cc                           \
@@ -369,6 +373,7 @@ EXTRA_DIST =                                  \
  otaheader.proto                              \
  otatransmitter.proto                         \
  pathlossevent.proto                          \
+ pathlossexevent.proto                        \
  radiotorouter.proto                          \
  remotecontrolportapi.proto                   \
  tdmascheduleevent.proto
@@ -395,6 +400,9 @@ locationevent.pb.cc locationevent.pb.h:	locationevent.proto
 	protoc -I=. --cpp_out=. $<
 
 pathlossevent.pb.cc pathlossevent.pb.h:	pathlossevent.proto
+	protoc -I=. --cpp_out=. $<
+
+pathlossexevent.pb.cc pathlossexevent.pb.h: pathlossexevent.proto
 	protoc -I=. --cpp_out=. $<
 
 commeffectevent.pb.cc commeffectevent.pb.h: commeffectevent.proto

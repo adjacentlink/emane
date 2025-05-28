@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2017,2025 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,10 +34,11 @@
 #ifndef EMANEEVENTTABLEPUBLISHER_HEADER_
 #define EMANEEVENTTABLEPUBLISHER_HEADER_
 
-#include "emane/events/antennaprofileevent.h"
-#include "emane/events/fadingselectionevent.h"
-#include "emane/events/locationevent.h"
-#include "emane/events/pathlossevent.h"
+#include "emane/events/antennaprofile.h"
+#include "emane/events/fadingselection.h"
+#include "emane/events/location.h"
+#include "emane/events/pathloss.h"
+#include "emane/events/pathlossex.h"
 #include "emane/statistictable.h"
 #include "emane/statisticregistrar.h"
 
@@ -55,6 +57,8 @@ namespace EMANE
 
     void update(const Events::Pathlosses & pathlosses);
 
+    void update(const Events::PathlossExs & pathlossExs);
+
     void update(const Events::AntennaProfiles & profiles);
 
     void update(const Events::FadingSelections & selections);
@@ -66,8 +70,12 @@ namespace EMANE
     std::set<NEMId> antennaProfileNEMSet_;
     std::set<NEMId> fadingSelectionNEMSet_;
 
+    using PathlossExKey = std::pair<NEMId,std::uint64_t>;
+    std::set<PathlossExKey> pathlossExNEMSet_;
+
     StatisticTable<NEMId> * pLocationTable_;
     StatisticTable<NEMId> * pPathlossTable_;
+    StatisticTable<PathlossExKey> * pPathlossExTable_;
     StatisticTable<NEMId> * pAntennaProfileTable_;
     StatisticTable<NEMId> * pFadingSelectionTable_;
   };

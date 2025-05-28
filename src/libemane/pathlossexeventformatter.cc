@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
+#include "emane/events/pathlossexeventformatter.h"
 
-#include "emane/types.h"
-#include "emane/events/pathloss.h"
-#include "emane/events/pathlossex.h"
-#include "emane/frequencysegment.h"
-
-#include <vector>
-#include <utility>
-
-namespace EMANE
+EMANE::Events::PathlossExEventFormatter::
+PathlossExEventFormatter(const PathlossExEvent & event):
+  event_(event)
+{}
+      
+EMANE::Strings EMANE::Events::PathlossExEventFormatter::operator()() const
 {
-  class PropagationModelAlgorithm
-  {
-  public:
-    virtual ~PropagationModelAlgorithm(){};
+  Strings strings;
 
-    virtual void update(const Events::Pathlosses &){};
+  for(const auto & pathloessEx : event_.getPathlossExs())
+    {
+      std::string s{"nem: " +
+                    std::to_string(pathloessEx.getNEMId())};
+      
+      for(const auto & entry : pathloessEx.getFrequencyPathlossMap())
+        {
+          s.append(" " + std::to_string(entry.first) + ":" + std::to_string(entry.second));
+        }
+      
+      strings.emplace_back(std::move(s));
+    }
 
-    virtual void update(const Events::PathlossExs &){};
-
-    virtual std::pair<std::vector<double>, bool>
-    operator()(NEMId src,
-               const LocationInfo & locationInfo,
-               const FrequencySegments & segments) = 0;
-
-  protected:
-    PropagationModelAlgorithm() = default;
-  };
+  return strings;
 }
-
-#endif // EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_

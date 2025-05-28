@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
+syntax = "proto2";
 
-#include "emane/types.h"
-#include "emane/events/pathloss.h"
-#include "emane/events/pathlossex.h"
-#include "emane/frequencysegment.h"
+package EMANEMessage;
 
-#include <vector>
-#include <utility>
+option optimize_for = SPEED;
 
-namespace EMANE
+message PathlossExEvent
 {
-  class PropagationModelAlgorithm
+  message Pathloss
   {
-  public:
-    virtual ~PropagationModelAlgorithm(){};
+    message Entry
+    {
+      required uint64 frequencyHz = 1;
+      required float pathlossdB = 2;
+    }
 
-    virtual void update(const Events::Pathlosses &){};
+    required uint32 nemId = 1;
+    repeated Entry entries = 2;
+  }
 
-    virtual void update(const Events::PathlossExs &){};
-
-    virtual std::pair<std::vector<double>, bool>
-    operator()(NEMId src,
-               const LocationInfo & locationInfo,
-               const FrequencySegments & segments) = 0;
-
-  protected:
-    PropagationModelAlgorithm() = default;
-  };
+  repeated Pathloss pathlosses = 1;
 }
-
-#endif // EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_

@@ -28,6 +28,7 @@ EXTRA_DIST= \
  emane/events/locationevent.py \
  emane/events/event.py \
  emane/events/pathlossevent.py \
+ emane/events/pathlossexevent.py \
  emane/events/eventserviceexception.py \
  emane/events/tdmascheduleevent.py
 
@@ -37,6 +38,7 @@ BUILT_SOURCES =                  \
  emane/events/event_pb2.py            \
  emane/events/locationevent_pb2.py    \
  emane/events/pathlossevent_pb2.py    \
+ emane/events/pathlossexevent_pb2.py    \
  emane/events/tdmascheduleevent_pb2.py \
  emane/events/fadingselectionevent_pb2.py \
  emane/shell/remotecontrolportapi_pb2.py \
@@ -84,6 +86,9 @@ emane/ota/commonmacheader_pb2.py: ../libemane/commonmacheader.proto
 	protoc -I../libemane --python_out=emane/ota  $<
 
 emane/events/pathlossevent_pb2.py: ../libemane/pathlossevent.proto
+	protoc -I../libemane --python_out=emane/events  $<
+
+emane/events/pathlossexevent_pb2.py: ../libemane/pathlossexevent.proto
 	protoc -I../libemane --python_out=emane/events  $<
 
 emane/events/commeffectevent_pb2.py: ../libemane/commeffectevent.proto

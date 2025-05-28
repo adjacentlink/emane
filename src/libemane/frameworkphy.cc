@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016-2017,2019-2021 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016-2017,2019-2021,2025 - Adjacent Link LLC,
  * Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -45,6 +45,8 @@
 #include "emane/events/locationeventformatter.h"
 #include "emane/events/pathlossevent.h"
 #include "emane/events/pathlosseventformatter.h"
+#include "emane/events/pathlossexevent.h"
+#include "emane/events/pathlossexeventformatter.h"
 #include "emane/events/fadingselectionevent.h"
 #include "emane/events/fadingselectioneventformatter.h"
 
@@ -99,19 +101,19 @@ namespace
   const std::uint16_t DROP_CODE_MISSING_CONTROL             = 14;
 
   EMANE::StatisticTableLabels STATISTIC_TABLE_LABELS{"Out-of-Band",
-    "Rx Sensitivity",
-    "Propagation Model",
-    "Gain Location",
-    "Gain Horizon",
-    "Gain Profile",
-    "Not FOI",
-    "Spectrum Clamp",
-    "Fade Location",
-    "Fade Algorithm",
-    "Fade Select",
-    "Antenna Freq",
-    "Gain Antenna",
-    "Missing Control"};
+                                                     "Rx Sensitivity",
+                                                     "Propagation Model",
+                                                     "Gain Location",
+                                                     "Gain Horizon",
+                                                     "Gain Profile",
+                                                     "Not FOI",
+                                                     "Spectrum Clamp",
+                                                     "Fade Location",
+                                                     "Fade Algorithm",
+                                                     "Fade Select",
+                                                     "Antenna Freq",
+                                                     "Gain Antenna",
+                                                     "Missing Control"};
 
   const std::string FADINGMANAGER_PREFIX{"fading."};
 }
@@ -370,6 +372,8 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
   auto & eventRegistrar = registrar.eventRegistrar();
 
   eventRegistrar.registerEvent(Events::PathlossEvent::IDENTIFIER);
+
+  eventRegistrar.registerEvent(Events::PathlossExEvent::IDENTIFIER);
 
   eventRegistrar.registerEvent(Events::LocationEvent::IDENTIFIER);
 
@@ -935,9 +939,9 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
 
               /** [eventservice-sendevent-snippet] */
               Events::AntennaProfiles profiles{{id_,
-                  pAntennaProfileControlMessage->getAntennaProfileId(),
-                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                                                  pAntennaProfileControlMessage->getAntennaProfileId(),
+                                                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                                                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
               antennaManager_.update(profiles);
 
@@ -1223,19 +1227,19 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
                          pktInfo.getDestination());
 
   if (bRadioSilenceEnable_)
-  {
-    ++*pNumDownstreamPacketsRadioSilenceEnabledDrop_;
+    {
+      ++*pNumDownstreamPacketsRadioSilenceEnabledDrop_;
 
-    LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
-                         DEBUG_LEVEL,
-                         "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu"
-                         " drop RadioSilenceEnable is on",
-                         id_,
-                         __func__,
-                         pktInfo.getSource(),
-                         pktInfo.getDestination());
-    return;
-  }
+      LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                             DEBUG_LEVEL,
+                             "PHYI %03hu FrameworkPHY::%s src %hu, dst %hu"
+                             " drop RadioSilenceEnable is on",
+                             id_,
+                             __func__,
+                             pktInfo.getSource(),
+                             pktInfo.getDestination());
+      return;
+    }
 
   commonLayerStatistics_.processInbound(pkt);
 
@@ -1377,9 +1381,9 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
 
               /** [physicallayer-attachevent-snippet] */
               Events::AntennaProfiles profiles{{id_,
-                  pAntennaProfileControlMessage->getAntennaProfileId(),
-                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
-                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
+                                                  pAntennaProfileControlMessage->getAntennaProfileId(),
+                                                  pAntennaProfileControlMessage->getAntennaAzimuthDegrees(),
+                                                  pAntennaProfileControlMessage->getAntennaElevationDegrees()}};
 
               antennaManager_.update(profiles);
 
@@ -1658,13 +1662,13 @@ void EMANE::FrameworkPHY::processDownstreamPacket_i(const TimePoint & now,
     }
 
   CommonPHYHeader phyHeader{REGISTERED_EMANE_PHY_FRAMEWORK, // phy registration id
-    u16SubId_,
-    u16TxSequenceNumber_++,
-    txTimeStamp,
-    frequencyGroups,
-    transmitAntennas,
-    transmitters,
-    optionalSpectrumFilterData};
+                            u16SubId_,
+                            u16TxSequenceNumber_++,
+                            txTimeStamp,
+                            frequencyGroups,
+                            transmitAntennas,
+                            transmitters,
+                            optionalSpectrumFilterData};
 
   LOGGER_VERBOSE_LOGGING_FN_VARGS(pPlatformService_->logService(),
                                   DEBUG_LEVEL,
@@ -1810,7 +1814,7 @@ void EMANE::FrameworkPHY::processUpstreamPacket_i(const TimePoint & now,
   const  auto & pktInfo = pkt.getPacketInfo();
 
   bool bInBand{commonPHYHeader.getRegistrationId() == REGISTERED_EMANE_PHY_FRAMEWORK &&
-    u16SubId_ == commonPHYHeader.getSubId()};
+               u16SubId_ == commonPHYHeader.getSubId()};
 
   if(compatibilityMode_ == CompatibilityMode::MODE_1)
     {
@@ -2270,6 +2274,22 @@ void EMANE::FrameworkPHY::processEvent(const EventId & eventId,
                                          DEBUG_LEVEL,
                                          Events::PathlossEventFormatter(pathlossEvent),
                                          "PHYI %03hu FrameworkPHY::%s pathloss event: ",
+                                         id_,
+                                         __func__);
+      }
+      break;
+
+
+    case Events::PathlossExEvent::IDENTIFIER:
+      {
+        Events::PathlossExEvent pathlossExEvent{serialization};
+        pPropagationModelAlgorithm_->update(pathlossExEvent.getPathlossExs());
+        eventTablePublisher_.update(pathlossExEvent.getPathlossExs());
+
+        LOGGER_STANDARD_LOGGING_FN_VARGS(pPlatformService_->logService(),
+                                         DEBUG_LEVEL,
+                                         Events::PathlossExEventFormatter(pathlossExEvent),
+                                         "PHYI %03hu FrameworkPHY::%s pathloss ex event: ",
                                          id_,
                                          __func__);
       }

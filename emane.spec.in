@@ -224,6 +224,7 @@ mv %{buildroot}/%{_bindir}/emaneevent-commeffect %{buildroot}/%{_bindir}/emaneev
 mv %{buildroot}/%{_bindir}/emaneevent-dump %{buildroot}/%{_bindir}/emaneevent-dump-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneevent-location %{buildroot}/%{_bindir}/emaneevent-location-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneevent-pathloss %{buildroot}/%{_bindir}/emaneevent-pathloss-%{python3_version}
+mv %{buildroot}/%{_bindir}/emaneevent-pathlossex %{buildroot}/%{_bindir}/emaneevent-pathlossex-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneevent-tdmaschedule %{buildroot}/%{_bindir}/emaneevent-tdmaschedule-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/emaneevent-fadingselection-%{python3_version}
 mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python3_version}
@@ -236,6 +237,7 @@ ln -s emaneevent-commeffect-%{python3_version} %{buildroot}%{_bindir}/emaneevent
 ln -s emaneevent-dump-%{python3_version} %{buildroot}%{_bindir}/emaneevent-dump-3
 ln -s emaneevent-location-%{python3_version} %{buildroot}%{_bindir}/emaneevent-location-3
 ln -s emaneevent-pathloss-%{python3_version} %{buildroot}%{_bindir}/emaneevent-pathloss-3
+ln -s emaneevent-pathlossex-%{python3_version} %{buildroot}%{_bindir}/emaneevent-pathlossex-3
 ln -s emaneevent-tdmaschedule-%{python3_version} %{buildroot}%{_bindir}/emaneevent-tdmaschedule-3
 ln -s emaneevent-fadingselection-%{python3_version} %{buildroot}%{_bindir}/emaneevent-fadingselection-3
 ln -s emaneota-publisher-%{python3_version} %{buildroot}%{_bindir}/emaneota-publisher-3
@@ -248,6 +250,7 @@ ln -s emaneevent-commeffect-3 %{buildroot}%{_bindir}/emaneevent-commeffect
 ln -s emaneevent-dump-3 %{buildroot}%{_bindir}/emaneevent-dump
 ln -s emaneevent-location-3 %{buildroot}%{_bindir}/emaneevent-location
 ln -s emaneevent-pathloss-3 %{buildroot}%{_bindir}/emaneevent-pathloss
+ln -s emaneevent-pathlossex-3 %{buildroot}%{_bindir}/emaneevent-pathlossex
 ln -s emaneevent-tdmaschedule-3 %{buildroot}%{_bindir}/emaneevent-tdmaschedule
 ln -s emaneevent-fadingselection-3 %{buildroot}%{_bindir}/emaneevent-fadingselection
 ln -s emaneota-publisher-3 %{buildroot}%{_bindir}/emaneota-publisher
@@ -534,6 +537,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libeelgenerator.*
 %{_libdir}/libeelloaderlocation.*
 %{_libdir}/libeelloaderpathloss.*
+%{_libdir}/libeelloaderpathlossex.*
 %{_libdir}/libeelloaderantennaprofile.*
 %{_libdir}/libeelloadercommeffect.*
 %{_libdir}/libeelloaderfadingselection.*
@@ -566,6 +570,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-dump
 %{_bindir}/emaneevent-location
 %{_bindir}/emaneevent-pathloss
+%{_bindir}/emaneevent-pathlossex
 %{_bindir}/emaneevent-tdmaschedule
 %{_bindir}/emaneevent-fadingselection
 %{_bindir}/emaneota-publisher
@@ -578,6 +583,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-dump-3
 %{_bindir}/emaneevent-location-3
 %{_bindir}/emaneevent-pathloss-3
+%{_bindir}/emaneevent-pathlossex-3
 %{_bindir}/emaneevent-tdmaschedule-3
 %{_bindir}/emaneevent-fadingselection-3
 %{_bindir}/emaneota-publisher-3
@@ -589,6 +595,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneevent-dump-%{python3_version}
 %{_bindir}/emaneevent-location-%{python3_version}
 %{_bindir}/emaneevent-pathloss-%{python3_version}
+%{_bindir}/emaneevent-pathlossex-%{python3_version}
 %{_bindir}/emaneevent-tdmaschedule-%{python3_version}
 %{_bindir}/emaneevent-fadingselection-%{python3_version}
 %{_bindir}/emaneota-publisher-%{python3_version}
