@@ -39,7 +39,7 @@ class PathlossExEvent(Event):
     def __init__(self):
         self._event = pathlossexevent_pb2.PathlossExEvent()
 
-    def append(self,nemId,frequencyPathlossMap:dict[int:float]):
+    def append(self,nemId,frequencyPathlossMap):
         pathloss = self._event.pathlosses.add()
 
         pathloss.nemId = nemId
