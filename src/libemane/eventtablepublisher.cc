@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2017,2025 - Adjacent Link LLC, Bridgewater,
+ * New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +33,24 @@
 
 #include "eventtablepublisher.h"
 
+// specialized hash for PathlossExEventInfoTable
+namespace std
+{
+  template<>
+  struct hash<std::pair<EMANE::NEMId,std::uint64_t>>
+  {
+    typedef std::pair<EMANE::NEMId,std::uint64_t> argument_type;
+    typedef std::size_t result_type;
+
+    result_type operator()(argument_type const& s) const
+    {
+      result_type const h1{std::hash<std::uint64_t>()(std::get<0>(s))};
+      result_type const h2{std::hash<std::uint64_t>()(std::get<1>(s))};
+      return (h1 << 48) ^ (h2 >>16 );
+    }
+  };
+}
+
 EMANE::EventTablePublisher::EventTablePublisher(NEMId nemId):
   nemId_{nemId}{};
 
@@ -49,6 +68,12 @@ void EMANE::EventTablePublisher::registerStatistics(StatisticRegistrar & statist
                                             {"NEM","Forward Pathloss","Reverse Pathloss"},
                                             StatisticProperties::NONE,
                                             "Shows the precomputed pathloss information received");
+
+  pPathlossExTable_ =
+    statisticRegistrar.registerTable<PathlossExKey>("PathlossExEventInfoTable",
+                                                    {"NEM","Frequency","Pathloss"},
+                                                    StatisticProperties::NONE,
+                                                    "Shows the per frequency precomputed pathloss information received");
 
   pAntennaProfileTable_ =
     statisticRegistrar.registerTable<NEMId>("AntennaProfileEventInfoTable",
@@ -80,15 +105,15 @@ void EMANE::EventTablePublisher::update(const Events::Locations & locations)
           auto optionalVelocity = location.getVelocity();
 
           pLocationTable_->addRow(targetNEM,{Any{targetNEM},
-                Any{position.getLatitudeDegrees()},
-                  Any{position.getLongitudeDegrees()},
-                    Any{position.getAltitudeMeters()},
-                      Any{optionalOrientation.first.getPitchDegrees()},
-                        Any{optionalOrientation.first.getRollDegrees()},
-                          Any{optionalOrientation.first.getYawDegrees()},
-                            Any{optionalVelocity.first.getAzimuthDegrees()},
-                              Any{optionalVelocity.first.getElevationDegrees()},
-                                Any{optionalVelocity.first.getMagnitudeMetersPerSecond()}});
+                                             Any{position.getLatitudeDegrees()},
+                                             Any{position.getLongitudeDegrees()},
+                                             Any{position.getAltitudeMeters()},
+                                             Any{optionalOrientation.first.getPitchDegrees()},
+                                             Any{optionalOrientation.first.getRollDegrees()},
+                                             Any{optionalOrientation.first.getYawDegrees()},
+                                             Any{optionalVelocity.first.getAzimuthDegrees()},
+                                             Any{optionalVelocity.first.getElevationDegrees()},
+                                             Any{optionalVelocity.first.getMagnitudeMetersPerSecond()}});
 
           locationNEMSet_.insert(targetNEM);
         }
@@ -129,8 +154,8 @@ void EMANE::EventTablePublisher::update(const Events::Pathlosses & pathlosses)
       auto targetNEM = pathloss.getNEMId();
 
       std::vector<Any> row{Any{targetNEM},
-          Any{pathloss.getForwardPathlossdB()},
-            Any{pathloss.getReversePathlossdB()}};
+                           Any{pathloss.getForwardPathlossdB()},
+                           Any{pathloss.getReversePathlossdB()}};
 
       if(pathlossNEMSet_.find(targetNEM) == pathlossNEMSet_.end())
         {
@@ -145,6 +170,34 @@ void EMANE::EventTablePublisher::update(const Events::Pathlosses & pathlosses)
     }
 }
 
+void EMANE::EventTablePublisher::update(const Events::PathlossExs & pathlossExs)
+{
+  for(const auto & pathlossEx : pathlossExs)
+    {
+      auto targetNEM = pathlossEx.getNEMId();
+
+      for(const auto & entry : pathlossEx.getFrequencyPathlossMap())
+        {
+          PathlossExKey key{targetNEM,entry.first};
+
+          std::vector<Any> row{Any{targetNEM},
+                               Any{entry.first},
+                               Any{entry.second}};
+
+          if(pathlossExNEMSet_.find(key) == pathlossExNEMSet_.end())
+            {
+              pPathlossExTable_->addRow(key,row);
+
+              pathlossExNEMSet_.insert(key);
+            }
+          else
+            {
+              pPathlossExTable_->setRow(key,row);
+            }
+        }
+    }
+}
+
 void EMANE::EventTablePublisher::update(const Events::AntennaProfiles & profiles)
 {
 
@@ -153,9 +206,9 @@ void EMANE::EventTablePublisher::update(const Events::AntennaProfiles & profiles
       auto targetNEM = profile.getNEMId();
 
       std::vector<Any> row{Any{targetNEM},
-          Any{profile.getAntennaProfileId()},
-            Any{profile.getAntennaAzimuthDegrees()},
-              Any{profile.getAntennaElevationDegrees()}};
+                           Any{profile.getAntennaProfileId()},
+                           Any{profile.getAntennaAzimuthDegrees()},
+                           Any{profile.getAntennaElevationDegrees()}};
 
       if(antennaProfileNEMSet_.find(targetNEM) == antennaProfileNEMSet_.end())
         {
@@ -192,7 +245,7 @@ void EMANE::EventTablePublisher::update(const Events::FadingSelections & selecti
         }
 
       std::vector<Any> row{Any{targetNEM},
-          Any{sModel}};
+                           Any{sModel}};
 
       if(fadingSelectionNEMSet_.find(targetNEM) == fadingSelectionNEMSet_.end())
         {

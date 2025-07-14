@@ -20,9 +20,13 @@ emaneinc_HEADERS =                       \
  location.h                              \
  location.inl                            \
  pathlossevent.h                         \
+ pathlossexevent.h                       \
  pathlosseventformatter.h                \
+ pathlossexeventformatter.h              \
  pathloss.h                              \
  pathloss.inl                            \
+ pathlossex.h                            \
+ pathlossex.inl                          \
  slotinfo.h                              \
  slotinfo.inl                            \
  slotstructure.h                         \

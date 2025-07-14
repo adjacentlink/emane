@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2015,2017 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013,2015,2017,2025 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * All rights reserved.
  *
@@ -47,5 +47,7 @@
 #define EMANE_EVENT_TDMA_SCHEDULE 105
 
 #define EMANE_EVENT_FADING_SELECTION 106
+
+#define EMANE_EVENT_PATHLOSS_EX 107
 
 #endif // EMANEEVENTIDS_HEADER_

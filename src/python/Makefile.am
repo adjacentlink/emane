@@ -28,6 +28,7 @@ EXTRA_DIST= \
  emane/events/locationevent.py \
  emane/events/event.py \
  emane/events/pathlossevent.py \
+ emane/events/pathlossexevent.py \
  emane/events/eventserviceexception.py \
  emane/events/tdmascheduleevent.py
 
@@ -37,6 +38,7 @@ BUILT_SOURCES =                  \
  emane/events/event_pb2.py            \
  emane/events/locationevent_pb2.py    \
  emane/events/pathlossevent_pb2.py    \
+ emane/events/pathlossexevent_pb2.py    \
  emane/events/tdmascheduleevent_pb2.py \
  emane/events/fadingselectionevent_pb2.py \
  emane/shell/remotecontrolportapi_pb2.py \
@@ -52,8 +54,10 @@ all-local:
 
 clean-local: setup.py
 	$(PYTHON) setup.py clean
-	-rm -rf build dist
+	-rm -rf build
+	-rm -rf dist
 	-rm -f MANIFEST $(BUILT_SOURCES)
+	-find . -name "*.pyc" -delete
 	if test -d emane/shell/schema; then rmdir emane/shell/schema; fi
 	-rm -f .installedfiles
 
@@ -61,7 +65,7 @@ sdist:
 	$(PYTHON) setup.py sdist
 
 edit = sed                              \
-        -e 's|@VERSION[@]|$(VERSION)|g' 
+	-e 's|@VERSION[@]|$(VERSION)|g'
 
 emane/shell/remotecontrolportapi_pb2.py: ../libemane/remotecontrolportapi.proto
 	protoc -I../libemane --python_out=emane/shell  $<
@@ -82,6 +86,9 @@ emane/ota/commonmacheader_pb2.py: ../libemane/commonmacheader.proto
 	protoc -I../libemane --python_out=emane/ota  $<
 
 emane/events/pathlossevent_pb2.py: ../libemane/pathlossevent.proto
+	protoc -I../libemane --python_out=emane/events  $<
+
+emane/events/pathlossexevent_pb2.py: ../libemane/pathlossexevent.proto
 	protoc -I../libemane --python_out=emane/events  $<
 
 emane/events/commeffectevent_pb2.py: ../libemane/commeffectevent.proto
@@ -112,11 +119,13 @@ setup.py:	setup.py.in
 
 install-exec-hook: $(BUILT_SOURCES)
 	$(PYTHON) setup.py install \
+            --single-version-externally-managed \
 	    -O1 \
-        --record .installedfiles \
-	    --prefix=$(prefix) \
-	    --exec-prefix=$(exec_prefix) \
-	    $(if $(DESTDIR),--root=$(DESTDIR))
+            --record .installedfiles \
+            --prefix=$(prefix) \
+            --exec-prefix=$(exec_prefix) \
+            $(if $(DESTDIR),--root=$(DESTDIR)) \
+            $(if $(subst false,,$(HAVE_DEB)),--install-layout=deb)
 
 uninstall-hook:
 	if test -f .installedfiles; then xargs -a .installedfiles rm -f; fi

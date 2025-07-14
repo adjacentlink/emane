@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of Adjacent Link LLC nor the names of its
+ * * Neither the name of DRS CenGen, LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,38 +28,54 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
-#define EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
+#ifndef EMANEGENERATORSEELLOADERPATHLOSSEX_HEADER_
+#define EMANEGENERATORSEELLOADERPATHLOSSEX_HEADER_
 
-#include "emane/types.h"
-#include "emane/events/pathloss.h"
+#include "emane/generators/eel/loaderplugin.h"
 #include "emane/events/pathlossex.h"
-#include "emane/frequencysegment.h"
 
-#include <vector>
-#include <utility>
+#include <map>
 
 namespace EMANE
 {
-  class PropagationModelAlgorithm
+  namespace Generators
   {
-  public:
-    virtual ~PropagationModelAlgorithm(){};
+    namespace EEL
+    {
+      class LoaderPathlossEx : public LoaderPlugin
+      {
+      public:
+        LoaderPathlossEx();
 
-    virtual void update(const Events::Pathlosses &){};
+        ~LoaderPathlossEx();
 
-    virtual void update(const Events::PathlossExs &){};
+        void load(const ModuleType & modelType,
+                  const ModuleId   & moduleId,
+                  const EventType  & eventType,
+                  const InputArguments & args) override;
 
-    virtual std::pair<std::vector<double>, bool>
-    operator()(NEMId src,
-               const LocationInfo & locationInfo,
-               const FrequencySegments & segments) = 0;
+        EventInfoList getEvents(EventPublishMode mode) override;
 
-  protected:
-    PropagationModelAlgorithm() = default;
-  };
+      private:
+        using PathlossEntryMap = std::map<ModuleId,
+                                          Events::PathlossEx::FrequencyPathlossMap>;
+        using PathlossEntryCache = std::map<ModuleId,
+                                            PathlossEntryMap>;
+        PathlossEntryCache pathlossEntryCache_;
+        PathlossEntryCache pathlossDeltaEntryCache_;
+
+        void loadPathlossExCache(NEMId dstNEM,
+                                 NEMId srcNEM,
+                                 std::uint64_t u64FrequencyHz,
+                                 float fForwardPathlossdB,
+                                 float fReversePathlossdB,
+                                 PathlossEntryCache & cache);
+      };
+    }
+  }
 }
 
-#endif // EMANEPHYPROPAGATIONMODELALGORITHM_HEADER_
+#endif // EMANEGENERATORSEELLOADERPATHLOSS_HEADER_

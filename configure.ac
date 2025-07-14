@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2024 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2025 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],[1.5.2],[emane at adjacent link dot com])
+AC_INIT([emane],[1.5.3],[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -231,6 +231,7 @@ AC_CONFIG_FILES([Makefile
  src/generators/eel/loaders/Makefile
  src/generators/eel/loaders/location/Makefile
  src/generators/eel/loaders/pathloss/Makefile
+  src/generators/eel/loaders/pathlossex/Makefile
  src/generators/eel/loaders/antennaprofile/Makefile
  src/generators/eel/loaders/commeffect/Makefile
  src/generators/eel/loaders/fadingselection/Makefile

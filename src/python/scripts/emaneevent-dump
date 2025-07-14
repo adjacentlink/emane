@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2017,2025 - Adjacent Link LLC, Bridgewater,
+# New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,6 +40,7 @@ from optparse import OptionParser
 from emane.events import EventService
 from emane.events import LocationEvent
 from emane.events import PathlossEvent
+from emane.events import PathlossExEvent
 from emane.events import CommEffectEvent
 from emane.events import AntennaProfileEvent
 from emane.events import OneHopNeighborsEvent
@@ -140,6 +142,13 @@ def handlePathloss(nemId,eventId,data,uuid,sequence):
     for i in e:
         print("  ",i)
 
+def handlePathlossEx(nemId,eventId,data,uuid,sequence):
+    e = PathlossExEvent()
+    e.restore(data)
+    header(nemId,eventId,data,'PathlossEx',uuid,sequence)
+    for i in e:
+        print("  ",i)
+
 def handleCommEffect(nemId,eventId,data,uuid,sequence):
     e = CommEffectEvent()
     e.restore(data)
@@ -177,6 +186,7 @@ def handleFadingSelection(nemId,eventId,data,uuid,sequence):
         print("  ",i)
 
 service.subscribe(PathlossEvent.IDENTIFIER,handlePathloss)
+service.subscribe(PathlossExEvent.IDENTIFIER,handlePathlossEx)
 service.subscribe(LocationEvent.IDENTIFIER,handleLocation)
 service.subscribe(CommEffectEvent.IDENTIFIER,handleCommEffect)
 service.subscribe(AntennaProfileEvent.IDENTIFIER,handleAntennaProfile)

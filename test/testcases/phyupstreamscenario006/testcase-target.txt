@@ -59,6 +59,8 @@
 [1]    0
 [1]  propagationmodel:
 [1]    precomputed
+[1]  radiosilenceenable:
+[1]    0
 [1]  rxsensitivitypromiscuousmodeenable:
 [1]    0
 [1]  spectralmaskindex:

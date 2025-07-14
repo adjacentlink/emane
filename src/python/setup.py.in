@@ -15,6 +15,7 @@ setup(name='emane',
       scripts=['scripts/emanesh',
                'scripts/emaneevent-dump',
                'scripts/emaneevent-pathloss',
+               'scripts/emaneevent-pathlossex',
                'scripts/emaneevent-commeffect',
                'scripts/emaneevent-location',
                'scripts/emaneevent-antennaprofile',
@@ -28,4 +29,3 @@ setup(name='emane',
                     'emane.ota' : ['schema/*.xsd']},
       license = 'BSD'
       )
-

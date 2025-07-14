@@ -1,6 +1,5 @@
 #
-# Copyright (c) 2013,2015,2017,2025 - Adjacent Link LLC, Bridgewater,
-# New Jersey
+# Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,15 +30,36 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .event import Event
-from .eventserviceexception import EventServiceException
-from .eventservice import EventService
-from .locationevent import LocationEvent
-from .pathlossevent import PathlossEvent
-from .pathlossexevent import PathlossExEvent
-from .commeffectevent import CommEffectEvent
-from .antennaprofileevent import AntennaProfileEvent
-from .onehopneighborsevent import OneHopNeighborsEvent
-from .tdmascheduleevent import TDMAScheduleEvent
-from .tdmaschedule import TDMASchedule
-from .fadingselectionevent import FadingSelectionEvent
+from . import Event
+from . import pathlossexevent_pb2
+
+class PathlossExEvent(Event):
+    IDENTIFIER = 107
+
+    def __init__(self):
+        self._event = pathlossexevent_pb2.PathlossExEvent()
+
+    def append(self,nemId,frequencyPathlossMap):
+        pathloss = self._event.pathlosses.add()
+
+        pathloss.nemId = nemId
+
+        for frequencyHz,pathlossdB in frequencyPathlossMap.items():
+            entry = pathloss.entries.add()
+            entry.frequencyHz = frequencyHz
+            entry.pathlossdB = pathlossdB
+
+    def serialize(self):
+        return self._event.SerializeToString()
+
+    def restore(self,data):
+        self._event.ParseFromString(data)
+
+    def __iter__(self):
+        frequencyPathlossMap={}
+
+        for pathloss in self._event.pathlosses:
+            for entry in pathloss.entries:
+                frequencyPathlossMap[entry.frequencyHz] = entry.pathlossdB
+
+            yield (pathloss.nemId,frequencyPathlossMap)
