@@ -81,6 +81,7 @@
 #include "tworaypropagationmodelalgorithm.h"
 #include "precomputedpropagationmodelalgorithm.h"
 
+#include <dlfcn.h>
 #include <iterator>
 
 namespace
@@ -264,10 +265,11 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                                   EMANE::ConfigurationProperties::DEFAULT,
                                                   {"precomputed"},
                                                   "Defines the pathloss mode of operation:"
-                                                  " precomputed, 2ray or freespace.",
+                                                  " precomputed, 2ray or freespace are built-in."
+                                                  " Any other value loads"
+                                                  " libpropagationmodel<name>.so as a plugin.",
                                                   1,
-                                                  1,
-                                                  "^(precomputed|2ray|freespace)$");
+                                                  1);
 
   configRegistrar.registerNumeric<double>("systemnoisefigure",
                                           EMANE::ConfigurationProperties::DEFAULT,
@@ -458,7 +460,6 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
         {
           std::string sPropagationModel{item.second[0].asString()};
 
-          // regex has already validated values
           if(sPropagationModel == "precomputed")
             {
               pPropagationModelAlgorithm_.reset(new PrecomputedPropagationModelAlgorithm{id_});
@@ -467,9 +468,40 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
             {
               pPropagationModelAlgorithm_.reset(new TwoRayPropagationModelAlgorithm{id_});
             }
-          else
+          else if(sPropagationModel == "freespace")
             {
               pPropagationModelAlgorithm_.reset(new FreeSpacePropagationModelAlgorithm{id_});
+            }
+          else
+            {
+              // load propagation model plugin: libpropagationmodel<name>.so
+              std::string sLibName{"libpropagationmodel" + sPropagationModel + ".so"};
+
+              void * pHandle = dlopen(sLibName.c_str(), RTLD_NOW);
+
+              if(!pHandle)
+                {
+                  throw makeException<ConfigureException>(
+                    "Failed to load propagation model plugin %s: %s",
+                    sLibName.c_str(),
+                    dlerror());
+                }
+
+              using CreateFunc =
+                PropagationModelAlgorithm * (*)(NEMId, const ConfigurationUpdate &);
+
+              auto createFunc =
+                reinterpret_cast<CreateFunc>(dlsym(pHandle, "createPropagationModel"));
+
+              if(!createFunc)
+                {
+                  dlclose(pHandle);
+                  throw makeException<ConfigureException>(
+                    "Propagation model plugin %s missing createPropagationModel symbol",
+                    sLibName.c_str());
+                }
+
+              pPropagationModelAlgorithm_.reset(createFunc(id_, update));
             }
 
           LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
