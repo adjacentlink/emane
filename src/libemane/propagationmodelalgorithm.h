@@ -43,6 +43,8 @@
 
 namespace EMANE
 {
+  class LocationInfo;
+
   class PropagationModelAlgorithm
   {
   public:
