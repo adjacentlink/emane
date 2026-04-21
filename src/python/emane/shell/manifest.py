@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2013,2017,2026 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from pkg_resources import resource_filename
 from lxml import etree
 from . import ManifestException
+from emane.utils.schemaresourcereader import read_schema_from_resource
+
 
 def toBool(value):
 
@@ -51,12 +52,9 @@ class Manifest:
         tree = etree.parse(filename)
         root = tree.getroot()
 
-        schemaDoc = etree.parse(resource_filename('emane.shell',
-                                                  'schema/manifest.xsd'))
+        schema = read_schema_from_resource('emane.shell', 'schema/manifest.xsd')
 
-        schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
-
-        if not schema(root):
+        if not schema or not schema(root):
             message = ""
             for entry in schema.error_log:
                 message += "%d: %s" % (entry.line,entry.message)

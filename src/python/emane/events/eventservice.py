@@ -144,6 +144,8 @@ class EventService:
 
     def breakloop(self):
         os.write(self._writeFd,"\n".encode())
+        os.close(self._readFd)
+        os.close(self._writeFd)
 
     def loop(self,default=None):
         buffer = ""

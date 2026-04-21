@@ -1,5 +1,4 @@
-#
-# Copyright (c) 2013,2017,2026 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +28,31 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
+# See toplevel COPYING for more information.
+#
 
-from .controlportexception import ControlPortException
-from .controlportclient import ControlPortClient
-from .manifestexception import ManifestException
-from .manifest import Manifest
-from .emaneshell import EMANEShell
+import sys
+from lxml import etree
+
+
+if sys.version_info.minor < 9:
+    from pkg_resources import resource_filename
+
+    def read_schema_from_resource(module, resource_path):
+        schemaDoc = etree.parse(resource_filename(module, resource_path))
+
+        return etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
+
+else:
+    import importlib.resources
+
+    def read_schema_from_resource(module, resource_path):
+        schema = None
+
+        ref = importlib.resources.files(module) / resource_path
+
+        with importlib.resources.as_file(ref) as path:
+            schemaDoc = etree.parse(path)
+            schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
+
+        return schema

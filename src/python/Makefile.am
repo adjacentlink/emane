@@ -30,7 +30,9 @@ EXTRA_DIST= \
  emane/events/pathlossevent.py \
  emane/events/pathlossexevent.py \
  emane/events/eventserviceexception.py \
- emane/events/tdmascheduleevent.py
+ emane/events/tdmascheduleevent.py \
+ emane/utils/__init__.py \
+ emane/utils/schemaresourcereader.py
 
 BUILT_SOURCES =                  \
  emane/events/antennaprofileevent_pb2.py \

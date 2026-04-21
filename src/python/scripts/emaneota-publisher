@@ -35,7 +35,7 @@ from __future__ import absolute_import, division, print_function
 from optparse import OptionParser
 from emane.ota import OTAMessage
 from emane.ota import OTAPublisher
-from pkg_resources import resource_filename
+from emane.shell import read_schema_from_resource
 from lxml import etree
 import sys
 import re
@@ -147,10 +147,7 @@ flows = []
 tree = etree.parse(args[0])
 root = tree.getroot()
 
-schemaDoc = etree.parse(resource_filename('emane.ota',
-                                          'schema/otapublisherscenario.xsd'))
-
-schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
+schema = read_schema_from_resource('emane.ota', 'schema/otapublisherscenario.xsd')
 
 if not schema(root):
     message = ""

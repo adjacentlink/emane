@@ -166,6 +166,8 @@ class ControlPortClient:
         os.write(self._write, str.encode("\n") if sys.version_info >= (3,0) else "\n")
         self._thread.join()
         self._sock.close()
+        os.close(self._read)
+        os.close(self._write)
 
     def getManifest(self):
         request = remotecontrolportapi_pb2.Request()

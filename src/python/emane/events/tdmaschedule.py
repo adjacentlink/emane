@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015,2017 - Adjacent Link LLC, Bridgewater, New Jersey
+# Copyright (c) 2015,2017,2026 - Adjacent Link LLC, Bridgewater, New Jersey
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import absolute_import, division, print_function
-from pkg_resources import resource_filename
 import sys
 import re
 import collections
+from emane.utils.schemaresourcereader import read_schema_from_resource
+
 from lxml import etree
 
 def decodeSI(value):
@@ -103,12 +103,9 @@ class TDMASchedule(object):
 
         root = tree.getroot()
 
-        schemaDoc = etree.parse(resource_filename('emane.events',
-                                                  'schema/tdmaschedule.xsd'))
+        schema = read_schema_from_resource('emane.events', 'schema/tdmaschedule.xsd')
 
-        schema = etree.XMLSchema(etree=schemaDoc,attribute_defaults=True)
-
-        if not schema(root):
+        if not schema or not schema(root):
             message = []
             for entry in schema.error_log:
                 message.append("%d: %s" % (entry.line,entry.message))
