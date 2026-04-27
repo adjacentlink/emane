@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 
       EMANE::AntennaManager antennaManager{};
 
-      EMANE::GainManager gainManager{id,EMANE::DEFAULT_ANTENNA_INDEX,antennaManager};
+      EMANE::GainManager gainManager{id,EMANE::DEFAULT_ANTENNA_INDEX,antennaManager,true};
 
       antennaManager.update(id,EMANE::Antenna::createIdealOmni(0,0));
 

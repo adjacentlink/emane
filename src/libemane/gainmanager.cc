@@ -53,11 +53,13 @@ EMANE::GainManager::AntennaPatternInfo::AntennaPatternInfo(AntennaPattern * pPat
 
 EMANE::GainManager::GainManager(NEMId id,
                                 AntennaIndex rxAntennaIndex,
-                                AntennaManager & antennaManager):
+                                AntennaManager & antennaManager,
+                                bool bHorizonCheck):
   id_{id},
   rxAntennaIndex_{rxAntennaIndex},
   antennaManager_(antennaManager),
-  u64AntennaUpdateSequence_{}{}
+  u64AntennaUpdateSequence_{},
+  bHorizonCheck_{bHorizonCheck}{}
 
 void EMANE::GainManager::setGainCache(NEMId transmitterId,
                                       const AntennaManager::AntennaInfo & txAntennaInfo,
@@ -318,7 +320,8 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
   double dDistanceMeters{locationPairInfo.getDistanceMeters()};
 
   // check if antennas are below the horizon
-  if(locationPairInfo.isValid() &&
+  if(bHorizonCheck_ &&
+     locationPairInfo.isValid() &&
      dDistanceMeters > 10 &&
      Utils::checkHorizon(localPosition.getAltitudeMeters() +
                          localAntennaInfo.first.placement_.getUpMeters(),
