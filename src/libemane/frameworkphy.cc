@@ -155,7 +155,8 @@ EMANE::FrameworkPHY::FrameworkPHY(NEMId id,
   bRxSensitivityPromiscuousModeEnable_{},
   bDopplerShiftEnable_{},
   spectralMaskIndex_{DEFAULT_SPECTRAL_MASK_INDEX},
-  bRadioSilenceEnable_{}{}
+  bRadioSilenceEnable_{},
+  bHorizonCheckEnable_{true}{}
 
 EMANE::FrameworkPHY::~FrameworkPHY(){}
 
@@ -366,7 +367,14 @@ void EMANE::FrameworkPHY::initialize(Registrar & registrar)
                                         EMANE::ConfigurationProperties::MODIFIABLE,
                                         {false},
                                         "Defines whether transmission is allowed. When enabled"
-                                        "over-the-air (downstream) messages will be dropped.");
+                                        " over-the-air (downstream) messages will be dropped.");
+
+  configRegistrar.registerNumeric<bool>("horizoncheckenable",
+                                        EMANE::ConfigurationProperties::DEFAULT,
+                                        {true},
+                                        "Defines whether the horizon check is enabled. The horizon check drops"
+                                        " receive packets when the transmitter is beyond line of sight to the horizon"
+                                        " regardless of receive gain calculation.");
 
   /** [eventservice-registerevent-snippet] */
   auto & eventRegistrar = registrar.eventRegistrar();
@@ -779,7 +787,18 @@ void EMANE::FrameworkPHY::configure(const ConfigurationUpdate & update)
                                   item.first.c_str(),
                                   bRadioSilenceEnable_ ? "on" : "off");
         }
+      else if(item.first == "horizoncheckenable")
+        {
+          bHorizonCheckEnable_ = item.second[0].asBool();
 
+          LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+                                  INFO_LEVEL,
+                                  "PHYI %03hu FrameworkPHY::%s: %s = %s",
+                                  id_,
+                                  __func__,
+                                  item.first.c_str(),
+                                  bHorizonCheckEnable_ ? "on" : "off");
+        }
       else
         {
           if(!item.first.compare(0,FADINGMANAGER_PREFIX.size(),FADINGMANAGER_PREFIX))
@@ -1151,7 +1170,8 @@ void EMANE::FrameworkPHY::processDownstreamControl(const ControlMessages & msgs)
                                                                                                 fadingManager_.createFadingAlgorithmStore(),
                                                                                                 bStatsReceivePowerTableEnable_,
                                                                                                 bStatsObservedPowerTableEnable_,
-                                                                                                bDopplerShiftEnable_}));
+                                                                                                bDopplerShiftEnable_,
+                                                                                                bHorizonCheckEnable_}));
             }
           else
             {
@@ -2324,6 +2344,7 @@ void EMANE::FrameworkPHY::createDefaultAntennaIfNeeded()
                                                                                         fadingManager_.createFadingAlgorithmStore(),
                                                                                         bStatsReceivePowerTableEnable_,
                                                                                         bStatsObservedPowerTableEnable_,
-                                                                                        bDopplerShiftEnable_}));
+                                                                                        bDopplerShiftEnable_,
+                                                                                        bHorizonCheckEnable_}));
     }
 }

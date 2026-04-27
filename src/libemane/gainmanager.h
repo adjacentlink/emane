@@ -48,7 +48,8 @@ namespace EMANE
   public:
     GainManager(NEMId nemId,
                 AntennaIndex rxAntennaIndex,
-                AntennaManager & antennaManager);
+                AntennaManager & antennaManager,
+                bool bHorizonCheck);
 
     enum class GainStatus {SUCCESS = 0,
       ERROR_LOCATIONINFO,
@@ -73,6 +74,7 @@ namespace EMANE
     AntennaManager & antennaManager_;
     AntennaStore antennaStore_;
     std::uint64_t u64AntennaUpdateSequence_;
+    bool bHorizonCheck_;
 
     struct AntennaPatternInfo
     {

@@ -151,6 +151,7 @@ namespace EMANE
     bool bDopplerShiftEnable_;
     SpectralMaskIndex spectralMaskIndex_;
     bool bRadioSilenceEnable_;
+    bool bHorizonCheckEnable_;
 
     void createDefaultAntennaIfNeeded();
   };

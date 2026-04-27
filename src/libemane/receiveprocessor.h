@@ -59,7 +59,8 @@ namespace EMANE
                      FadingAlgorithmStore && fadingAlgorithmStore,
                      bool bPopulateReceivePowerMap,
                      bool bPopulateObservedPowerMap,
-                     bool bDopperShift);
+                     bool bDopperShift,
+                     bool bHorizonCheck);
 
     struct ProcessResult
     {
