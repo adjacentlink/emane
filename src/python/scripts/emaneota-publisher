@@ -35,7 +35,7 @@ from __future__ import absolute_import, division, print_function
 from optparse import OptionParser
 from emane.ota import OTAMessage
 from emane.ota import OTAPublisher
-from emane.shell import read_schema_from_resource
+from emane.utils.schemaresourcereader import read_schema_from_resource
 from lxml import etree
 import sys
 import re
@@ -119,7 +119,7 @@ if len(args) != 1:
 startTime = None
 
 if options.starttime:
-    m = re.match("(\d\d):(\d\d):(\d\d)",options.starttime)
+    m = re.match(r"(\d\d):(\d\d):(\d\d)",options.starttime)
 
     if m:
         now = time.localtime()
