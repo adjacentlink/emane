@@ -540,7 +540,7 @@ class EMANEShell(cmd.Cmd):
                     component != 'mac' and \
                     component != 'transport' and \
                     component != 'all' and \
-                    not (re.match('^shim\d+$', component) and component in self._shims):
+                    not (re.match(r'^shim\d+$', component) and component in self._shims):
                 print("error: invalid component layer:",args[index])
                 return
 
@@ -774,7 +774,7 @@ class EMANEShell(cmd.Cmd):
                     component != 'mac' and \
                     component != 'transport' and \
                     component != 'all' and \
-                    not (re.match('^shim\d+$', component) and component in self._shims):
+                    not (re.match(r'^shim\d+$', component) and component in self._shims):
                 print("error: invalid component layer:",args[index])
                 return
 
@@ -794,7 +794,7 @@ class EMANEShell(cmd.Cmd):
             updates = []
             if len(args) > index:
                 for expression in args[index:]:
-                    m = re.match('^([.0-9A-Za-z]+)=(.+)', expression)
+                    m = re.match(r'^([.0-9A-Za-z]+)=(.+)', expression)
 
                     def toBool(val):
                         val = val.lower()
@@ -916,7 +916,7 @@ class EMANEShell(cmd.Cmd):
                                 arg == 'mac' or \
                                 arg == 'transport' or \
                                 arg == 'all' or \
-                                (re.match('^shim\d+$', arg) and arg in self._shims):
+                                (re.match(r'^shim\d+$', arg) and arg in self._shims):
                             layer = arg
                             skip = True
                             break
