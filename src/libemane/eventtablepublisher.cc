@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2014,2017,2025 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2014,2017,2025-2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,6 @@
 
 #include "eventtablepublisher.h"
 
-// specialized hash for PathlossExEventInfoTable
-namespace std
-{
-  template<>
-  struct hash<std::pair<EMANE::NEMId,std::uint64_t>>
-  {
-    typedef std::pair<EMANE::NEMId,std::uint64_t> argument_type;
-    typedef std::size_t result_type;
-
-    result_type operator()(argument_type const& s) const
-    {
-      result_type const h1{std::hash<std::uint64_t>()(std::get<0>(s))};
-      result_type const h2{std::hash<std::uint64_t>()(std::get<1>(s))};
-      return (h1 << 48) ^ (h2 >>16 );
-    }
-  };
-}
-
 EMANE::EventTablePublisher::EventTablePublisher(NEMId nemId):
   nemId_{nemId}{};
 
@@ -59,21 +41,34 @@ void EMANE::EventTablePublisher::registerStatistics(StatisticRegistrar & statist
   /** [statisticservice-registertable-snippet] */
   pLocationTable_ =
     statisticRegistrar.registerTable<NEMId>("LocationEventInfoTable",
-                                            {"NEM","Latitude","Longitude","Altitude","Pitch","Roll","Yaw","Azimuth","Elevation","Magnitude"},
+                                            {"NEM",
+                                             "Latitude",
+                                             "Longitude",
+                                             "Altitude",
+                                             "Pitch",
+                                             "Roll",
+                                             "Yaw",
+                                             "Azimuth",
+                                             "Elevation",
+                                             "Magnitude"},
                                             StatisticProperties::NONE,
                                             "Shows the location event information received");
 
   pPathlossTable_ =
     statisticRegistrar.registerTable<NEMId>("PathlossEventInfoTable",
-                                            {"NEM","Forward Pathloss","Reverse Pathloss"},
+                                            {"NEM",
+                                             "Forward Pathloss",
+                                             "Reverse Pathloss"},
                                             StatisticProperties::NONE,
                                             "Shows the precomputed pathloss information received");
 
   pPathlossExTable_ =
-    statisticRegistrar.registerTable<PathlossExKey>("PathlossExEventInfoTable",
-                                                    {"NEM","Frequency","Pathloss"},
-                                                    StatisticProperties::NONE,
-                                                    "Shows the per frequency precomputed pathloss information received");
+    statisticRegistrar.registerTable<EventTablePublisherKey>("PathlossExEventInfoTable",
+                                                             {"NEM",
+                                                              "Frequency",
+                                                              "Pathloss"},
+                                                             StatisticProperties::NONE,
+                                                             "Shows the per frequency precomputed pathloss information received");
 
   pAntennaProfileTable_ =
     statisticRegistrar.registerTable<NEMId>("AntennaProfileEventInfoTable",
@@ -178,7 +173,7 @@ void EMANE::EventTablePublisher::update(const Events::PathlossExs & pathlossExs)
 
       for(const auto & entry : pathlossEx.getFrequencyPathlossMap())
         {
-          PathlossExKey key{targetNEM,entry.first};
+          EventTablePublisherKey key{targetNEM,entry.first};
 
           std::vector<Any> row{Any{targetNEM},
                                Any{entry.first},

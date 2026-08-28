@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 #ifndef EMANEEVENTSTATISTICPUBLISHER_HEADER_
 #define EMANEEVENTSTATISTICPUBLISHER_HEADER_
 
+#include "eventstatisticpublisherkey.h"
+
 #include "emane/types.h"
 #include "emane/statisticnumeric.h"
 #include "emane/statistictable.h"
@@ -52,27 +54,25 @@ namespace EMANE
     EventStatisticPublisher(const std::string & sPrefix);
 
     enum class Type
-    {
-      TYPE_TX,
+      {
+        TYPE_TX,
         TYPE_RX,
-    };
+      };
 
     void update(Type type,const uuid_t & uuid, EventId eventId);
 
     void setRowLimit(size_t rows);
 
   private:
-    using EventCountTableKey = std::pair<std::string,EventId>;
-
     using EventCountInfo =
-      std::map<EventCountTableKey,
+      std::map<EventStatisticPublisherKey,
                std::tuple<std::uint64_t, // events Tx
                           std::uint64_t>>; // events Rx
 
     StatisticNumeric<std::uint64_t> * pNumEventsTx_;
     StatisticNumeric<std::uint64_t> * pNumEventsRx_;
 
-    StatisticTable<EventCountTableKey> * pEventCountTable_;
+    StatisticTable<EventStatisticPublisherKey> * pEventCountTable_;
 
     EventCountInfo eventCountInfo_;
 

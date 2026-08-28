@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,6 @@
 #include "eventstatisticpublisher.h"
 #include "statisticregistrarproxy.h"
 
-// specialized hash for EventCountTable
-namespace std
-{
-  template<>
-  struct hash<std::pair<std::string,EMANE::EventId>>
-  {
-    typedef  std::pair<std::string,EMANE::EventId> argument_type;
-    typedef std::size_t result_type;
-
-    result_type operator()(argument_type const& s) const
-    {
-      result_type const h1{std::hash<std::string>()(s.first)};
-      result_type const h2{std::hash<EMANE::EventId>()(s.second)};
-      return h1 ^ (h2 << 1);
-    }
-  };
-}
-
 namespace
 {
   const EMANE::StatisticTableLabels EventCountLabels =
@@ -82,22 +64,23 @@ EMANE::EventStatisticPublisher::EventStatisticPublisher(const std::string & sPre
     statisticRegistrar.registerNumeric<std::uint64_t>("num" + sPrefix + "EventsRx",
                                                       StatisticProperties::CLEARABLE);
   pEventCountTable_ =
-    statisticRegistrar.registerTable<EventCountTableKey>(sPrefix + "EventCountTable",
-                                                          EventCountLabels,
-                                                          [this](StatisticTablePublisher * pTable)
-                                                          {
-                                                            std::lock_guard<std::mutex> m(mutexEventCountTable_);
-                                                            eventCountInfo_.clear();
-                                                            pTable->clear();
-                                                          },
-                                                         sPrefix + " Event count table.");
+    statisticRegistrar.
+    registerTable<EventStatisticPublisherKey>(sPrefix + "EventCountTable",
+                                              EventCountLabels,
+                                              [this](StatisticTablePublisher * pTable)
+                                              {
+                                                std::lock_guard<std::mutex> m(mutexEventCountTable_);
+                                                eventCountInfo_.clear();
+                                                pTable->clear();
+                                              },
+                                              sPrefix + " Event count table.");
 }
 
 void EMANE::EventStatisticPublisher::update(Type type, const uuid_t & uuid, EventId eventId)
 {
   char buf[37];
   uuid_unparse(uuid,buf);
-  auto key = EventCountTableKey{buf,eventId};
+  auto key = EventStatisticPublisherKey{buf,eventId};
 
   std::lock_guard<std::mutex> m(mutexEventCountTable_);
 
@@ -111,9 +94,9 @@ void EMANE::EventStatisticPublisher::update(Type type, const uuid_t & uuid, Even
 
           pEventCountTable_->addRow(key,
                                     {Any{eventId},
-                                        Any{buf},
-                                          Any{0L},
-                                            Any{0L}});
+                                     Any{buf},
+                                     Any{0L},
+                                     Any{0L}});
         }
     }
 
@@ -122,16 +105,16 @@ void EMANE::EventStatisticPublisher::update(Type type, const uuid_t & uuid, Even
     {
       ++*pNumEventsRx_;
 
-       if(iter != eventCountInfo_.end())
-         {
-           auto & events = std::get<EVENT_COUNT_COLUMN_NUM_EVENTS_RX-2>(iter->second);
+      if(iter != eventCountInfo_.end())
+        {
+          auto & events = std::get<EVENT_COUNT_COLUMN_NUM_EVENTS_RX-2>(iter->second);
 
-           events += 1;
+          events += 1;
 
-           pEventCountTable_->setCell(key,
-                                      EVENT_COUNT_COLUMN_NUM_EVENTS_RX,
-                                      Any{events});
-         }
+          pEventCountTable_->setCell(key,
+                                     EVENT_COUNT_COLUMN_NUM_EVENTS_RX,
+                                     Any{events});
+        }
 
     }
   else if(type == Type::TYPE_TX)

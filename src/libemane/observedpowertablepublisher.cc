@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,40 +33,20 @@
 
 #include "observedpowertablepublisher.h"
 
-// specialized hash for ObservedPowerTable
-namespace std
-{
-  template<>
-  struct hash<std::tuple<EMANE::NEMId,EMANE::AntennaIndex,EMANE::AntennaIndex,std::uint64_t>>
-  {
-    typedef std::tuple<EMANE::NEMId,EMANE::AntennaIndex,EMANE::AntennaIndex,std::uint64_t> argument_type;
-    typedef std::size_t result_type;
-
-    result_type operator()(argument_type const& s) const
-    {
-      result_type const h1{std::hash<std::uint64_t>()(std::get<0>(s))};
-      result_type const h2{std::hash<std::uint64_t>()(std::get<1>(s))};
-      result_type const h3{std::hash<std::uint64_t>()(std::get<2>(s))};
-      result_type const h4{std::hash<std::uint64_t>()(std::get<3>(s))};
-      return (h1 << 6) ^ (h2 << 4) ^ (h3 << 2) ^ h4;
-    }
-  };
-}
-
 void EMANE::ObservedPowerTablePublisher::registerStatistics(StatisticRegistrar & statisticRegistrar)
 {
 
   pObservedPowerTable_ =
-    statisticRegistrar.registerTable<ObservedPowerTableKey>("ObservedPowerTable",
-                                                            {"NEM",
-                                                             "Rx Antenna",
-                                                             "Tx Antenna",
-                                                             "Frequency",
-                                                             "Spectral Mask",
-                                                             "Rx Power",
-                                                             "Last Packet Time"},
-                                                            StatisticProperties::NONE,
-                                                            "Shows the calculated observed power for the last received segment.");
+    statisticRegistrar.registerTable<PowerTablePublisherKey>("ObservedPowerTable",
+                                                             {"NEM",
+                                                              "Rx Antenna",
+                                                              "Tx Antenna",
+                                                              "Frequency",
+                                                              "Spectral Mask",
+                                                              "Rx Power",
+                                                              "Last Packet Time"},
+                                                             StatisticProperties::NONE,
+                                                             "Shows the calculated observed power for the last received segment.");
 }
 
 void EMANE::ObservedPowerTablePublisher::update(NEMId nemId,
@@ -76,7 +57,7 @@ void EMANE::ObservedPowerTablePublisher::update(NEMId nemId,
                                                 double dObservedPowerdBm,
                                                 const TimePoint & rxTime)
 {
-  auto key = ObservedPowerTableKey{nemId,rxAntennaIndex,txAntennaIndex,u64Frequency};
+  auto key = PowerTablePublisherKey{nemId,rxAntennaIndex,txAntennaIndex,u64Frequency};
 
   if(observedPowerTableSet_.count(key))
     {

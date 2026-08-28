@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +34,8 @@
 #ifndef EMANEOBSERVEDPOWERTABLEPUBLISHER_HEADER_
 #define EMANEOBSERVEDPOWERTABLEPUBLISHER_HEADER_
 
+#include "powertablepublisherkey.h"
+
 #include "emane/types.h"
 #include "emane/statistictable.h"
 #include "emane/statisticregistrar.h"
@@ -55,11 +58,9 @@ namespace EMANE
                 double dObservedPowerdBm,
                 const TimePoint & rxTime);
 
-    using ObservedPowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;
-
   private:
-    StatisticTable<ObservedPowerTableKey> * pObservedPowerTable_;
-    using ObservedPowerTableSet = std::set<ObservedPowerTableKey>;
+    StatisticTable<PowerTablePublisherKey> * pObservedPowerTable_;
+    using ObservedPowerTableSet = std::set<PowerTablePublisherKey>;
     ObservedPowerTableSet observedPowerTableSet_;
   };
 }

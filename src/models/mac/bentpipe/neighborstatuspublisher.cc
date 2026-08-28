@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2023,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,24 +31,6 @@
  */
 
 #include "neighborstatuspublisher.h"
-
-// specialized hash for NeighborStatusTable
-namespace std
-{
-  template<>
-  struct hash<std::pair<EMANE::NEMId,EMANE::Models::BentPipe::TransponderIndex>>
-  {
-    typedef std::pair<EMANE::NEMId,EMANE::Models::BentPipe::TransponderIndex> argument_type;
-    typedef std::uint32_t result_type;
-
-    result_type operator()(argument_type const& s) const
-    {
-      result_type const h1{s.first};
-      result_type const h2{s.second};
-      return (h1 << 2) ^ h2;
-    }
-  };
-}
 
 namespace
 {
@@ -86,10 +68,10 @@ EMANE::Models::BentPipe::NeighborStatusPublisher::~NeighborStatusPublisher(){}
 void EMANE::Models::BentPipe::NeighborStatusPublisher::registerStatistics(StatisticRegistrar & statisticRegistrar)
 {
   pNeighborStatusTable_ =
-    statisticRegistrar.registerTable<NeighborStatusKey>("NeighborStatusTable",
-                                                        NeighborStatusLabels,
-                                                        StatisticProperties::NONE,
-                                                        "Neighbor status table");
+    statisticRegistrar.registerTable<NeighborStatusPublisherKey>("NeighborStatusTable",
+                                                                 NeighborStatusLabels,
+                                                                 StatisticProperties::NONE,
+                                                                 "Neighbor status table");
 }
 
 void EMANE::Models::BentPipe::NeighborStatusPublisher::update(NEMId remote,
@@ -98,7 +80,7 @@ void EMANE::Models::BentPipe::NeighborStatusPublisher::update(NEMId remote,
                                                               double dNoiseFloordB,
                                                               const TimePoint & timestamp)
 {
-  auto key = std::make_pair(remote,transponderIndex);
+  auto key = NeighborStatusPublisherKey{remote,transponderIndex};
 
   std::uint64_t u64TimestampMicroseconds =
     std::chrono::duration_cast<EMANE::Microseconds>(timestamp.time_since_epoch()).count();

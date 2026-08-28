@@ -19,6 +19,7 @@ libemane_model_bentpipe_la_SOURCES = \
  antennas.h \
  antennastatuspublisher.cc \
  antennastatuspublisher.h \
+ antennastatuspublisherkey.h \
  bentpipemessage.h \
  bentpipemessage.inl \
  configurationvalidationmanager.cc \
@@ -30,6 +31,7 @@ libemane_model_bentpipe_la_SOURCES = \
  messagecomponent.inl \
  neighborstatuspublisher.cc \
  neighborstatuspublisher.h \
+ neighborstatuspublisherkey.h \
  packetstatuspublisher.cc \
  packetstatuspublisher.h \
  pcrmanager.cc \

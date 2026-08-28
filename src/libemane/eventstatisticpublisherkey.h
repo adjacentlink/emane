@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023,2026 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,54 +30,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANE_MODELS_BENTPIPE_NEIGHBORSTATUSPUBLISHER_HEADER_
-#define EMANE_MODELS_BENTPIPE_NEIGHBORSTATUSPUBLISHER_HEADER_
+#ifndef EMANEEVENTSTATISTICPUBLISHERKEY_HEADER_
+#define EMANEEVENTSTATISTICPUBLISHERKEY_HEADER_
 
-#include "types.h"
-#include "neighborstatuspublisherkey.h"
+#include "emane/types.h"
+#include "emane/utils/hash.h"
 
-#include "emane/statisticregistrar.h"
-#include "emane/utils/weightedmovingaverage.h"
-
-#include <map>
+#include <tuple>
 
 namespace EMANE
 {
-  namespace Models
+  struct EventStatisticPublisherKey
   {
-    namespace BentPipe
+    using Key =
+      std::tuple<std::string,
+                 NEMId>;
+
+    EventStatisticPublisherKey(const std::string & sUUID,
+                               EventId eventId):
+      key_{std::make_tuple(sUUID,
+                           eventId)}{}
+
+    EventStatisticPublisherKey() = default;
+
+    EventStatisticPublisherKey(EventStatisticPublisherKey const &) = default;
+
+    bool operator==(const EventStatisticPublisherKey & other) const
     {
-      class NeighborStatusPublisher
-      {
-      public:
-        NeighborStatusPublisher();
-
-        ~NeighborStatusPublisher();
-
-        void registerStatistics(StatisticRegistrar & registrar);
-
-        void update(NEMId remote,
-                    TransponderIndex transponderIndex,
-                    double dSINR,
-                    double dNoiseFloordB,
-                    const TimePoint & timestamp);
-
-      private:
-        struct NeighborInfo
-        {
-          Utils::WeightedMovingAverage wmaSINR_{20};
-          Utils::WeightedMovingAverage wmaNoiseFloordB_{20};
-
-          double dSINRAccum_{};
-          double dNoiseFloordBAccum_{};
-          std::uint64_t u64Samples_;
-        };
-
-        StatisticTable<NeighborStatusPublisherKey> * pNeighborStatusTable_;
-        std::map<NeighborStatusPublisherKey,NeighborInfo> known_;
-      };
+      return key_ == other.key_;
     }
-  }
+
+    bool operator<(const EventStatisticPublisherKey & other) const
+    {
+      return key_ < other.key_;
+    }
+
+    const Key key_;
+  };
 }
 
-#endif // EMANE_MODELS_BENTPIPE_NEIGHBORSTATUSPUBLISHER_HEADER_
+namespace std
+{
+  template<>
+  struct hash<EMANE::EventStatisticPublisherKey>
+  {
+    std::size_t operator()(const EMANE::EventStatisticPublisherKey & key) const
+    {
+      std::size_t seed{};
+      EMANE::Utils::hashCombine(seed,
+                                EMANE::Utils::hashCompute(std::get<0>(key.key_)));
+      EMANE::Utils::hashCombine(seed,
+                                EMANE::Utils::hashCompute(std::get<1>(key.key_)));
+      return seed;
+    }
+  };
+}
+
+#endif // EMANEEVENTSTATISTICPUBLISHERKEY_HEADER_

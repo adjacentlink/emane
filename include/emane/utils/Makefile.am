@@ -8,6 +8,7 @@ emaneinc_HEADERS =                       \
  factoryexception.h                      \
  functionwrapper.h                       \
  functionwrapper.inl                     \
+ hash.h                                  \
  netutils.h                              \
  parameterconvert.h                      \
  parameterconvert.inl                    \

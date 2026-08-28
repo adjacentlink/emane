@@ -256,7 +256,9 @@ libemane_la_SOURCES =                         \
  eventservice.h                               \
  eventserviceproxy.h                          \
  eventstatisticpublisher.h                    \
+ eventstatisticpublisherkey.h                 \
  eventtablepublisher.h                        \
+ eventtablepublisherkey.h                     \
  fadingalgorithm.h                            \
  fadingalgorithmmanager.h                     \
  fadingmanager.h                              \
@@ -309,6 +311,7 @@ libemane_la_SOURCES =                         \
  otamanager.h                                 \
  otaprovider.h                                \
  otastatisticpublisher.h                      \
+ otastatisticpublisherkey.h                   \
  otauser.h                                    \
  phylayer.h                                   \
  phylayerfactory.h                            \
@@ -322,6 +325,7 @@ libemane_la_SOURCES =                         \
  positionorientationvelocity.inl              \
  positionorientationvelocityformatter.h       \
  positionutils.h                              \
+ powertablepublisherkey.h                     \
  precomputedpropagationmodelalgorithm.h       \
  propagationmodelalgorithm.h                  \
  radioservice.h                               \

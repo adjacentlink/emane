@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,24 +33,6 @@
 
 #include "otastatisticpublisher.h"
 #include "statisticregistrarproxy.h"
-
-// specialized hash for PacketCountTable
-namespace std
-{
-  template<>
-  struct hash<std::pair<std::string,EMANE::NEMId>>
-  {
-    typedef  std::pair<std::string,EMANE::NEMId> argument_type;
-    typedef std::size_t result_type;
-
-    result_type operator()(argument_type const& s) const
-    {
-      result_type const h1{std::hash<std::string>()(s.first)};
-      result_type const h2{std::hash<EMANE::NEMId>()(s.second)};
-      return h1 ^ (h2 << 1);
-    }
-  };
-}
 
 namespace
 {
@@ -88,22 +71,22 @@ EMANE::OTAStatisticPublisher::OTAStatisticPublisher():
                                                       StatisticProperties::CLEARABLE);
 
   pPacketCountTable_ =
-    statisticRegistrar.registerTable<PacketCountTableKey>("OTAChannelPacketCountTable",
-                                                          PacketCountLabels,
-                                                          [this](StatisticTablePublisher * pTable)
-                                                          {
-                                                            std::lock_guard<std::mutex> m(mutexPacketCountTable_);
-                                                            packetCountInfo_.clear();
-                                                            pTable->clear();
-                                                          },
-                                                          "OTA packet count table.");
+    statisticRegistrar.registerTable<OTAStatisticPublisherKey>("OTAChannelPacketCountTable",
+                                                               PacketCountLabels,
+                                                               [this](StatisticTablePublisher * pTable)
+                                                               {
+                                                                 std::lock_guard<std::mutex> m(mutexPacketCountTable_);
+                                                                 packetCountInfo_.clear();
+                                                                 pTable->clear();
+                                                               },
+                                                               "OTA packet count table.");
 }
 
 void EMANE::OTAStatisticPublisher::update(Type type, const uuid_t & uuid, NEMId nemId)
 {
   char buf[37];
   uuid_unparse(uuid,buf);
-  auto key = PacketCountTableKey{buf,nemId};
+  auto key = OTAStatisticPublisherKey{buf,nemId};
 
   std::lock_guard<std::mutex> m(mutexPacketCountTable_);
 
@@ -117,10 +100,10 @@ void EMANE::OTAStatisticPublisher::update(Type type, const uuid_t & uuid, NEMId 
 
           pPacketCountTable_->addRow(key,
                                      {Any{nemId},
-                                         Any{buf},
-                                           Any{0L},
-                                             Any{0L},
-                                               Any{0L}});
+                                      Any{buf},
+                                      Any{0L},
+                                      Any{0L},
+                                      Any{0L}});
         }
     }
 

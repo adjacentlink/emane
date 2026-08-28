@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2021,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +34,8 @@
 #ifndef EMANERECEIVEPOWERTABLEPUBLISHER_HEADER_
 #define EMANERECEIVEPOWERTABLEPUBLISHER_HEADER_
 
+#include "powertablepublisherkey.h"
+
 #include "emane/types.h"
 #include "emane/statistictable.h"
 #include "emane/statisticregistrar.h"
@@ -59,11 +62,9 @@ namespace EMANE
                 double dDopplerShiftHz,
                 const TimePoint & rxTime);
 
-    using ReceivePowerTableKey = std::tuple<NEMId,AntennaIndex,AntennaIndex,std::uint64_t>;
-
   private:
-    StatisticTable<ReceivePowerTableKey> * pReceivePowerTable_;
-    using ReceivePowerTableSet = std::set<ReceivePowerTableKey>;
+    StatisticTable<PowerTablePublisherKey> * pReceivePowerTable_;
+    using ReceivePowerTableSet = std::set<PowerTablePublisherKey>;
     ReceivePowerTableSet receivePowerTableSet_;
   };
 }

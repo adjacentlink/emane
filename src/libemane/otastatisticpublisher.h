@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +33,8 @@
 
 #ifndef EMANEOTASTATISTICPUBLISHER_HEADER_
 #define EMANEOTASTATISTICPUBLISHER_HEADER_
+
+#include "otastatisticpublisherkey.h"
 
 #include "emane/types.h"
 #include "emane/statisticnumeric.h"
@@ -68,7 +71,7 @@ namespace EMANE
     using PacketCountTableKey = std::pair<std::string,NEMId>;
 
     using PacketCountInfo =
-      std::map<PacketCountTableKey,
+      std::map<OTAStatisticPublisherKey,
                std::tuple<std::uint64_t, // packets Tx
                           std::uint64_t, // packets Rx
                           std::uint64_t>>; // packets Rx drop missing
@@ -78,7 +81,7 @@ namespace EMANE
     StatisticNumeric<std::uint64_t> * pNumOTAChannelUpstreamPackets_;
     StatisticNumeric<std::uint64_t> * pNumOTAChannelUpstreamPacketsDroppedMissingPart_;
 
-    StatisticTable<PacketCountTableKey> * pPacketCountTable_;
+    StatisticTable<OTAStatisticPublisherKey> * pPacketCountTable_;
 
     PacketCountInfo packetCountInfo_;
 

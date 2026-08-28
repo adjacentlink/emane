@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2023,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 #ifndef EMANE_MODELS_BENTPIPE_ANTENNASTATUSPUBLISHER_HEADER_
 #define EMANE_MODELS_BENTPIPE_ANTENNASTATUSPUBLISHER_HEADER_
 
+#include "antennastatuspublisherkey.h"
+
 #include "emane/statisticregistrar.h"
 #include "emane/antenna.h"
 
@@ -59,7 +61,7 @@ namespace EMANE
         void removeAntenna(const Antenna &);
 
       private:
-        StatisticTable<std::pair<std::uint16_t,std::uint64_t>> * pAntennaStatusTable_;
+        StatisticTable<AntennaStatusPublisherKey> * pAntennaStatusTable_;
         std::map<AntennaIndex,FrequencySet> knownAntenna_;
       };
     }
