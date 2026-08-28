@@ -43,6 +43,8 @@
 [1]    250000000
 [1]  frequencyofinterest:
 [1]    250000000
+[1]  horizoncheckenable:
+[1]    1
 [1]  noisebinsize:
 [1]    20
 [1]  noisemaxclampenable:
