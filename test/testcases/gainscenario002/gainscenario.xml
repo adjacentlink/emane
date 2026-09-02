@@ -1,0 +1,98 @@
+<gainscenario nem="2">
+  <!-- action 1 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="0" elevation="90"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 2 -->
+  <action>
+    <locations>
+      <pov nem="1">
+        <position latitude="40.025495" longitude="-74.312888" altitude="35786000"/>
+      </pov>
+
+      <pov nem="2">
+        <position latitude="40.025495" longitude="-74.312888" altitude="0"/>
+      </pov>
+    </locations>
+  </action>
+
+  <!-- action 3 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 4 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="50" elevation="90"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 5 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 6 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="230" elevation="90"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 7 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 8 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="0" elevation="15"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 9 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 10 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="0" elevation="45"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 11 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 12 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="0" elevation="80"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 13 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+
+  <!-- action 14 -->
+  <action>
+    <antennaprofiles>
+      <profile nem="2" id="1" azimuth="10" elevation="80"/>
+    </antennaprofiles>
+  </action>
+
+  <!-- action 15 -->
+  <action>
+    <request nem="1" txfixedgain="0"/>
+  </action>
+</gainscenario>

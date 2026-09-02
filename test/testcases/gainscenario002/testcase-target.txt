@@ -1,0 +1,143 @@
+[1] profile 2 profileId: 1 azimuth: 0 elevation: 90
+
+[2] location 1 P:[40.025495,-74.312888,35786000]
+[2] location 2 P:[40.025495,-74.312888,0]
+
+[3] request 1 txgain=0 -> gain: 6
+[3]  remote
+[3]    gain: 0
+[3]    direction azimuth: 0
+[3]    direction elevation: 0
+[3]    direction distance: 0
+[3]    direction vertically aligned: 0
+[3]    lookup azimuth: 0
+[3]    lookup elevation: 0
+[3]  local
+[3]    gain: 6
+[3]    direction azimuth: 0
+[3]    direction elevation: 90
+[3]    direction distance: 35786000
+[3]    direction vertically aligned: 1
+[3]    lookup azimuth: 0
+[3]    lookup elevation: 0
+
+[4] profile 2 profileId: 1 azimuth: 50 elevation: 90
+
+[5] request 1 txgain=0 -> gain: 6
+[5]  remote
+[5]    gain: 0
+[5]    direction azimuth: 0
+[5]    direction elevation: 0
+[5]    direction distance: 0
+[5]    direction vertically aligned: 0
+[5]    lookup azimuth: 0
+[5]    lookup elevation: 0
+[5]  local
+[5]    gain: 6
+[5]    direction azimuth: 0
+[5]    direction elevation: 90
+[5]    direction distance: 35786000
+[5]    direction vertically aligned: 1
+[5]    lookup azimuth: 0
+[5]    lookup elevation: 0
+
+[6] profile 2 profileId: 1 azimuth: 230 elevation: 90
+
+[7] request 1 txgain=0 -> gain: 6
+[7]  remote
+[7]    gain: 0
+[7]    direction azimuth: 0
+[7]    direction elevation: 0
+[7]    direction distance: 0
+[7]    direction vertically aligned: 0
+[7]    lookup azimuth: 0
+[7]    lookup elevation: 0
+[7]  local
+[7]    gain: 6
+[7]    direction azimuth: 0
+[7]    direction elevation: 90
+[7]    direction distance: 35786000
+[7]    direction vertically aligned: 1
+[7]    lookup azimuth: 0
+[7]    lookup elevation: 0
+
+[8] profile 2 profileId: 1 azimuth: 0 elevation: 15
+
+[9] request 1 txgain=0 -> gain: -200
+[9]  remote
+[9]    gain: 0
+[9]    direction azimuth: 0
+[9]    direction elevation: 0
+[9]    direction distance: 0
+[9]    direction vertically aligned: 0
+[9]    lookup azimuth: 0
+[9]    lookup elevation: 0
+[9]  local
+[9]    gain: -200
+[9]    direction azimuth: 0
+[9]    direction elevation: 90
+[9]    direction distance: 35786000
+[9]    direction vertically aligned: 1
+[9]    lookup azimuth: 0
+[9]    lookup elevation: 75
+
+[10] profile 2 profileId: 1 azimuth: 0 elevation: 45
+
+[11] request 1 txgain=0 -> gain: -200
+[11]  remote
+[11]    gain: 0
+[11]    direction azimuth: 0
+[11]    direction elevation: 0
+[11]    direction distance: 0
+[11]    direction vertically aligned: 0
+[11]    lookup azimuth: 0
+[11]    lookup elevation: 0
+[11]  local
+[11]    gain: -200
+[11]    direction azimuth: 0
+[11]    direction elevation: 90
+[11]    direction distance: 35786000
+[11]    direction vertically aligned: 1
+[11]    lookup azimuth: 0
+[11]    lookup elevation: 45
+
+[12] profile 2 profileId: 1 azimuth: 0 elevation: 80
+
+[13] request 1 txgain=0 -> gain: 3
+[13]  remote
+[13]    gain: 0
+[13]    direction azimuth: 0
+[13]    direction elevation: 0
+[13]    direction distance: 0
+[13]    direction vertically aligned: 0
+[13]    lookup azimuth: 0
+[13]    lookup elevation: 0
+[13]  local
+[13]    gain: 3
+[13]    direction azimuth: 0
+[13]    direction elevation: 90
+[13]    direction distance: 35786000
+[13]    direction vertically aligned: 1
+[13]    lookup azimuth: 0
+[13]    lookup elevation: 10
+
+[14] profile 2 profileId: 1 azimuth: 10 elevation: 80
+
+[15] request 1 txgain=0 -> gain: 0
+[15]  remote
+[15]    gain: 0
+[15]    direction azimuth: 0
+[15]    direction elevation: 0
+[15]    direction distance: 0
+[15]    direction vertically aligned: 0
+[15]    lookup azimuth: 0
+[15]    lookup elevation: 0
+[15]  local
+[15]    gain: 0
+[15]    direction azimuth: 0
+[15]    direction elevation: 90
+[15]    direction distance: 35786000
+[15]    direction vertically aligned: 1
+[15]    lookup azimuth: 350
+[15]    lookup elevation: 10
+

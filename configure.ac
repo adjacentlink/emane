@@ -1,5 +1,5 @@
 AC_COPYRIGHT([
- Copyright (c) 2013-2025 - Adjacent Link LLC, Bridgewater, New Jersey
+ Copyright (c) 2013-2026 - Adjacent Link LLC, Bridgewater, New Jersey
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -247,6 +247,7 @@ AC_CONFIG_FILES([Makefile
  test/harness/phyupstreamspeed/Makefile
  test/testcases/Makefile
  test/testcases/gainscenario001/Makefile
+ test/testcases/gainscenario002/Makefile
  test/testcases/filterscenario001/Makefile
  test/testcases/noisescenario001/Makefile
  test/testcases/noisescenario002/Makefile

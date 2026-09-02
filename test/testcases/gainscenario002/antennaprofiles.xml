@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE profiles SYSTEM "../../../dtd/antennaprofile.dtd">
+
+<profiles>
+  <profile id="1" antennapatternuri="antenna30dsector.xml">
+    <placement north="0" east="0" up="0"/>
+  </profile>
+</profiles>

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2021,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +42,8 @@
 #include "emane/antenna.h"
 #include "emane/events/antennaprofile.h"
 
+#include <optional>
+
 namespace EMANE
 {
   class GainManager
@@ -52,12 +55,93 @@ namespace EMANE
                 bool bHorizonCheck);
 
     enum class GainStatus {SUCCESS = 0,
-      ERROR_LOCATIONINFO,
-      ERROR_PROFILEINFO,
-      ERROR_HORIZON,
-      ERROR_ANTENNA_INDEX};
+                           ERROR_LOCATIONINFO,
+                           ERROR_PROFILEINFO,
+                           ERROR_HORIZON,
+                           ERROR_ANTENNA_INDEX};
 
-    using GainInfo = std::tuple<double,double,GainStatus,bool>;
+    struct GainEntry
+    {
+      double dRemoteAntennaGaindBi_;
+      double dRemoteDirectionAzimuthDegrees_;
+      double dRemoteDirectionElevationDegrees_;
+      double dRemoteDirectionDistanceMeters_;
+      bool bRemoteDirectionVerticallyAligned_;
+      double dRemoteLookupAzimuthDegrees_;
+      double dRemoteLookupElevationDegrees_;
+
+      double dLocalAntennaGaindBi_;
+      double dLocalDirectionAzimuthDegrees_;
+      double dLocalDirectionElevationDegrees_;
+      double dLocalDirectionDistanceMeters_;
+      bool bLocalDirectionVerticallyAligned_;
+      double dLocalLookupAzimuthDegrees_;
+      double dLocalLookupElevationDegrees_;
+
+      GainEntry() = default;
+
+      GainEntry(double dRemoteAntennaGaindBi,
+                double dRemoteDirectionAzimuthDegrees,
+                double dRemoteDirectionElevationDegrees,
+                double dRemoteDirectionDistanceMeters,
+                bool bRemoteDirectionVerticallyAligned,
+                double dRemoteLookupAzimuthDegrees,
+                double dRemoteLookupElevationDegrees,
+                double dLocalAntennaGaindBi,
+                double dLocalDirectionAzimuthDegrees,
+                double dLocalDirectionElevationDegrees,
+                double dLocalDirectionDistanceMeters,
+                bool bLocalDirectionVerticallyAligned,
+                double dLocalLookupAzimuthDegrees,
+                double dLocalLookupElevationDegrees):
+        dRemoteAntennaGaindBi_{dRemoteAntennaGaindBi},
+        dRemoteDirectionAzimuthDegrees_{dRemoteDirectionAzimuthDegrees},
+        dRemoteDirectionElevationDegrees_{dRemoteDirectionElevationDegrees},
+        dRemoteDirectionDistanceMeters_{dRemoteDirectionDistanceMeters},
+        bRemoteDirectionVerticallyAligned_{bRemoteDirectionVerticallyAligned},
+        dRemoteLookupAzimuthDegrees_{dRemoteLookupAzimuthDegrees},
+        dRemoteLookupElevationDegrees_{dRemoteLookupElevationDegrees},
+        dLocalAntennaGaindBi_{dLocalAntennaGaindBi},
+        dLocalDirectionAzimuthDegrees_{dLocalDirectionAzimuthDegrees},
+        dLocalDirectionElevationDegrees_{dLocalDirectionElevationDegrees},
+        dLocalDirectionDistanceMeters_{dLocalDirectionDistanceMeters},
+        bLocalDirectionVerticallyAligned_{bLocalDirectionVerticallyAligned},
+        dLocalLookupAzimuthDegrees_{dLocalLookupAzimuthDegrees},
+        dLocalLookupElevationDegrees_{dLocalLookupElevationDegrees}{}
+    };
+
+    struct GainInfo
+    {
+      GainEntry entry_;
+      GainStatus status_;
+      bool bCacheHit_;
+
+      GainInfo(const GainEntry & entry,
+               bool bCacheHit):
+        entry_{entry},
+        status_{GainStatus::SUCCESS},
+        bCacheHit_{bCacheHit}{}
+
+      GainInfo(GainStatus status):
+        status_{status},
+        bCacheHit_{false}{};
+    };
+
+    struct GainCacheEntry
+    {
+      GainEntry entry_;
+      std::uint64_t u64TxAntennaInfoSequence_;
+      std::uint64_t u64LocationPairSequence_;
+
+      GainCacheEntry() = default;
+
+      GainCacheEntry(const GainEntry & entry,
+                     std::uint64_t u64TxAntennaInfoSequence,
+                     std::uint64_t u64LocationPairSequence):
+        entry_{entry},
+        u64TxAntennaInfoSequence_{u64TxAntennaInfoSequence},
+        u64LocationPairSequence_{u64LocationPairSequence}{}
+    };
 
     GainInfo determineGain(NEMId transmitterId,
                            AntennaIndex txAntennaIndex,
@@ -91,18 +175,13 @@ namespace EMANE
 
     AntennaPatternInfo localAntennaPatternInfo_;
 
-    using GainCacheEntry = std::tuple<std::uint64_t,
-                                      std::uint64_t,
-                                      double, // remote gain
-                                      double>; // local gain
-
     using Cache = std::map<NEMId, // Tx NEM Id
                            std::map<AntennaIndex, // Tx Antenna Index
                                     GainCacheEntry>>;
 
     Cache gainCache_;
 
-    std::tuple<double,double,bool>
+    std::optional<GainEntry>
     getGainCache(NEMId transmitterId,
                  const AntennaManager::AntennaInfo & txAntennaInfo,
                  const AntennaManager::AntennaInfo & rxAntennaInfo,
@@ -111,8 +190,7 @@ namespace EMANE
     void setGainCache(NEMId transmitterId,
                       const AntennaManager::AntennaInfo & txAntennaInfo,
                       const LocationInfo & locationPairInfo,
-                      double dRemoteGaindBi,
-                      double dLocalGaindBi );
+                      const GainEntry & entry);
   };
 }
 

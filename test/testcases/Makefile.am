@@ -3,6 +3,7 @@ if WITH_TESTCASES
 SUBDIRS=                \
  filterscenario001      \
  gainscenario001        \
+ gainscenario002        \
  noisescenario001       \
  noisescenario002       \
  profilescenario001     \

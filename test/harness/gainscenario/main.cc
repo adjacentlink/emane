@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013,2016,2020-2021 - Adjacent Link LLC,
- * Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2020-2021,2026 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -443,9 +443,9 @@ int main(int argc, char* argv[])
                                   antennaManager.update(id,EMANE::Antenna::createProfileDefined(0));
                                 }
 
-                              auto gainInfodBi = gainManager.determineGain(nemId,
-                                                                           EMANE::DEFAULT_ANTENNA_INDEX,
-                                                                           {locationInfoRet.first});
+                              auto gainInfo = gainManager.determineGain(nemId,
+                                                                        EMANE::DEFAULT_ANTENNA_INDEX,
+                                                                        {locationInfoRet.first});
 
                               std::cout<<"["<<++iActionIndex<<"] request "<<nemId;
 
@@ -459,10 +459,30 @@ int main(int argc, char* argv[])
                                   std::cout<<" txgain="<<dTxFixedGain;
                                 }
 
-                              switch(std::get<2>(gainInfodBi))
+                              switch(gainInfo.status_)
                                 {
                                 case EMANE::GainManager::GainStatus::SUCCESS:
-                                  std::cout<<" -> gain: "<<std::get<0>(gainInfodBi) + std::get<1>(gainInfodBi)<<std::endl;
+                                  std::cout<<" -> gain: "
+                                           <<gainInfo.entry_.dRemoteAntennaGaindBi_ + gainInfo.entry_.dLocalAntennaGaindBi_
+                                           <<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"  remote"<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    gain: "<<gainInfo.entry_.dRemoteAntennaGaindBi_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction azimuth: "<<gainInfo.entry_.dRemoteDirectionAzimuthDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction elevation: "<<gainInfo.entry_.dRemoteDirectionElevationDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction distance: "<<gainInfo.entry_.dRemoteDirectionDistanceMeters_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction vertically aligned: "<<gainInfo.entry_.bRemoteDirectionVerticallyAligned_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    lookup azimuth: "<<gainInfo.entry_.dRemoteLookupAzimuthDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    lookup elevation: "<<gainInfo.entry_.dRemoteLookupElevationDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"  local"<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    gain: "<<gainInfo.entry_.dLocalAntennaGaindBi_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction azimuth: "<<gainInfo.entry_.dLocalDirectionAzimuthDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction elevation: "<<gainInfo.entry_.dLocalDirectionElevationDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction distance: "<<gainInfo.entry_.dLocalDirectionDistanceMeters_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    direction vertically aligned: "<<gainInfo.entry_.bLocalDirectionVerticallyAligned_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    lookup azimuth: "<<gainInfo.entry_.dLocalLookupAzimuthDegrees_<<std::endl;
+                                  std::cout<<"["<<iActionIndex<<"]"<<"    lookup elevation: "<<gainInfo.entry_.dLocalLookupElevationDegrees_<<std::endl;
+
+
                                   break;
                                 case EMANE::GainManager::GainStatus::ERROR_LOCATIONINFO:
                                   std::cout<<" -> error: Missing required location info"<<std::endl;
