@@ -44,13 +44,15 @@ usage = """emaneevent-location [OPTION]... NEMID[:NEMID] LATITUDE \\
 
        LONGITUDE := 'longitude'=DEGREES
 
-       ALTITUDE := 'altitude'=MPS
+       ALTITUDE := 'altitude'=M
 
        VELOCITY := 'azimuth'=DEGREES 'elevation'=DEGREES 'magnitude'=MPS
 
        ORIENTATION := 'pitch'=DEGREES 'roll'=DEGREES  'yaw'=DEGREES
 
        DEGREES := degrees (float)
+
+       M := Meters (float)
 
        MPS := Meters/Second (float)
 """
