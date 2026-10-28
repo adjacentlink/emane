@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,48 +30,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMANEEVENTSSLOTSTRUCTURE_HEADER_
-#define EMANEEVENTSSLOTSTRUCTURE_HEADER_
+#include "emane/application/activitycoordinator.h"
+#include "activityservice.h"
 
-#include "emane/types.h"
-#include <set>
+EMANE::Application::ActivityCoordinator::ActivityCoordinator(){}
 
-namespace EMANE
+EMANE::Application::ActivityCoordinator::~ActivityCoordinator(){}
+
+void EMANE::Application::ActivityCoordinator::openLocal()
 {
-  namespace Events
-  {
-    class SlotStructure
-    {
-    public:
-      SlotStructure(std::uint64_t u64BandwidthHz,
-                    std::uint32_t u32FramePerMultiFrame,
-                    std::uint32_t u32SlotsPerFrame,
-                    const Microseconds & slotDuration,
-                    const Microseconds & slotOverhead);
-
-      SlotStructure();
-
-      std::uint64_t getBandwidth() const;
-
-      std::uint32_t getFramesPerMultiFrame() const;
-
-      std::uint32_t getSlotsPerFrame() const;
-
-      const Microseconds & getSlotDuration() const;
-
-      const Microseconds & getSlotOverhead() const;
-
-    private:
-      std::uint64_t u64BandwidthHz_;
-      std::uint32_t u32FramePerMultiFrame_;
-      std::uint32_t u32SlotsPerFrame_;
-      Microseconds slotDuration_;
-      Microseconds slotOverhead_;
-
-    };
-  }
+  ActivityServiceSingleton::instance()->openLocal();
 }
 
-#include "emane/events/slotstructure.inl"
+void
+EMANE::Application::
+ActivityCoordinator::openRemote(const uuid_t & uuid,
+                                const INETAddr & simulationCoonrdinatorEndpoint,
+                                const INETAddr & activityServiceEndpoint,
+                                const std::string & sActivityServiceTag)
+{
+  ActivityServiceSingleton::instance()->openRemote(uuid,
+                                                   simulationCoonrdinatorEndpoint,
+                                                   activityServiceEndpoint,
+                                                   sActivityServiceTag);
+}
 
-#endif // EMANEEVENTSSLOTSTRUCTURE_HEADER_
+void
+EMANE::Application::
+ActivityCoordinator::waitForStart()
+{
+  ActivityServiceSingleton::instance()->waitForStart();
+}
+
+void
+EMANE::Application::
+ActivityCoordinator::cancelWaitForStart()
+{
+  ActivityServiceSingleton::instance()->cancelWaitForStart();
+}
+
+bool
+EMANE::Application::
+ActivityCoordinator::isStarted()
+{
+  return ActivityServiceSingleton::instance()->isStarted();
+}

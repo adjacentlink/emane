@@ -1,0 +1,180 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2025-2026 - Adjacent Link LLC, Bridgewater, New Jersey
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in
+#   the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of Adjacent Link LLC nor the names of its
+#   contributors may be used to endorse or promote products derived
+#   from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# See toplevel COPYING for more information.
+#
+
+import os
+import logging
+import daemon
+import daemon.pidfile
+import traceback
+import signal
+import sys
+import uuid
+import time
+from threading import Event
+from argparse import ArgumentParser
+
+argument_parser = ArgumentParser()
+
+argument_parser.add_argument('scenario-file',
+                             type=str,
+                             help='scenario file.')
+
+argument_parser.add_argument('activity-service-subscribe-endpoint',
+                             type=str,
+                             help='Activity Service subscribe endpoint')
+
+argument_parser.add_argument('activity-service-publish-endpoint',
+                             type=str,
+                             help='Activity Service publish endpoint')
+
+argument_parser.add_argument('activity-service-tag',
+                             type=str,
+                             help='Actvity Service tag')
+
+argument_parser.add_argument('traffic-endpoint',
+                             type=str,
+                             help='Traffic service endpoint')
+
+argument_parser.add_argument('local-id',
+                             type=str,
+                             help='Local id')
+
+argument_parser.add_argument('--log-file',
+                            type=str,
+                            help='log file.')
+
+argument_parser.add_argument('--log-level',
+                             type=str,
+                             metavar='LEVEL',
+                             choices=['critical',
+                                      'error',
+                                      'warning',
+                                      'info',
+                                      'debug',
+                                      'notset'],
+                             default='info',
+                             help='log level [default: %(default)s].')
+
+argument_parser.add_argument('-o',
+                             '--out-file',
+                            type=str,
+                            help='output file')
+
+argument_parser.add_argument('--pid-file',
+                            type=str,
+                            default=None,
+                            help='write pid file')
+
+argument_parser.add_argument('--daemonize',
+                            '-d',
+                            action='store_true',
+                            dest='daemonize',
+                            default=False,
+                            help='daemonize application [default: %(default)s].')
+
+argument_parser.add_argument('--action-name',
+                            type=str,
+                            default='emane.traffic',
+                            help='Action name for reporting traffic actions. [default: %(default)s]')
+
+ns = argument_parser.parse_args()
+
+args = vars(ns)
+
+shutdown_event = Event()
+
+def shutdown_handler(signum,frame):
+    shutdown_event.set()
+
+def do_main():
+    application_uuid = uuid.uuid4()
+
+    logging.basicConfig(filename=args['log_file'],
+                        format='%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=getattr(logging,args['log_level'].upper()))
+
+    logging.info('creating service')
+
+    from emane.boundary.traffic.service import Service
+
+    service = Service(args['scenario-file'],
+                      args['traffic-endpoint'],
+                      args['activity-service-subscribe-endpoint'],
+                      args['activity-service-publish-endpoint'],
+                      args['activity-service-tag'],
+                       args['local-id'],
+                       args['out_file'],
+                       args['action_name'],
+                       application_uuid,
+                       lambda : shutdown_event.set())
+
+    logging.info('starting service')
+
+    service.start()
+
+    while not shutdown_event.is_set():
+        time.sleep(2)
+
+    logging.info('stopping service')
+
+    service.stop()
+
+pid_file_context = None
+
+if args['pid_file'] != None:
+    pid_file_context = daemon.pidfile.PIDLockFile(args['pid_file'])
+
+if args['scenario-file'] != None:
+    args['scenario-file'] = os.path.realpath(args['scenario-file'])
+
+if args['log_file'] != None:
+    args['log_file'] = os.path.realpath(args['log_file'])
+
+if args['out_file'] != None:
+    args['out_file'] = os.path.realpath(args['out_file'])
+
+with daemon.DaemonContext(pidfile=pid_file_context,
+                          detach_process=args['daemonize'],
+                          signal_map={signal.SIGINT:shutdown_handler,
+                                      signal.SIGQUIT:shutdown_handler},
+                          stdout=None if args['daemonize'] else sys.stdout,
+                          stderr=None if args['daemonize'] else sys.stderr):
+    try:
+
+        do_main()
+
+    except:
+        print(traceback.format_exc())

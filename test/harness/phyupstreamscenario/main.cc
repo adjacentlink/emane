@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016,2021 - Adjacent Link LLC, Bridgewater,
- *  New Jersey
+ * Copyright (c) 2013-2014,2016,2021,2025 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,8 @@
 #include "emane/controls/frequencyofinterestcontrolmessage.h"
 
 #include "emane/utils/spectrumwindowutils.h"
+
+#include "emane/application/activitycoordinator.h"
 
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
@@ -164,6 +166,10 @@ EMANE::FrameworkPHY * createPHY(EMANE::NEMId id,EMANE::SpectrumService * pSpectr
 int main(int argc, char * argv[])
 {
   LIBXML_TEST_VERSION;
+
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
+  activityCoordinator.openLocal();
 
   option options[] =
     {
@@ -858,13 +864,13 @@ int main(int argc, char * argv[])
                                 }
 
                               EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
-                                subId,
-                                ++u16SequenceNumber,
-                                EMANE::TimePoint{txTime},
-                                {segments},
-                                {antenna},
-                                transmitters,
-                                {}};
+                                                         subId,
+                                                         ++u16SequenceNumber,
+                                                         EMANE::TimePoint{txTime},
+                                                         {segments},
+                                                         {antenna},
+                                                         transmitters,
+                                                         {}};
 
                               std::cout<<"["<<iActionIndex<<"]  Common PHY Header data:"<<std::endl;
 

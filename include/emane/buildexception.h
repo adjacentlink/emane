@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2011 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,28 +36,13 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class BuildException
-   *
-   * @brief Exception thrown by builders when constructing 
-   *        and assembling application objects and containers
-   *  
-   */
-  class BuildException : public Exception
-  {
-  public:
-    /**
-     * Creates a BuildException instance
-     */
-    BuildException(const std::string & sDescription):
-      Exception("BuildException",sDescription){}
-    
-    /**
-     * Destroys an instance
-     */
-    ~BuildException() throw(){}
-  };
-}
+/**
+ * @class BuildException
+ *
+ * @brief Exception thrown by builders when constructing
+ *        and assembling application objects and containers
+ *
+ */
+EMANE_EXCEPTION_DEFINE(BuildException)
+
 #endif //EMANEBUILDEXCEPTION_HEADER_

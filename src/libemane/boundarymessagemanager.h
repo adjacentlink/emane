@@ -73,11 +73,13 @@ namespace EMANE
     void sendPacketMessage(const PacketInfo & packetInfo,
                            const void * pPacketData,
                            size_t packetLength,
+                           std::uint64_t u64SequenceNumber,
                            const ControlMessages & msgs);
 
     void sendPacketMessage(const PacketInfo & packetInfo,
                            const Utils::VectorIO & packetIO,
                            size_t overallLength,
+                           std::uint64_t u64SequenceNumber,
                            const ControlMessages & msgs);
 
     void sendControlMessage(const ControlMessages & msgs);
@@ -88,6 +90,7 @@ namespace EMANE
     virtual void doProcessPacketMessage(const PacketInfo &,
                                         const void * pPacketData,
                                         size_t packetLength,
+                                        std::uint64_t u64SequenceNumber,
                                         const ControlMessages & msgs) = 0;
 
     virtual void doProcessControlMessage(const ControlMessages & msgs) = 0;

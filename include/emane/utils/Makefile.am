@@ -14,6 +14,8 @@ emaneinc_HEADERS =                       \
  parameterconvert.inl                    \
  processingpool.h                        \
  processingpool.inl                      \
+ raiiobject.h                            \
+ raiizmq.h                               \
  randomnumberdistribution.h              \
  singleton.h                             \
  spectrumwindowutils.h                   \
@@ -22,6 +24,8 @@ emaneinc_HEADERS =                       \
  threadutils.h                           \
  timer.h                                 \
  timer.inl                               \
+ timerbackend.h                          \
+ timerexception.h                        \
  runningaverage.h                        \
  commonlayerstatistics.h                 \
  vectorio.h                              \

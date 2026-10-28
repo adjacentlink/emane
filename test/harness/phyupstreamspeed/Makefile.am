@@ -9,7 +9,8 @@ phyupstreamspeed_CPPFLAGS =        \
 phyupstreamspeed_LDADD =           \
  $(libuuid_LIBS)                   \
  $(libxml2_LIBS)                   \
- @top_srcdir@/src/libemane/.libs/libemane.la
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ $(libemane_LIBS)
 
 phyupstreamspeed_SOURCES =         \
  main.cc                           \

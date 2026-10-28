@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2016,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,12 +34,14 @@
 #include "main.h"
 #include "emane/application/libemane.h"
 #include "emane/application/logger.h"
+#include "emane/application/activitycoordinator.h"
 #include "emane/exception.h"
 #include "emane/utils/parameterconvert.h"
 
 #include <iostream>
 #include <fstream>
 #include <mutex>
+#include <functional>
 
 #include <getopt.h>
 #include <unistd.h>
@@ -54,8 +57,17 @@ namespace
   void usage(const std::string & sAppName,std::vector<std::string> additionalOptions)
   {
     std::cout<<"usage: "<<sAppName <<" [OPTIONS]... CONFIG_URL"<<std::endl;
+    std::cout<<"usage: "<<sAppName <<" [OPTIONS]... --simulation"
+             <<" CONFIG_URL"
+             <<" ACTIVITY_SERVICE_SUBSCRIBE_ENDPOINT"
+             <<" ACTIVITY_SERVICE_PUBLISH_ENDPOINT"
+             <<" ACTIVITY_SERVICE_TAG"
+             <<std::endl;
     std::cout<<std::endl;
-    std::cout<<" CONFIG_URL                      URL of XML configuration file."<<std::endl;
+    std::cout<<" CONFIG_URL                          URL of XML configuration file."<<std::endl;
+    std::cout<<" ACTIVITY_SERVICE_SUBSCRIBE_ENDPOINT Activity Service subscribe endpoint."<<std::endl;
+    std::cout<<" ACTIVITY_SERVICE_PUBLISH_ENPOINT    Activity Service publish endpoint."<<std::endl;
+    std::cout<<" ACTIVITY_SERVICE_TAG                Activity Service tag."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"options:"<<std::endl;
     std::cout<<"  -d, --daemonize                Run in the background."<<std::endl;
@@ -68,7 +80,7 @@ namespace
     std::cout<<"                                 Only used with -r, --realtime."<<std::endl;
     std::cout<<"                                  default: "<<DEFAULT_PRIORITY_LEVEL<<std::endl;
     std::cout<<"  -r, --realtime                 Set realtime scheduling."<<std::endl;
-    std::cout<<"  --syslog                       Log to syslog instead of stdout."<<std::endl;
+    std::cout<<"  --simulation                   Enable simulation mode."<<std::endl;
     std::cout<<"  --uuidfile FILE                Write the application instance UUID to file."<<std::endl;
     std::cout<<"  -v, --version                  Print version and exit."<<std::endl;
     std::cout<<std::endl;
@@ -87,8 +99,11 @@ namespace
 
   std::mutex mutex{};
 
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
   void sighandler(int)
   {
+    activityCoordinator.cancelWaitForStart();
     mutex.unlock();
   }
 }
@@ -125,11 +140,11 @@ int EMANE::Application::Main::main(int argc, char * argv[])
           {"loglevel", 1, nullptr, 'l'},
           {"logfile",  1, nullptr, 'f'},
           {"daemonize",0, nullptr, 'd'},
-          {"syslog",   0, nullptr,  1},
           {"version" , 0, nullptr, 'v'},
           {"pidfile" , 1, nullptr,  2},
           {"uuidfile", 1, nullptr,  3},
           {"priority", 1, nullptr,  'p'},
+          {"simulation", 0, nullptr, 4},
         };
 
       std::string sOptString{"hrvdf:l:p:"};
@@ -138,12 +153,12 @@ int EMANE::Application::Main::main(int argc, char * argv[])
       int iOptionIndex{};
       bool bDaemonize{};
       bool bRealtime{};
-      bool bSysLog{};
       int  iLogLevel{DEFAULT_LOG_LEVEL};
       int  iPriority{DEFAULT_PRIORITY_LEVEL};
       std::string sLogFile{};
       std::string sPIDFile{};
       std::string sUUIDFile{};
+      bool bSimulation{};
 
       // add any specialized options
       std::vector<option> additionalOptions = doGetOptions();
@@ -158,7 +173,9 @@ int EMANE::Application::Main::main(int argc, char * argv[])
       // close out the options
       options.push_back({0, 0,nullptr,0 });
 
-      while((iOption = getopt_long(argc,argv,sOptString.c_str(), &options[0],&iOptionIndex)) != -1)
+      while((iOption = getopt_long(argc,argv,sOptString.c_str(),
+                                   &options[0],
+                                   &iOptionIndex)) != -1)
         {
           switch(iOption)
             {
@@ -173,10 +190,6 @@ int EMANE::Application::Main::main(int argc, char * argv[])
                 {
                   std::cout<<optarg<<std::endl;
                 }
-              break;
-
-            case 1:
-              bSysLog = true;
               break;
 
             case 'd':
@@ -225,6 +238,9 @@ int EMANE::Application::Main::main(int argc, char * argv[])
 
               break;
 
+            case 4:
+              bSimulation = true;
+              break;
 
             case '?':
               if(optopt == 't')
@@ -249,24 +265,87 @@ int EMANE::Application::Main::main(int argc, char * argv[])
             }
         }
 
+      INETAddr simulationCoordinatorEndpoint{};
+      INETAddr activityServiceEndpoint{};
+      std::string sActivityServiceTag{};
+
       std::string sConfigurationXML{};
 
       if(optind >= argc)
         {
-          std::cerr<<"Missing CONFIG_URL"<<std::endl;
+          std::cerr<<"missing CONFIG_URL"<<std::endl;
+
           return EXIT_FAILURE;
         }
       else
         {
-          sConfigurationXML = argv[optind];
+          sConfigurationXML = argv[optind++];
 
+          if(bSimulation)
+            {
+              if(optind >= argc)
+                {
+                  std::cerr<<"missing SIMULATION_COORDINATOR_ENDPOINT"<<std::endl;
+                  return EXIT_FAILURE;
+                }
+              else
+                {
+                  std::string sSimulationCoordinatorEndpoint{argv[optind++]};
+
+                  try
+                    {
+                      simulationCoordinatorEndpoint =
+                        EMANE::Utils::ParameterConvert{sSimulationCoordinatorEndpoint}.toINETAddr();
+                    }
+                  catch(...)
+                    {
+                      std::cerr<<"invalid SIMULATION_COORDINATOR_ENDPOINT: "
+                               <<sSimulationCoordinatorEndpoint
+                               <<std::endl;
+
+                      return EXIT_FAILURE;
+                    }
+                }
+
+              if(optind >= argc)
+                {
+                  std::cerr<<"missing ACTIVITY_SERVICE_ENDPOINT"<<std::endl;
+                  return EXIT_FAILURE;
+                }
+              else
+                {
+                  std::string sActivityServiceEndpoint{argv[optind++]};
+
+                  try
+                    {
+                      activityServiceEndpoint =
+                        EMANE::Utils::ParameterConvert{sActivityServiceEndpoint}.toINETAddr();
+                    }
+                  catch(...)
+                    {
+                      std::cerr<<"invalid ACTIVITY_SERVICE_ENDPOINT: "
+                               <<sActivityServiceEndpoint
+                               <<std::endl;
+
+                      return EXIT_FAILURE;
+                    }
+                }
+
+              if(optind >= argc)
+                {
+                  std::cerr<<"missing ACTIVITY_SERVICE_TAG"<<std::endl;
+                  return EXIT_FAILURE;
+                }
+              else
+                {
+                  sActivityServiceTag = argv[optind++];
+                }
+            }
         }
-
-      doConfigure(sConfigurationXML);
 
       if(bDaemonize)
         {
-          if(sLogFile.empty() && !bSysLog && iLogLevel != 0)
+          if(sLogFile.empty() && iLogLevel != 0)
             {
               std::cerr<<"unable to daemonize log level must be 0 when logging to stdout"<<std::endl;;
               return EXIT_FAILURE;
@@ -295,6 +374,24 @@ int EMANE::Application::Main::main(int argc, char * argv[])
           logger.setLogLevel(EMANE::NOLOG_LEVEL);
         }
 
+      //
+      // Warning: Do not log BEFORE ActivityCordinator::open(Local|Remote)
+      //
+      if(bSimulation)
+        {
+          // using remote activity coordination (simulation)
+          activityCoordinator.openRemote(uuid_,
+                                         simulationCoordinatorEndpoint,
+                                         activityServiceEndpoint,
+                                         sActivityServiceTag);
+        }
+      else
+        {
+          // using local activity coordination (emulation)
+          activityCoordinator.openLocal();
+        }
+
+      doConfigure(sConfigurationXML);
 
       std::stringstream ss;
       for(int i = 0; i < argc; ++i)
@@ -314,7 +411,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
 
           if(sched_setscheduler(0,SCHED_RR,&schedParam))
             {
-              if(bSysLog || !sLogFile.empty() || !iLogLevel)
+              if(!sLogFile.empty() || !iLogLevel)
                 {
                   std::cerr<<"unable to set realtime scheduler"<<std::endl;
                 }
@@ -326,7 +423,7 @@ int EMANE::Application::Main::main(int argc, char * argv[])
         }
       else
         {
-          if(bSysLog || !sLogFile.empty() || iLogLevel < 2)
+          if(!sLogFile.empty() || iLogLevel < 2)
             {
               std::cerr<<"Please consider using the realtime scheduler to improve fidelity."<<std::endl;
             }
@@ -364,24 +461,33 @@ int EMANE::Application::Main::main(int argc, char * argv[])
         }
 
 
-      doStart();
-
-
       struct sigaction action;
 
       memset(&action,0,sizeof(action));
 
       action.sa_handler = sighandler;
-
       sigaction(SIGINT,&action,nullptr);
       sigaction(SIGQUIT,&action,nullptr);
 
-      mutex.lock();
+      activityCoordinator.waitForStart();
 
-      // signal handler unlocks mutex
-      mutex.lock();
+      logger.log(EMANE::DEBUG_LEVEL,
+                 "wait for start fin");
 
-      doStop();
+      if(activityCoordinator.isStarted())
+        {
+          logger.log(EMANE::DEBUG_LEVEL,
+                     "start detected");
+
+          doStart();
+
+          mutex.lock();
+
+          // signal handler unlocks mutex
+          mutex.lock();
+
+          doStop();
+        }
 
       doDestroy();
     }

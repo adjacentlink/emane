@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{  
-  /**
-   * @class SpectrumServiceException
-   *
-   * @brief SpectrumServiceException is thrown when an exception
-   * occurs during spectrum service processing.
-   */
-  class SpectrumServiceException : public Exception
-  {
-  public:
-    SpectrumServiceException(const std::string & sDescription = {}):
-      Exception("SpectrumServiceException",sDescription){}
-
-    ~SpectrumServiceException() throw() {}
-  };
-}
+/**
+ * @class SpectrumServiceException
+ *
+ * @brief SpectrumServiceException is thrown when an exception
+ * occurs during spectrum service processing.
+ */
+EMANE_EXCEPTION_DEFINE(SpectrumServiceException)
 
 #endif // EMANESPECTRUMSERVICEEXCEPTION_HEADER_

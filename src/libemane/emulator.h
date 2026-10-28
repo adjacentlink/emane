@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,17 +50,17 @@ namespace EMANE
       void doConfigure(const std::string & sXMLURL) override
       {
         pDirector_.reset(new Director{sXMLURL, builder_});
+
+        pManager_ = pDirector_->construct(getUUID());
       }
-      
+
       void doStart() override
       {
-        pManager_ = pDirector_->construct(getUUID());
-      
         pManager_->start();
-    
+
         pManager_->postStart();
       }
-      
+
       void doStop() override
       {
         pManager_->stop();

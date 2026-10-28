@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,16 +35,6 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  class INETAddrException : public Exception
-  {
-  public:
-    INETAddrException(const std::string & sDescription):
-      Exception("INETAddrException",sDescription){}
-
-    ~INETAddrException() throw(){}
-  };
-}
+EMANE_EXCEPTION_DEFINE(INETAddrException)
 
 #endif //EMANEINETADDREXCEPTION_HEADER_

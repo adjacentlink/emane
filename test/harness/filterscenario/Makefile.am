@@ -8,7 +8,8 @@ filterscenario_CPPFLAGS =      \
 
 filterscenario_LDADD =                        \
  $(libxml2_LIBS)                             \
- @top_srcdir@/src/libemane/.libs/libemane.la
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ $(libemane_LIBS)
 
 filterscenario_SOURCES =  \
  main.cc

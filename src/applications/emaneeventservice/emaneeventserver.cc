@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2014,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ namespace EMANE
       std::vector<option> doGetOptions() const
       {
         return {{"starttime", 1, nullptr, 's'},
-            {"nextday", 0, nullptr, 'n'}};
+                {"nextday", 0, nullptr, 'n'}};
 
       }
 
@@ -75,7 +75,7 @@ namespace EMANE
           case 's':
             {
               unsigned hour, min, sec;
-              
+
               if(sscanf(pzOptArg, "%02u:%02u:%02u", &hour, &min, &sec) == 3)
                 {
                   secondsStart_ = std::chrono::seconds{(hour * 3600) + (min * 60) + sec};
@@ -84,7 +84,7 @@ namespace EMANE
                 {
                   std::cerr<<"Error in format of start time "
                            <<pzOptArg
-                           <<" --starttime HH:MM:SS"<<std::endl; 
+                           <<" --starttime HH:MM:SS"<<std::endl;
                   return false;
                 }
             }
@@ -103,24 +103,22 @@ namespace EMANE
 
       virtual std::vector<std::string> doGetOptionsUsage() const
       {
-        return 
+        return
           {
             "  -s, --starttime TIME           Set the start time HH:MM:SS",
-              "  -n, --nextday                  Set the start time to the next day"};
+            "  -n, --nextday                  Set the start time to the next day"};
       }
 
 
       void doStart() override
       {
-        pManager_ = pDirector_->construct(getUUID());
-        
         if(secondsStart_ != std::chrono::seconds::zero())
           {
             std::time_t t = std::time(nullptr);
-            
+
             // current time broken down to mon,day,year,hr,min,sec ...
             struct tm *tm_ptr = std::localtime(&t);
-            
+
             // number of seconds passed so far today
             std::chrono::seconds secondsPassed{tm_ptr->tm_hour * 3600 + tm_ptr->tm_min * 60 + tm_ptr->tm_sec};
 
@@ -142,13 +140,13 @@ namespace EMANE
                   }
               }
 
-            
+
             std::this_thread::sleep_for(secondsStart_);
           }
-        
+
 
         pManager_->start();
-        
+
         pManager_->postStart();
       }
 

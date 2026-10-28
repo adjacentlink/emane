@@ -8,7 +8,8 @@ gainscenario_CPPFLAGS =               \
 
 gainscenario_LDADD =                         \
  $(libxml2_LIBS)                             \
- @top_srcdir@/src/libemane/.libs/libemane.la
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ $(libemane_LIBS)
 
 gainscenario_SOURCES =  \
  main.cc            

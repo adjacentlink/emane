@@ -8,7 +8,8 @@ profilescenario_CPPFLAGS =    \
 
 profilescenario_LDADD =                      \
  $(libxml2_LIBS)                             \
- @top_srcdir@/src/libemane/.libs/libemane.la
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ $(libemane_LIBS)
 
 profilescenario_SOURCES =  \
  main.cc            

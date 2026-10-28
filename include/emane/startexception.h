@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,23 +36,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-
-  /**
-   * @class StartException
-   *
-   * @brief Component start exception is used to indicate
-   * an exception during transition to the start state.
-   */
-  class StartException : public Exception
-  {
-  public:
-    StartException(const std::string & sDescription):
-      Exception("StartException",sDescription){}
-    
-    ~StartException() throw(){}
-  };
-}
+/**
+ * @class StartException
+ *
+ * @brief Component start exception is used to indicate
+ * an exception during transition to the start state.
+ */
+EMANE_EXCEPTION_DEFINE(StartException)
 
 #endif //EMANESTARTEXCEPTION_HEADER_

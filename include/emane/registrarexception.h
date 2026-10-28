@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class RegistrarException
-   *
-   * @brief RegistrarException is thrown when an exception
-   * occurs during registration.
-   */
-  class RegistrarException : public Exception
-  {
-  public:
-    RegistrarException(const std::string & sDescription = {}):
-      Exception("RegistrarException",sDescription){}
-
-    ~RegistrarException() throw() {}
-  };
-}
+/**
+ * @class RegistrarException
+ *
+ * @brief RegistrarException is thrown when an exception
+ * occurs during registration.
+ */
+EMANE_EXCEPTION_DEFINE(RegistrarException)
 
 #endif // EMANEREGISTRAREXCEPTION_HEADER_

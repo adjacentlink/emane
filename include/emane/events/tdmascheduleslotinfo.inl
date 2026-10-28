@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,14 @@
  */
 
 inline
-EMANE::Events::SlotInfo::SlotInfo(Type type,
-                                   std::uint32_t u32FrameIndex,
-                                  std::uint32_t u32SlotIndex,
-                                  std::uint64_t u64FrequencyHz,
-                                  std::uint64_t u64DataRatebps,
-                                  std::uint8_t u8ServiceClass,
-                                  double dPowerdBm,
-                                  NEMId destination):
+EMANE::Events::TDMASchedule::SlotInfo::SlotInfo(Type type,
+                                                std::uint32_t u32FrameIndex,
+                                                std::uint32_t u32SlotIndex,
+                                                std::uint64_t u64FrequencyHz,
+                                                std::uint64_t u64DataRatebps,
+                                                std::uint8_t u8ServiceClass,
+                                                double dPowerdBm,
+                                                NEMId destination):
   type_{type},
   u32FrameIndex_{u32FrameIndex},
   u32SlotIndex_{u32SlotIndex},
@@ -49,50 +49,50 @@ EMANE::Events::SlotInfo::SlotInfo(Type type,
   destination_{destination}{}
 
 inline
-EMANE::Events::SlotInfo::Type EMANE::Events::SlotInfo::getType() const
+EMANE::Events::TDMASchedule::SlotInfo::Type
+EMANE::Events::TDMASchedule::SlotInfo::getType() const
 {
   return type_;
 }
 
 inline
-std::uint32_t EMANE::Events::SlotInfo::getFrameIndex() const
+std::uint32_t EMANE::Events::TDMASchedule::SlotInfo::getFrameIndex() const
 {
   return u32FrameIndex_;
 }
 
 inline
-std::uint32_t EMANE::Events::SlotInfo::getSlotIndex() const
+std::uint32_t EMANE::Events::TDMASchedule::SlotInfo::getSlotIndex() const
 {
   return u32SlotIndex_;
 }
 
 inline
-std::uint64_t EMANE::Events::SlotInfo::getFrequency() const
+std::uint64_t EMANE::Events::TDMASchedule::SlotInfo::getFrequency() const
 {
   return u64FrequencyHz_;
 }
 
 inline
-std::uint64_t EMANE::Events::SlotInfo::getDataRate() const
+std::uint64_t EMANE::Events::TDMASchedule::SlotInfo::getDataRate() const
 {
   return u64DataRatebps_;
 }
 
 inline
-std::uint8_t EMANE::Events::SlotInfo::getServiceClass() const
+std::uint8_t EMANE::Events::TDMASchedule::SlotInfo::getServiceClass() const
 {
   return u8ServiceClass_;
 }
 
 inline
-double EMANE::Events::SlotInfo::getPower() const
+double EMANE::Events::TDMASchedule::SlotInfo::getPower() const
 {
   return dPowerdBm_;
 }
 
 inline
-EMANE::NEMId EMANE::Events::SlotInfo::getDestination() const
+EMANE::NEMId EMANE::Events::TDMASchedule::SlotInfo::getDestination() const
 {
   return destination_;
 }
-

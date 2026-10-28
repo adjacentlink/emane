@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016,2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016,2020,2025 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,8 @@
 #include "emane/controls/rxantennaaddcontrolmessage.h"
 #include "emane/controls/rxantennaremovecontrolmessage.h"
 
+#include "emane/application/activitycoordinator.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <getopt.h>
@@ -85,15 +87,19 @@ namespace
 
 int main(int argc, char * argv[])
 {
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
+  activityCoordinator.openLocal();
+
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"output",1,nullptr,'o'},
-     {"profiledefined",1,nullptr,'p'},
-     {"processpoolsize",1,nullptr,'n'},
-     {"fading",0,nullptr,'f'},
-     {"receivepowertableenable",1,nullptr,'r'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"output",1,nullptr,'o'},
+      {"profiledefined",1,nullptr,'p'},
+      {"processpoolsize",1,nullptr,'n'},
+      {"fading",0,nullptr,'f'},
+      {"receivepowertableenable",1,nullptr,'r'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -187,18 +193,18 @@ int main(int argc, char * argv[])
 
       pPHYLayer->configure(EMANE::ConfigurationServiceSingleton::instance()->buildUpdates(pPHYLayer->getBuildId(),
                                                                                           {
-                                                                                           {"compatibilitymode",{"2"}},
-                                                                                           {"fixedantennagain",{"0.0"}},
-                                                                                           {"fixedantennagainenable",{"on"}},
-                                                                                           {"frequency",{std::to_string(u64BeginFrequencyHz)}},
-                                                                                           {"bandwidth",{"1M"}},
-                                                                                           {"noisemode",{"all"}},
-                                                                                           {"propagationmodel",{"precomputed"}},
-                                                                                           {"systemnoisefigure",{"7.0"}},
-                                                                                           {"subid",{std::to_string(u16SubId)}},
-                                                                                           {"processingpoolsize",{std::to_string(u16PoolSize)}},
-                                                                                           {"fading.model",{bFading ? "nakagami" : "none"}},
-                                                                                           {"stats.receivepowertableenable",{bReceivePowerTableEnable ? "on" : "off"}}
+                                                                                            {"compatibilitymode",{"2"}},
+                                                                                            {"fixedantennagain",{"0.0"}},
+                                                                                            {"fixedantennagainenable",{"on"}},
+                                                                                            {"frequency",{std::to_string(u64BeginFrequencyHz)}},
+                                                                                            {"bandwidth",{"1M"}},
+                                                                                            {"noisemode",{"all"}},
+                                                                                            {"propagationmodel",{"precomputed"}},
+                                                                                            {"systemnoisefigure",{"7.0"}},
+                                                                                            {"subid",{std::to_string(u16SubId)}},
+                                                                                            {"processingpoolsize",{std::to_string(u16PoolSize)}},
+                                                                                            {"fading.model",{bFading ? "nakagami" : "none"}},
+                                                                                            {"stats.receivepowertableenable",{bReceivePowerTableEnable ? "on" : "off"}}
                                                                                           }));
       pPHYLayer->start();
 
@@ -479,13 +485,13 @@ namespace
         EMANE::UpstreamPacket pkt{{src,dst,0,start},&data[0],size};
 
         EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
-                                   u16SubId,
-                                   ++u16SequenceNumber,
-                                   start,
-                                   frequencyGroups,
-                                   writeableTxAntennas,
-                                   transmitters,
-                                   {}};
+          u16SubId,
+          ++u16SequenceNumber,
+          start,
+          frequencyGroups,
+          writeableTxAntennas,
+          transmitters,
+          {}};
 
         begin = EMANE::Clock::now();
 
@@ -581,13 +587,13 @@ namespace
         EMANE::UpstreamPacket pkt{{src,dst,0,start},&data[0],size};
 
         EMANE::CommonPHYHeader hdr{EMANE::REGISTERED_EMANE_PHY_FRAMEWORK,
-                                   u16SubId,
-                                   ++u16SequenceNumber,
-                                   start,
-                                   frequencyGroups,
-                                   writeableTxAntennas,
-                                   transmitters,
-                                   {}};
+          u16SubId,
+          ++u16SequenceNumber,
+          start,
+          frequencyGroups,
+          writeableTxAntennas,
+          transmitters,
+          {}};
 
         begin = EMANE::Clock::now();
 

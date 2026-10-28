@@ -9,7 +9,8 @@ emaneeventd_CPPFLAGS =                       \
 
 emaneeventd_LDADD =                                            \
  @top_srcdir@/src/libemane/.libs/libemane.la                   \
- @top_srcdir@/src/libemanexmlparser/.libs/libemanexmlparser.la
+ @top_srcdir@/src/libemanexmlparser/.libs/libemanexmlparser.la \
+ $(libemane_LIBS)
 
 emaneeventd_SOURCES =                        \
  emaneeventd.cc                              \

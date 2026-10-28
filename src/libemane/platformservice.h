@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2026 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -66,6 +66,8 @@ namespace EMANE
     EventServiceProvider & eventService() override;
 
     FileDescriptorServiceProvider & fileDescriptorService() override;
+
+    ActivityServiceProvider & activityService() override;
 
     /**
      * set the platform service user

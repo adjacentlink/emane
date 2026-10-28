@@ -13,13 +13,16 @@ libemane_la_LIBADD=      \
  $(libxml2_LIBS)         \
  $(protobuf_LIBS)        \
  $(libpcre_LIBS)         \
- $(libuuid_LIBS)
+ $(libuuid_LIBS)         \
+ $(lizmq_LIBS)
 
 libemane_la_LDFLAGS=     \
  $(AM_LDFLAGS)           \
  -avoid-version
 
 nodist_libemane_la_SOURCES =             \
+ simactivityservice.pb.cc                \
+ simactivityservice.pb.h                 \
  antennaprofileevent.pb.cc               \
  antennaprofileevent.pb.h                \
  commeffectevent.pb.cc                   \
@@ -54,6 +57,8 @@ nodist_libemane_la_SOURCES =             \
  tdmascheduleevent.pb.h
 
 libemane_la_SOURCES =                         \
+ activitycoordinator.cc                       \
+ activityservice.cc                           \
  antennamanager.cc                            \
  antennapattern.cc                            \
  antennaprofilecontrolmessage.cc              \
@@ -63,6 +68,7 @@ libemane_la_SOURCES =                         \
  any.cc                                       \
  boundarymessagemanager.cc                    \
  buildidservice.cc                            \
+ clock.cc                                     \
  commeffectevent.cc                           \
  commeffecteventformatter.cc                  \
  commonlayerstatistics.cc                     \
@@ -180,6 +186,7 @@ libemane_la_SOURCES =                         \
  receivepropertiescontrolmessageformatter.cc  \
  receivepowertablepublisher.cc                \
  registrarproxy.cc                            \
+ remoteactivityservicebackend.cc              \
  requestmessagehandler.cc                     \
  rfsignaltable.cc                             \
  rxantennaaddcontrolmessage.cc                \
@@ -225,6 +232,9 @@ libemane_la_SOURCES =                         \
  upstreampacket.cc                            \
  upstreamtransport.cc                         \
  velocityformatter.cc                         \
+ activityservice.h                            \
+ activityservicenotification.h                \
+ activityservicebackend.h                     \
  antennamanager.h                             \
  antennapattern.h                             \
  antennaprofileexception.h                    \
@@ -268,6 +278,8 @@ libemane_la_SOURCES =                         \
  layerfactory.h                               \
  layerfactory.inl                             \
  layerfactorymanager.h                        \
+ localactivityservicebackend.h                \
+ localtimerbackend.h                          \
  locationinfo.h                               \
  locationinfo.inl                             \
  locationinfoformatter.h                      \
@@ -333,6 +345,8 @@ libemane_la_SOURCES =                         \
  requestmessagehandler.h                      \
  receivepowertablepublisher.h                 \
  receiveprocessor.h                           \
+ remoteactivityservicebackend.h               \
+ remotetimerbackend.h                         \
  socket.h                                     \
  socketexception.h                            \
  shimlayer.h                                  \
@@ -426,6 +440,9 @@ remotecontrolportapi.pb.cc remotecontrolportapi.pb.h: remotecontrolportapi.proto
 
 tdmascheduleevent.pb.cc tdmascheduleevent.pb.h: tdmascheduleevent.proto
 	protoc -I=. --cpp_out=. $<
+
+simactivityservice.pb.cc simactivityservice.pb.h: ${simactivityservice_PROTODIR}/simactivityservice.proto
+	protoc -I=${simactivityservice_PROTODIR} --cpp_out=. $<
 
 fadingselectionevent.pb.cc fadingselectionevent.pb.h: fadingselectionevent.proto
 	protoc -I=. --cpp_out=. $<

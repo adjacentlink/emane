@@ -158,6 +158,14 @@ Group: Libraries
 %description trans-common
 EMANE common transport ethernet functionality.
 
+%package trans-traffic
+Summary: EMANE traffic transport implementation
+Group: Libraries
+
+%description trans-traffic
+EMANE traffic transport. NEM stack entry using Traffic proto
+messages exchanged via TCP.
+
 %package model-phyapitestshim
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: EMANE PHY API Test shim
@@ -194,6 +202,8 @@ EMANE Plugin Manifests
 Requires: python3-setuptools
 Requires: python3-protobuf
 Requires: python3-lxml
+Requires: python3-zmq
+Requires: python3-daemon
 Summary: EMANE Python modules and utilities
 Group: Development/Libraries
 BuildArch: noarch
@@ -230,6 +240,7 @@ mv %{buildroot}/%{_bindir}/emaneevent-fadingselection  %{buildroot}/%{_bindir}/e
 mv %{buildroot}/%{_bindir}/emaneota-publisher %{buildroot}/%{_bindir}/emaneota-publisher-%{python3_version}
 mv %{buildroot}/%{_bindir}/emanesh %{buildroot}/%{_bindir}/emanesh-%{python3_version}
 mv %{buildroot}/%{_bindir}/emanegentransportxml %{buildroot}/%{_bindir}/emanegentransportxml-%{python3_version}
+mv %{buildroot}/%{_bindir}/emanesimgen %{buildroot}/%{_bindir}/emanesimgen-%{python3_version}
 
 ln -s emanecommand-eel-%{python3_version} %{buildroot}%{_bindir}/emanecommand-eel-3
 ln -s emaneevent-antennaprofile-%{python3_version} %{buildroot}%{_bindir}/emaneevent-antennaprofile-3
@@ -243,6 +254,7 @@ ln -s emaneevent-fadingselection-%{python3_version} %{buildroot}%{_bindir}/emane
 ln -s emaneota-publisher-%{python3_version} %{buildroot}%{_bindir}/emaneota-publisher-3
 ln -s emanesh-%{python3_version} %{buildroot}%{_bindir}/emanesh-3
 ln -s emanegentransportxml-%{python3_version} %{buildroot}%{_bindir}/emanegentransportxml-3
+ln -s emanesimgen-%{python3_version} %{buildroot}%{_bindir}/emanesimgen-3
 
 ln -s emanecommand-eel-3 %{buildroot}%{_bindir}/emanecommand-eel
 ln -s emaneevent-antennaprofile-3 %{buildroot}%{_bindir}/emaneevent-antennaprofile
@@ -256,6 +268,7 @@ ln -s emaneevent-fadingselection-3 %{buildroot}%{_bindir}/emaneevent-fadingselec
 ln -s emaneota-publisher-3 %{buildroot}%{_bindir}/emaneota-publisher
 ln -s emanesh-3 %{buildroot}%{_bindir}/emanesh
 ln -s emanegentransportxml-3 %{buildroot}%{_bindir}/emanegentransportxml
+ln -s emanesimgen-3 %{buildroot}%{_bindir}/emanesimgen
 
 %py3_shebang_fix %{buildroot}%{_bindir}/*-%{python3_version}
 
@@ -469,6 +482,16 @@ rm -rf $RPM_BUILD_ROOT
 %license %{_licensedir}/%{name}/COPYING
 %endif
 
+%files trans-traffic
+%defattr(-, root, root)
+%{_libdir}/libemane-transport-traffic.*
+
+%doc %{_pkgdocdir}
+%if 0%{?_licensedir:1}
+%dir %{_licensedir}/%{name}
+%license %{_licensedir}/%{name}/COPYING
+%endif
+
 %files model-phyapitestshim
 %defattr(-, root, root)
 %{_libdir}/libphyapitestshim.*
@@ -541,6 +564,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libeelloaderantennaprofile.*
 %{_libdir}/libeelloadercommeffect.*
 %{_libdir}/libeelloaderfadingselection.*
+%{_libdir}/libeelloadertdmaschedule.*
 %dir %{_datadir}/emane/xml/generators/eel
 %{_datadir}/emane/xml/generators/eel/eelgenerator.xml
 
@@ -576,6 +600,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneota-publisher
 %{_bindir}/emanesh
 %{_bindir}/emanegentransportxml
+%{_bindir}/emanesimgen
 %{_mandir}/man1/emanegentransportxml.1.gz
 %{_bindir}/emanecommand-eel-3
 %{_bindir}/emaneevent-antennaprofile-3
@@ -589,6 +614,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneota-publisher-3
 %{_bindir}/emanesh-3
 %{_bindir}/emanegentransportxml-3
+%{_bindir}/emanesimgen-3
 %{_bindir}/emanecommand-eel-%{python3_version}
 %{_bindir}/emaneevent-antennaprofile-%{python3_version}
 %{_bindir}/emaneevent-commeffect-%{python3_version}
@@ -601,6 +627,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/emaneota-publisher-%{python3_version}
 %{_bindir}/emanesh-%{python3_version}
 %{_bindir}/emanegentransportxml-%{python3_version}
+%{_bindir}/emanesimgen-%{python3_version}
 %{python3_sitelib}/emane
 %{python3_sitelib}/emane-%{version}-*.egg-info
 

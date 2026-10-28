@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@
 #ifndef EMANETDMARADIOMODELEVENTTABLEPUBLISHER_HEADER_
 #define EMANETDMARADIOMODELEVENTTABLEPUBLISHER_HEADER_
 
-#include "emane/events/slotinfo.h"
-#include "emane/events/slotstructure.h"
+#include "emane/events/tdmascheduleslotinfo.h"
+#include "emane/events/tdmascheduleslotstructure.h"
 #include "emane/statisticregistrar.h"
 
 namespace EMANE
@@ -56,10 +56,10 @@ namespace EMANE
 
         void registerStatistics(StatisticRegistrar & registrar);
 
-        void replace(const Events::SlotInfos & slotInfos,
-                     const Events::SlotStructure & structure);
+        void replace(const Events::TDMASchedule::SlotInfos & slotInfos,
+                     const Events::TDMASchedule::SlotStructure & structure);
 
-        void update(const Events::SlotInfos & slotInfos);
+        void update(const Events::TDMASchedule::SlotInfos & slotInfos);
 
         void clear();
 
@@ -67,7 +67,7 @@ namespace EMANE
         StatisticTable<std::uint32_t> * pScheduleTable_;
         StatisticTable<std::string> * pStrutureTable_;
         std::set<std::uint32_t> scheduleIndexSet_;
-        Events::SlotStructure structure_;
+        Events::TDMASchedule::SlotStructure structure_;
         bool bHasStructure_;
       };
     }

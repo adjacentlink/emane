@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,6 +35,7 @@
 #include "nemotaadapter.h"
 #include "otamanager.h"
 #include "logservice.h"
+#include "activityservice.h"
 
 #include "emane/utils/threadutils.h"
 #include "emane/upstreamtransport.h"
@@ -101,6 +102,8 @@ void EMANE::NEMOTAAdapter::processDownstreamPacket(DownstreamPacket & pkt,
 {
   std::lock_guard<std::mutex> m(mutex_);
 
+  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
   queue_.emplace_back(pkt, msgs);
 
   cond_.notify_one();
@@ -134,6 +137,8 @@ void EMANE::NEMOTAAdapter::processPacketQueue()
           try
             { // id, pkt, ctrl
               OTAManagerSingleton::instance()->sendOTAPacket(id_, entry.first, entry.second);
+
+              ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
             }
           catch(std::exception & exp)
             {

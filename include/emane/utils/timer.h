@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +34,7 @@
 #ifndef EMANEUTILSTIMER_HEADER_
 #define EMANEUTILSTIMER_HEADER_
 
+#include "emane/utils/timerbackend.h"
 #include "emane/types.h"
 
 #include <thread>
@@ -46,6 +48,7 @@ namespace EMANE
 {
   namespace Utils
   {
+
     /**
      * @class Timer
      *
@@ -56,33 +59,31 @@ namespace EMANE
     public:
       using TimerId = std::size_t;
 
-      class TimerException{};
-
       /**
-       * Creates an timer 
+       * Creates an timer
        *
        * @throw TimerException when an internal exception occurs.
-       * 
+       *
        */
       Timer();
-      
-      
+
+
       /**
        * Destroys an timer
        */
       ~Timer();
-      
+
       /**
-       * Cancels a timer 
+       * Cancels a timer
        *
        * @param timerId Id of timer to cancel
        *
        * @return bool flag true - canceled, false - not canceled
-       *                  
+       *
        * @note Canceling an expired timer has not effect.
        */
       bool cancel(TimerId timerId);
-      
+
       /**
        * Sechules a one shot timer
        *
@@ -92,7 +93,7 @@ namespace EMANE
       template <typename Function>
       TimerId schedule(Function fn,
                        const TimePoint & absoluteTimePoint);
-      
+
       /**
        * Sechules an interval timer
        *
@@ -104,7 +105,15 @@ namespace EMANE
       TimerId scheduleInterval(Function fn,
                                const TimePoint & absoluteTimePoint,
                                const Duration & interval);
-      
+
+
+      /**
+       * Sets the timer backend
+       *
+       * @param pTimerBackend Pointer (borowed reference) to a backend.
+       */
+      void setBackend(TimerBackend * pTimerBackend);
+
     private:
       using Callback = std::function<void(TimerId,
                                           const TimePoint &,
@@ -114,17 +123,17 @@ namespace EMANE
       using TimerInfo = std::tuple<TimerId,TimePoint,Duration,Callback,TimePoint>;
       using TimePointMap = std::multimap<std::pair<TimePoint,TimerId>,TimerInfo>;
       using TimerIdMap = std::map<TimerId,TimePoint>;
-      
+
       TimePointMap timePointMap_;
       TimerIdMap timerIdMap_;
       bool bRunning_;
       TimerId timerId_;
-      int iFd_;
       std::thread thread_;
       std::mutex mutex_;
-      
+      TimerBackend * pTimerBackend_;
+
       void scheduler();
-      
+
       TimerId schedule(Callback,const TimePoint &,const Duration &);
 
       void schedule_i();

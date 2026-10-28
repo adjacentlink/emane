@@ -27,11 +27,12 @@ emaneinc_HEADERS =                       \
  pathloss.inl                            \
  pathlossex.h                            \
  pathlossex.inl                          \
- slotinfo.h                              \
- slotinfo.inl                            \
- slotstructure.h                         \
- slotstructure.inl                       \
- tdmascheduleevent.h
+ tdmascheduleevent.h                     \
+ tdmascheduleparameters.h                \
+ tdmascheduleslotinfo.h                  \
+ tdmascheduleslotinfo.inl                \
+ tdmascheduleslotstructure.h             \
+ tdmascheduleslotstructure.inl
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(emaneincdir)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in
  *   the documentation and/or other materials provided with the
  *   distribution.
- * * Neither the name of Adjacent Link LLC nor the names of its
+ * * Neither the name of DRS CenGen, LLC nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,64 +28,46 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef EMANEEVENTSSLOTINFO_HEADER_
-#define EMANEEVENTSSLOTINFO_HEADER_
+#ifndef EMANEGENERATORSEELLOADERTDMASCHEDULE_HEADER_
+#define EMANEGENERATORSEELLOADERTDMASCHEDULE_HEADER_
 
-#include "emane/types.h"
-#include <vector>
+#include "emane/generators/eel/loaderplugin.h"
+#include "emane/events/tdmascheduleparameters.h"
+#include  "emane/events/tdmascheduleslotstructure.h"
+
+#include <map>
 
 namespace EMANE
 {
-  namespace Events
+  namespace Generators
   {
-    class SlotInfo
+    namespace EEL
     {
-    public:
-      enum class Type{TX,RX,IDLE};
-
-      SlotInfo(Type type,
-               std::uint32_t u32FrameIndex,
-               std::uint32_t u32SlotIndex,
-               std::uint64_t u64FrequencyHz = 0,
-               std::uint64_t u64DataRatebps_ = 0,
-               std::uint8_t u8ServiceClass_ = 0,
-               double dPowerdBm_ = 0,
-               NEMId destination = 0);
-
-
-      Type getType() const;
-
-      std::uint32_t getFrameIndex() const;
-
-      std::uint32_t getSlotIndex() const;
-
-      std::uint64_t getFrequency() const;
-
-      std::uint64_t getDataRate() const;
-
-      std::uint8_t getServiceClass() const;
-
-      double getPower() const;
-
-      NEMId getDestination() const;
-
-    private:
-      Type type_;
-      std::uint32_t u32FrameIndex_;
-      std::uint32_t u32SlotIndex_;
-      std::uint64_t u64FrequencyHz_;
-      std::uint64_t u64DataRatebps_;
-      std::uint8_t u8ServiceClass_;
-      double dPowerdBm_;
-      NEMId destination_;
-    };
-
-    using SlotInfos = std::vector<SlotInfo>;
+      class LoaderTDMASchedule : public LoaderPlugin
+      {
+      public:
+        LoaderTDMASchedule();
+        
+        ~LoaderTDMASchedule();
+        
+        void load(const ModuleType & modelType, 
+                  const ModuleId   & moduleId, 
+                  const EventType  & eventType,
+                  const InputArguments & args) override;
+        
+        EventInfoList getEvents(EventPublishMode mode) override;
+        
+      private:
+        Events::TDMASchedule::ScheduleNEMMap scheduleNEMMap_;
+        std::optional<Events::TDMASchedule::SlotStructure> slotStructure_;
+        Events::TDMASchedule::MultiFrameParameters multiFrameParameters_;
+        Events::TDMASchedule::FrameParameterMap frameParameterMap_;
+      };
+    }
   }
 }
 
-#include "emane/events/slotinfo.inl"
-
-#endif // EMANEEVENTSSLOTINFO_HEADER_
+#endif // EMANEGENERATORSEELLOADERTDMASCHEDULE_HEADER_

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -146,6 +147,7 @@ namespace EMANE
 
     void handleOTAMessage(NEMId source,
                           NEMId destination,
+                          std::uint64_t u64SequenceNumber,
                           const uuid_t & remoteUUID,
                           const TimePoint & now,
                           size_t eventsSize,

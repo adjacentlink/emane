@@ -9,7 +9,8 @@ phyupstreamscenario_CPPFLAGS =        \
 phyupstreamscenario_LDADD =                  \
  $(libuuid_LIBS)                             \
  $(libxml2_LIBS)                             \
- @top_srcdir@/src/libemane/.libs/libemane.la
+ @top_srcdir@/src/libemane/.libs/libemane.la \
+ $(libemane_LIBS)
 
 phyupstreamscenario_SOURCES =         \
  main.cc            

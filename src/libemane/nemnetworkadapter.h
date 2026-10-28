@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -52,20 +52,24 @@ namespace EMANE
   {
   public:
     NEMNetworkAdapter(NEMId id);
-    
+
     ~NEMNetworkAdapter();
-    
+
     void processUpstreamPacket(UpstreamPacket & pkt,
                                const ControlMessages & msgs) override;
-    
+
     void processUpstreamControl(const ControlMessages & msgs) override;
 
   private:
+    NEMId id_;
+    std::uint64_t u64SequenceNumber_;
+
     void doProcessPacketMessage(const PacketInfo &,
                                 const void * pPacketData,
                                 size_t packetLength,
+                                std::uint64_t u64SequenceNumber,
                                 const ControlMessages & msgs) override;
-    
+
     void doProcessControlMessage(const ControlMessages & msgs) override;
   };
 }

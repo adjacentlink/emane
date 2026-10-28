@@ -32,7 +32,7 @@ AC_COPYRIGHT([
  See toplevel COPYING for more information.
 ])
 
-AC_INIT([emane],[1.5.3],[emane at adjacent link dot com])
+AC_INIT([emane],[1.6.4],[emane at adjacent link dot com])
 
 AC_CONFIG_SRCDIR([src])
 
@@ -82,11 +82,12 @@ PKG_CHECK_MODULES([libxml2], libxml-2.0)
 PKG_CHECK_MODULES([protobuf], protobuf)
 PKG_CHECK_MODULES([libpcre], libpcre)
 PKG_CHECK_MODULES([libuuid], uuid)
+PKG_CHECK_MODULES([libzmq], libzmq)
+PKG_CHECK_MODULES([simactivityservice], simactivityservice)
 
 AC_CHECK_HEADER(sys/timerfd.h,
  [],
  [AC_MSG_ERROR("Missing sys/timerfd.h header")])
-
 
 LDFLAGS="$LDFLAGS -lpthread -ldl"
 
@@ -139,7 +140,10 @@ CPPFLAGS="$CPPFLAGS -DVERBOSE_LOGGING"
 fi
 
 AC_SUBST(libemane_CFLAGS,
-["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
+["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libzmq_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS} ${simactivityservice_CFLAGS}"])
+
+AC_SUBST(libemane_LIBS,
+["-lemane ${libxml2_LIBS} ${protobuf_LIBS} ${libzmq_LIBS} ${libpcre_LIBS} ${libuuid_LIBS}"])
 
 LANG=C
 AC_SUBST(LANG)
@@ -210,6 +214,7 @@ AC_CONFIG_FILES([Makefile
  src/transports/common/Makefile
  src/transports/virtual/Makefile
  src/transports/raw/Makefile
+ src/transports/traffic/Makefile
  src/models/Makefile
  src/models/mac/Makefile
  src/models/mac/bypass/Makefile
@@ -235,6 +240,7 @@ AC_CONFIG_FILES([Makefile
  src/generators/eel/loaders/antennaprofile/Makefile
  src/generators/eel/loaders/commeffect/Makefile
  src/generators/eel/loaders/fadingselection/Makefile
+ src/generators/eel/loaders/tdmaschedule/Makefile
  test/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile

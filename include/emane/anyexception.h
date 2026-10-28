@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class AnyException
-   *
-   * @brief AnyException is thrown when an exception
-   * occurs during creation or conversion of an Any.
-   */
-  class AnyException : public Exception
-  {
-  public:
-    AnyException(const std::string & sDescription = {}):
-      Exception("AnyException",sDescription){}
-
-    ~AnyException() throw() {}
-  };
-}
+/**
+ * @class AnyException
+ *
+ * @brief AnyException is thrown when an exception
+ * occurs during creation or conversion of an Any.
+ */
+EMANE_EXCEPTION_DEFINE(AnyException)
 
 #endif // EMANEANYEXCEPTION_HEADER_

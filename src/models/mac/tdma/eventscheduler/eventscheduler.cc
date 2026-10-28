@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -159,13 +159,11 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
       try
         {
           Events::TDMAScheduleEvent event{serialization};
-          Events::SlotStructure structure{};
-          bool bHasStructure{};
           bool bNotify{};
 
-          std::tie(structure,bHasStructure) = event.getSlotStructure();
+          const auto & structure = event.getSlotStructure();
 
-          if(bHasStructure)
+          if(structure)
             {
               LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                                       DEBUG_LEVEL,
@@ -178,7 +176,7 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
               slotInfos_.clear();
 
               // store new structure info
-              structure_ = structure;
+              structure_ = *structure;
 
 
               // clear frequencies
@@ -276,7 +274,7 @@ void EMANE::Models::TDMA::EventScheduler::processEvent(const EventId & eventId,
 
           if(bNotify)
             {
-              if(bHasStructure)
+              if(structure)
                 {
                   ++*pNumScheduleFullAccept_;
 
@@ -366,13 +364,13 @@ EMANE::Models::TDMA::EventScheduler::getSlotInfo(std::uint64_t u64AbsoluteSlotIn
   const auto & info = slotInfos_[index];
 
   return {u64AbsoluteSlotIndex,
-      index,
-      u32RelativeSlotIndex,
-      u32RelativeFrameIndex,
-      slotter_.getSlotTime(u64AbsoluteSlotIndex),
-      info.getType() == Events::SlotInfo::Type::RX ? SlotInfo::Type::RX :
-      info.getType() == Events::SlotInfo::Type::TX ?
-      SlotInfo::Type::TX : SlotInfo::Type::IDLE};
+          index,
+          u32RelativeSlotIndex,
+          u32RelativeFrameIndex,
+          slotter_.getSlotTime(u64AbsoluteSlotIndex),
+          info.getType() == Events::TDMASchedule::SlotInfo::Type::RX ? SlotInfo::Type::RX :
+          info.getType() == Events::TDMASchedule::SlotInfo::Type::TX ?
+          SlotInfo::Type::TX : SlotInfo::Type::IDLE};
 }
 
 EMANE::Models::TDMA::SlotInfo
@@ -431,13 +429,13 @@ EMANE::Models::TDMA::EventScheduler::getRxSlotInfo(const TimePoint & timePoint) 
   const auto & info = slotInfos_[index];
 
   RxSlotInfo rxSlotInfo{u64AbsoluteSlotIndex,
-      index,
-      u32RelativeSlotIndex,
-      u32RelativeFrameIndex,
-      slotter_.getSlotTime(u64AbsoluteSlotIndex),
-      info.getFrequency()};
+                        index,
+                        u32RelativeSlotIndex,
+                        u32RelativeFrameIndex,
+                        slotter_.getSlotTime(u64AbsoluteSlotIndex),
+                        info.getFrequency()};
 
-  return {rxSlotInfo,info.getType() == Events::SlotInfo::Type::RX};
+  return {rxSlotInfo,info.getType() == Events::TDMASchedule::SlotInfo::Type::RX};
 }
 
 std::pair<EMANE::Models::TDMA::TxSlotInfos,EMANE::TimePoint>
@@ -487,18 +485,18 @@ EMANE::Models::TDMA::EventScheduler::getTxSlotInfo(const TimePoint & timePoint,
         {
           const auto & info = slotInfos_[index];
 
-          if(info.getType() == Events::SlotInfo::Type::TX)
+          if(info.getType() == Events::TDMASchedule::SlotInfo::Type::TX)
             {
               txSlotInfos.push_back({u64AbsoluteSlotIndex,
-                    index,
-                    info.getSlotIndex(),
-                    info.getFrameIndex(),
-                    slotter_.getSlotTime(u64AbsoluteSlotIndex),
-                    info.getFrequency(),
-                    info.getDataRate(),
-                    info.getServiceClass(),
-                    info.getPower(),
-                    info.getDestination()});
+                  index,
+                  info.getSlotIndex(),
+                  info.getFrameIndex(),
+                  slotter_.getSlotTime(u64AbsoluteSlotIndex),
+                  info.getFrequency(),
+                  info.getDataRate(),
+                  info.getServiceClass(),
+                  info.getPower(),
+                  info.getDestination()});
             }
 
           ++u64AbsoluteSlotIndex;
@@ -514,7 +512,7 @@ EMANE::Models::TDMA::EventScheduler::getTxSlotInfo(const TimePoint & timePoint,
 void EMANE::Models::TDMA::EventScheduler::processSchedulerPacket(UpstreamPacket &,
                                                                  const PacketMetaInfo &)
 {
- LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
+  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
                           DEBUG_LEVEL,
                           "MACI %03hu TDMA::EventScheduler::%s",
                           id_,

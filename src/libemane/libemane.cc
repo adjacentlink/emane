@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 #include "statisticservice.h"
 #include "timerservice.h"
 #include "transportfactorymanager.h"
+#include "activityservice.h"
 
 void EMANE::Application::initialize(){}
 
@@ -78,4 +79,5 @@ void EMANE::Application::shutdown()
   EventAgentFactoryManagerSingleton::destroy();
   EventGeneratorFactoryManagerSingleton::destroy();
   LogServiceSingleton::destroy();
+  ActivityServiceSingleton::destroy();
 }

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,20 +36,6 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class PlatformException
-   *
-   * @brief Exception thrown when NEMs are added to a platform
-   */
-  class PlatformException : public Exception
-  {
-  public:
-    PlatformException(const std::string & sDescription):
-      Exception("PlatformException",sDescription){}
-    
-    ~PlatformException() throw(){}
-  };
-}
+EMANE_EXCEPTION_DEFINE(PlatformException)
+
 #endif //EMANEPLATFORMEXCEPTION_HEADER_

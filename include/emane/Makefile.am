@@ -9,6 +9,7 @@ SUBDIRS=     \
 emaneincdir = $(includedir)/emane/
 
 emaneinc_HEADERS =                       \
+ activityserviceprovider.h               \
  antenna.h                               \
  antenna.inl                             \
  antennamode.h                           \
@@ -17,6 +18,7 @@ emaneinc_HEADERS =                       \
  buildable.h                             \
  buildable.inl                           \
  buildexception.h                        \
+ clock.h                                 \
  cloneable.h                             \
  commonmacheaderexception.h              \
  commonmacheader.h                       \

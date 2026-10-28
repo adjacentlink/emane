@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2026 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -39,6 +39,7 @@
 #include "emane/eventserviceprovider.h"
 #include "emane/timerserviceprovider.h"
 #include "emane/filedescriptorserviceprovider.h"
+#include "emane/activityserviceprovider.h"
 
 namespace EMANE
 {
@@ -80,6 +81,13 @@ namespace EMANE
      * @return EventServiceProvider reference
      */
     virtual EventServiceProvider & eventService() = 0;
+
+    /**
+     * Gets a reference to the ActivityServiceProvider
+     *
+     * @return ActivityServiceProviderr reference
+     */
+    virtual ActivityServiceProvider & activityService() = 0;
 
     virtual FileDescriptorServiceProvider &
     fileDescriptorService() = 0;

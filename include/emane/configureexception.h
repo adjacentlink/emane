@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,20 +36,6 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class ConfigureException
-   *
-   * @brief Exception thrown when failures in configuration occur.
-   */
-  class ConfigureException : public Exception
-  {
-  public:
-    ConfigureException(const std::string & sDescription):
-      Exception("ConfigureException",sDescription){}
-    
-    ~ConfigureException() throw(){}
-  };
-}
+EMANE_EXCEPTION_DEFINE(ConfigureException)
+
 #endif //EMANECONFIGUREEXCEPTION_HEADER_
