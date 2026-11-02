@@ -1,4 +1,5 @@
 SUBDIRS=            \
+ unit \
  harness            \
  testcases
 

@@ -7,6 +7,6 @@ Name: libemane
 Description: Extendable Mobile Ad-hoc Network Emultor
 URL: https://github.com/adjacentlink/emane
 Version: @VERSION@
-Requires: libxml-2.0 protobuf libpcre uuid
+Requires: libxml-2.0 protobuf uuid
 Cflags: -I${includedir}
 Libs: -L${libdir} -lrt -ldl -lemane

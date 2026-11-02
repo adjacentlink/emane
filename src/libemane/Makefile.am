@@ -12,7 +12,6 @@ libemane_la_LIBADD=      \
  -lrt                    \
  $(libxml2_LIBS)         \
  $(protobuf_LIBS)        \
- $(libpcre_LIBS)         \
  $(libuuid_LIBS)
 
 libemane_la_LDFLAGS=     \

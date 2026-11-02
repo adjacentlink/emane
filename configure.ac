@@ -80,7 +80,6 @@ AC_ARG_VAR([pcap_LIBS], [linker flags for libpcap])
 
 PKG_CHECK_MODULES([libxml2], libxml-2.0)
 PKG_CHECK_MODULES([protobuf], protobuf)
-PKG_CHECK_MODULES([libpcre], libpcre)
 PKG_CHECK_MODULES([libuuid], uuid)
 
 AC_CHECK_HEADER(sys/timerfd.h,
@@ -139,7 +138,7 @@ CPPFLAGS="$CPPFLAGS -DVERBOSE_LOGGING"
 fi
 
 AC_SUBST(libemane_CFLAGS,
-["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libpcre_CFLAGS} ${libuuid_CFLAGS}"])
+["${libxml2_CFLAGS} ${protobuf_CFLAGS} ${libuuid_CFLAGS}"])
 
 LANG=C
 AC_SUBST(LANG)
@@ -236,6 +235,7 @@ AC_CONFIG_FILES([Makefile
  src/generators/eel/loaders/commeffect/Makefile
  src/generators/eel/loaders/fadingselection/Makefile
  test/Makefile
+ test/unit/Makefile
  test/harness/Makefile
  test/harness/gainscenario/Makefile
  test/harness/filterscenario/Makefile

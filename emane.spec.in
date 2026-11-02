@@ -12,7 +12,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Provides: %{name}-transportfactory%{?_isa} = %{version}-%{release}
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 Requires: %{name}-dtds = %{version}-%{release}
-BuildRequires: libxml2-devel protobuf-devel pcre-devel libpcap-devel libuuid-devel
+BuildRequires: libxml2-devel protobuf-devel libpcap-devel libuuid-devel
 Vendor: Adjacent Link LLC
 
 BuildRequires: python3-devel
