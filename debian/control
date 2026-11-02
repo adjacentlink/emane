@@ -2,7 +2,7 @@ Source: emane
 Section: net
 Priority: extra
 Maintainer: Adjacent Link LLC <emane@adjacentlink.com>
-Build-Depends: debhelper (>= 8), dh-python, protobuf-compiler, autotools-dev, python3-setuptools, libxml2-dev, libprotobuf-dev, libpcre3-dev, libpcap-dev, uuid-dev
+Build-Depends: debhelper (>= 8), dh-python, protobuf-compiler, autotools-dev, python3-setuptools, libxml2-dev, libprotobuf-dev, libpcap-dev, uuid-dev
 Standards-Version: 3.9.3
 Homepage: https://github.com/adjacentlink/emane
 

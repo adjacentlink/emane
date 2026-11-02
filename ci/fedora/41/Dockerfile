@@ -7,7 +7,7 @@ RUN dnf clean all
 
 
 RUN dnf -y install git gcc-c++ make autoconf automake libtool rpm-build python3-setuptools \
-                   libxml2-devel libpcap-devel pcre-devel libuuid-devel python3-devel \
+                   libxml2-devel libpcap-devel libuuid-devel python3-devel \
                    python3-protobuf protobuf-devel
 
 WORKDIR /opt

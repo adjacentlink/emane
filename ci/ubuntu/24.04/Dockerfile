@@ -10,7 +10,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade --no-install-recommends
 
 RUN DEBIAN_FRONTEND=noninteractive \
 apt-get -y install git gcc g++ autoconf automake libtool dh-python  debhelper python3-setuptools \
-                   libxml2-dev libprotobuf-dev libpcap-dev libpcre3-dev uuid-dev pkg-config \
+                   libxml2-dev libprotobuf-dev libpcap-dev uuid-dev pkg-config \
                    python3-protobuf protobuf-compiler
 
 WORKDIR /opt

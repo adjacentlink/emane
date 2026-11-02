@@ -34,7 +34,7 @@
 #include "configurationservice.h"
 #include "emane/registrarexception.h"
 
-#include <pcre.h>
+#include <regex>
 
 EMANE::ConfigurationService::ConfigurationService(){}
 
@@ -109,30 +109,19 @@ void EMANE::ConfigurationService::registerAny(BuildId buildId,
   // check the regex is valid if defined
   if(!configurationInfo.getRegexPattern().empty())
     {
-      pcre * pPCRE{};
-      const char * pError{};
-      int iErrorOffset{};
-
-      pPCRE = pcre_compile(configurationInfo.getRegexPattern().c_str(),
-                           0,
-                           &pError,
-                           &iErrorOffset,
-                           0);
-
-      if(!pPCRE)
+      try
         {
-          throw makeException<RegistrarException>("Bad regex pattern defined for %s: %s (offset:%i) %s",
+          std::regex regex{configurationInfo.getRegexPattern()};
+        }
+      catch(const std::regex_error & exp)
+        {
+          throw makeException<RegistrarException>("Bad regex pattern defined for %s: %s (%s)",
                                                   sName.c_str(),
                                                   configurationInfo.getRegexPattern().c_str(),
-                                                  iErrorOffset,
-                                                  pError);
+                                                  exp.what());
         }
-      else
-        {
-          pcre_free(pPCRE);
-        }
-
     }
+
 
   auto iter = buildIdConfigurationStore_.find(buildId);
 
@@ -251,20 +240,12 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
               if(paramIter.second.size() >= infoIter->second.getMinOccurs() &&
                  paramIter.second.size() <= infoIter->second.getMaxOccurs())
                 {
-                  pcre * pPCRE{};
-                  const char * pError{};
-                  int iErrorOffset{};
-
-                  // if regex defined, verify a match
                   const std::string & sRegexPattern = infoIter->second.getRegexPattern();
+                  std::regex regex;
 
                   if(!sRegexPattern.empty())
                     {
-                      pPCRE = pcre_compile(sRegexPattern.c_str(),
-                                           0,
-                                           &pError,
-                                           &iErrorOffset,
-                                           0);
+                      regex = std::regex{sRegexPattern};
                     }
 
                   std::vector<Any> anys;
@@ -292,16 +273,9 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                                 }
                             }
 
-                          if(pPCRE)
+                          if(!sRegexPattern.empty())
                             {
-                              if(pcre_exec(pPCRE,
-                                           nullptr,
-                                           value.c_str(),
-                                           value.size(),
-                                           0,
-                                           0,
-                                           0,
-                                           0) < 0)
+                              if(!std::regex_search(value, regex))
                                 {
                                   throw makeException<ConfigurationException>("Regular expression mismatch %s set to %s (%s)",
                                                                               paramIter.first.c_str(),
@@ -322,11 +296,6 @@ EMANE::ConfigurationService::buildUpdates(BuildId buildId,
                     }
 
                   updates.push_back(std::make_pair(paramIter.first,anys));
-
-                  if(pPCRE)
-                    {
-                      pcre_free(pPCRE);
-                    }
                 }
               else
                 {
@@ -448,20 +417,12 @@ void EMANE::ConfigurationService::update(BuildId buildId,
               if(update.second.size() >= infoIter->second.getMinOccurs() &&
                  update.second.size() <= infoIter->second.getMaxOccurs())
                 {
-                  pcre * pPCRE{};
-                  const char * pError{};
-                  int iErrorOffset{};
-
-                  // if regex defined, verify a match
                   const std::string & sRegexPattern = infoIter->second.getRegexPattern();
+                  std::regex regex;
 
                   if(!sRegexPattern.empty())
                     {
-                      pPCRE = pcre_compile(sRegexPattern.c_str(),
-                                           0,
-                                           &pError,
-                                           &iErrorOffset,
-                                           0);
+                      regex = std::regex{sRegexPattern};
                     }
 
                   std::vector<Any> anys;
@@ -491,18 +452,11 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                             }
                         }
 
-                      if(pPCRE)
+                      if(!sRegexPattern.empty())
                         {
                           std::string sValue{value.toString()};
 
-                          if(pcre_exec(pPCRE,
-                                       nullptr,
-                                       sValue.c_str(),
-                                       sValue.size(),
-                                       0,
-                                       0,
-                                       0,
-                                       0) < 0)
+                          if(!std::regex_search(sValue, regex))
                             {
                               throw makeException<ConfigurationException>("Regular expression mismatch %s set to %s (%s)",
                                                                           update.first.c_str(),
@@ -511,11 +465,6 @@ void EMANE::ConfigurationService::update(BuildId buildId,
                             }
                         }
 
-                    }
-
-                  if(pPCRE)
-                    {
-                      pcre_free(pPCRE);
                     }
                 }
               else
