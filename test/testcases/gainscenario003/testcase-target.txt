@@ -1,0 +1,149 @@
+[1] location 1 P:[40.025495,-74.315441,3]
+[1] location 2 P:[40.025495,-74.312888,3]
+[1] location 3 P:[40.023235,-74.315437,3]
+[1] location 4 P:[40.023235,-74.312889,3]
+
+[2] profile 1 profileId: 1 azimuth: 0 elevation: 0
+[2] profile 4 profileId: 2 azimuth: 0 elevation: 60
+
+[3] request 1 -> gain: -600
+[3]  remote
+[3]    gain: -400
+[3]    direction azimuth: 139.0369915
+[3]    direction elevation: -0.001493874888
+[3]    direction distance: 332.30746
+[3]    direction vertically aligned: 0
+[3]    lookup azimuth: 139.0369915
+[3]    lookup elevation: -0.001493874888
+[3]  local
+[3]    gain: -200
+[3]    direction azimuth: 319.0386328
+[3]    direction elevation: -0.001493875088
+[3]    direction distance: 332.30746
+[3]    direction vertically aligned: 0
+[3]    lookup azimuth: 319.0386328
+[3]    lookup elevation: -60.00149388
+
+[4] location 1 P:[40.025495,-74.315441,3] O:[0,0,90]
+
+[5] request 1 -> gain: -400
+[5]  remote
+[5]    gain: -200
+[5]    direction azimuth: 49.03699155
+[5]    direction elevation: -0.001493874888
+[5]    direction distance: 332.30746
+[5]    direction vertically aligned: 0
+[5]    lookup azimuth: 49.03699155
+[5]    lookup elevation: -0.001493874888
+[5]  local
+[5]    gain: -200
+[5]    direction azimuth: 319.0386328
+[5]    direction elevation: -0.001493875088
+[5]    direction distance: 332.30746
+[5]    direction vertically aligned: 0
+[5]    lookup azimuth: 319.0386328
+[5]    lookup elevation: -60.00149388
+
+[6] profile 1 profileId: 1 azimuth: 45 elevation: 0
+[6] profile 4 profileId: 2 azimuth: 330 elevation: 0
+
+[7] request 1 -> gain: 6
+[7]  remote
+[7]    gain: 6
+[7]    direction azimuth: 49.03699155
+[7]    direction elevation: -0.001493874888
+[7]    direction distance: 332.30746
+[7]    direction vertically aligned: 0
+[7]    lookup azimuth: 4.036991548
+[7]    lookup elevation: -0.001493874888
+[7]  local
+[7]    gain: 0
+[7]    direction azimuth: 319.0386328
+[7]    direction elevation: -0.001493875088
+[7]    direction distance: 332.30746
+[7]    direction vertically aligned: 0
+[7]    lookup azimuth: 349.0386328
+[7]    lookup elevation: -0.001493875088
+
+[8] location 1 P:[40.025495,-74.315441,3] O:[12,0,90]
+
+[9] request 1 -> gain: -5
+[9]  remote
+[9]    gain: -5
+[9]    direction azimuth: 49.66290161
+[9]    direction elevation: -7.835332527
+[9]    direction distance: 332.30746
+[9]    direction vertically aligned: 0
+[9]    lookup azimuth: 4.662901615
+[9]    lookup elevation: -7.835332527
+[9]  local
+[9]    gain: 0
+[9]    direction azimuth: 319.0386328
+[9]    direction elevation: -0.001493875088
+[9]    direction distance: 332.30746
+[9]    direction vertically aligned: 0
+[9]    lookup azimuth: 349.0386328
+[9]    lookup elevation: -0.001493875088
+
+[10] profile 1 profileId: 1 azimuth: 45 elevation: -8
+
+[11] request 1 -> gain: -2
+[11]  remote
+[11]    gain: -2
+[11]    direction azimuth: 49.66290161
+[11]    direction elevation: -7.835332527
+[11]    direction distance: 332.30746
+[11]    direction vertically aligned: 0
+[11]    lookup azimuth: 4.662901615
+[11]    lookup elevation: 0.1646674735
+[11]  local
+[11]    gain: 0
+[11]    direction azimuth: 319.0386328
+[11]    direction elevation: -0.001493875088
+[11]    direction distance: 332.30746
+[11]    direction vertically aligned: 0
+[11]    lookup azimuth: 349.0386328
+[11]    lookup elevation: -0.001493875088
+
+[12] location 1 P:[40.025495,-74.315441,3] O:[0,0,300]
+
+[13] profile 1 profileId: 1 azimuth: 0 elevation: 0
+
+[14] request 1 -> gain: -400
+[14]  remote
+[14]    gain: -400
+[14]    direction azimuth: 199.0369915
+[14]    direction elevation: -0.001493874888
+[14]    direction distance: 332.30746
+[14]    direction vertically aligned: 0
+[14]    lookup azimuth: 199.0369915
+[14]    lookup elevation: -0.001493874888
+[14]  local
+[14]    gain: 0
+[14]    direction azimuth: 319.0386328
+[14]    direction elevation: -0.001493875088
+[14]    direction distance: 332.30746
+[14]    direction vertically aligned: 0
+[14]    lookup azimuth: 349.0386328
+[14]    lookup elevation: -0.001493875088
+
+[15] profile 1 profileId: 1 azimuth: 200 elevation: 0
+
+[16] request 1 -> gain: -194
+[16]  remote
+[16]    gain: -194
+[16]    direction azimuth: 199.0369915
+[16]    direction elevation: -0.001493874888
+[16]    direction distance: 332.30746
+[16]    direction vertically aligned: 0
+[16]    lookup azimuth: 359.0369915
+[16]    lookup elevation: -0.001493874888
+[16]  local
+[16]    gain: 0
+[16]    direction azimuth: 319.0386328
+[16]    direction elevation: -0.001493875088
+[16]    direction distance: 332.30746
+[16]    direction vertically aligned: 0
+[16]    lookup azimuth: 349.0386328
+[16]    lookup elevation: -0.001493875088
+

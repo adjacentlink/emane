@@ -4,6 +4,8 @@ SUBDIRS=                \
  filterscenario001      \
  gainscenario001        \
  gainscenario002        \
+ gainscenario003        \
+ gainscenario004        \
  noisescenario001       \
  noisescenario002       \
  profilescenario001     \

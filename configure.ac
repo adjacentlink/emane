@@ -85,6 +85,14 @@ PKG_CHECK_MODULES([libuuid], uuid)
 PKG_CHECK_MODULES([libzmq], libzmq)
 PKG_CHECK_MODULES([simactivityservice], simactivityservice)
 
+AC_ARG_VAR([simactivityservice_PROTODIR],[protobuf simactivityservice directory])
+
+if test "${simactivityservice_PROTODIR}" == ""; then
+   simactivityservice_PROTODIR=$(pkg-config simactivityservice --variable=protodir)
+fi
+
+AC_SUBST(simactivityservice_PROTODIR)
+
 AC_CHECK_HEADER(sys/timerfd.h,
  [],
  [AC_MSG_ERROR("Missing sys/timerfd.h header")])
@@ -254,6 +262,8 @@ AC_CONFIG_FILES([Makefile
  test/testcases/Makefile
  test/testcases/gainscenario001/Makefile
  test/testcases/gainscenario002/Makefile
+ test/testcases/gainscenario003/Makefile
+ test/testcases/gainscenario004/Makefile
  test/testcases/filterscenario001/Makefile
  test/testcases/noisescenario001/Makefile
  test/testcases/noisescenario002/Makefile
