@@ -198,15 +198,4 @@ void EMANE::Models::Bypass::MACLayer::processEvent(const EventId &, const Serial
                           __func__);
 }
 
-void EMANE::Models::Bypass::MACLayer::processTimedEvent(TimerEventId,
-                                                        const TimePoint &,
-                                                        const void *)
-{
-  LOGGER_STANDARD_LOGGING(pPlatformService_->logService(),
-                          DEBUG_LEVEL,
-                          "MACI %03hu Models::Bypass::MACLayer::%s",
-                          id_, 
-                          __func__);
-}
-
 DECLARE_MAC_LAYER(EMANE::Models::Bypass::MACLayer);

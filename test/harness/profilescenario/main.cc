@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2016,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +38,10 @@
 #include <libxml/xmlschemas.h>
 
 #include "antennaprofilemanifest.h"
+
 #include "emane/utils/parameterconvert.h"
+
+#include "emane/application/activitycoordinator.h"
 
 #include <getopt.h>
 
@@ -46,6 +50,10 @@ void usage();
 int main(int argc, char* argv[])
 {
   LIBXML_TEST_VERSION;
+
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
+  activityCoordinator.openLocal();
 
   option options[] =
     {
@@ -97,7 +105,7 @@ int main(int argc, char* argv[])
 
   ++optind;
 
- if(optind >= argc)
+  if(optind >= argc)
     {
       std::cerr<<"missing scenario"<<std::endl;
       return EXIT_FAILURE;

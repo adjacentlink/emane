@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
+ * Copyright (c) 2013-2014,2016,2026 - Adjacent Link LLC, Bridgewater,
  * New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
@@ -36,6 +36,7 @@
 #include "platformservice.h"
 #include "logservice.h"
 #include "eventservice.h"
+#include "activityservice.h"
 #include "emane/platformserviceuser.h"
 
 EMANE::PlatformService::PlatformService()
@@ -63,6 +64,11 @@ EMANE::LogServiceProvider & EMANE::PlatformService::logService()
 EMANE::FileDescriptorServiceProvider & EMANE::PlatformService::fileDescriptorService()
 {
   return *pFileDescriptorService_;
+}
+
+EMANE::ActivityServiceProvider & EMANE::PlatformService::activityService()
+{
+  return *ActivityServiceSingleton::instance();
 }
 
 void EMANE::PlatformService::setPlatformServiceUser(BuildId buildId,

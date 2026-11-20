@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE antennaprofile SYSTEM "../../../dtd/antennaprofile.dtd">
+
+<!-- blockage pattern: 1) entire aft in bearing (90 to 270) blocked 2) elevation below -10 blocked, 3) elevation from -10 to -1 is at -10dB to -1 dB 3) elevation from 0 to 90 no blockage-->
+<antennaprofile>
+  <blockagepattern>
+    <elevation min='-90' max='-11'>
+      <bearing min='0' max='359'>
+        <gain value='-200'/>
+      </bearing>
+    </elevation>
+    <elevation min='-10' max='-10'>
+      <bearing min='0' max='89'>
+        <gain value='-10'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-10'/>
+      </bearing>
+    </elevation>
+    <elevation min='-9' max='-9'>
+      <bearing min='0' max='89'>
+        <gain value='-9'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-9'/>
+      </bearing>
+    </elevation>
+    <elevation min='-8' max='-8'>
+      <bearing min='0' max='89'>
+        <gain value='-8'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-8'/>
+      </bearing>
+    </elevation>
+    <elevation min='-7' max='-7'>
+      <bearing min='0' max='89'>
+        <gain value='-7'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-7'/>
+      </bearing>
+    </elevation>
+    <elevation min='-6' max='-6'>
+      <bearing min='0' max='89'>
+        <gain value='-6'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-6'/>
+      </bearing>
+    </elevation>
+    <elevation min='-5' max='-5'>
+      <bearing min='0' max='89'>
+        <gain value='-5'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-5'/>
+      </bearing>
+    </elevation>
+    <elevation min='-4' max='-4'>
+      <bearing min='0' max='89'>
+        <gain value='-4'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-4'/>
+      </bearing>
+    </elevation>
+    <elevation min='-3' max='-3'>
+      <bearing min='0' max='89'>
+        <gain value='-3'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-3'/>
+      </bearing>
+    </elevation>
+    <elevation min='-2' max='-2'>
+      <bearing min='0' max='89'>
+        <gain value='-2'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-2'/>
+      </bearing>
+    </elevation>
+    <elevation min='-1' max='-1'>
+      <bearing min='0' max='89'>
+        <gain value='-1'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='-1'/>
+      </bearing>
+    </elevation>
+    <elevation min='0' max='90'>
+      <bearing min='0' max='89'>
+        <gain value='0'/>
+      </bearing>
+      <bearing min='90' max='270'>
+        <gain value='-200'/>
+      </bearing>
+      <bearing min='271' max='359'>
+        <gain value='0'/>
+      </bearing>
+    </elevation>
+  </blockagepattern>
+</antennaprofile>
+
+
+
+

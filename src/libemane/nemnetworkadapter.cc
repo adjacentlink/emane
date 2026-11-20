@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013,2025-2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -32,20 +33,39 @@
  */
 
 #include "nemnetworkadapter.h"
+#include "activityservice.h"
+
 #include "emane/downstreampacket.h"
 
 EMANE::NEMNetworkAdapter::NEMNetworkAdapter(NEMId id):
-  BoundaryMessageManager(id){}
+  BoundaryMessageManager(id),
+  id_{id},
+  u64SequenceNumber_{}{}
 
 EMANE::NEMNetworkAdapter::~NEMNetworkAdapter(){}
 
-void EMANE::NEMNetworkAdapter::processUpstreamPacket(UpstreamPacket & pkt, 
+void EMANE::NEMNetworkAdapter::processUpstreamPacket(UpstreamPacket & pkt,
                                                      const ControlMessages & msgs)
 {
-  sendPacketMessage(pkt.getPacketInfo(),
+  const auto & pktInfo = pkt.getPacketInfo();
+
+  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
+  ActivityService::instance()->notifyBoundary(pktInfo.getSource(),
+                                              pktInfo.getDestination(),
+                                              id_,
+                                              u64SequenceNumber_);
+
+
+  sendPacketMessage(pktInfo,
                     pkt.get(),
                     pkt.length(),
+                    u64SequenceNumber_,
                     msgs);
+
+  ++u64SequenceNumber_;
+
+  ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
 }
 
 void EMANE::NEMNetworkAdapter::processUpstreamControl(const ControlMessages & msgs)
@@ -56,16 +76,30 @@ void EMANE::NEMNetworkAdapter::processUpstreamControl(const ControlMessages & ms
 void EMANE::NEMNetworkAdapter::doProcessPacketMessage(const PacketInfo & packetInfo,
                                                       const void * pPacketData,
                                                       size_t packetLength,
+                                                      std::uint64_t u64SequenceNumber,
                                                       const ControlMessages & msgs)
 {
   DownstreamPacket pkt(packetInfo,
                        pPacketData,
                        packetLength);
-  
+
+  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
   sendDownstreamPacket(pkt,msgs);
+
+  ActivityService::instance()->notifyBoundary(packetInfo.getSource(),
+                                              packetInfo.getDestination(),
+                                              id_,
+                                              u64SequenceNumber);
+
+  ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
 }
-    
+
 void EMANE::NEMNetworkAdapter::doProcessControlMessage(const ControlMessages & msgs)
 {
+  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
   sendDownstreamControl(msgs);
+
+  ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
 }

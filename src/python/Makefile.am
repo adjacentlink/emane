@@ -4,35 +4,7 @@ EXTRA_DIST= \
  MANIFEST.in \
  scripts \
  setup.py.in \
- emane/info/__init__.py.in\
- emane/ota/otapublisher.py \
- emane/ota/schema/otapublisherscenario.xsd \
- emane/ota/__init__.py \
- emane/ota/otamessage.py \
- emane/ota/otapublisherexception.py \
- emane/shell/manifest.py \
- emane/shell/manifestexception.py \
- emane/shell/controlportclient.py \
- emane/shell/__init__.py \
- emane/shell/controlportexception.py \
- emane/shell/emaneshell.py \
- emane/__init__.py \
- emane/events/fadingselectionevent.py \
- emane/events/antennaprofileevent.py \
- emane/events/tdmaschedule.py \
- emane/events/commeffectevent.py \
- emane/events/schema/tdmaschedule.xsd \
- emane/events/onehopneighborsevent.py \
- emane/events/eventservice.py \
- emane/events/__init__.py \
- emane/events/locationevent.py \
- emane/events/event.py \
- emane/events/pathlossevent.py \
- emane/events/pathlossexevent.py \
- emane/events/eventserviceexception.py \
- emane/events/tdmascheduleevent.py \
- emane/utils/__init__.py \
- emane/utils/schemaresourcereader.py
+ emane
 
 BUILT_SOURCES =                  \
  emane/events/antennaprofileevent_pb2.py \
@@ -49,6 +21,7 @@ BUILT_SOURCES =                  \
  emane/ota/commonphyheader_pb2.py \
  emane/ota/commonmacheader_pb2.py \
  emane/shell/schema/manifest.xsd \
+ emane/boundary/interface/traffic_pb2.py \
  setup.py
 
 all-local:
@@ -108,13 +81,16 @@ emane/events/tdmascheduleevent_pb2.py: ../libemane/tdmascheduleevent.proto
 emane/events/fadingselectionevent_pb2.py: ../libemane/fadingselectionevent.proto
 	protoc -I../libemane --python_out=emane/events  $<
 
-emane/shell/schema/manifest.xsd: @top_srcdir@/schema/manifest.xsd	emane/shell/schema
+emane/shell/schema/manifest.xsd: @top_srcdir@/schema/manifest.xsd emane/shell/schema
 	cp $< $@
 
 emane/shell/schema:
 	mkdir -p emane/shell/schema
 
-setup.py:	setup.py.in
+emane/boundary/interface/traffic_pb2.py: ../transports/traffic/traffic.proto
+	protoc -I../transports/traffic --python_out=emane/boundary/interface  $<
+
+setup.py: setup.py.in
 	if test -f $@; then chmod u+w $@; fi
 	$(edit) $< > $@
 	chmod g-w,u-w $@

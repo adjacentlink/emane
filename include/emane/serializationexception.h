@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,21 +36,6 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class SerializationException
-   *
-   * @brief SerializationException is thrown when an exception
-   * occurs during serialization or deserialization of a Serializable.
-   */
-  class SerializationException : public Exception
-  {
-  public:
-    SerializationException(const std::string & sDescription):
-      Exception{"SerializationException",sDescription}{}
-    
-    ~SerializationException() throw(){}
-  };
-}
+EMANE_EXCEPTION_DEFINE(SerializationException)
+
 #endif //EMANESERIALIZATIONEXCEPTION_HEADER_

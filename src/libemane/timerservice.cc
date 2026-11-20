@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -41,8 +42,8 @@ bool EMANE::TimerService::cancelTimedEvent(TimerEventId eventId)
 }
 
 
-EMANE::TimerEventId EMANE::TimerService::scheduleTimedEvent(const TimePoint & timePoint, 
-                                                            const void * arg, 
+EMANE::TimerEventId EMANE::TimerService::scheduleTimedEvent(const TimePoint & timePoint,
+                                                            const void * arg,
                                                             const Duration & interval,
                                                             TimerServiceUser * pTimerServiceUser)
 {
@@ -55,13 +56,13 @@ EMANE::TimerEventId EMANE::TimerService::scheduleTimedEvent(const TimePoint & ti
                                                 const TimePoint & expireTime,
                                                 const TimePoint & scheduleTime,
                                                 const TimePoint & fireTime)
-                        {
-                          pTimerServiceUser->processTimedEvent(timerId,
-                                                               expireTime,
-                                                               scheduleTime,
-                                                               fireTime,
-                                                               arg);
-                        },
+        {
+          pTimerServiceUser->processTimedEvent(timerId,
+                                               expireTime,
+                                               scheduleTime,
+                                               fireTime,
+                                               arg);
+        },
                         timePoint);
     }
   else
@@ -71,16 +72,22 @@ EMANE::TimerEventId EMANE::TimerService::scheduleTimedEvent(const TimePoint & ti
                                                         const TimePoint & expireTime,
                                                         const TimePoint & scheduleTime,
                                                         const TimePoint & fireTime)
-                                {
-                                  pTimerServiceUser->processTimedEvent(timerId,
-                                                                       expireTime,
-                                                                       scheduleTime,
-                                                                       fireTime,
-                                                                       arg);
-                                },
+        {
+          pTimerServiceUser->processTimedEvent(timerId,
+                                               expireTime,
+                                               scheduleTime,
+                                               fireTime,
+                                               arg);
+        },
                                 timePoint,
                                 interval);
     }
-  
+
   return timerId;
+}
+
+void
+EMANE::TimerService::setBackend(Utils::TimerBackend * pTimerBackend)
+{
+  timer_.setBackend(pTimerBackend);
 }

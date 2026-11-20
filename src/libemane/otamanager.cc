@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017,2025-2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -40,6 +41,7 @@
 #include "otaheader.pb.h"
 #include "event.pb.h"
 #include "socketexception.h"
+#include "activityservice.h"
 
 #include "emane/net.h"
 #include "emane/utils/threadutils.h"
@@ -201,10 +203,10 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
       auto now = Clock::now();
 
       UpstreamPacket upstreamPacket({pktInfo.getSource(),
-            pktInfo.getDestination(),
-            pktInfo.getPriority(),
-            now,
-            uuid_},
+          pktInfo.getDestination(),
+          pktInfo.getPriority(),
+          now,
+          uuid_},
         pkt.getVectorIO());
 
       // bounce a copy of the pkt back up to our local NEM stack(s)
@@ -307,8 +309,8 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
           std::uint16_t u16HeaderLength = HTONS(sOTAHeader.size());
 
           Utils::VectorIO vectorIO{{reinterpret_cast<char *>(&u16HeaderLength),sizeof(u16HeaderLength)},
-              {const_cast<char *>(sOTAHeader.c_str()),sOTAHeader.size()},
-                {reinterpret_cast<char *>(&partInfo),sizeof(partInfo)}};
+                                   {const_cast<char *>(sOTAHeader.c_str()),sOTAHeader.size()},
+                                   {reinterpret_cast<char *>(&partInfo),sizeof(partInfo)}};
 
           size_t payloadSize{};
 
@@ -340,7 +342,7 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
               if(avaiableInEntrySize > payloadSize)
                 {
                   vectorIO.push_back({reinterpret_cast<char *>(stagingVectorIO[stagingIndex].iov_base) + stagingOffset,
-                        payloadSize});
+                      payloadSize});
 
                   stagingOffset += payloadSize;
                   payloadSize = 0;
@@ -348,13 +350,20 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
               else
                 {
                   vectorIO.push_back({reinterpret_cast<char *>(stagingVectorIO[stagingIndex].iov_base) + stagingOffset,
-                        avaiableInEntrySize});
+                      avaiableInEntrySize});
 
                   payloadSize -= avaiableInEntrySize;
                   stagingOffset = 0;
                   ++stagingIndex;
                 }
             }
+
+          ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
+          ActivityService::instance()->notifyOTA(uuid_,
+                                                 u64SequenceNumber_,
+                                                 pktInfo.getSource(),
+                                                 pktInfo.getDestination());
 
           // gather and send
           if(mcast_.send(&vectorIO[0],static_cast<int>(vectorIO.size())) == -1)
@@ -384,6 +393,8 @@ void EMANE::OTAManager::sendOTAPacket(NEMId id,
                                                   std::get<1>(entry));
                 }
             }
+
+          ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
         }
     }
 
@@ -519,6 +530,7 @@ void EMANE::OTAManager::processOTAMessage()
                               auto & payloadInfo = otaHeader.payloadinfo();
                               handleOTAMessage(otaHeader.source(),
                                                otaHeader.destination(),
+                                               otaHeader.sequence(),
                                                remoteUUID,
                                                now,
                                                payloadInfo.eventlength(),
@@ -571,11 +583,12 @@ void EMANE::OTAManager::processOTAMessage()
                                       for(const auto & part : parts)
                                         {
                                           vectorIO.push_back({const_cast<uint8_t *>(part.second.data()),
-                                                part.second.size()});
+                                              part.second.size()});
                                         }
 
                                       handleOTAMessage(otaHeader.source(),
                                                        otaHeader.destination(),
+                                                       otaHeader.sequence(),
                                                        remoteUUID,
                                                        now,
                                                        totalEventBytes,
@@ -607,24 +620,24 @@ void EMANE::OTAManager::processOTAMessage()
                                       auto & payloadInfo = otaHeader.payloadinfo();
 
                                       partStore_.insert({partKey,
-                                            std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
-                                                            payloadInfo.eventlength(),
-                                                            payloadInfo.controllength(),
-                                                            payloadInfo.datalength(),
-                                                            parts,
-                                                            now,
-                                                            uuid)});
+                                          std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+                                                          payloadInfo.eventlength(),
+                                                          payloadInfo.controllength(),
+                                                          payloadInfo.datalength(),
+                                                          parts,
+                                                          now,
+                                                          uuid)});
                                     }
                                   else
                                     {
                                       partStore_.insert({partKey,
-                                            std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
-                                                            0, // event length
-                                                            0, // control length
-                                                            0, // data length
-                                                            parts,
-                                                            now,
-                                                            uuid)});
+                                          std::make_tuple(static_cast<size_t>(pPartInfo->u32Size_),
+                                                          0, // event length
+                                                          0, // control length
+                                                          0, // data length
+                                                          parts,
+                                                          now,
+                                                          uuid)});
                                     }
                                 }
                             }
@@ -700,6 +713,7 @@ void EMANE::OTAManager::processOTAMessage()
 
 void  EMANE::OTAManager::handleOTAMessage(NEMId source,
                                           NEMId destination,
+                                          std::uint64_t u64SequenceNumber,
                                           const uuid_t & remoteUUID,
                                           const TimePoint & now,
                                           size_t eventsSize,
@@ -790,7 +804,7 @@ void  EMANE::OTAManager::handleOTAMessage(NEMId source,
   for(; index < vectorIO.size(); ++index, offset=0)
     {
       packetVectorIO.push_back({reinterpret_cast<uint8_t *>(vectorIO[index].iov_base) + offset,
-            vectorIO[index].iov_len - offset});
+          vectorIO[index].iov_len - offset});
     }
 
   UpstreamPacket pkt(pktInfo,packetVectorIO);
@@ -800,6 +814,8 @@ void  EMANE::OTAManager::handleOTAMessage(NEMId source,
       otaStatisticPublisher_.update(OTAStatisticPublisher::Type::TYPE_UPSTREAM_PACKET_SUCCESS,
                                     remoteUUID,
                                     pktInfo.getSource());
+
+      ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
 
       // for each local NEM stack
       for(NEMUserMap::const_iterator iter = nemUserMap_.begin(), end = nemUserMap_.end();
@@ -811,6 +827,13 @@ void  EMANE::OTAManager::handleOTAMessage(NEMId source,
               iter->second->processOTAPacket(pkt,ControlMessages());
             }
         }
+
+      ActivityService::instance()->notifyOTA(remoteUUID,
+                                             u64SequenceNumber,
+                                             pktInfo.getSource(),
+                                             pktInfo.getDestination());
+
+      ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
     }
   else
     {

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2025-2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +32,9 @@
  */
 
 #include "emane/utils/timer.h"
+#include "emane/utils/timerexception.h"
+#include "logservice.h"
+#include "activityservice.h"
 
 #include <sys/timerfd.h>
 #include <vector>
@@ -38,43 +42,42 @@
 
 EMANE::Utils::Timer::Timer():
 
-  bRunning_{true},
+  bRunning_{},
   timerId_{},
-  iFd_{}
-{
-  // create an interval timer with CLOCK_REALTIME
-  if((iFd_ = timerfd_create(CLOCK_REALTIME,0)) < 0)
-    {
-      throw TimerException{};
-    }
-
-  // spawn the scheduler thread
-  thread_ = std::move(std::thread{&Timer::scheduler,this});
-};
+  pTimerBackend_{}
+{}
 
 EMANE::Utils::Timer::~Timer()
 {
   // synchronization block
   {
     std::lock_guard<std::mutex> m(mutex_);
-    
-    bRunning_ = false;
+
+    if(bRunning_)
+      {
+        bRunning_ = false;
+
+        if(pTimerBackend_)
+          {
+            pTimerBackend_->unblock();
+          }
+      }
   }
 
-  // insert a new timer to unblock 
-  //  scheduler thread
-  itimerspec spec{{0,0},{0,1}};
- 
-  timerfd_settime(iFd_,0,&spec,nullptr);
-  
-  thread_.join();
-
-  close(iFd_);
+  if(thread_.joinable())
+    {
+      thread_.join();
+    }
 }
 
 bool EMANE::Utils::Timer::cancel(TimerId timerId)
 {
   std::lock_guard<std::mutex> m(mutex_);
+
+  if(!pTimerBackend_)
+    {
+      throw TimerException{"backend timer not set cannot cancel"};
+    }
 
   bool bCancel{};
 
@@ -91,10 +94,10 @@ bool EMANE::Utils::Timer::cancel(TimerId timerId)
           bReschedule = true;
           cancel_i();
         }
-      
+
       // clean up the timer stores
       timePointMap_.erase({iter->second,timerId});
-      
+
       timerIdMap_.erase(iter);
 
       // if necessary reschedule the new earliest timer
@@ -113,8 +116,8 @@ bool EMANE::Utils::Timer::cancel(TimerId timerId)
 void EMANE::Utils::Timer::cancel_i()
 {
   // cancel any existing timer
-  itimerspec spec{{0,0},{0,0}};
-  timerfd_settime(iFd_,0,&spec,nullptr);
+  pTimerBackend_->cancel();
+
 }
 
 EMANE::Utils::Timer::TimerId
@@ -123,6 +126,11 @@ EMANE::Utils::Timer::schedule(Callback callback,
                               const Duration & interval)
 {
   std::unique_lock<std::mutex> lock(mutex_);
+
+  if(!pTimerBackend_)
+    {
+      throw TimerException{"backend timer not set cannot schedule"};
+    }
 
   bool bReschedule{};
 
@@ -141,14 +149,14 @@ EMANE::Utils::Timer::schedule(Callback callback,
     }
 
   timerId_+=1;
-  
+
   timePointMap_.insert(std::make_pair(std::make_pair(timePoint,timerId_),
                                       std::make_tuple(timerId_,
                                                       timePoint,
                                                       interval,
                                                       callback,
                                                       Clock::now())));
-  
+
   timerIdMap_.insert(std::make_pair(timerId_,timePoint));
 
   // if necessary rechedule the new earliest timer
@@ -156,7 +164,7 @@ EMANE::Utils::Timer::schedule(Callback callback,
     {
       schedule_i();
     }
-  
+
   return timerId_;
 }
 
@@ -168,29 +176,18 @@ void EMANE::Utils::Timer::schedule_i()
     {
       auto & timePoint = timePointMap_.begin()->first.first;
 
-      auto timeSinceEpoch = timePoint.time_since_epoch();
-
-      auto sec = std::chrono::duration_cast<Seconds>(timeSinceEpoch);
-
-      auto nsec = std::chrono::duration_cast<Nanoseconds>(timeSinceEpoch % Seconds{1});
-
-      // schedule the interval timer
-      itimerspec spec{{0,0},{sec.count(),nsec.count()}};
-
-      timerfd_settime(iFd_,TFD_TIMER_ABSTIME,&spec,nullptr);
+      pTimerBackend_->set(timePoint);
     }
 }
 
-  
+
 void EMANE::Utils::Timer::scheduler()
 {
   std::vector<TimerInfo> expired;
 
-  std::uint64_t u64Expired{};
-
   while(1)
     {
-      // if there are any expired timers execute their 
+      // if there are any expired timers execute their
       //  respective callbacks
       for(const auto & info : expired)
         {
@@ -205,16 +202,24 @@ void EMANE::Utils::Timer::scheduler()
                        expireTime,
                        scheduleTime,
                        Clock::now());
+
+              ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
             }
-          catch(...)
-            {}
+          catch(std::exception & exp)
+            {
+              LogServiceSingleton::instance()->log(ERROR_LEVEL,
+                                                   "Timer:%s callback"
+                                                   " exception: %s",
+                                                   __func__,
+                                                   exp.what());
+            }
         }
-      
+
       // clear out expired timer list
       expired.clear();
-     
+
       // wait for an interval timer to expire
-      if(read(iFd_,&u64Expired,sizeof(u64Expired)) > 0)
+      if(pTimerBackend_->wait() > 0)
         {
           std::unique_lock<std::mutex> lock(mutex_);
 
@@ -227,14 +232,16 @@ void EMANE::Utils::Timer::scheduler()
 
           // an interval timer expired - iterate over all scheduled
           // timers starting with the earliest and expire any that have
-          // expired. Stop iterating once you find a timer that is still 
+          // expired. Stop iterating once you find a timer that is still
           // valid (in the future).
           for(const auto & entry : timePointMap_)
             {
               const auto & timePoint = std::get<1>(entry.second);
-              
+
               if(now >= timePoint)
                 {
+                  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
                   expired.push_back(std::move(entry.second));
                 }
               else
@@ -253,28 +260,47 @@ void EMANE::Utils::Timer::scheduler()
               Callback callback{};
 
               std::tie(timerId,expireTime,interval,callback,std::ignore) = info;
-              
+
               timePointMap_.erase({expireTime,timerId});
 
               timerIdMap_.erase(timerId);
-               
+
               if(interval != Duration::zero())
                 {
                   expireTime += interval;
-                  
+
                   timePointMap_.insert(std::make_pair(std::make_pair(expireTime,timerId),
                                                       std::make_tuple(timerId,
                                                                       expireTime,
                                                                       interval,
                                                                       callback,
                                                                       now)));
-                  
+
                   timerIdMap_.insert(std::make_pair(timerId,expireTime));
                 }
             }
-          
+
           // reschedule the new earliest time, if one is present
           schedule_i();
+
+          ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
         }
     }
+}
+
+void
+EMANE::Utils::Timer::setBackend(TimerBackend * pTimerBackend)
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if(pTimerBackend_)
+    {
+      throw TimerException{"backend timer is set cannot set again"};
+    }
+
+  pTimerBackend_ = pTimerBackend;
+
+  bRunning_ = true;
+
+  thread_ = std::move(std::thread{&Timer::scheduler,this});
 }

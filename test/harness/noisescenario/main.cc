@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014,2016,2019-2021 - Adjacent Link LLC,
+ * Copyright (c) 2013-2014,2016,2019-2021,2025 - Adjacent Link LLC,
  *  Bridgewater, New Jersey
  * All rights reserved.
  *
@@ -42,6 +42,8 @@
 #include "emane/utils/parameterconvert.h"
 #include "emane/utils/spectrumwindowutils.h"
 
+#include "emane/application/activitycoordinator.h"
+
 #include "spectrummonitor.h"
 
 #include <getopt.h>
@@ -54,6 +56,10 @@ void usage();
 int main(int argc, char * argv[])
 {
   LIBXML_TEST_VERSION;
+
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
+  activityCoordinator.openLocal();
 
   option options[] =
     {

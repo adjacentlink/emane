@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013-2014,2016,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -46,7 +46,8 @@
 
 EMANE::Generators::EEL::Generator::Generator(PlatformServiceProvider *pPlatformService):
   EventGenerator(pPlatformService),
-  bCancel_{}
+  bCancel_{},
+  bReady_{}
 {}
 
 EMANE::Generators::EEL::Generator::~Generator(){}
@@ -356,13 +357,24 @@ bool EMANE::Generators::EEL::Generator::waitAndSendEvents(const TimePoint & test
     {
       std::unique_lock<std::mutex> lock{mutex_};
 
-      std::cv_status status{};
+      bReady_ = false;
 
-      while(!bCancel_ && status != std::cv_status::timeout)
+      while(!bCancel_ && !bReady_)
         {
-          status = cond_.wait_until(lock,
-                                    testStartTime +
-                                    DoubleSeconds{fCurrentTime});
+          auto t = testStartTime +
+            std::chrono::duration_cast<Microseconds>(DoubleSeconds{fCurrentTime});
+
+          LOGGER_VERBOSE_LOGGING(pPlatformService_->logService(),
+                                 DEBUG_LEVEL,
+                                 "Scheculer timer for time %zu",
+                                 std::chrono::duration_cast<std::chrono::microseconds>
+                                 (t.time_since_epoch()).count());
+
+          pPlatformService_->
+            timerService().scheduleTimedEvent(testStartTime +
+                                              std::chrono::duration_cast<Microseconds>(DoubleSeconds{fCurrentTime}));
+
+          cond_.wait(lock);
         }
 
       if(bCancel_)
@@ -390,5 +402,18 @@ bool EMANE::Generators::EEL::Generator::waitAndSendEvents(const TimePoint & test
 
   return true;
 }
+
+void
+EMANE::Generators::EEL::Generator::processTimedEvent(TimerEventId,
+                                                     const TimePoint &,
+                                                     const TimePoint &,
+                                                     const TimePoint &,
+                                                     const void *)
+{
+  std::unique_lock<std::mutex> lock{mutex_};
+  bReady_ = true;
+  cond_.notify_one();
+}
+
 
 DECLARE_EVENT_GENERATOR(EMANE::Generators::EEL::Generator);

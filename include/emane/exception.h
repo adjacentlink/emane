@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -43,7 +44,7 @@ namespace EMANE
   /**
    * @class Exception
    *
-   * @brief Exception base class that allows for type and 
+   * @brief Exception base class that allows for type and
    * description information.
    */
   class Exception : public std::exception
@@ -53,7 +54,7 @@ namespace EMANE
      * Destroys an instance
      */
     ~Exception() throw(){}
-    
+
     /**
      * Gets the exception description
      *
@@ -63,7 +64,7 @@ namespace EMANE
     {
       return sDescription_.c_str();
     }
-    
+
     /**
      * Gets the exception type name
      *
@@ -79,16 +80,21 @@ namespace EMANE
               const std::string & sDescription = {}):
       sType_{sType},
       sDescription_{sDescription}{}
-    
+
+    void setDescription(const std::string & sDescription)
+    {
+      sDescription_ = sDescription;
+    }
+
   private:
     const std::string sType_;
-    const std::string sDescription_;
+    std::string sDescription_;
   };
-  
+
   /**
    * Makes an exception using a printf style description
    *
-   * @tparam T Type derived from Exception 
+   * @tparam T Type derived from Exception
    * @tparam len Maximum length of message
    *
    * @param fmt format string (see printf)
@@ -102,15 +108,40 @@ namespace EMANE
     char buf[len];
 
     va_list ap;
-    
+
     va_start(ap, fmt);
-      
+
     vsnprintf(buf, sizeof(buf),fmt,ap);
 
     va_end(ap);
-    
+
     return T{buf};
   }
 }
+
+#define EMANE_EXCEPTION_DEFINE(x)               \
+  namespace EMANE                               \
+  {                                             \
+    class x : public Exception                  \
+    {                                           \
+    public:                                     \
+    x(const char * fmt,...):                    \
+      Exception{#x}                             \
+      {                                         \
+        char buf[1024];                         \
+        va_list ap;                             \
+        va_start(ap,fmt);                       \
+        vsnprintf(buf,sizeof(buf),fmt,ap);      \
+        va_end(ap);                             \
+        setDescription(buf);                    \
+      }                                         \
+      x(const std::string & s):                 \
+        Exception{#x}                           \
+      {                                         \
+        setDescription(s);                      \
+      }                                         \
+      ~x() noexcept {}                          \
+    };                                          \
+  }                                             \
 
 #endif // EMANEEXCEPTION_HEADER_

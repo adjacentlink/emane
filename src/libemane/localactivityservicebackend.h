@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) 2025-2026 - Adjacent Link LLC, Bridgewater, New Jersey
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in
+ *   the documentation and/or other materials provided with the
+ *   distribution.
+ * * Neither the name of Adjacent Link LLC nor the names of its
+ *   contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#ifndef EMANEACTIVITYSERVICELOCALBACKEND_HEADER_
+#define EMANEACTIVITYSERVICELOCALBACKEND_HEADER_
+
+#include "activityservicebackend.h"
+#include "localtimerbackend.h"
+#include "timerservice.h"
+
+
+namespace EMANE
+{
+  class LocalActivityServiceBackend : public ActivityServiceBackend
+  {
+  public:
+    LocalActivityServiceBackend()
+    {
+      pTimerBackend_.reset(new LocalTimerBackend{});
+
+      TimerServiceSingleton::instance()->setBackend(pTimerBackend_.get());
+    }
+
+    ~LocalActivityServiceBackend(){}
+
+    void notifyWorkEnqueue() override
+    {}
+
+    void notifyWorkDequeue() override
+    {}
+
+    void notifyOTA(const uuid_t &,
+                   std::uint64_t,
+                   NEMId,
+                   NEMId)
+    {}
+
+    void notifyEvent(const uuid_t &,
+                     std::uint64_t) override
+    {}
+
+    void notifyBoundary(NEMId,
+                        NEMId,
+                        NEMId,
+                        std::uint64_t) override
+    {}
+
+    void notifyNOP() override
+    {}
+
+    void notifyAction(const std::string &,
+                      const std::string &) override
+    {}
+
+    Clock::time_point now() override
+    {
+      return std::chrono::system_clock::now();
+    }
+
+    void waitForStart() override
+    {}
+
+    void cancelWaitForStart() override
+    {}
+
+    bool isStarted() override
+    {
+      return true;
+    }
+  };
+}
+
+#endif // EMANEACTIVITYSERVICELOCALBACKEND_HEADER_

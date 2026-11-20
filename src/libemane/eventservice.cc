@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2016,2025-2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -38,6 +39,7 @@
 #include "logservice.h"
 #include "eventservice.h"
 #include "socketexception.h"
+#include "activityservice.h"
 
 #include "emane/utils/vectorio.h"
 #include "emane/utils/threadutils.h"
@@ -238,11 +240,16 @@ void EMANE::EventService::sendEvent(BuildId buildId,
                                   "Event %03hu EMANE::EventService::sendEvent",
                                   eventId);
 
+          ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
+          ActivityService::instance()->notifyEvent(uuid_,
+                                                   u64SequenceNumber_);
+
           std::uint16_t u16Length = HTONS(sSerialization.size());
 
           Utils::VectorIO vectorIO{
             {reinterpret_cast<char *>(&u16Length),sizeof(u16Length)},
-              {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}};
+            {const_cast<char *>(sSerialization.c_str()),sSerialization.size()}};
 
           if(mcast_.send(&vectorIO[0],static_cast<int>(vectorIO.size())) == -1)
             {
@@ -260,6 +267,8 @@ void EMANE::EventService::sendEvent(BuildId buildId,
                                               eventId);
 
             }
+
+          ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
         }
     }
   else
@@ -326,62 +335,89 @@ void  EMANE::EventService::process()
     {
       if((len = mcast_.recv(buf,sizeof(buf),0)) > 0)
         {
-          LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
-                                  DEBUG_LEVEL,
-                                  "EventService packet received len: %zd",
-                                  len);
-
-          std::uint16_t * pu16Length{reinterpret_cast<std::uint16_t *>(buf)};
-
-          *pu16Length = NTOHS(*pu16Length);
-
-          len -= sizeof(std::uint16_t);
-
-          EMANEMessage::Event msg;
-
-          if(static_cast<size_t>(len) == *pu16Length &&
-             msg.ParseFromArray(&buf[2], *pu16Length))
-            {
-              uuid_t remoteUUID;
-              uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(msg.uuid().data()));
-
-              // only process multicast events that were not sourced locally
-              if(uuid_compare(uuid_,remoteUUID))
-                {
-                  for(const auto & serialization : msg.data().serializations())
-                    {
-                      NEMId nemId{static_cast<NEMId>(serialization.nemid())};
-
-                      const auto ret = eventRegistrationMap_.equal_range(static_cast<EventId>(serialization.eventid()));
-
-                      for(EventRegistrationMap::const_iterator iter = ret.first;
-                          iter != ret.second;
-                          ++iter)
-                        {
-                          BuildId registeredBuildId{};
-                          NEMId registeredNEMId{};
-                          EventServiceUser * pEventServiceUser{};
-
-                          std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
-
-                          if(!nemId || !registeredNEMId || registeredNEMId == nemId)
-                            {
-                              pEventServiceUser->processEvent(static_cast<EventId>(serialization.eventid()),
-                                                              serialization.data());
-                            }
-                        }
-
-                      eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
-                                                      remoteUUID,
-                                                      serialization.eventid());
-                    }
-                }
-            }
-          else
+          try
             {
               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      DEBUG_LEVEL,
+                                      "EventService packet received len: %zd",
+                                      len);
+
+              std::uint16_t * pu16Length{reinterpret_cast<std::uint16_t *>(buf)};
+
+              *pu16Length = NTOHS(*pu16Length);
+
+              len -= sizeof(std::uint16_t);
+
+              EMANEMessage::Event msg;
+
+              if(static_cast<size_t>(len) == *pu16Length &&
+                 msg.ParseFromArray(&buf[2], *pu16Length))
+                {
+                  uuid_t remoteUUID;
+                  uuid_copy(remoteUUID,reinterpret_cast<const unsigned char *>(msg.uuid().data()));
+
+                  // only process multicast events that were not sourced locally
+                  if(uuid_compare(uuid_,remoteUUID))
+                    {
+                      ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
+                      for(const auto & serialization : msg.data().serializations())
+                        {
+                          NEMId nemId{static_cast<NEMId>(serialization.nemid())};
+
+                          const auto ret = eventRegistrationMap_.equal_range(static_cast<EventId>(serialization.eventid()));
+
+                          for(EventRegistrationMap::const_iterator iter = ret.first;
+                              iter != ret.second;
+                              ++iter)
+                            {
+                              BuildId registeredBuildId{};
+                              NEMId registeredNEMId{};
+                              EventServiceUser * pEventServiceUser{};
+
+                              std::tie(registeredBuildId,registeredNEMId,pEventServiceUser) = iter->second;
+
+                              if(!nemId || !registeredNEMId || registeredNEMId == nemId)
+                                {
+                                  pEventServiceUser->processEvent(static_cast<EventId>(serialization.eventid()),
+                                                                  serialization.data());
+                                }
+                            }
+
+                          eventStatisticPublisher_.update(EventStatisticPublisher::Type::TYPE_RX,
+                                                          remoteUUID,
+                                                          serialization.eventid());
+                        }
+
+                      ActivityService::instance()->notifyEvent(remoteUUID,
+                                                               msg.sequencenumber());
+
+                      ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
+                    }
+                }
+              else
+                {
+                  LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                          ERROR_LEVEL,
+                                          "EventService unable to deserialize event");
+                }
+            }
+          catch(std::exception & exp)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                       ERROR_LEVEL,
-                                      "EventService unable to deserialize event");
+                                      "EventService::process:"
+                                      " Exception caught %s",
+                                      exp.what());
+            }
+          catch(...)
+            {
+              // cannot really do too much at this point, so we'll log it
+              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                      ERROR_LEVEL,
+                                      "EventService::process:"
+                                      " Exception caught");
             }
         }
       else

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016,2025 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * Copyright (c) 2010-2012 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -89,6 +89,13 @@ namespace EMANE
                           const TimePoint & timePoint,
                           const Duration & interval = Duration::zero());
 
+
+    /**
+     * Sets the timer backend
+     *
+     * @param pTimerBackend Pointer (borowed reference) to a backend.
+     */
+    void setBackend(Utils::TimerBackend * pTimerBackend);
 
   protected:
     TimerService() = default;

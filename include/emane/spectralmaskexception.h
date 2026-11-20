@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2021,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class SpectralMaskException
-   *
-   * @brief SpectralMaskException is thrown when an exception
-   * occurs during spectral mask processing.
-   */
-  class SpectralMaskException : public Exception
-  {
-  public:
-    SpectralMaskException(const std::string & sDescription = {}):
-      Exception("SpectralMaskException",sDescription){}
-
-    ~SpectralMaskException() throw() {}
-  };
-}
+/**
+ * @class SpectralMaskException
+ *
+ * @brief SpectralMaskException is thrown when an exception
+ * occurs during spectral mask processing.
+ */
+EMANE_EXCEPTION_DEFINE(SpectralMaskException)
 
 #endif // EMANESPECTRALMASKEXCEPTION_HEADER_

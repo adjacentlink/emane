@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,28 +36,11 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{  
-  /**
-   * @class ConfigurationException
-   *
-   * @brief ConfigurationException is thrown when an exception
-   * occurs during configuration processing.
-   */
-  class ConfigurationException : public Exception
-  {
-  public:
-    /**
-     * Creates a ConfigurationException instance
-     */
-    ConfigurationException(const std::string & sDescription = {}):
-      Exception("ConfigurationException",sDescription){}
-
-    /**
-     * Destroys an instance
-     */
-    ~ConfigurationException() throw() {}
-  };
-}
+/** @class ConfigurationException
+ *
+ * @brief ConfigurationException is thrown when an exception
+ * occurs during configuration processing.
+ */
+EMANE_EXCEPTION_DEFINE(ConfigurationException)
 
 #endif // EMANECONFIGURATIONEXCEPTION_HEADER_

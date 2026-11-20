@@ -190,10 +190,9 @@ EMANE::GainManager::determineGain(NEMId transmitterId,
 
           // get the blockage, if specified
           //  Note: no adjustment is necessary to the direction azimuth and elvation
-
           double dTxAntennaBlockagedBi{remoteAntennaInfo.first.pBlockage_ ?
                                        remoteAntennaInfo.first.pBlockage_->
-                                       getGain(std::round(dRemoteLookupAzimuthDegrees),
+                                       getGain(std::round(dRemoteDirectionAzimuthDegrees),
                                                std::round(dRemoteDirectionElevationDegrees)) :
                                        0};
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016-2017 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016-2017,2025-2026 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -34,6 +34,7 @@
 
 #include "nemqueuedlayer.h"
 #include "logservice.h"
+#include "activityservice.h"
 
 #include <exception>
 #include <mutex>
@@ -145,9 +146,9 @@ void  EMANE::NEMQueuedLayer::initialize(Registrar & registrar)
 
   pStatisticHistogramTable_.reset(new Utils::StatisticHistogramTable<EventId>{
       statisticRegistrar,
-        "EventReceptionTable",
-          {"Event","Total Rx"},
-        "Received event counts"});
+      "EventReceptionTable",
+      {"Event","Total Rx"},
+      "Received event counts"});
 
   avgQueueWait_.registerStatistic
     (statisticRegistrar.registerNumeric<double>("avgProcessAPIQueueWait",
@@ -200,6 +201,7 @@ void EMANE::NEMQueuedLayer::stop()
 void EMANE::NEMQueuedLayer::enqueue_i(QCallback && callback)
 {
   std::lock_guard<std::mutex> m(mutex_);
+  ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
   queue_.push_back(std::move(callback));
   avgQueueDepth_.update(queue_.size());
   ++*pNumQueued_;
@@ -350,6 +352,8 @@ void EMANE::NEMQueuedLayer::processWorkQueue()
                                                   " Exception caught",
                                                   id_);
                         }
+
+                      ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
                     }
 
                   queue.clear();
@@ -363,7 +367,11 @@ void EMANE::NEMQueuedLayer::processWorkQueue()
                 {
                   try
                     {
+                      ACTIVITY_SERVICE_NOTIFY_WORK_ENQUEUE();
+
                       iter->second.second(events[n].data.fd);
+
+                      ACTIVITY_SERVICE_NOTIFY_WORK_DEQUEUE();
                     }
                   catch(std::exception & exp)
                     {
@@ -512,10 +520,10 @@ void  EMANE::NEMQueuedLayer::processTimer_i(TimerServiceProvider::TimerCallback 
   auto enqueueTime = Clock::now();
 
   enqueue_i([this,enqueueTime,callback,expireTime,scheduleTime,fireTime]()
-            {
-              updateTimerStats(enqueueTime,expireTime,scheduleTime,fireTime);
-              callback(expireTime,scheduleTime,fireTime);
-            });
+  {
+    updateTimerStats(enqueueTime,expireTime,scheduleTime,fireTime);
+    callback(expireTime,scheduleTime,fireTime);
+  });
 }
 
 

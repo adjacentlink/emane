@@ -27,7 +27,8 @@ rpm: emane.spec dist-gzip
 	.rpmbuild/RPMS/noarch \
 	.rpmbuild/tmp
 	cp -f $(PACKAGE)-$(VERSION).tar.gz .rpmbuild/SOURCES
-	rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
+	env QA_RPATHS=\$(( 0x0001|0x0010 )) \
+    rpmbuild --clean -ba $(top_srcdir)/$(PACKAGE).spec \
     --define "_topdir $$PWD/.rpmbuild" \
     --define "_tmppath $$PWD/.rpmbuild/tmp" \
     $(RPMBUILD_ARGS)

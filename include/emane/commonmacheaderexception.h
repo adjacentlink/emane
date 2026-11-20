@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * Copyright (c) 2008 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,23 +36,13 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
+/**
+ * @class CommonMACHeaderException
+ *
+ * @brief Component common mac header exception thrown
+ * when there is an issue serializing or deserializing
+ * the header.
+ */
+EMANE_EXCEPTION_DEFINE(CommonMACHeaderException)
 
-  /**
-   * @class CommonMACHeaderException
-   *
-   * @brief Component common mac header exception thrown 
-   * when there is an issue serializing or deserializing
-   * the header.
-   */
-  class CommonMACHeaderException : public Exception
-  {
-  public:
-    CommonMACHeaderException(const std::string & sDescription):
-      Exception("CommonMACHeaderException",sDescription){}
-    
-    ~CommonMACHeaderException() throw(){}
-  };
-}
 #endif //EMANECOMMONMACHEADEREXCEPTION_HEADER_

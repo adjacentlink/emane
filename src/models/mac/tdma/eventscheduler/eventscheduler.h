@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@
 #define EMANETDMARADIOMODELEVENTSCHEDULER_HEADER_
 
 #include "emane/models/tdma/scheduler.h"
-#include "emane/events/slotinfo.h"
-#include "emane/events/slotstructure.h"
+#include "emane/events/tdmascheduleslotinfo.h"
+#include "emane/events/tdmascheduleslotstructure.h"
 #include "emane/statisticnumeric.h"
 #include "eventtablepublisher.h"
 #include "slotter.h"
@@ -92,8 +92,8 @@ namespace EMANE
         void processPacketMetaInfo(const PacketMetaInfo & packetMetaInfo) override;
 
       private:
-        Events::SlotInfos slotInfos_;
-        Events::SlotStructure structure_;
+        Events::TDMASchedule::SlotInfos slotInfos_;
+        Events::TDMASchedule::SlotStructure structure_;
         EventTablePublisher eventTablePublisher_;
         Slotter slotter_;
         mutable bool bWaitingFirstTxSlotInfoRequest_;

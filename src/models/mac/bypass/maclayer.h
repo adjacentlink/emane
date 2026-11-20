@@ -93,10 +93,6 @@ namespace EMANE
         void processEvent(const EMANE::EventId & id,
                           const EMANE::Serialization & serialization);
 
-        void processTimedEvent(EMANE::TimerEventId eventId,
-                               const EMANE::TimePoint & timePoint,
-                               const void * arg);
-
       private:
         static const EMANE::RegistrationId type_ = EMANE::REGISTERED_EMANE_MAC_BYPASS;
  

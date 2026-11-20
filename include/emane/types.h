@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2020-2021 - Adjacent Link LLC, Bridgewater,
- *  New Jersey
+ * Copyright (c) 2013-2014,2020-2021,2025 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@
 #ifndef EMANETYPES_HEADER_
 #define EMANETYPES_HEADER_
 
+#include "emane/clock.h"
+
 #include <cstdint>
 #include <chrono>
 #include <string>
@@ -48,7 +50,6 @@ namespace EMANE
   using Microseconds = std::chrono::microseconds;
   using Nanoseconds = std::chrono::nanoseconds;
   using DoubleSeconds = std::chrono::duration<double>;
-  using Clock = std::chrono::system_clock;
   using Duration = Clock::duration;
   using TimePoint = Clock::time_point;
 

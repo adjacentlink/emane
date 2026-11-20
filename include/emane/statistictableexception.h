@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2014 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2014,2026 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +36,12 @@
 
 #include "emane/exception.h"
 
-namespace EMANE
-{
-  /**
-   * @class StatisticTableException
-   *
-   * @brief StatistictableException is thrown when an exception
-   * occurs during creation or conversion of an StatisticTable.
-   */
-  class StatisticTableException : public Exception
-  {
-  public:
-    StatisticTableException(const std::string & sDescription = {}):
-      Exception("StatisticTableException",sDescription){}
-
-    ~StatisticTableException() throw() {}
-  };
-}
+/**
+ * @class StatisticTableException
+ *
+ * @brief StatistictableException is thrown when an exception
+ * occurs during creation or conversion of an StatisticTable.
+ */
+EMANE_EXCEPTION_DEFINE(StatisticTableException)
 
 #endif // EMANESTATISTICTABLEEXCEPTION_HEADER_

@@ -81,6 +81,7 @@ namespace EMANE
 
     private:
       NEMId id_;
+      std::uint64_t u64SequenceNumber_;
       std::unique_ptr<NEMLayer> pTransport_;
       INETAddr transportEndpointAddr_;
       INETAddr platformEndpointAddr_;
@@ -89,7 +90,8 @@ namespace EMANE
       void doProcessPacketMessage(const PacketInfo &,
                                   const void * pPacketData,
                                   size_t packetLength,
-                                  const ControlMessages & msgs);
+                                  std::uint64_t u64SequenceNumber,
+                                  const ControlMessages & msgs) override;
 
       void doProcessControlMessage(const ControlMessages & msgs);
     };

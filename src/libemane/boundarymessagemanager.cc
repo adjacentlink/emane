@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2013-2017,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,11 +149,13 @@ void EMANE::BoundaryMessageManager::close()
 void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetInfo,
                                                       const void * pPacketData,
                                                       size_t packetDataLength,
+                                                      std::uint64_t u64SequenceNumber,
                                                       const ControlMessages & msgs)
 {
   return sendPacketMessage(packetInfo,
                            Utils::VectorIO{{const_cast<void *>(pPacketData),packetDataLength}},
                            packetDataLength,
+                           u64SequenceNumber,
                            msgs);
 }
 
@@ -160,6 +163,7 @@ void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetI
 void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetInfo,
                                                       const Utils::VectorIO & packetIO,
                                                       size_t packetDataLength,
+                                                      std::uint64_t u64SequenceNumber,
                                                       const ControlMessages & msgs)
 {
   ssize_t len = 0;
@@ -172,6 +176,7 @@ void EMANE::BoundaryMessageManager::sendPacketMessage(const PacketInfo & packetI
   dataMessage.u16Src_ = packetInfo.getSource();
   dataMessage.u16Dst_ = packetInfo.getDestination();
   dataMessage.u8Priority_ = packetInfo.getPriority();
+  dataMessage.u64SequenceNumber_ = u64SequenceNumber;
   dataMessage.u32DataLen_ = packetDataLength;
   dataMessage.u32CtrlLen_ = controlMessageSerializer.getLength();
 
@@ -351,7 +356,7 @@ void EMANE::BoundaryMessageManager::handleNetworkMessage(void * buf,size_t len)
 
               if(static_cast<size_t>(len) >= sizeof(NetAdapterDataMessage))
                 {
-                  NetAdapterDataMessage * pMsg =  reinterpret_cast<NetAdapterDataMessage *>(pHeader->data_);
+                  NetAdapterDataMessage * pMsg = reinterpret_cast<NetAdapterDataMessage *>(pHeader->data_);
 
                   NetAdapterDataMessageToHost(pMsg);
 
@@ -387,20 +392,34 @@ void EMANE::BoundaryMessageManager::handleNetworkMessage(void * buf,size_t len)
 
                           try
                             {
+                              LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
+                                                      DEBUG_LEVEL,
+                                                      "NEM %03d BoundaryMessageManager::processNetworkMessage "
+                                                      " source: %hu"
+                                                      " destination: %hu"
+                                                      " sequnce: %zu",
+                                                      id_,
+                                                      pinfo.getSource(),
+                                                      pinfo.getDestination(),
+                                                      pMsg->u64SequenceNumber_);
+
+
                               doProcessPacketMessage(pinfo,
                                                      pMsg->data_,
                                                      pMsg->u32DataLen_,
+                                                     pMsg->u64SequenceNumber_,
                                                      controlMessages);
                             }
-                          catch(...)
+                          catch(std::exception & exp)
                             {
                               // cannot really do too much at this point, so we'll log it
                               // good candidate spot to generate and error event as well
                               LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                                       ERROR_LEVEL,
                                                       "NEM %03d BoundaryMessageManager::processNetworkMessage "
-                                                      "processUpstreamPacket exception caught",
-                                                      id_);
+                                                      "processUpstreamPacket exception caught: %s",
+                                                      id_,
+                                                      exp.what());
                             }
                         }
                       else
@@ -458,15 +477,16 @@ void EMANE::BoundaryMessageManager::handleNetworkMessage(void * buf,size_t len)
                         {
                           doProcessControlMessage(controlMessages);
                         }
-                      catch(...)
+                      catch(std::exception & exp)
                         {
                           // cannot really do too much at this point, so we'll log it
                           // good candidate spot to generate and error event as well
                           LOGGER_STANDARD_LOGGING(*LogServiceSingleton::instance(),
                                                   ERROR_LEVEL,
                                                   "NEM %03d BoundaryMessageManager::processNetworkMessage "
-                                                  "processDownstreamControl exception caught",
-                                                  id_);
+                                                  "processDownstreamControl exception caught: %s",
+                                                  id_,
+                                                  exp.what());
                         }
                     }
                   else

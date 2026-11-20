@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013-2014,2016,2020 - Adjacent Link LLC, Bridgewater,
- * New Jersey
+ * Copyright (c) 2013-2014,2016,2020,2025 - Adjacent Link LLC,
+ *  Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,8 @@
 #include "emane/controls/mimotransmitpropertiescontrolmessage.h"
 #include "emane/controls/mimotxwhilerxinterferencecontrolmessage.h"
 
+#include "emane/application/activitycoordinator.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <getopt.h>
@@ -74,13 +76,17 @@ namespace
 
 int main(int argc, char * argv[])
 {
+  EMANE::Application::ActivityCoordinator activityCoordinator{};
+
+  activityCoordinator.openLocal();
+
   option options[] =
     {
-     {"help",0,nullptr,'h'},
-     {"output",1,nullptr,'o'},
-     {"processpoolsize",1,nullptr,'n'},
-     {"selfinterference",0,nullptr,'s'},
-     {0, 0,nullptr,0},
+      {"help",0,nullptr,'h'},
+      {"output",1,nullptr,'o'},
+      {"processpoolsize",1,nullptr,'n'},
+      {"selfinterference",0,nullptr,'s'},
+      {0, 0,nullptr,0},
     };
 
   int iOption{};
@@ -162,17 +168,17 @@ int main(int argc, char * argv[])
 
       pPHYLayer->configure(EMANE::ConfigurationServiceSingleton::instance()->buildUpdates(pPHYLayer->getBuildId(),
                                                                                           {
-                                                                                           {"compatibilitymode",{"2"}},
-                                                                                           {"fixedantennagain",{"0.0"}},
-                                                                                           {"fixedantennagainenable",{"on"}},
-                                                                                           {"frequency",{std::to_string(u64BeginFrequencyHz)}},
-                                                                                           {"bandwidth",{"1M"}},
-                                                                                           {"noisemode",{"all"}},
-                                                                                           {"propagationmodel",{"precomputed"}},
-                                                                                           {"systemnoisefigure",{"7.0"}},
-                                                                                           {"subid",{std::to_string(u16SubId)}},
-                                                                                           {"processingpoolsize",{std::to_string(u16PoolSize)}},
-                                                                                           {"fading.model",{"nakagami"}}}));;
+                                                                                            {"compatibilitymode",{"2"}},
+                                                                                            {"fixedantennagain",{"0.0"}},
+                                                                                            {"fixedantennagainenable",{"on"}},
+                                                                                            {"frequency",{std::to_string(u64BeginFrequencyHz)}},
+                                                                                            {"bandwidth",{"1M"}},
+                                                                                            {"noisemode",{"all"}},
+                                                                                            {"propagationmodel",{"precomputed"}},
+                                                                                            {"systemnoisefigure",{"7.0"}},
+                                                                                            {"subid",{std::to_string(u16SubId)}},
+                                                                                            {"processingpoolsize",{std::to_string(u16PoolSize)}},
+                                                                                            {"fading.model",{"nakagami"}}}));;
       pPHYLayer->start();
 
       EMANE::Events::Pathlosses pathlosses;

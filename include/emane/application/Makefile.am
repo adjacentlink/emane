@@ -1,6 +1,7 @@
 emaneincdir = $(includedir)/emane/application/
 
 emaneinc_HEADERS =                       \
+ activitycoordinator.h                   \
  configurationcontroller.h               \
  eventagentbuilder.h                     \
  eventagentmanager.h                     \

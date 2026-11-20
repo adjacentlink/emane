@@ -9,7 +9,8 @@ emane_CPPFLAGS =                      \
 
 emane_LDADD =                                                  \
  @top_srcdir@/src/libemane/.libs/libemane.la                   \
- @top_srcdir@/src/libemanexmlparser/.libs/libemanexmlparser.la
+ @top_srcdir@/src/libemanexmlparser/.libs/libemanexmlparser.la \
+ $(libemane_LIBS)
 
 emane_SOURCES =  \
  emane.cc        \

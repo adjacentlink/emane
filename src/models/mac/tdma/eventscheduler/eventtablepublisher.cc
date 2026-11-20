@@ -39,16 +39,16 @@ void EMANE::Models::TDMA::EventTablePublisher::registerStatistics(StatisticRegis
 {
   pScheduleTable_ =
     statisticRegistrar.registerTable<std::uint32_t>("scheduler.ScheduleInfoTable",
-      {"Index","Frame","Slot","Type","Frequency","Data Rate","Power","Class","Destination"},
-      StatisticProperties::NONE,
-      "Shows the current TDMA schedule.");
+                                                    {"Index","Frame","Slot","Type","Frequency","Data Rate","Power","Class","Destination"},
+                                                    StatisticProperties::NONE,
+                                                    "Shows the current TDMA schedule.");
 
   pStrutureTable_ =
     statisticRegistrar.registerTable<std::string>("scheduler.StructureInfoTable",
-      {"Name","Value"},
-      StatisticProperties::NONE,
-      "Shows the current TDMA structure: slot size, slot overhead, number of slots"
-      " per frame, number of frames per multiframe and transceiver bandwidth.");
+                                                  {"Name","Value"},
+                                                  StatisticProperties::NONE,
+                                                  "Shows the current TDMA structure: slot size, slot overhead, number of slots"
+                                                  " per frame, number of frames per multiframe and transceiver bandwidth.");
 }
 
 void EMANE::Models::TDMA::EventTablePublisher::clear()
@@ -60,8 +60,10 @@ void EMANE::Models::TDMA::EventTablePublisher::clear()
   bHasStructure_ = false;
 }
 
-void EMANE::Models::TDMA::EventTablePublisher::replace(const Events::SlotInfos & slotInfos,
-                                                       const Events::SlotStructure & structure)
+void
+EMANE::Models::TDMA::
+EventTablePublisher::replace(const Events::TDMASchedule::SlotInfos & slotInfos,
+                             const Events::TDMASchedule::SlotStructure & structure)
 {
   pScheduleTable_->clear();
   scheduleIndexSet_.clear();
@@ -85,7 +87,9 @@ void EMANE::Models::TDMA::EventTablePublisher::replace(const Events::SlotInfos &
   update(slotInfos);
 }
 
-void EMANE::Models::TDMA::EventTablePublisher::update(const Events::SlotInfos & slotInfos)
+void
+EMANE::Models::TDMA::
+EventTablePublisher::update(const Events::TDMASchedule::SlotInfos & slotInfos)
 {
   for(const auto & slotInfo : slotInfos)
     {
@@ -96,7 +100,7 @@ void EMANE::Models::TDMA::EventTablePublisher::update(const Events::SlotInfos & 
 
       switch(slotInfo.getType())
         {
-        case Events::SlotInfo::Type::TX:
+        case Events::TDMASchedule::SlotInfo::Type::TX:
           anys = {Any{index},
                   Any{slotInfo.getFrameIndex()},
                   Any{slotInfo.getSlotIndex()},
@@ -108,7 +112,7 @@ void EMANE::Models::TDMA::EventTablePublisher::update(const Events::SlotInfos & 
                   Any{slotInfo.getDestination()}};
           break;
 
-        case Events::SlotInfo::Type::RX:
+        case Events::TDMASchedule::SlotInfo::Type::RX:
           anys = {Any{index},
                   Any{slotInfo.getFrameIndex()},
                   Any{slotInfo.getSlotIndex()},
@@ -120,7 +124,7 @@ void EMANE::Models::TDMA::EventTablePublisher::update(const Events::SlotInfos & 
                   Any{""}};
           break;
 
-        case Events::SlotInfo::Type::IDLE:
+        case Events::TDMASchedule::SlotInfo::Type::IDLE:
           anys = {Any{index},
                   Any{slotInfo.getFrameIndex()},
                   Any{slotInfo.getSlotIndex()},

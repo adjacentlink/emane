@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013,2016 - Adjacent Link LLC, Bridgewater, New
- * Jersey
+ * Copyright (c) 2013,2016,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2010 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -69,6 +69,12 @@ namespace EMANE
 
         void destroy() throw() override;
 
+        void processTimedEvent(TimerEventId eventId,
+                               const TimePoint & expireTime,
+                               const TimePoint & scheduleTime,
+                               const TimePoint & fireTime,
+                               const void * arg) override;
+
       private:
         using InputFileNameVector = std::vector<std::string>;
         using PluginFactoryList = std::list<LoaderPluginFactory *>;
@@ -78,6 +84,7 @@ namespace EMANE
         std::mutex mutex_;
         std::condition_variable cond_;
         bool bCancel_;
+        bool bReady_;
         InputFileNameVector inputFileNameVector_;
         PluginFactoryList pluginFactoryList_;
         EventPluginMap eventPluginMap_;

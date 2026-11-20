@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016-2017 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016-2017,2025 - Adjacent Link LLC, Bridgewater,
+ *  New Jersey
  * Copyright (c) 2008-2009 - DRS CenGen, LLC, Columbia, Maryland
  * All rights reserved.
  *
@@ -35,6 +36,7 @@
 #define EMANENETADAPTERMESSAGE_HEADER_
 
 #include <cstdint>
+#include <arpa/inet.h>
 
 namespace EMANE
 {
@@ -94,6 +96,7 @@ namespace EMANE
     std::uint16_t u16Dst_;
     std::uint32_t u32DataLen_;
     std::uint32_t u32CtrlLen_;
+    std::uint64_t u64SequenceNumber_;
     std::uint8_t  u8Priority_;
     std::uint8_t  data_[0];
   } __attribute__((packed));
@@ -136,7 +139,7 @@ namespace EMANE
     pkt->u16Dst_      = ntohs(pkt->u16Dst_);
     pkt->u32DataLen_  = ntohl(pkt->u32DataLen_);
     pkt->u32CtrlLen_  = ntohl(pkt->u32CtrlLen_);
-
+    pkt->u64SequenceNumber_ = be64toh(pkt->u64SequenceNumber_);
     return pkt;
   }
 
@@ -152,6 +155,7 @@ namespace EMANE
     pkt->u16Dst_      = htons(pkt->u16Dst_);
     pkt->u32DataLen_  = htonl(pkt->u32DataLen_);
     pkt->u32CtrlLen_  = htonl(pkt->u32CtrlLen_);
+    pkt->u64SequenceNumber_ = htobe64(pkt->u64SequenceNumber_);
 
     return pkt;
   }

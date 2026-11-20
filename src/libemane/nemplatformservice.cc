@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2016,2026 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 
 #include "nemplatformservice.h"
 #include "logservice.h"
+#include "activityservice.h"
 #include "eventservice.h"
 
 EMANE::NEMPlatformService::NEMPlatformService():
@@ -59,6 +60,11 @@ EMANE::LogServiceProvider & EMANE::NEMPlatformService::logService()
 EMANE::FileDescriptorServiceProvider & EMANE::NEMPlatformService::fileDescriptorService()
 {
   return *pNEMQueuedLayer_;
+}
+
+EMANE::ActivityServiceProvider & EMANE::NEMPlatformService::activityService()
+{
+  return *ActivityServiceSingleton::instance();
 }
 
 void EMANE::NEMPlatformService::setNEMLayer(BuildId buildId,

@@ -41,7 +41,8 @@
 EMANE::Application::TransportAdapterImpl::TransportAdapterImpl(NEMId nemId):
   TransportAdapter{nemId},
   BoundaryMessageManager{nemId},
-  id_{nemId}{}
+  id_{nemId},
+  u64SequenceNumber_{}{}
 
 EMANE::Application::TransportAdapterImpl::~TransportAdapterImpl(){}
 
@@ -169,6 +170,7 @@ void EMANE::Application::TransportAdapterImpl::processDownstreamPacket(EMANE::Do
   sendPacketMessage(pkt.getPacketInfo(),
                     pkt.getVectorIO(),
                     pkt.length(),
+                    ++u64SequenceNumber_,
                     msgs);
 }
 
@@ -181,6 +183,7 @@ EMANE::Application::TransportAdapterImpl::processDownstreamControl(const EMANE::
 void EMANE::Application::TransportAdapterImpl::doProcessPacketMessage(const PacketInfo & packetInfo,
                                                                       const void * pPacketData,
                                                                       size_t packetLength,
+                                                                      std::uint64_t,
                                                                       const ControlMessages & msgs)
 {
   UpstreamPacket pkt(packetInfo,

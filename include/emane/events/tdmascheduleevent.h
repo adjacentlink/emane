@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - Adjacent Link LLC, Bridgewater, New Jersey
+ * Copyright (c) 2015,2025 - Adjacent Link LLC, Bridgewater, New Jersey
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,12 @@
 
 #include "emane/event.h"
 #include "emane/events/eventids.h"
-#include "emane/events/slotinfo.h"
-#include "emane/events/slotstructure.h"
+#include "emane/events/tdmascheduleslotinfo.h"
+#include "emane/events/tdmascheduleslotstructure.h"
+#include "emane/events/tdmascheduleparameters.h"
 
 #include <memory>
+#include <optional>
 
 namespace EMANE
 {
@@ -58,19 +60,30 @@ namespace EMANE
        */
       TDMAScheduleEvent(const Serialization & serialization);
 
+      TDMAScheduleEvent(const std::optional<TDMASchedule::SlotStructure> & slotStructure,
+                        const TDMASchedule::MultiFrameParameters & multiFrameParameters,
+                        const TDMASchedule::FrameParameterMap & frameParametertMap,
+                        const TDMASchedule::FrameSlotMap & frameSlotMap);
+
 
       /**
        * Destroys an instance
        */
       ~TDMAScheduleEvent();
 
-      const SlotInfos & getSlotInfos() const;
+      const TDMASchedule::SlotInfos & getSlotInfos() const;
 
 
       const Frequencies & getFrequencies() const;
 
-      std::pair<const SlotStructure &,bool> getSlotStructure() const;
+      const std::optional<TDMASchedule::SlotStructure> & getSlotStructure() const;
 
+      /**
+       * Serializes the instance
+       *
+       * @throw SerializationException if the instance cannot be serialized
+       */
+      Serialization serialize() const override;
 
       enum {IDENTIFIER = EMANE_EVENT_TDMA_SCHEDULE};
 
